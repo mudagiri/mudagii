@@ -59,8 +59,8 @@ export default function MudagiriAppV2({resolveComparable=resolveComparableV1,onL
    type:{code:typeCode,name:'',description:'あなたのお金の使い方を3つの軸から分類したタイプです。',axes:typeResult.axes,strength:typeResult.strength,nearMiddle:typeResult.nearMiddle,modelVersion:TYPE_MODEL_VERSION},globalSatisfaction:globalSat ?? 3,unknownCategories:categories.filter(c=>unknownExpenses[c])
  }):null;
  useEffect(()=>{if(step!=='result'||!result||!store||savedDiagnosisId===diagnosisId)return; const fact={diagnosisId,createdAt:new Date().toISOString(),schemaVersion:'MUDAGIRI_SHEET_V2' as const,typeModelVersion:TYPE_MODEL_VERSION,methodologyVersion:result.methodologyVersion,toneMode,household,age,monthlyIncome:income,monthlySaving:saving,type:{code:typeCode,axes:typeResult.axes,strength:typeResult.strength,nearMiddle:typeResult.nearMiddle},monthlyImprovement:result.improvement.monthly,needsReview:result.needsReview,expenses,typeAnswers,anonymousUserId,acquisition:acquisitionFromLocation()}; Promise.all([store.saveDiagnosis(fact),store.appendEvent(event(anonymousUserId,diagnosisId,'diagnosis_completed',{typeCode,typeModelVersion:TYPE_MODEL_VERSION,battleScore:result.battle.score,monthlyImprovement:result.improvement.monthly,toneMode}))]).then(()=>setSavedDiagnosisId(diagnosisId));},[step,result,store,savedDiagnosisId,diagnosisId,anonymousUserId,household,age,income,saving,typeCode,typeResult.axes,typeResult.strength,typeResult.nearMiddle,expenses,typeAnswers,toneMode]);
-  if(step==='intro'||step==='profile')return <RpgBlock1
-   step={step}
+ if(['intro','profile'].includes(step))return <RpgBlock1
+   step={step as 'intro'|'profile'}
    toneMode={toneMode}
    onBegin={(mode)=>{
      setToneMode(mode);
