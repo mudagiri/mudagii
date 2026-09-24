@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+let pass=0; const ok=(v,m)=>{if(!v)throw new Error(m);pass++};
+const payload=fs.readFileSync(new URL('./result-payload-v2.ts',import.meta.url),'utf8');
+const report=fs.readFileSync(new URL('./line-report-full-v2.ts',import.meta.url),'utf8');
+const screen=fs.readFileSync(new URL('./ResultScreenV2.tsx',import.meta.url),'utf8');
+ok(payload.includes('buckets={'),'result has buckets');
+ok(payload.includes('cut:d.categories'),'cut bucket');
+ok(payload.includes('protected:d.categories'),'protected bucket');
+ok(payload.includes('unreviewed:d.categories'),'unreviewed bucket');
+ok(payload.includes('clear:d.categories'),'clear bucket');
+for(const c of ['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment']) ok(report.includes(` ${c}:{category:'${c}'`),`report ${c}`);
+ok((report.match(/guardrail:/g)||[]).length>=12,'12 guardrails');
+ok((report.match(/firstAction:/g)||[]).length>=12,'12 first actions');
+ok(screen.includes('今回の12項目'),'screen compendium');
+console.log(`post-diagnosis contract: ${pass}/${pass} PASS`);

@@ -1,0 +1,8 @@
+{
+  "operator_not_required_env": true,
+  "contact_not_required_env": true,
+  "operator_not_required_workflow": true,
+  "contact_not_required_workflow": true,
+  "no_publication_placeholders": true,
+  "docs_nonblocking": true
+}

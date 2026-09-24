@@ -1,0 +1,1 @@
+import React from'react';import{createRoot}from'react-dom/client';import MudagiriAppV2 from'../MudagiriAppV2';import{resolveComparableV1}from'../comparable-resolver-v1';import'./style.css';createRoot(document.getElementById('root')!).render(<React.StrictMode><MudagiriAppV2 resolveComparable={resolveComparableV1}/></React.StrictMode>);

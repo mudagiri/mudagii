@@ -1,0 +1,24 @@
+exit=2
+STDOUT:
+BattleSequenceV2.tsx(1,42): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+BattleSequenceV2.tsx(17,32): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+LegalDisclosureV1.tsx(1,30): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+LegalDisclosureV1.tsx(6,9): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+MethodologyDisclosureV1.tsx(1,30): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+MethodologyDisclosureV1.tsx(4,9): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+MudagiriAppV2.tsx(1,53): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+MudagiriAppV2.tsx(30,191): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+MudagiriAppV2.tsx(66,1037): error TS2322: Type '{ compact: true; key: Category; label: string; value: any; unknown: boolean; onUnknown: () => any; onChange: (n: number) => void; }' is not assignable to type '{ label: string; value: number; onChange: (n: number) => void; compact?: boolean; unknown?: boolean; onUnknown?: () => void; }'.
+  Property 'key' does not exist on type '{ label: string; value: number; onChange: (n: number) => void; compact?: boolean; unknown?: boolean; onUnknown?: () => void; }'.
+ResultRevealV2.tsx(1,53): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+ResultRevealV2.tsx(13,51): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+ResultScreenV2.tsx(1,53): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+ResultScreenV2.tsx(28,10): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+SatisfactionBattleV2.tsx(1,19): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+SatisfactionBattleV2.tsx(15,9): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+ShareResultCardV2.tsx(1,19): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+ShareResultCardV2.tsx(7,9): error TS2875: This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+vite.config.ts(1,25): error TS2307: Cannot find module 'vite' or its corresponding type declarations.
+vite.config.ts(1,49): error TS2307: Cannot find module '@vitejs/plugin-react' or its corresponding type declarations.
+
+STDERR:

@@ -1,0 +1,18 @@
+{
+  "checks": {
+    "v31_imported": true,
+    "old_type_scorer_removed": true,
+    "title8": true,
+    "diagnosis_v2": true,
+    "comparable_v1": true,
+    "gas_v2_lock": true,
+    "vite_relative_base": true,
+    "line_url": false
+  },
+  "blockers": [
+    "Production runtime assets: manifest says 53/53, but handoff public/assets contains only 7 page assets. Missing mascot/enemy/brand runtime files must be restored before visual production release.",
+    "Live GAS /exec URL is not available in the source package, so live Sheets persistence cannot be verified here.",
+    "Appointment URL/integration is intentionally absent; valid_appointment cannot yet be live-tested.",
+    "npm dependency installation/build has not completed in this environment."
+  ]
+}

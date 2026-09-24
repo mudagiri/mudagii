@@ -1,0 +1,18 @@
+{
+  "code_model_compile": "PASS",
+  "persona_regression": "PASS",
+  "static_checks": {
+    "result_viewed_single_persistence_path": true,
+    "line_clicked_single_store_append": true,
+    "diagnosis_completed_single_store_append": true,
+    "tone_mode_effect_dependency": true,
+    "static_asset_refs_exist": true,
+    "all_12x3_enemy_state_assets_exist": true
+  },
+  "missing_static_refs": [],
+  "missing_enemy_state_assets": [],
+  "production_build": "BLOCKED_IN_THIS_RUNTIME_NPM_INSTALL_TIMEOUT",
+  "real_gas_post": "REQUIRES_DEPLOYED_EXEC_URL",
+  "public_mobile_e2e": "REQUIRES_PUBLIC_URL",
+  "real_line_transition": "REQUIRES_PUBLIC_URL_DEVICE_TEST"
+}

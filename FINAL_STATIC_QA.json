@@ -1,0 +1,13 @@
+{
+  "v31": true,
+  "legacy16_active": false,
+  "axis_se_active": false,
+  "label16_active": false,
+  "accuracy_label": false,
+  "line_official": true,
+  "lucide_active": false,
+  "enemy_states": 36,
+  "mascot": 11,
+  "brand": 6,
+  "full_build": "BLOCKED_BY_PACKAGE_DOWNLOAD_ENVIRONMENT"
+}

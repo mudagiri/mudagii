@@ -1,0 +1,13 @@
+{
+  "12_categories": true,
+  "policy_optimization": true,
+  "needs_review_categories": true,
+  "mobile_rule_4000_80pct": true,
+  "energy_rule_120pct_60pct": true,
+  "rent_no_auto_reducible": true,
+  "five_year_x60": true,
+  "income_lambdas": true,
+  "income_centers_to_1500": true,
+  "single_no_income_extrapolation": true,
+  "food_weak_region_adjustment": true
+}

@@ -1,0 +1,92 @@
+{
+  "enemy_states": 36,
+  "enemy_12x3_pass": true,
+  "mascot_11_pass": true,
+  "brand_6_pass": true,
+  "asset_total_expected": 53,
+  "root_asset_refs": [],
+  "missing_literal_refs": [],
+  "legacy_16_code_occurrences": [
+    [
+      "type-content-test.ts",
+      "FPAS"
+    ],
+    [
+      "type-content-test.ts",
+      "FPAE"
+    ],
+    [
+      "type-content-test.ts",
+      "FPUS"
+    ],
+    [
+      "type-content-test.ts",
+      "FPUE"
+    ],
+    [
+      "type-content-test.ts",
+      "FIAS"
+    ],
+    [
+      "type-content-test.ts",
+      "FIAE"
+    ],
+    [
+      "type-content-test.ts",
+      "FIUS"
+    ],
+    [
+      "type-content-test.ts",
+      "FIUE"
+    ],
+    [
+      "type-content-test.ts",
+      "VPAS"
+    ],
+    [
+      "type-content-test.ts",
+      "VPAE"
+    ],
+    [
+      "type-content-test.ts",
+      "VPUS"
+    ],
+    [
+      "type-content-test.ts",
+      "VPUE"
+    ],
+    [
+      "type-content-test.ts",
+      "VIAS"
+    ],
+    [
+      "type-content-test.ts",
+      "VIAE"
+    ],
+    [
+      "type-content-test.ts",
+      "VIUS"
+    ],
+    [
+      "type-content-test.ts",
+      "VIUE"
+    ],
+    [
+      "type-visual-v2.ts",
+      "FPAS"
+    ],
+    [
+      "type-visual-v2.ts",
+      "FPAE"
+    ],
+    [
+      "type-visual-v2.ts",
+      "FPUS"
+    ],
+    [
+      "type-visual-v2.ts",
+      "FPUE"
+    ]
+  ],
+  "v31_model": true
+}

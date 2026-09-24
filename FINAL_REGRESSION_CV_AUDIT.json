@@ -1,0 +1,39 @@
+{
+  "pure_model_typescript_compile": "PASS",
+  "persona_regression": "PASS",
+  "five_year_equals_monthly_x60": "PASS",
+  "needs_review_excluded_from_reducible": "PASS",
+  "unknown_expense_excluded_from_fcf": "PASS",
+  "mode_does_not_enter_diagnosis_engine": "PASS",
+  "single_low_improvement": {
+    "monthly": 160,
+    "assessment": "Do not overpush savings; result/LINE should emphasize confirmation/remaining plan rather than dramatic waste."
+  },
+  "single_actionable": {
+    "monthly": 24569,
+    "assessment": "Clear immediate-value case; LINE can unlock prioritized actions."
+  },
+  "family_needs_review": {
+    "monthly": 9791,
+    "needs": [
+      "insurance",
+      "childEducation",
+      "selfDevelopment"
+    ],
+    "assessment": "Consultation rationale is legitimate complexity, not fear."
+  },
+  "high_income": {
+    "monthly": 9395,
+    "needs": [
+      "insurance",
+      "selfDevelopment"
+    ],
+    "assessment": "No manufactured lifestyle waste; consultation should frame whole-plan review."
+  },
+  "asset_exact_duplicate_issue": [
+    "mascot idle == battle-ready",
+    "fun/escape == beautyFashion/defeated"
+  ],
+  "asset_render_fix": "Battle now renders state-specific enemy assets. Duplicate source art remains a visual-content QA item, not a routing bug.",
+  "ogp_metadata": "ADDED"
+}

@@ -1,0 +1,14 @@
+{
+  "three_modes": true,
+  "mode_selector_on_intro": true,
+  "serious_default": true,
+  "mode_passed_to_battle": true,
+  "mode_passed_to_result": true,
+  "battle_copy_mode_only": true,
+  "result_copy_mode": true,
+  "mode_not_engine_input": true,
+  "unknown_fcf_fixed": true,
+  "tone_persisted_fact": true,
+  "gas_tone_column": true,
+  "gas_existing_sheet_appends_header": true
+}

@@ -1,0 +1,15 @@
+{
+  "release": "COPY_PASTE_READY",
+  "type_model": "TYPE_MODEL_V3_1_8",
+  "assets": "53/53",
+  "line": "https://lin.ee/ZeLu7i6",
+  "gas_v2": true,
+  "github_pages_workflow": true,
+  "external_remaining": [
+    "GitHub Actions production build",
+    "real GAS POST",
+    "mobile runtime",
+    "LINE transition",
+    "appointment URL/integration"
+  ]
+}

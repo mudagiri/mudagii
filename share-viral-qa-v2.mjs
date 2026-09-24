@@ -1,0 +1,25 @@
+import fs from 'fs';
+const copy=fs.readFileSync('/mnt/data/mudagiri_v2/share-copy-v2.ts','utf8');
+const card=fs.readFileSync('/mnt/data/mudagiri_v2/ShareResultCardV2.tsx','utf8');
+const result=fs.readFileSync('/mnt/data/mudagiri_v2/ResultScreenV2.tsx','utf8');
+const codes=['FPAS','FPAE','FPUS','FPUE','FIAS','FIAE','FIUS','FIUE','VPAS','VPAE','VPUS','VPUE','VIAS','VIAE','VIUS','VIUE'];
+const checks=[];
+checks.push(['16 hooks',codes.every(c=>copy.includes(`${c}:`))]);
+checks.push(['curiosity CTA',copy.includes('あなたは何タイプ？')]);
+checks.push(['privacy supported',copy.includes('改善額はひみつ')]);
+checks.push(['no guaranteed saving wording',!copy.includes('必ず節約') && !copy.includes('確実に削減')]);
+checks.push(['card uses hook',card.includes('SHARE_HOOKS[typeCode]')]);
+checks.push(['card type code',card.includes('typeCode:TypeCode')]);
+checks.push(['card identity',card.includes('あなたの称号')]);
+checks.push(['card battle score',card.includes('BATTLE SCORE')]);
+checks.push(['card 5y improvement',card.includes('5年の改善余地')]);
+checks.push(['card enemy teaser',card.includes('討伐優先')]);
+checks.push(['card brand principle',card.includes('好きなものは、斬らない。ムダだけ、斬る。')]);
+checks.push(['result uses builder',result.includes('buildShareText({')]);
+checks.push(['result passes type code',result.includes('typeCode={result.type?.code}')]);
+checks.push(['share analytics remains',result.includes('mudagiri_share_click')]);
+checks.push(['privacy toggle remains',result.includes('改善金額を隠してシェアする')]);
+let fail=0;
+for(const [n,ok] of checks){console.log(`${ok?'PASS':'FAIL'} ${n}`);if(!ok)fail++;}
+console.log(`\n${checks.length-fail}/${checks.length} PASS`);
+process.exitCode=fail?1:0;

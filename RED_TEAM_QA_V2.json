@@ -1,0 +1,16 @@
+{
+  "dictionary_rows": 54,
+  "formula_documented": true,
+  "provenance_guard_exported": true,
+  "dangerous_average_claims_in_runtime": [],
+  "release_gates_added": true,
+  "historical_docs_banners_added": true,
+  "still_external_blockers": [
+    "production build/lockfile",
+    "real GAS POST",
+    "real mobile E2E",
+    "real LINE",
+    "real operator/contact"
+  ],
+  "cell_provenance_complete": false
+}
