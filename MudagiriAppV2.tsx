@@ -14,6 +14,7 @@ import { TONE_MODES, MODE_COPY, type ToneMode } from './tone-mode-v3';
 import { acquisitionFromLocation, event, getOrCreateAnonymousUserId, newDiagnosisId } from './persistence-v1';
 import { LocalPersistenceAdapterV2, productionPersistenceV2, type MudagiriPersistenceAdapterV2 } from './persistence-v2';
 import LegalDisclosureV1 from './LegalDisclosureV1';
+import RpgBlock1 from './RpgBlock1';
 
 type Step='intro'|'profile'|'money'|'expenses'|'psych'|'satisfaction'|'battle'|'result';
 type Household='single'|'multi';
@@ -58,6 +59,26 @@ export default function MudagiriAppV2({resolveComparable=resolveComparableV1,onL
    type:{code:typeCode,name:'',description:'あなたのお金の使い方を3つの軸から分類したタイプです。',axes:typeResult.axes,strength:typeResult.strength,nearMiddle:typeResult.nearMiddle,modelVersion:TYPE_MODEL_VERSION},globalSatisfaction:globalSat ?? 3,unknownCategories:categories.filter(c=>unknownExpenses[c])
  }):null;
  useEffect(()=>{if(step!=='result'||!result||!store||savedDiagnosisId===diagnosisId)return; const fact={diagnosisId,createdAt:new Date().toISOString(),schemaVersion:'MUDAGIRI_SHEET_V2' as const,typeModelVersion:TYPE_MODEL_VERSION,methodologyVersion:result.methodologyVersion,toneMode,household,age,monthlyIncome:income,monthlySaving:saving,type:{code:typeCode,axes:typeResult.axes,strength:typeResult.strength,nearMiddle:typeResult.nearMiddle},monthlyImprovement:result.improvement.monthly,needsReview:result.needsReview,expenses,typeAnswers,anonymousUserId,acquisition:acquisitionFromLocation()}; Promise.all([store.saveDiagnosis(fact),store.appendEvent(event(anonymousUserId,diagnosisId,'diagnosis_completed',{typeCode,typeModelVersion:TYPE_MODEL_VERSION,battleScore:result.battle.score,monthlyImprovement:result.improvement.monthly,toneMode}))]).then(()=>setSavedDiagnosisId(diagnosisId));},[step,result,store,savedDiagnosisId,diagnosisId,anonymousUserId,household,age,income,saving,typeCode,typeResult.axes,typeResult.strength,typeResult.nearMiddle,expenses,typeAnswers,toneMode]);
+  if(step==='intro'||step==='profile')return <RpgBlock1
+   step={step}
+   toneMode={toneMode}
+   onBegin={(mode)=>{
+     setToneMode(mode);
+     onEvent?.('mudagiri_mode_selected',{mode});
+     onEvent?.('mudagiri_start',{mode,diagnosisId});
+     store?.appendEvent(event(
+       anonymousUserId,
+       diagnosisId,
+       'diagnosis_started',
+       {mode,...acquisitionFromLocation()}
+     ));
+     setStep('profile');
+   }}
+   onFamilySelect={(profile)=>{
+     setFamilyProfile(profile);
+     setHousehold(profile==='single'?'single':'multi');
+   }}
+ />;
  if(step==='result'&&result)return <ResultScreenV2 result={result} toneMode={toneMode} familyProfile={familyProfile} onLine={(context)=>{store?.appendEvent(event(anonymousUserId,diagnosisId,'line_clicked',context));if(onLine){onLine({...context,anonymousUserId,diagnosisId})}else if(typeof window!=='undefined'){window.location.href='https://lin.ee/ZeLu7i6'}}} onEvent={emit}/>;
  return <main className="mudagiri-shell min-h-screen bg-zinc-950 text-zinc-100"><div className="mx-auto max-w-md px-4 py-6">{step!=='intro'&&<><div className="mb-2 flex items-center justify-between text-[11px] font-bold text-zinc-500"><span>QUEST TIME 約2分</span><span>{Math.min(steps.indexOf(step)+1,5)} / 5</span></div><div className="quest-meter mb-4 h-1.5 overflow-hidden border border-zinc-800 bg-zinc-950"><div className="h-full bg-amber-400 transition-all" style={{width:`${progress}%`}}/></div>{stageMeta[step]&&<StageBanner {...stageMeta[step]!}/>}</>}
  {step==='intro'&&<section className="pt-2 text-center"><div className="relative mb-5 aspect-[4/5] overflow-hidden rounded-sm border-2 border-zinc-700"><img src="./assets/page/hero-key-visual.png" alt="ムダギリ診断の冒険世界" className="absolute inset-0 h-full w-full object-cover object-center image-pixelated"/><div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-zinc-950 via-zinc-950/55 to-transparent"/><div className="absolute inset-x-4 bottom-4 text-left"><div className="text-[10px] font-black tracking-[.2em] text-amber-300">2 MIN MONEY QUEST</div><div className="mt-1 text-xl font-black text-white [text-shadow:2px_2px_0_#18181b]">好きなものは、斬らない。<br/>ムダだけ、斬る。</div></div></div><div className="text-xs font-black tracking-[.18em] text-amber-400">{UX_COPY_V2.intro.eyebrow}</div><h1 className="mt-4 text-4xl font-black leading-tight">君の家計は<br/><span className="text-amber-400">モンスターだらけ!?</span></h1><p className="mt-3 text-sm leading-6 text-zinc-400">{UX_COPY_V2.intro.body}</p><p className="rpg-dialogue mt-3 px-3 py-2 text-sm font-bold text-zinc-200">「収入はあるのに、思ったほどお金が残らない」なら要注意。</p><div className="mt-6 rounded-sm border border-zinc-700 bg-zinc-900 p-4 text-left"><div className="text-xs font-black text-amber-400">ムダギリくん</div><p className="mt-2 text-sm leading-6 text-zinc-300">「高い支出＝悪」じゃない。大事にしてる金は守る。<br/><b className="text-white">好きなものは、斬らない。ムダだけ、斬る。</b></p></div><div className="rpg-status mt-5 text-xs"><span>TIME 約2分</span><span>SCAN 12項目</span><span>TITLE 8種</span></div><div className="mt-6 text-left"><div className="text-center text-lg font-black">🪓 今日、どこまで斬られますか？</div><p className="mt-1 text-center text-[11px] text-zinc-500">診断結果・金額はどのモードでも同じ。言い方だけ変わります。</p><div className="mt-3 grid gap-2">{(Object.entries(TONE_MODES) as [ToneMode,typeof TONE_MODES[ToneMode]][]).map(([key,m])=><button key={key} onClick={()=>{setToneMode(key);onEvent?.('mudagiri_mode_selected',{mode:key});}} className={`rpg-command w-full border-0 p-3 text-left transition ${toneMode===key?'is-selected':''}`}><div className="flex items-center justify-between"><div className="font-black">{m.icon} {m.name}</div>{'recommended' in m&&m.recommended&&<span className="border border-amber-400 px-2 py-1 text-[10px] font-black text-amber-400">推奨</span>}</div><div className="mt-1 text-xs font-bold text-zinc-300">「{m.choice}」</div><div className="mt-1 text-[11px] text-zinc-500">{m.tagline}</div></button>)}</div><div className="rpg-dialogue mt-4 p-3 text-xs leading-5 text-zinc-300"><b className="text-amber-400">ムダギリくん：</b>{MODE_COPY[toneMode].start}</div></div><button onClick={()=>{onEvent?.('mudagiri_start',{mode:toneMode,diagnosisId});store?.appendEvent(event(anonymousUserId,diagnosisId,'diagnosis_started',{mode:toneMode,...acquisitionFromLocation()}));setStep('profile')}} className="rpg-primary mt-7 w-full p-4 font-black">▶ 診断クエストを開始</button><p className="mt-3 text-[11px] text-zinc-600">登録不要・約2分</p><LegalDisclosureV1/></section>}
