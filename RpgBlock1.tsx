@@ -10,6 +10,8 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
+type Scene = 'title' | 'dialogue' | 'mode' | 'profile' | 'profileDone';
+
 const INTRO_LINES = [
   <>ようこそ。<br />ここは、お前の家計に潜むムダを斬る世界だ。</>,
   <>ただし安心しろ。<br />好きなものまで斬る気はない。<br /><strong>斬るのは、“満足してないのに払い続けてる金”だけだ。</strong></>,
@@ -23,98 +25,105 @@ const FAMILY_OPTIONS: { value: FamilyProfile; title: string; sub: string; icon: 
   { value: 'other', title: 'その他', sub: 'その他の世帯', icon: '◉' },
 ];
 
-export default function RpgBlock1({ step, toneMode, onBegin, onFamilySelect }: Props) {
+export default function RpgBlock1({
+  step,
+  toneMode,
+  onBegin,
+  onFamilySelect,
+}: Props) {
+  const [scene, setScene] = useState<Scene>(() => step === 'profile' ? 'profile' : 'title');
   const [lineIndex, setLineIndex] = useState(0);
   const [selectedFamily, setSelectedFamily] = useState<FamilyProfile | null>(null);
 
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
-    const previousBodyOverflow = body.style.overflow;
-    const previousHtmlOverflow = html.style.overflow;
+    const oldBodyOverflow = body.style.overflow;
+    const oldHtmlOverflow = html.style.overflow;
+    const oldBodyOverscroll = body.style.overscrollBehavior;
+
     body.style.overflow = 'hidden';
     html.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+
     return () => {
-      body.style.overflow = previousBodyOverflow;
-      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = oldBodyOverflow;
+      html.style.overflow = oldHtmlOverflow;
+      body.style.overscrollBehavior = oldBodyOverscroll;
     };
   }, []);
 
   useEffect(() => {
-    if (step === 'intro') setLineIndex(0);
-  }, [step]);
+    if (step === 'profile' && (scene === 'title' || scene === 'dialogue' || scene === 'mode')) {
+      setScene('profile');
+    }
+  }, [step, scene]);
 
-  const advanceIntro = () => {
-    if (step !== 'intro' || lineIndex >= INTRO_LINES.length - 1) return;
-    setLineIndex((i) => Math.min(i + 1, INTRO_LINES.length - 1));
+  const startOpening = () => {
+    setLineIndex(0);
+    setScene('dialogue');
   };
 
-  const chooseMode = (event: React.MouseEvent<HTMLButtonElement>, mode: ToneMode) => {
-    event.stopPropagation();
+  const advanceDialogue = () => {
+    if (lineIndex < INTRO_LINES.length - 1) {
+      setLineIndex((v) => v + 1);
+      return;
+    }
+    setScene('mode');
+  };
+
+  const chooseMode = (mode: ToneMode) => {
+    setScene('profile');
     onBegin(mode);
   };
 
-  const chooseFamily = (event: React.MouseEvent<HTMLButtonElement>, value: FamilyProfile) => {
-    event.stopPropagation();
+  const chooseFamily = (value: FamilyProfile) => {
     setSelectedFamily(value);
     onFamilySelect(value);
+    setScene('profileDone');
   };
-
-  const isModeScene = step === 'intro' && lineIndex === INTRO_LINES.length - 1;
-  const activeFamily = selectedFamily;
 
   return (
     <>
-      <style>{BLOCK1_CSS}</style>
-      <main className="rpg1-root">
-        <section
-          className={`rpg1-stage ${step === 'profile' ? 'is-profile' : ''}`}
-          onClick={step === 'intro' && !isModeScene ? advanceIntro : undefined}
-          onKeyDown={(event: React.KeyboardEvent<HTMLElement>) => {
-            if (step === 'intro' && !isModeScene && (event.key === 'Enter' || event.key === ' ')) {
-              event.preventDefault();
-              advanceIntro();
-            }
-          }}
-          role={step === 'intro' && !isModeScene ? 'button' : undefined}
-          tabIndex={step === 'intro' && !isModeScene ? 0 : -1}
-          aria-label={step === 'intro' && !isModeScene ? 'タップして会話を進める' : undefined}
-        >
+      <style>{CSS}</style>
+
+      <main className="mgo-root">
+        <section className={`mgo-stage mgo-scene-${scene}`}>
           <img
-            className="rpg1-bg"
-            src="./assets/page/hero-key-visual.png"
+            className="mgo-world"
+            src="./assets/page/opening-world-v2.png"
             alt=""
             aria-hidden="true"
           />
-          <div className="rpg1-vignette" aria-hidden="true" />
-          <div className="rpg1-grain" aria-hidden="true" />
 
-          <header className="rpg1-hud" aria-label="クエスト情報">
-            <div>
-              <div className="rpg1-kicker">MUDAGIRI / MONEY QUEST</div>
-              <div className="rpg1-hud-title">{step === 'intro' ? 'PROLOGUE' : 'STAGE 1 — 冒険者登録'}</div>
-            </div>
-            <div className="rpg1-hud-badge">{step === 'intro' ? '00' : '01'}</div>
-          </header>
+          <div className="mgo-light" aria-hidden="true" />
+          <div className="mgo-vignette" aria-hidden="true" />
 
-          <div className="rpg1-character-wrap" aria-hidden="true">
-            <div className="rpg1-character-aura" />
-            <img
-              className="rpg1-character"
-              src={step === 'profile' ? './assets/mascot/thinking.webp' : './assets/mascot/idle.webp'}
-              alt=""
-            />
-          </div>
-
-          {step === 'intro' ? (
-            <IntroPanel
-              lineIndex={lineIndex}
-              isModeScene={isModeScene}
-              toneMode={toneMode}
-              onChooseMode={chooseMode}
-            />
+          {scene === 'title' ? (
+            <TitleScene onStart={startOpening} />
           ) : (
-            <ProfilePanel activeFamily={activeFamily} selectedFamily={selectedFamily} onChooseFamily={chooseFamily} />
+            <>
+              <GameHud profile={scene === 'profile' || scene === 'profileDone'} />
+
+              {scene === 'dialogue' && (
+                <DialogueScene
+                  lineIndex={lineIndex}
+                  onAdvance={advanceDialogue}
+                />
+              )}
+
+              {scene === 'mode' && (
+                <ModeScene toneMode={toneMode} onChoose={chooseMode} />
+              )}
+
+              {scene === 'profile' && (
+                <ProfileScene onChoose={chooseFamily} />
+              )}
+
+              {scene === 'profileDone' && selectedFamily && (
+                <ProfileDoneScene selected={selectedFamily} />
+              )}
+            </>
           )}
         </section>
       </main>
@@ -122,130 +131,212 @@ export default function RpgBlock1({ step, toneMode, onBegin, onFamilySelect }: P
   );
 }
 
-function IntroPanel({
-  lineIndex,
-  isModeScene,
-  toneMode,
-  onChooseMode,
-}: {
-  lineIndex: number;
-  isModeScene: boolean;
-  toneMode: ToneMode;
-  onChooseMode: (event: React.MouseEvent<HTMLButtonElement>, mode: ToneMode) => void;
-}) {
-  if (isModeScene) {
-    return (
-      <div className="rpg1-bottom rpg1-bottom--commands">
-        <div className="rpg1-dialogue rpg1-dialogue--compact">
-          <div className="rpg1-nameplate">ムダギリくん</div>
-          <div className="rpg1-copy" aria-live="polite">{INTRO_LINES[lineIndex]}</div>
-        </div>
+function TitleScene({ onStart }: { onStart: () => void }) {
+  return (
+    <button
+      type="button"
+      className="mgo-title-hit"
+      onClick={onStart}
+      aria-label="ムダギリ診断を開始"
+    >
+      <div className="mgo-title-area">
+        <div className="mgo-title-kicker">2 MIN MONEY QUEST</div>
+        <h1 className="mgo-logo">
+          <span>ムダギリ</span>
+          <strong>診断</strong>
+        </h1>
+        <p className="mgo-title-copy">
+          好きなものは斬らない。<br />
+          <b>ムダだけ、斬る。</b>
+        </p>
+      </div>
 
-        <div className="rpg1-command-window" aria-label="診断モードを選択">
-          {(Object.entries(TONE_MODES) as [ToneMode, (typeof TONE_MODES)[ToneMode]][]).map(([key, mode]) => (
-            <button
-              key={key}
-              type="button"
-              className={`rpg1-command ${toneMode === key ? 'is-current' : ''}`}
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => onChooseMode(event, key)}
-            >
-              <span className="rpg1-command-icon" aria-hidden="true">{mode.icon}</span>
-              <span className="rpg1-command-text">
-                <span className="rpg1-command-title">
-                  {mode.name}
-                  {'recommended' in mode && mode.recommended ? <em>おすすめ</em> : null}
-                </span>
-                <span className="rpg1-command-sub">{mode.tagline}</span>
-              </span>
-              <span className="rpg1-command-arrow" aria-hidden="true">›</span>
-            </button>
-          ))}
+      <div className="mgo-start">
+        <span className="mgo-start-arrow">▶</span>
+        TAP TO START
+      </div>
+
+      <div className="mgo-title-foot">
+        登録不要 / 約2分 / 12項目スキャン
+      </div>
+    </button>
+  );
+}
+
+function GameHud({ profile }: { profile: boolean }) {
+  return (
+    <header className="mgo-hud">
+      <div>
+        <div className="mgo-hud-brand">MUDAGIRI / MONEY QUEST</div>
+        <div className="mgo-hud-stage">
+          {profile ? 'STAGE 1 — 冒険者登録' : 'PROLOGUE'}
         </div>
       </div>
-    );
-  }
+      <div className="mgo-hud-no">{profile ? '01' : '00'}</div>
+    </header>
+  );
+}
 
+function DialogueScene({
+  lineIndex,
+  onAdvance,
+}: {
+  lineIndex: number;
+  onAdvance: () => void;
+}) {
   return (
-    <div className="rpg1-bottom">
-      <div className="rpg1-dialogue">
-        <div className="rpg1-nameplate">ムダギリくん</div>
-        <div className="rpg1-copy" aria-live="polite">{INTRO_LINES[lineIndex]}</div>
-        <div className="rpg1-tap" aria-hidden="true"><span>▼</span> TAP</div>
+    <button
+      type="button"
+      className="mgo-full-hit"
+      onClick={onAdvance}
+      aria-label="会話を進める"
+    >
+      <div className="mgo-bottom">
+        <DialogueWindow>
+          <div className="mgo-copy">{INTRO_LINES[lineIndex]}</div>
+          <div className="mgo-tap"><span>▼</span> TAP</div>
+        </DialogueWindow>
+      </div>
+    </button>
+  );
+}
+
+function ModeScene({
+  toneMode,
+  onChoose,
+}: {
+  toneMode: ToneMode;
+  onChoose: (mode: ToneMode) => void;
+}) {
+  return (
+    <div className="mgo-bottom mgo-bottom-mode">
+      <DialogueWindow compact>
+        <div className="mgo-copy">
+          まず聞こう。<br />
+          <strong>どこまで斬られる覚悟がある？</strong>
+        </div>
+      </DialogueWindow>
+
+      <div className="mgo-command-box" aria-label="診断モードを選択">
+        {(Object.entries(TONE_MODES) as [ToneMode, (typeof TONE_MODES)[ToneMode]][]).map(([key, mode]) => (
+          <button
+            type="button"
+            key={key}
+            className={`mgo-command ${toneMode === key ? 'is-default' : ''}`}
+            onClick={() => onChoose(key)}
+          >
+            <span className="mgo-command-icon">{mode.icon}</span>
+            <span className="mgo-command-main">
+              <span className="mgo-command-title">
+                {mode.name}
+                {'recommended' in mode && mode.recommended ? <em>おすすめ</em> : null}
+              </span>
+              <span className="mgo-command-sub">{mode.tagline}</span>
+            </span>
+            <span className="mgo-command-arrow">›</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function ProfilePanel({
-  activeFamily,
-  selectedFamily,
-  onChooseFamily,
+function ProfileScene({
+  onChoose,
 }: {
-  activeFamily: FamilyProfile | null;
-  selectedFamily: FamilyProfile | null;
-  onChooseFamily: (event: React.MouseEvent<HTMLButtonElement>, value: FamilyProfile) => void;
+  onChoose: (profile: FamilyProfile) => void;
 }) {
   return (
-    <div className="rpg1-bottom rpg1-bottom--profile">
-      <div className="rpg1-dialogue rpg1-dialogue--compact">
-        <div className="rpg1-nameplate">ムダギリくん</div>
-        <div className="rpg1-copy" aria-live="polite">
-          {selectedFamily ? (
-            <>よし。比較する世界線は決まった。<br /><strong>次の情報も順番に登録していくぞ。</strong></>
-          ) : (
-            <>まずは、お前の<strong>パーティ構成</strong>を教えろ。</>
-          )}
+    <div className="mgo-bottom mgo-bottom-profile">
+      <DialogueWindow compact>
+        <div className="mgo-copy">
+          冒険者登録を始める。<br />
+          まずは、お前の<strong>パーティ構成</strong>を教えろ。
         </div>
-      </div>
+      </DialogueWindow>
 
-      <div className="rpg1-command-window rpg1-family-grid" aria-label="世帯構成を選択">
+      <div className="mgo-family-grid">
         {FAMILY_OPTIONS.map((option) => (
           <button
-            key={option.value}
             type="button"
-            className={`rpg1-command rpg1-family-command ${activeFamily === option.value ? 'is-current' : ''}`}
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => onChooseFamily(event, option.value)}
-            aria-pressed={activeFamily === option.value}
+            key={option.value}
+            className="mgo-family"
+            onClick={() => onChoose(option.value)}
           >
-            <span className="rpg1-family-mark" aria-hidden="true">{option.icon}</span>
-            <span className="rpg1-command-text">
-              <span className="rpg1-command-title">{option.title}</span>
-              <span className="rpg1-command-sub">{option.sub}</span>
+            <span className="mgo-family-icon">{option.icon}</span>
+            <span>
+              <b>{option.title}</b>
+              <small>{option.sub}</small>
             </span>
-            {activeFamily === option.value ? <span className="rpg1-check" aria-hidden="true">✓</span> : null}
           </button>
         ))}
       </div>
 
-      <div className="rpg1-block-caption">
-        PROFILE 01 / PARTY
-      </div>
+      <div className="mgo-progress-label">PROFILE 01 / PARTY</div>
     </div>
   );
 }
 
-const BLOCK1_CSS = String.raw`
+function ProfileDoneScene({
+  selected,
+}: {
+  selected: FamilyProfile;
+}) {
+  const item = FAMILY_OPTIONS.find((x) => x.value === selected)!;
+
+  return (
+    <div className="mgo-bottom mgo-bottom-done">
+      <DialogueWindow>
+        <div className="mgo-clear">PROFILE 01 CLEAR</div>
+        <div className="mgo-copy">
+          <strong>{item.title}</strong>だな。了解した。<br />
+          比較する世界線は決まった。
+        </div>
+        <div className="mgo-next-tease">
+          次は、住んでいる地域を登録する。
+        </div>
+      </DialogueWindow>
+      <div className="mgo-progress-label">TO BE CONTINUED — PROFILE 02</div>
+    </div>
+  );
+}
+
+function DialogueWindow({
+  children,
+  compact = false,
+}: {
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`mgo-dialogue ${compact ? 'is-compact' : ''}`}>
+      <div className="mgo-name">ムダギリくん</div>
+      {children}
+    </div>
+  );
+}
+
+const CSS = String.raw`
 :root {
   color-scheme: dark;
 }
 
-.rpg1-root,
-.rpg1-root * {
+.mgo-root,
+.mgo-root * {
   box-sizing: border-box;
 }
 
-.rpg1-root {
+.mgo-root {
   width: 100%;
   height: 100dvh;
   min-height: 100svh;
   overflow: hidden;
   background: #050505;
   color: #fff;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
-  overscroll-behavior: none;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
 }
 
-.rpg1-stage {
+.mgo-stage {
   position: relative;
   width: 100%;
   height: 100dvh;
@@ -254,472 +345,561 @@ const BLOCK1_CSS = String.raw`
   margin: 0 auto;
   overflow: hidden;
   isolation: isolate;
-  background: #090909;
+  background: #0b84d8;
   touch-action: manipulation;
-  outline: none;
 }
 
-.rpg1-bg,
-.rpg1-vignette,
-.rpg1-grain {
+.mgo-world {
   position: absolute;
-  inset: 0;
-}
-
-.rpg1-bg {
   z-index: -5;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: center 53%;
   image-rendering: pixelated;
-  transform: scale(1.015);
+  transform: scale(1.01);
 }
 
-.rpg1-vignette {
+.mgo-light,
+.mgo-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mgo-light {
   z-index: -4;
   background:
-    linear-gradient(180deg, rgba(0,0,0,.66) 0%, rgba(0,0,0,.08) 24%, rgba(0,0,0,.04) 48%, rgba(0,0,0,.55) 72%, rgba(0,0,0,.96) 100%),
-    radial-gradient(circle at 50% 40%, rgba(255,199,77,.06), transparent 38%),
-    radial-gradient(circle at center, transparent 45%, rgba(0,0,0,.62) 100%);
-  pointer-events: none;
+    linear-gradient(180deg, rgba(0,52,95,.08), rgba(0,0,0,0) 42%, rgba(0,0,0,.2) 70%, rgba(0,0,0,.62) 100%);
 }
 
-.rpg1-grain {
+.mgo-vignette {
   z-index: -3;
-  opacity: .16;
-  pointer-events: none;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
-  mix-blend-mode: soft-light;
+  box-shadow: inset 0 0 80px rgba(0,0,0,.32);
 }
 
-.rpg1-hud {
+.mgo-title-hit,
+.mgo-full-hit {
   position: absolute;
   z-index: 10;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  appearance: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mgo-title-hit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(1,27,49,.30) 0%, rgba(0,0,0,0) 40%),
+    linear-gradient(0deg, rgba(0,0,0,.56) 0%, rgba(0,0,0,0) 34%);
+}
+
+.mgo-title-area {
+  position: absolute;
+  z-index: 2;
+  top: max(7dvh, calc(env(safe-area-inset-top) + 18px));
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  text-shadow:
+    0 3px 0 rgba(0,0,0,.85),
+    0 7px 18px rgba(0,0,0,.5);
+}
+
+.mgo-title-kicker {
+  color: #ffe29a;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .22em;
+}
+
+.mgo-logo {
+  margin: 10px 0 0;
+  color: #fff;
+  font-size: clamp(39px, 12vw, 57px);
+  line-height: .95;
+  font-weight: 1000;
+  letter-spacing: -.055em;
+}
+
+.mgo-logo span,
+.mgo-logo strong {
+  display: inline;
+}
+
+.mgo-logo strong {
+  margin-left: .07em;
+  color: #ffd438;
+  font-weight: 1000;
+}
+
+.mgo-title-copy {
+  margin: 14px auto 0;
+  color: rgba(255,255,255,.94);
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 800;
+}
+
+.mgo-title-copy b {
+  color: #fff1a9;
+  font-size: 17px;
+}
+
+.mgo-start {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: max(74px, calc(env(safe-area-inset-bottom) + 64px));
+  transform: translateX(-50%);
+  min-width: 190px;
+  padding: 13px 18px;
+  border: 1px solid rgba(255,235,159,.95);
+  background: rgba(6,14,20,.82);
+  box-shadow:
+    0 0 0 3px rgba(0,0,0,.36),
+    0 12px 34px rgba(0,0,0,.35);
+  color: #fff7d1;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .13em;
+  text-align: center;
+  animation: mgo-start-pulse 1.25s steps(2, end) infinite;
+}
+
+.mgo-start-arrow {
+  margin-right: 9px;
+  color: #ffd65a;
+}
+
+.mgo-title-foot {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: max(27px, calc(env(safe-area-inset-bottom) + 15px));
+  color: rgba(255,255,255,.72);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-align: center;
+  text-shadow: 0 2px 5px #000;
+}
+
+.mgo-hud {
+  position: absolute;
+  z-index: 25;
   top: 0;
   left: 0;
   right: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
   padding:
-    max(14px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right))
-    0
-    max(16px, env(safe-area-inset-left));
-  text-shadow: 0 2px 10px rgba(0,0,0,.9);
-}
-
-.rpg1-kicker {
-  color: #e6c46a;
-  font-size: 9px;
-  line-height: 1.2;
-  font-weight: 900;
-  letter-spacing: .19em;
-}
-
-.rpg1-hud-title {
-  margin-top: 5px;
-  color: rgba(255,255,255,.9);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 850;
-  letter-spacing: .05em;
-}
-
-.rpg1-hud-badge {
-  min-width: 35px;
-  padding: 6px 7px;
-  border: 1px solid rgba(230,196,106,.75);
-  background: rgba(0,0,0,.58);
-  color: #f0d27f;
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 950;
-  text-align: center;
-  letter-spacing: .08em;
-  box-shadow: 0 5px 18px rgba(0,0,0,.26);
-}
-
-.rpg1-character-wrap {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  bottom: clamp(178px, 24dvh, 232px);
-  width: min(67vw, 302px);
-  aspect-ratio: 1 / 1;
-  transform: translateX(-50%);
+    max(15px, calc(env(safe-area-inset-top) + 8px))
+    16px
+    0;
+  text-shadow: 0 2px 8px rgba(0,0,0,.95);
   pointer-events: none;
 }
 
-.rpg1-character-aura {
-  position: absolute;
-  left: 50%;
-  bottom: 1%;
-  width: 72%;
-  height: 23%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(230,196,106,.22), rgba(230,196,106,0) 70%);
-  filter: blur(12px);
+.mgo-hud-brand {
+  color: #ffe08a;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .18em;
 }
 
-.rpg1-character {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 16px 22px rgba(0,0,0,.66));
-  animation: rpg1-float 3.2s ease-in-out infinite;
+.mgo-hud-stage {
+  margin-top: 5px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .025em;
 }
 
-.rpg1-bottom {
+.mgo-hud-no {
+  min-width: 36px;
+  padding: 6px 7px;
+  border: 1px solid rgba(255,220,111,.86);
+  background: rgba(4,13,17,.58);
+  color: #ffe37d;
+  font-size: 11px;
+  font-weight: 950;
+  text-align: center;
+}
+
+.mgo-bottom {
   position: absolute;
-  z-index: 20;
+  z-index: 30;
   left: 0;
   right: 0;
   bottom: 0;
   padding:
     0
     max(12px, env(safe-area-inset-right))
-    max(12px, calc(env(safe-area-inset-bottom) + 8px))
+    max(13px, calc(env(safe-area-inset-bottom) + 8px))
     max(12px, env(safe-area-inset-left));
 }
 
-.rpg1-dialogue,
-.rpg1-command-window {
-  width: 100%;
-  border: 1px solid rgba(255,255,255,.83);
-  background: linear-gradient(180deg, rgba(11,11,12,.96), rgba(2,2,3,.94));
+.mgo-dialogue,
+.mgo-command-box,
+.mgo-family-grid {
+  border: 1px solid rgba(255,255,255,.92);
+  background:
+    linear-gradient(180deg, rgba(7,11,14,.96), rgba(2,4,5,.95));
   box-shadow:
-    0 0 0 1px rgba(0,0,0,.95),
-    0 0 0 3px rgba(230,196,106,.28),
-    0 16px 40px rgba(0,0,0,.48);
+    0 0 0 1px #000,
+    0 0 0 3px rgba(221,181,78,.32),
+    0 18px 42px rgba(0,0,0,.48);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
-.rpg1-dialogue {
+.mgo-dialogue {
   position: relative;
   min-height: 148px;
-  padding: 29px 18px 25px;
+  padding: 30px 18px 24px;
 }
 
-.rpg1-dialogue--compact {
+.mgo-dialogue.is-compact {
   min-height: 0;
-  padding: 25px 16px 15px;
+  padding: 26px 16px 15px;
 }
 
-.rpg1-nameplate {
+.mgo-name {
   position: absolute;
-  top: -11px;
-  left: 13px;
+  top: -12px;
+  left: 16px;
   padding: 5px 10px;
-  border: 1px solid #e6c46a;
-  background: #080808;
-  color: #f1d37e;
+  border: 1px solid #e8c459;
+  background: #080b0d;
+  color: #ffe79b;
   font-size: 10px;
-  line-height: 1;
   font-weight: 950;
-  letter-spacing: .08em;
-  box-shadow: 0 5px 14px rgba(0,0,0,.4);
+  letter-spacing: .05em;
 }
 
-.rpg1-copy {
-  max-width: 34em;
-  color: rgba(255,255,255,.96);
+.mgo-copy {
+  color: #fff;
   font-size: clamp(14px, 4vw, 16px);
   line-height: 1.72;
-  font-weight: 670;
-  letter-spacing: .015em;
-  text-shadow: 0 2px 8px rgba(0,0,0,.8);
+  font-weight: 720;
+  text-shadow: 0 2px 7px rgba(0,0,0,.9);
 }
 
-.rpg1-copy strong {
-  color: #fff0b8;
-  font-weight: 900;
+.mgo-copy strong {
+  color: #ffe998;
+  font-weight: 950;
 }
 
-.rpg1-tap {
+.mgo-tap {
   position: absolute;
   right: 14px;
   bottom: 9px;
-  color: rgba(255,255,255,.58);
+  color: rgba(255,255,255,.7);
   font-size: 9px;
   font-weight: 900;
   letter-spacing: .16em;
 }
 
-.rpg1-tap span {
-  display: inline-block;
+.mgo-tap span {
   margin-right: 5px;
-  color: #e6c46a;
-  animation: rpg1-tap 1s steps(2, end) infinite;
+  color: #eacb66;
+  animation: mgo-tap 1s steps(2, end) infinite;
 }
 
-.rpg1-bottom--commands .rpg1-dialogue,
-.rpg1-bottom--profile .rpg1-dialogue {
+.mgo-bottom-mode .mgo-dialogue,
+.mgo-bottom-profile .mgo-dialogue {
   margin-bottom: 9px;
 }
 
-.rpg1-command-window {
+.mgo-command-box {
   overflow: hidden;
 }
 
-.rpg1-command {
+.mgo-command {
   width: 100%;
   min-height: 61px;
   display: flex;
   align-items: center;
   gap: 11px;
-  margin: 0;
   padding: 10px 12px;
   border: 0;
-  border-bottom: 1px solid rgba(255,255,255,.13);
-  background: rgba(7,7,8,.82);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: rgba(4,8,10,.82);
   color: #fff;
   text-align: left;
-  cursor: pointer;
   appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: background .14s ease, transform .14s ease, box-shadow .14s ease;
 }
 
-.rpg1-command:last-child {
+.mgo-command:last-child {
   border-bottom: 0;
 }
 
-.rpg1-command:hover,
-.rpg1-command:focus-visible {
-  background: rgba(230,196,106,.12);
-  outline: none;
-  box-shadow: inset 3px 0 0 #e6c46a;
+.mgo-command.is-default {
+  background:
+    linear-gradient(90deg, rgba(229,190,80,.16), rgba(229,190,80,.03));
+  box-shadow: inset 3px 0 0 #e9c659;
 }
 
-.rpg1-command:active {
+.mgo-command:active {
+  background: rgba(229,190,80,.18);
   transform: translateX(2px);
 }
 
-.rpg1-command.is-current {
-  background: linear-gradient(90deg, rgba(230,196,106,.18), rgba(230,196,106,.035));
-  box-shadow: inset 3px 0 0 #e6c46a;
-}
-
-.rpg1-command-icon {
+.mgo-command-icon {
   width: 29px;
   flex: 0 0 29px;
   font-size: 20px;
-  line-height: 1;
   text-align: center;
-  filter: saturate(.82);
 }
 
-.rpg1-command-text {
+.mgo-command-main {
   min-width: 0;
   flex: 1;
 }
 
-.rpg1-command-title {
+.mgo-command-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #fff;
   font-size: 13px;
-  line-height: 1.25;
-  font-weight: 900;
+  font-weight: 950;
 }
 
-.rpg1-command-title em {
-  display: inline-flex;
-  align-items: center;
-  min-height: 18px;
+.mgo-command-title em {
   padding: 2px 6px;
-  border: 1px solid rgba(230,196,106,.72);
-  color: #e9ca74;
+  border: 1px solid rgba(237,202,99,.72);
+  color: #f3d77d;
   font-size: 8px;
   font-style: normal;
-  letter-spacing: .05em;
 }
 
-.rpg1-command-sub {
+.mgo-command-sub {
   display: block;
   margin-top: 4px;
   overflow: hidden;
-  color: rgba(255,255,255,.56);
+  color: rgba(255,255,255,.62);
   font-size: 10px;
-  line-height: 1.3;
-  font-weight: 650;
+  font-weight: 680;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rpg1-command-arrow {
-  flex: 0 0 auto;
-  color: #e6c46a;
+.mgo-command-arrow {
+  color: #e9c65c;
   font-family: Georgia, serif;
   font-size: 24px;
-  line-height: 1;
 }
 
-.rpg1-bottom--profile {
-  padding-bottom: max(10px, calc(env(safe-area-inset-bottom) + 6px));
-}
-
-.rpg1-family-grid {
+.mgo-family-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  overflow: hidden;
 }
 
-.rpg1-family-command {
-  min-width: 0;
-  min-height: 69px;
-  border-right: 1px solid rgba(255,255,255,.13);
+.mgo-family {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-right: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: rgba(4,8,10,.84);
+  color: #fff;
+  text-align: left;
 }
 
-.rpg1-family-command:nth-child(2n) {
+.mgo-family:nth-child(2n) {
   border-right: 0;
 }
 
-.rpg1-family-command:nth-last-child(-n + 2) {
+.mgo-family:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
 
-.rpg1-family-mark {
-  width: 24px;
-  flex: 0 0 24px;
-  color: #d8bd71;
-  font-size: 14px;
+.mgo-family:active {
+  background: rgba(229,190,80,.18);
+}
+
+.mgo-family-icon {
+  width: 25px;
+  flex: 0 0 25px;
+  color: #e6c965;
+  font-size: 15px;
   text-align: center;
 }
 
-.rpg1-check {
-  flex: 0 0 auto;
-  color: #f1d37e;
-  font-size: 14px;
-  font-weight: 950;
+.mgo-family b {
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
-.rpg1-block-caption {
+.mgo-family small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255,255,255,.55);
+  font-size: 9px;
+}
+
+.mgo-progress-label {
   margin-top: 8px;
-  color: rgba(255,255,255,.34);
+  color: rgba(255,255,255,.55);
   font-size: 8px;
-  font-weight: 850;
-  letter-spacing: .13em;
+  font-weight: 900;
+  letter-spacing: .14em;
   text-align: center;
+  text-shadow: 0 2px 5px #000;
 }
 
-.rpg1-stage.is-profile .rpg1-character-wrap {
-  bottom: clamp(250px, 35dvh, 324px);
-  width: min(58vw, 268px);
+.mgo-clear {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,223,120,.72);
+  color: #ffe17b;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .12em;
 }
 
-@keyframes rpg1-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+.mgo-next-tease {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255,255,255,.11);
+  color: rgba(255,255,255,.72);
+  font-size: 11px;
+  font-weight: 750;
 }
 
-@keyframes rpg1-tap {
-  0%, 44% { transform: translateY(0); opacity: .55; }
+.mgo-scene-profileDone .mgo-world {
+  filter: brightness(.88) saturate(.9);
+}
+
+@keyframes mgo-tap {
+  0%, 44% { transform: translateY(0); opacity: .65; }
   45%, 100% { transform: translateY(2px); opacity: 1; }
 }
 
-@media (min-width: 481px) {
-  .rpg1-root {
-    display: grid;
-    place-items: center;
-    background:
-      radial-gradient(circle at center, #18160f 0, #070707 42%, #020202 100%);
-  }
-
-  .rpg1-stage {
-    border-left: 1px solid rgba(255,255,255,.08);
-    border-right: 1px solid rgba(255,255,255,.08);
-    box-shadow: 0 0 80px rgba(0,0,0,.8);
-  }
+@keyframes mgo-start-pulse {
+  0%, 48% { opacity: .86; }
+  49%, 100% { opacity: 1; }
 }
 
 @media (max-height: 720px) {
-  .rpg1-character-wrap {
-    bottom: 172px;
-    width: min(55vw, 232px);
+  .mgo-title-area {
+    top: max(5dvh, calc(env(safe-area-inset-top) + 8px));
   }
 
-  .rpg1-stage.is-profile .rpg1-character-wrap {
-    bottom: 238px;
-    width: min(48vw, 216px);
+  .mgo-logo {
+    font-size: clamp(34px, 10vw, 46px);
   }
 
-  .rpg1-dialogue {
-    min-height: 132px;
-    padding: 26px 15px 22px;
+  .mgo-title-copy {
+    margin-top: 9px;
+    font-size: 12px;
   }
 
-  .rpg1-dialogue--compact {
+  .mgo-title-copy b {
+    font-size: 14px;
+  }
+
+  .mgo-dialogue {
+    min-height: 129px;
+    padding: 27px 15px 21px;
+  }
+
+  .mgo-dialogue.is-compact {
     min-height: 0;
     padding: 23px 14px 12px;
   }
 
-  .rpg1-copy {
+  .mgo-copy {
     font-size: 13px;
     line-height: 1.58;
   }
 
-  .rpg1-command {
+  .mgo-command {
     min-height: 53px;
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
-  .rpg1-family-command {
-    min-height: 60px;
+  .mgo-family {
+    min-height: 62px;
   }
 }
 
 @media (max-width: 374px) {
-  .rpg1-bottom {
+  .mgo-bottom {
     padding-left: 9px;
     padding-right: 9px;
   }
 
-  .rpg1-hud {
-    padding-left: 12px;
-    padding-right: 12px;
+  .mgo-logo {
+    font-size: 38px;
   }
 
-  .rpg1-command {
+  .mgo-command {
     gap: 8px;
     padding-left: 9px;
     padding-right: 9px;
   }
 
-  .rpg1-command-icon {
-    width: 24px;
-    flex-basis: 24px;
-    font-size: 18px;
-  }
-
-  .rpg1-command-title {
+  .mgo-command-title {
     font-size: 12px;
   }
 
-  .rpg1-command-sub {
+  .mgo-command-sub {
     font-size: 9px;
+  }
+
+  .mgo-family {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .mgo-family b {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 481px) {
+  .mgo-root {
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle at center, #123346 0%, #071014 48%, #020303 100%);
+  }
+
+  .mgo-stage {
+    border-left: 1px solid rgba(255,255,255,.08);
+    border-right: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 0 80px rgba(0,0,0,.72);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rpg1-character,
-  .rpg1-tap span {
+  .mgo-start,
+  .mgo-tap span {
     animation: none;
-  }
-
-  .rpg1-command {
-    transition: none;
   }
 }
 `;
