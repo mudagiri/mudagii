@@ -10,7 +10,9 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
-type Scene = 'opening' | 'profile' | 'complete' | 'scanPlaceholder';
+type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'battle';
+
+type BattleBranch = 'defeat' | 'spare' | 'unknown';
 
 type ProfileFlow = {
   prefecture: string;
@@ -126,6 +128,7 @@ export default function RpgBlock1({
   const [scene, setScene] = useState<Scene>(() => (step === 'profile' ? 'profile' : 'opening'));
   const [questionIndex, setQuestionIndex] = useState(0);
   const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
+  const [communicationCost, setCommunicationCost] = useState('');
 
   const question = QUESTIONS[questionIndex];
 
@@ -163,6 +166,20 @@ export default function RpgBlock1({
     preload(`${ASSET}/BG-002_PROFILE_FIXED.png`);
     preload(`${ASSET}/MONSTER_HORDE_OP_MASTER.png`);
     QUESTIONS.forEach((item) => preload(item.sprite));
+    [
+      'BG-003_SCAN_BATTLE.png',
+      'MUDAGIRI_BATTLE.png',
+      'TSUSHIN_TRACE.png',
+      'TSUSHIN_NORMAL.png',
+      'TSUSHIN_DEFEATED.png',
+      'TSUSHIN_ESCAPE.png',
+      'FX-01_REVEAL.png',
+      'FX-02_SLASH.png',
+      'FX-03_HIT.png',
+      'FX-04_DEFEAT_PARTICLES.png',
+      'FX-05_ESCAPE_DUST.png',
+      'FX-06_UNKNOWN.png',
+    ].forEach((name) => preload(`./assets/battle1/${name}`));
   }, []);
 
   const beginAdventure = () => {
@@ -204,9 +221,18 @@ export default function RpgBlock1({
               onBack={previousQuestion}
             />
           ) : scene === 'complete' ? (
-            <CompleteScene onStartScan={() => setScene('scanPlaceholder')} />
+            <CompleteScene onStartScan={() => setScene('scan')} />
+          ) : scene === 'scan' ? (
+            <ScanScene
+              value={communicationCost}
+              onChange={setCommunicationCost}
+              onStart={() => setScene('battle')}
+            />
           ) : (
-            <ScanPlaceholder />
+            <BattleScene
+              amount={Number(communicationCost.replace(/,/g, '')) || 0}
+              household={flow.household}
+            />
           )}
         </section>
       </main>
@@ -490,22 +516,71 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
   );
 }
 
-function ScanPlaceholder() {
-  return (
-    <div className="pre-profile pre-placeholder">
-      <img
-        className="pre-bg pre-bg-profile"
-        src={`${ASSET}/BG-002_PROFILE_FIXED.png`}
-        alt=""
-        aria-hidden="true"
-      />
-      <div className="pre-placeholder-shade" aria-hidden="true" />
+const BATTLE_ASSET = './assets/battle1';
 
-      <section className="pre-placeholder-card">
-        <div className="pre-placeholder-kicker">NEXT QUEST</div>
-        <h2>家計スキャン</h2>
-        <p>ここから先は次の実装フェーズ。</p>
-        <small>12カテゴリSCAN / BATTLE はまだ開始しません。</small>
+function ScanScene({ value, onChange, onStart }: { value: string; onChange: (value: string) => void; onStart: () => void; }) {
+  const digits = value.replace(/\D/g, '').slice(0, 7);
+  const display = digits ? Number(digits).toLocaleString('ja-JP') : '';
+  const canStart = Number(digits) > 0;
+  return (
+    <div className="scan-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="scan-shade" aria-hidden="true" />
+      <header className="scan-hud"><div className="scan-hud-top"><span>家計スキャン</span><b>01 / 12</b></div><div className="scan-progress"><span style={{ width: `${100 / 12}%` }} /></div></header>
+      <img className="scan-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
+      <section className="scan-panel">
+        <div className="scan-dialogue">……いるな。まずは近くの気配から探るぞ！</div>
+        <div className="scan-number">SCAN 01</div><h2>毎月の通信費はいくら？</h2><p>スマホ ＋ 自宅インターネット</p>
+        <label className="scan-money"><span className="pre-sr-only">毎月の通信費</span><span className="scan-yen">¥</span><input inputMode="numeric" pattern="[0-9]*" value={display} onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))} placeholder="10,000" aria-label="毎月の通信費"/><span className="scan-month">/ 月</span></label>
+        <button type="button" className="pre-primary scan-start" disabled={!canStart} onClick={onStart}>気配を探る ▶</button>
+      </section>
+    </div>
+  );
+}
+
+function judgeCommunication(amount: number, household: FamilyProfile): BattleBranch {
+  const ranges: Record<FamilyProfile, { good: number; high: number }> = {
+    single: { good: 7000, high: 12000 }, couple: { good: 10000, high: 17000 }, children: { good: 13000, high: 22000 }, other: { good: 10000, high: 17000 },
+  };
+  const range = ranges[household];
+  if (amount <= range.good) return 'spare';
+  if (amount >= range.high) return 'defeat';
+  return 'unknown';
+}
+
+function BattleScene({ amount, household }: { amount: number; household: FamilyProfile; }) {
+  const branch = judgeCommunication(amount, household);
+  const [phase, setPhase] = useState<'trace' | 'reveal' | 'normal' | 'action' | 'result'>('trace');
+  useEffect(() => {
+    const timers = [
+      window.setTimeout(() => setPhase('reveal'), 700),
+      window.setTimeout(() => setPhase('normal'), 1500),
+      window.setTimeout(() => setPhase('action'), 2600),
+      window.setTimeout(() => setPhase('result'), branch === 'defeat' ? 3900 : 3600),
+    ];
+    return () => timers.forEach(window.clearTimeout);
+  }, [branch]);
+
+  const isTrace = phase === 'trace', isReveal = phase === 'reveal', isNormal = phase === 'normal', isAction = phase === 'action', isResult = phase === 'result';
+  const enemySrc = branch === 'defeat' && (isAction || isResult) ? `${BATTLE_ASSET}/TSUSHIN_DEFEATED.png` : branch === 'spare' && (isAction || isResult) ? `${BATTLE_ASSET}/TSUSHIN_ESCAPE.png` : `${BATTLE_ASSET}/TSUSHIN_NORMAL.png`;
+  const dialogue = isTrace ? '……気配を捕捉した。' : isReveal ? '来るぞ……！' : isNormal ? '通信ザウルス、発見！' : branch === 'defeat' ? 'こいつは斬るぞ！' : branch === 'spare' ? '……待て。こいつは斬る必要なし！' : '……まだ斬れないな。';
+  const resultTitle = branch === 'defeat' ? '通信費に改善余地を発見' : branch === 'spare' ? '通信費は今のところ良好' : '金額だけではムダと判断できません';
+  const resultSub = branch === 'defeat' ? '家計全体の解析はまだ続いています' : branch === 'spare' ? '必要な支出まで無理に斬りません' : '追加情報があれば、さらに判定できます';
+
+  return (
+    <div className={`battle-scene battle-${branch} battle-phase-${phase}`}>
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <header className="battle-hud"><span>BATTLE 01 / 03</span><b>通信ザウルス</b></header>
+      <div className="battle-contact" aria-hidden="true" />
+      {isTrace ? <img className="battle-trace" src={`${BATTLE_ASSET}/TSUSHIN_TRACE.png`} alt="" aria-hidden="true" /> : <img className="battle-enemy" src={enemySrc} alt="通信ザウルス" />}
+      {(isReveal || isNormal) && <img className={`battle-fx battle-fx-reveal ${isNormal ? 'battle-fx-fade' : ''}`} src={`${BATTLE_ASSET}/FX-01_REVEAL.png`} alt="" aria-hidden="true" />}
+      {isAction && branch === 'defeat' && <><div className="battle-white-flash" aria-hidden="true"/><img className="battle-fx battle-fx-slash" src={`${BATTLE_ASSET}/FX-02_SLASH.png`} alt="" aria-hidden="true"/><img className="battle-fx battle-fx-hit" src={`${BATTLE_ASSET}/FX-03_HIT.png`} alt="" aria-hidden="true"/></>}
+      {isResult && branch === 'defeat' && <img className="battle-fx battle-fx-particles" src={`${BATTLE_ASSET}/FX-04_DEFEAT_PARTICLES.png`} alt="" aria-hidden="true"/>}
+      {(isAction || isResult) && branch === 'spare' && <img className="battle-fx battle-fx-dust" src={`${BATTLE_ASSET}/FX-05_ESCAPE_DUST.png`} alt="" aria-hidden="true"/>}
+      {(isAction || isResult) && branch === 'unknown' && <img className="battle-fx battle-fx-unknown" src={`${BATTLE_ASSET}/FX-06_UNKNOWN.png`} alt="" aria-hidden="true"/>}
+      <img className="battle-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
+      <section className={`battle-panel ${isResult ? 'battle-panel-result' : ''}`}>
+        {!isResult ? <><div className="battle-dialogue">{dialogue}</div><div className="battle-status"><span>通信費</span><strong>¥{amount.toLocaleString('ja-JP')} / 月</strong></div><div className="battle-loading"><span className="battle-loading-dot"/><span>解析中</span></div></> : <><div className="battle-result-kicker">{branch === 'defeat' ? '討伐' : branch === 'spare' ? '見逃し' : '要鑑定'}</div><h2>{resultTitle}</h2><p>{resultSub}</p><button type="button" className="pre-primary battle-next" onClick={() => window.alert('次のカテゴリは次フェーズで実装します')}>次の解析へ ▶</button></>}
       </section>
     </div>
   );
@@ -1248,5 +1323,12 @@ const CSS = String.raw`
     transition: none;
   }
 }
+
+
+/* ===== SCAN / BATTLE 01 : 通信ザウルス ===== */
+.scan-scene,.battle-scene{position:absolute;inset:0;overflow:hidden;background:#0d6ec5}.battle-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;image-rendering:pixelated;user-select:none;pointer-events:none}.scan-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.05) 0%,rgba(0,0,0,0) 52%),linear-gradient(0deg,rgba(0,10,15,.5) 0%,rgba(0,0,0,0) 47%);pointer-events:none}.scan-hud{position:absolute;z-index:20;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:20px;right:20px}.scan-hud-top{display:flex;justify-content:space-between;color:#fff;font-size:11px;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.8)}.scan-hud-top span{color:#ffe12f}.scan-progress{height:8px;margin-top:5px;border-radius:999px;background:rgba(0,24,46,.88);overflow:hidden}.scan-progress span{display:block;height:100%;border-radius:inherit;background:#ffd429}.scan-mudagiri{position:absolute;z-index:14;left:4px;bottom:35.5%;width:min(43vw,184px);max-height:29dvh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.34));pointer-events:none}.scan-panel{position:absolute;z-index:20;left:20px;right:20px;bottom:max(34px,calc(env(safe-area-inset-bottom) + 24px));min-height:320px;padding:20px 19px 18px;border:1.5px solid #ffc92c;border-radius:20px;background:rgba(0,28,35,.965);box-shadow:0 16px 36px rgba(0,0,0,.4);backdrop-filter:blur(4px)}.scan-dialogue{width:72%;min-height:58px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:11px 13px;border-radius:12px;background:rgba(5,47,56,.93);font-size:11px;font-weight:800;line-height:1.55}.scan-number{color:#ffd42b;font-size:10px;font-weight:1000}.scan-panel h2{margin:7px 0 0;font-size:clamp(22px,6.1vw,27px);line-height:1.25;font-weight:1000;letter-spacing:-.035em}.scan-panel p{margin:5px 0 0;color:rgba(255,255,255,.62);font-size:10px;font-weight:700}.scan-money{display:flex;align-items:center;margin-top:16px;min-height:58px;padding:0 14px;border-radius:11px;background:#fff;color:#16212a}.scan-yen{font-size:18px;font-weight:1000}.scan-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#16212a;font:inherit;font-size:24px;font-weight:1000;text-align:right}.scan-money input::placeholder{color:#aab2b8}.scan-month{margin-left:7px;color:#6b757d;font-size:11px;font-weight:900}.scan-start{margin-top:13px;min-height:54px}.scan-start:disabled{opacity:.45;cursor:not-allowed;animation:none}.battle-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;text-shadow:0 2px 5px rgba(0,0,0,.8)}.battle-hud span{color:rgba(255,255,255,.9);font-size:9px;font-weight:900}.battle-hud b{color:#ffe12f;font-size:11px;font-weight:1000}.battle-contact{position:absolute;z-index:4;left:14%;right:7%;bottom:32.5%;height:7%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(17,35,21,.23),transparent 70%);filter:blur(4px);pointer-events:none}.battle-trace,.battle-enemy{position:absolute;z-index:10;right:-1%;bottom:31%;object-fit:contain;image-rendering:pixelated;pointer-events:none;transform-origin:55% 90%}.battle-trace{width:49%;opacity:.82;filter:drop-shadow(0 10px 14px rgba(0,0,0,.26));animation:battle-trace-pulse .65s ease-in-out infinite alternate}.battle-enemy{width:57%;filter:drop-shadow(0 11px 14px rgba(0,0,0,.26));animation:battle-enemy-in .22s ease-out both}.battle-defeat.battle-phase-action .battle-enemy,.battle-defeat.battle-phase-result .battle-enemy{width:62%;right:-3%;bottom:30.8%}.battle-spare.battle-phase-action .battle-enemy,.battle-spare.battle-phase-result .battle-enemy{animation:battle-escape 1.05s ease-in forwards}.battle-unknown.battle-phase-action .battle-enemy,.battle-unknown.battle-phase-result .battle-enemy{filter:brightness(.58) saturate(.7) drop-shadow(0 11px 14px rgba(0,0,0,.28));opacity:.72;transform:scale(.96)}.battle-mudagiri{position:absolute;z-index:15;left:-2%;bottom:29.5%;width:43%;max-height:31dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 14px rgba(0,0,0,.3));pointer-events:none}.battle-phase-action.battle-defeat .battle-mudagiri{animation:battle-lunge .34s ease-out both}.battle-fx{position:absolute;z-index:18;object-fit:contain;image-rendering:pixelated;pointer-events:none}.battle-fx-reveal{right:7%;bottom:31%;width:61%;animation:battle-reveal .82s ease-out both}.battle-fx-fade{opacity:.28}.battle-fx-slash{right:7%;bottom:35%;width:48%;animation:battle-slash .22s ease-out both}.battle-fx-hit{right:16%;bottom:41%;width:16%;animation:battle-hit .12s ease-out both}.battle-fx-particles{right:-1%;bottom:29%;width:67%;opacity:.9;animation:battle-particles .7s ease-out both}.battle-fx-dust{right:4%;bottom:31%;width:49%;animation:battle-dust .85s ease-out both}.battle-fx-unknown{right:2%;bottom:29%;width:61%;opacity:.82;animation:battle-unknown-fx .7s ease-out both}.battle-white-flash{position:absolute;inset:0;z-index:22;background:rgba(255,255,255,.9);pointer-events:none;animation:battle-flash .12s linear both}.battle-panel{position:absolute;z-index:25;left:12px;right:12px;bottom:max(12px,calc(env(safe-area-inset-bottom) + 7px));min-height:166px;padding:15px 16px 14px;border:1.5px solid #f0c92f;border-radius:15px;background:rgba(5,20,34,.96);box-shadow:0 13px 30px rgba(0,0,0,.42)}.battle-dialogue{color:#fff;font-size:15px;font-weight:1000;line-height:1.4}.battle-status{display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding:10px 12px;border-radius:10px;background:rgba(19,49,70,.72);color:rgba(255,255,255,.72);font-size:10px;font-weight:800}.battle-status strong{color:#fff;font-size:12px;font-weight:1000}.battle-loading{display:flex;justify-content:center;align-items:center;gap:7px;margin-top:13px;color:#f6d93b;font-size:10px;font-weight:900}.battle-loading-dot{width:7px;height:7px;border-radius:50%;background:#f6d93b;box-shadow:0 0 9px rgba(246,217,59,.7);animation:battle-dot .6s ease-in-out infinite alternate}.battle-panel-result{min-height:176px}.battle-result-kicker{color:#ffd42b;font-size:10px;font-weight:1000}.battle-panel-result h2{margin:7px 0 0;color:#fff;font-size:clamp(20px,5.4vw,24px);line-height:1.3;font-weight:1000}.battle-panel-result p{margin:11px 0 0;padding:9px 11px;border-radius:9px;background:rgba(19,49,70,.72);color:rgba(255,255,255,.72);font-size:10px;font-weight:750}.battle-next{min-height:48px;margin-top:11px;border-radius:10px;font-size:13px}.battle-phase-action.battle-defeat{animation:battle-shake .14s linear 2}
+@keyframes battle-trace-pulse{from{transform:scale(.96);opacity:.58}to{transform:scale(1.03);opacity:.88}}@keyframes battle-enemy-in{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}@keyframes battle-reveal{0%{transform:scale(.78);opacity:0}42%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:.75}}@keyframes battle-lunge{0%{transform:translate(0,0) scale(1)}58%{transform:translate(24px,-6px) scale(1.06)}100%{transform:translate(8px,0) scale(1.01)}}@keyframes battle-slash{0%{transform:translate(-16px,12px) scale(.82);opacity:0}35%{opacity:1}100%{transform:translate(6px,-6px) scale(1.08);opacity:.1}}@keyframes battle-hit{0%{transform:scale(.5);opacity:0}55%{transform:scale(1.15);opacity:1}100%{transform:scale(.9);opacity:.15}}@keyframes battle-particles{from{transform:scale(.94);opacity:0}28%{opacity:1}to{transform:scale(1.05);opacity:.2}}@keyframes battle-dust{0%{transform:scale(.85);opacity:0}35%{opacity:.95}100%{transform:scale(1.08);opacity:.15}}@keyframes battle-unknown-fx{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:.82}}@keyframes battle-escape{0%{transform:translate(0,0) scale(1);opacity:1}35%{transform:translate(24px,-7px) scale(.86);opacity:1}70%{transform:translate(49px,-20px) scale(.64);opacity:.72}100%{transform:translate(88px,-39px) scale(.4);opacity:0}}@keyframes battle-flash{0%{opacity:0}32%{opacity:.96}100%{opacity:0}}@keyframes battle-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@keyframes battle-dot{from{transform:scale(.78);opacity:.55}to{transform:scale(1.15);opacity:1}}
+@media(max-height:720px){.scan-panel{bottom:max(13px,calc(env(safe-area-inset-bottom) + 8px));min-height:270px;padding-top:14px}.scan-mudagiri{bottom:34%;width:min(36vw,150px)}.scan-dialogue{min-height:45px;margin-bottom:11px;padding:8px 10px;font-size:10px}.scan-money{min-height:48px;margin-top:11px}.scan-money input{font-size:21px}.scan-start{min-height:46px;margin-top:9px}.battle-trace,.battle-enemy{bottom:28.5%}.battle-mudagiri{bottom:27%;width:38%}.battle-panel{min-height:145px;padding-top:12px}}
+@media(prefers-reduced-motion:reduce){.battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat{animation:none!important}}
 `;
 
