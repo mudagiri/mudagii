@@ -106,10 +106,13 @@ export default function RpgBlock1({
               <GameHud profile={scene === 'profile' || scene === 'profileDone'} />
 
               {scene === 'dialogue' && (
-                <DialogueScene
-                  lineIndex={lineIndex}
-                  onAdvance={advanceDialogue}
-                />
+                <>
+                  <MascotSpeaker />
+                  <DialogueScene
+                    lineIndex={lineIndex}
+                    onAdvance={advanceDialogue}
+                  />
+                </>
               )}
 
               {scene === 'mode' && (
@@ -174,6 +177,19 @@ function GameHud({ profile }: { profile: boolean }) {
       </div>
       <div className="mgo-hud-no">{profile ? '01' : '00'}</div>
     </header>
+  );
+}
+
+function MascotSpeaker() {
+  return (
+    <div className="mgo-speaker" aria-hidden="true">
+      <div className="mgo-speaker-glow" />
+      <img
+        className="mgo-speaker-img"
+        src="./assets/mascot/idle.webp"
+        alt=""
+      />
+    </div>
   );
 }
 
@@ -419,13 +435,6 @@ const CSS = String.raw`
     0 7px 18px rgba(0,0,0,.5);
 }
 
-.mgo-title-kicker {
-  color: #ffe29a;
-  font-size: 10px;
-  font-weight: 950;
-  letter-spacing: .22em;
-}
-
 .mgo-logo {
   margin: 10px 0 0;
   color: #fff;
@@ -444,6 +453,13 @@ const CSS = String.raw`
   margin-left: .07em;
   color: #ffd438;
   font-weight: 1000;
+}
+
+.mgo-title-kicker {
+  color: #ffe29a;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .22em;
 }
 
 .mgo-title-copy {
@@ -540,6 +556,37 @@ const CSS = String.raw`
   font-size: 11px;
   font-weight: 950;
   text-align: center;
+}
+
+.mgo-speaker {
+  position: absolute;
+  z-index: 18;
+  left: 50%;
+  bottom: 182px;
+  width: min(58vw, 244px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.mgo-speaker-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  width: 68%;
+  height: 32px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255,220,95,.30) 0%, rgba(255,220,95,0) 72%);
+  filter: blur(8px);
+}
+
+.mgo-speaker-img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
 }
 
 .mgo-bottom {
@@ -821,6 +868,11 @@ const CSS = String.raw`
     font-size: 14px;
   }
 
+  .mgo-speaker {
+    bottom: 166px;
+    width: min(48vw, 196px);
+  }
+
   .mgo-dialogue {
     min-height: 129px;
     padding: 27px 15px 21px;
@@ -855,6 +907,11 @@ const CSS = String.raw`
 
   .mgo-logo {
     font-size: 38px;
+  }
+
+  .mgo-speaker {
+    bottom: 164px;
+    width: min(50vw, 180px);
   }
 
   .mgo-command {
