@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { TONE_MODES, type ToneMode } from './tone-mode-v3';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { ToneMode } from './tone-mode-v3';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -10,20 +10,112 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
-type Scene = 'title' | 'dialogue' | 'mode' | 'profile' | 'profileDone';
+type Scene = 'opening' | 'profile' | 'complete' | 'scanPlaceholder';
 
-const INTRO_LINES = [
-  <>ようこそ。<br />ここは、お前の家計に潜むムダを斬る世界だ。</>,
-  <>ただし安心しろ。<br />好きなものまで斬る気はない。<br /><strong>斬るのは、“満足してないのに払い続けてる金”だけだ。</strong></>,
-  <>まず聞こう。<br /><strong>どこまで斬られる覚悟がある？</strong></>,
-] as const;
+type ProfileFlow = {
+  prefecture: string;
+  ageBand: string;
+  household: FamilyProfile;
+  workStyle: string;
+  housingType: string;
+};
 
-const FAMILY_OPTIONS: { value: FamilyProfile; title: string; sub: string; icon: string }[] = [
-  { value: 'single', title: 'ひとり暮らし', sub: '単身世帯', icon: '◆' },
-  { value: 'couple', title: '夫婦・パートナー', sub: '2人世帯', icon: '◇' },
-  { value: 'children', title: '子どもあり', sub: '子育て世帯', icon: '◈' },
-  { value: 'other', title: 'その他', sub: 'その他の世帯', icon: '◉' },
+type QuestionConfig = {
+  no: 1 | 2 | 3 | 4 | 5;
+  dialogue: string;
+  question: string;
+  helper: string;
+  sprite: string;
+  footer: string;
+};
+
+const ASSET = './assets/prebattle';
+
+const PREFECTURES = [
+  '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県',
+  '埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県',
+  '岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
+  '鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県',
+  '佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
 ];
+
+const AGE_BANDS = ['20代', '30代', '40代', '50代', '60代以上', '19歳以下'];
+
+const HOUSEHOLDS: { value: FamilyProfile; label: string }[] = [
+  { value: 'single', label: 'ひとり暮らし' },
+  { value: 'couple', label: '夫婦・パートナー' },
+  { value: 'children', label: '子どもあり' },
+  { value: 'other', label: 'その他' },
+];
+
+const WORK_STYLES = [
+  '会社員',
+  '公務員',
+  '経営者・役員',
+  '自営業・フリーランス',
+  'パート・アルバイト',
+  '学生',
+  'その他',
+];
+
+const HOUSING_TYPES = [
+  '賃貸',
+  '持ち家（ローンあり）',
+  '持ち家（ローンなし）',
+  '実家・社宅など',
+  'その他',
+];
+
+const QUESTIONS: QuestionConfig[] = [
+  {
+    no: 1,
+    dialogue: 'よし、冒険の準備を始めるぞ！',
+    question: 'どこに住んでる？',
+    helper: '地域ごとの家計データと比較',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q1.png`,
+    footer: 'あと4問で冒険開始',
+  },
+  {
+    no: 2,
+    dialogue: 'よし、その調子！次いくぞ！',
+    question: '年代は？',
+    helper: '同世代の家計と比較',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q2.png`,
+    footer: '冒険準備 40%',
+  },
+  {
+    no: 3,
+    dialogue: 'いいぞ！もう半分以上きた！',
+    question: '誰と暮らしてる？',
+    helper: '世帯人数に合わせて比較',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q3.png`,
+    footer: 'CHECK POINT 60%',
+  },
+  {
+    no: 4,
+    dialogue: '……待て。ムダの気配がする。',
+    question: '働き方は？',
+    helper: '暮らし方に合わせて診断',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q4.png`,
+    footer: '敵はすぐそこだ',
+  },
+  {
+    no: 5,
+    dialogue: 'いたぞ……！あと一つだ！',
+    question: '今の住まいは？',
+    helper: '住宅費の基準を調整',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q5.png`,
+    footer: '冒険者データ100%',
+  },
+];
+
+const INITIAL_FLOW: ProfileFlow = {
+  prefecture: '東京都',
+  ageBand: '30代',
+  household: 'single',
+  workStyle: '会社員',
+  housingType: '賃貸',
+};
 
 export default function RpgBlock1({
   step,
@@ -31,9 +123,11 @@ export default function RpgBlock1({
   onBegin,
   onFamilySelect,
 }: Props) {
-  const [scene, setScene] = useState<Scene>(() => step === 'profile' ? 'profile' : 'title');
-  const [lineIndex, setLineIndex] = useState(0);
-  const [selectedFamily, setSelectedFamily] = useState<FamilyProfile | null>(null);
+  const [scene, setScene] = useState<Scene>(() => (step === 'profile' ? 'profile' : 'opening'));
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
+
+  const question = QUESTIONS[questionIndex];
 
   useEffect(() => {
     const body = document.body;
@@ -54,79 +148,65 @@ export default function RpgBlock1({
   }, []);
 
   useEffect(() => {
-    if (step === 'profile' && (scene === 'title' || scene === 'dialogue' || scene === 'mode')) {
+    if (step === 'profile' && scene === 'opening') {
       setScene('profile');
     }
   }, [step, scene]);
 
-  const startOpening = () => {
-    setLineIndex(0);
-    setScene('dialogue');
+  useEffect(() => {
+    const preload = (src: string) => {
+      const img = new Image();
+      img.src = src;
+    };
+
+    preload(`${ASSET}/BG-001_OP_FIXED.png`);
+    preload(`${ASSET}/BG-002_PROFILE_FIXED.png`);
+    preload(`${ASSET}/MONSTER_HORDE_OP_MASTER.png`);
+    QUESTIONS.forEach((item) => preload(item.sprite));
+  }, []);
+
+  const beginAdventure = () => {
+    setQuestionIndex(0);
+    setScene('profile');
+    onBegin(toneMode);
   };
 
-  const advanceDialogue = () => {
-    if (lineIndex < INTRO_LINES.length - 1) {
-      setLineIndex((v) => v + 1);
+  const nextQuestion = () => {
+    if (questionIndex < QUESTIONS.length - 1) {
+      setQuestionIndex((value) => value + 1);
       return;
     }
-    setScene('mode');
+
+    onFamilySelect(flow.household);
+    setScene('complete');
   };
 
-  const chooseMode = (mode: ToneMode) => {
-    setScene('profile');
-    onBegin(mode);
-  };
-
-  const chooseFamily = (value: FamilyProfile) => {
-    setSelectedFamily(value);
-    onFamilySelect(value);
-    setScene('profileDone');
+  const previousQuestion = () => {
+    if (questionIndex === 0) return;
+    setQuestionIndex((value) => value - 1);
   };
 
   return (
     <>
       <style>{CSS}</style>
 
-      <main className="mgo-root">
-        <section className={`mgo-stage mgo-scene-${scene}`}>
-          <img
-            className="mgo-world"
-            src="./assets/page/opening-world-v2.png"
-            alt=""
-            aria-hidden="true"
-          />
-
-          <div className="mgo-light" aria-hidden="true" />
-          <div className="mgo-vignette" aria-hidden="true" />
-
-          {scene === 'title' ? (
-            <TitleScene onStart={startOpening} />
+      <main className="pre-root">
+        <section className={`pre-stage pre-scene-${scene}`}>
+          {scene === 'opening' ? (
+            <OpeningScene onStart={beginAdventure} />
+          ) : scene === 'profile' ? (
+            <ProfileScene
+              question={question}
+              index={questionIndex}
+              flow={flow}
+              setFlow={setFlow}
+              onNext={nextQuestion}
+              onBack={previousQuestion}
+            />
+          ) : scene === 'complete' ? (
+            <CompleteScene onStartScan={() => setScene('scanPlaceholder')} />
           ) : (
-            <>
-              <GameHud profile={scene === 'profile' || scene === 'profileDone'} />
-
-              {scene === 'dialogue' && (
-                <>
-                  <MascotSpeaker />
-                  <DialogueScene
-                    lineIndex={lineIndex}
-                    onAdvance={advanceDialogue}
-                  />
-                </>
-              )}
-
-              {scene === 'mode' && (
-                <ModeScene toneMode={toneMode} onChoose={chooseMode} />
-              )}
-
-              {scene === 'profile' && (
-                <ProfileScene onChoose={chooseFamily} />
-              )}
-
-              {scene === 'profileDone' && selectedFamily && (
-                <ProfileDoneScene selected={selectedFamily} />
-              )}
-            </>
+            <ScanPlaceholder />
           )}
         </section>
       </main>
@@ -134,225 +214,322 @@ export default function RpgBlock1({
   );
 }
 
-function TitleScene({ onStart }: { onStart: () => void }) {
+function OpeningScene({ onStart }: { onStart: () => void }) {
   return (
-    <button
-      type="button"
-      className="mgo-title-hit"
-      onClick={onStart}
-      aria-label="ムダギリ診断を開始"
-    >
-      <div className="mgo-title-area">
-        <div className="mgo-title-kicker">2 MIN MONEY QUEST</div>
-        <h1 className="mgo-logo">
-          <span>ムダギリ</span>
-          <strong>診断</strong>
-        </h1>
-        <p className="mgo-title-copy">
-          好きなものは斬らない。<br />
-          <b>ムダだけ、斬る。</b>
-        </p>
-      </div>
-
-      <div className="mgo-start">
-        <span className="mgo-start-arrow">▶</span>
-        TAP TO START
-      </div>
-
-      <div className="mgo-title-foot">
-        登録不要 / 約2分 / 12項目スキャン
-      </div>
-    </button>
-  );
-}
-
-function GameHud({ profile }: { profile: boolean }) {
-  return (
-    <header className="mgo-hud">
-      <div>
-        <div className="mgo-hud-brand">MUDAGIRI / MONEY QUEST</div>
-        <div className="mgo-hud-stage">
-          {profile ? 'STAGE 1 — 冒険者登録' : 'PROLOGUE'}
-        </div>
-      </div>
-      <div className="mgo-hud-no">{profile ? '01' : '00'}</div>
-    </header>
-  );
-}
-
-function MascotSpeaker() {
-  return (
-    <div className="mgo-speaker" aria-hidden="true">
-      <div className="mgo-speaker-glow" />
+    <div className="pre-opening">
       <img
-        className="mgo-speaker-img"
-        src="./assets/mascot/idle.webp"
+        className="pre-bg pre-bg-opening"
+        src={`${ASSET}/BG-001_OP_FIXED.png`}
         alt=""
+        aria-hidden="true"
       />
-    </div>
-  );
-}
 
-function DialogueScene({
-  lineIndex,
-  onAdvance,
-}: {
-  lineIndex: number;
-  onAdvance: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="mgo-full-hit"
-      onClick={onAdvance}
-      aria-label="会話を進める"
-    >
-      <div className="mgo-bottom">
-        <DialogueWindow>
-          <div className="mgo-copy">{INTRO_LINES[lineIndex]}</div>
-          <div className="mgo-tap"><span>▼</span> TAP</div>
-        </DialogueWindow>
+      <img
+        className="pre-op-horde"
+        src={`${ASSET}/MONSTER_HORDE_OP_MASTER.png`}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        className="pre-op-mudagiri"
+        src={`${ASSET}/MUDAGIRI_PROFILE_Q5.png`}
+        alt="斧を持つムダギリくん"
+      />
+
+      <div className="pre-op-shade" aria-hidden="true" />
+
+      <div className="pre-op-copy">
+        <div className="pre-op-eyebrow">＼ 約3分で家計診断 ／</div>
+
+        <h1 className="pre-op-title">
+          君の家計、<br />
+          <strong>モンスターに喰われてない？</strong>
+        </h1>
+
+        <div className="pre-op-brand">ムダギリ伝説</div>
       </div>
-    </button>
-  );
-}
 
-function ModeScene({
-  toneMode,
-  onChoose,
-}: {
-  toneMode: ToneMode;
-  onChoose: (mode: ToneMode) => void;
-}) {
-  return (
-    <div className="mgo-bottom mgo-bottom-mode">
-      <DialogueWindow compact>
-        <div className="mgo-copy">
-          まず聞こう。<br />
-          <strong>どこまで斬られる覚悟がある？</strong>
+      <div className="pre-op-bottom">
+        <div className="pre-op-value">
+          <span>地域・世帯データと比べて</span>
+          <strong>あなたの家計に潜むムダを診断</strong>
         </div>
-      </DialogueWindow>
 
-      <div className="mgo-command-box" aria-label="診断モードを選択">
-        {(Object.entries(TONE_MODES) as [ToneMode, (typeof TONE_MODES)[ToneMode]][]).map(([key, mode]) => (
-          <button
-            type="button"
-            key={key}
-            className={`mgo-command ${toneMode === key ? 'is-default' : ''}`}
-            onClick={() => onChoose(key)}
-          >
-            <span className="mgo-command-icon">{mode.icon}</span>
-            <span className="mgo-command-main">
-              <span className="mgo-command-title">
-                {mode.name}
-                {'recommended' in mode && mode.recommended ? <em>おすすめ</em> : null}
-              </span>
-              <span className="mgo-command-sub">{mode.tagline}</span>
-            </span>
-            <span className="mgo-command-arrow">›</span>
-          </button>
-        ))}
+        <button type="button" className="pre-primary pre-op-cta" onClick={onStart}>
+          ▶ 無料で冒険をはじめる
+        </button>
+
+        <div className="pre-reassure">登録不要 ・ 約3分</div>
       </div>
     </div>
   );
 }
 
 function ProfileScene({
-  onChoose,
+  question,
+  index,
+  flow,
+  setFlow,
+  onNext,
+  onBack,
 }: {
-  onChoose: (profile: FamilyProfile) => void;
+  question: QuestionConfig;
+  index: number;
+  flow: ProfileFlow;
+  setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  return (
-    <div className="mgo-bottom mgo-bottom-profile">
-      <DialogueWindow compact>
-        <div className="mgo-copy">
-          冒険者登録を始める。<br />
-          まずは、お前の<strong>パーティ構成</strong>を教えろ。
-        </div>
-      </DialogueWindow>
+  const progress = (question.no / 5) * 100;
+  const isWarning = question.no === 4;
+  const isEncounter = question.no === 5;
 
-      <div className="mgo-family-grid">
-        {FAMILY_OPTIONS.map((option) => (
-          <button
-            type="button"
-            key={option.value}
-            className="mgo-family"
-            onClick={() => onChoose(option.value)}
-          >
-            <span className="mgo-family-icon">{option.icon}</span>
-            <span>
-              <b>{option.title}</b>
-              <small>{option.sub}</small>
-            </span>
+  return (
+    <div className={`pre-profile pre-q${question.no}`}>
+      <img
+        className="pre-bg pre-bg-profile"
+        src={`${ASSET}/BG-002_PROFILE_FIXED.png`}
+        alt=""
+        aria-hidden="true"
+      />
+
+      <div className="pre-profile-overlay" aria-hidden="true" />
+
+      {isWarning && (
+        <div className="pre-enemy-eyes" aria-hidden="true">
+          <i />
+          <i />
+        </div>
+      )}
+
+      <header className="pre-profile-hud">
+        <div className="pre-profile-hud-row">
+          <span>冒険準備</span>
+          <b>{question.no} / 5</b>
+        </div>
+        <div className="pre-progress-track" aria-hidden="true">
+          <span style={{ width: `${progress}%` }} />
+        </div>
+      </header>
+
+      {question.no === 3 && (
+        <div className="pre-checkpoint" aria-hidden="true">
+          CHECK POINT 60%
+        </div>
+      )}
+
+      {isEncounter && <div className="pre-encounter-shadow" aria-hidden="true" />}
+
+      <img
+        className="pre-profile-mudagiri"
+        src={question.sprite}
+        alt="ムダギリくん"
+      />
+
+      <section className="pre-panel">
+        <div className="pre-dialogue">{question.dialogue}</div>
+
+        <div className="pre-question-no">Q{question.no}</div>
+        <h2>{question.question}</h2>
+        <p className="pre-helper">{question.helper}</p>
+
+        <ProfileInput
+          no={question.no}
+          flow={flow}
+          setFlow={setFlow}
+        />
+
+        <button type="button" className="pre-primary pre-next" onClick={onNext}>
+          {question.no === 5 ? 'ムダ討伐へ ▶' : '次へ ▶'}
+        </button>
+
+        {index > 0 && (
+          <button type="button" className="pre-back" onClick={onBack}>
+            ← 戻る
           </button>
+        )}
+      </section>
+
+      <div className="pre-profile-footer">{question.footer}</div>
+    </div>
+  );
+}
+
+function ProfileInput({
+  no,
+  flow,
+  setFlow,
+}: {
+  no: 1 | 2 | 3 | 4 | 5;
+  flow: ProfileFlow;
+  setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
+}) {
+  const selectClass = 'pre-select';
+
+  if (no === 1) {
+    return (
+      <label className="pre-input-wrap">
+        <span className="pre-sr-only">都道府県</span>
+        <select
+          className={selectClass}
+          value={flow.prefecture}
+          onChange={(e) => setFlow((v) => ({ ...v, prefecture: e.target.value }))}
+        >
+          {PREFECTURES.map((prefecture) => (
+            <option key={prefecture} value={prefecture}>{prefecture}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  if (no === 2) {
+    return (
+      <label className="pre-input-wrap">
+        <span className="pre-sr-only">年代</span>
+        <select
+          className={selectClass}
+          value={flow.ageBand}
+          onChange={(e) => setFlow((v) => ({ ...v, ageBand: e.target.value }))}
+        >
+          {AGE_BANDS.map((ageBand) => (
+            <option key={ageBand} value={ageBand}>{ageBand}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  if (no === 3) {
+    return (
+      <label className="pre-input-wrap">
+        <span className="pre-sr-only">世帯</span>
+        <select
+          className={selectClass}
+          value={flow.household}
+          onChange={(e) => setFlow((v) => ({ ...v, household: e.target.value as FamilyProfile }))}
+        >
+          {HOUSEHOLDS.map((item) => (
+            <option key={item.value} value={item.value}>{item.label}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  if (no === 4) {
+    return (
+      <label className="pre-input-wrap">
+        <span className="pre-sr-only">働き方</span>
+        <select
+          className={selectClass}
+          value={flow.workStyle}
+          onChange={(e) => setFlow((v) => ({ ...v, workStyle: e.target.value }))}
+        >
+          {WORK_STYLES.map((workStyle) => (
+            <option key={workStyle} value={workStyle}>{workStyle}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  return (
+    <label className="pre-input-wrap">
+      <span className="pre-sr-only">住まい</span>
+      <select
+        className={selectClass}
+        value={flow.housingType}
+        onChange={(e) => setFlow((v) => ({ ...v, housingType: e.target.value }))}
+      >
+        {HOUSING_TYPES.map((housingType) => (
+          <option key={housingType} value={housingType}>{housingType}</option>
         ))}
-      </div>
+      </select>
+    </label>
+  );
+}
 
-      <div className="mgo-progress-label">PROFILE 01 / PARTY</div>
+function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
+  return (
+    <div className="pre-profile pre-complete">
+      <img
+        className="pre-bg pre-bg-profile"
+        src={`${ASSET}/BG-002_PROFILE_FIXED.png`}
+        alt=""
+        aria-hidden="true"
+      />
+      <div className="pre-profile-overlay pre-complete-overlay" aria-hidden="true" />
+
+      <header className="pre-profile-hud">
+        <div className="pre-profile-hud-row">
+          <span>冒険準備</span>
+          <b>5 / 5</b>
+        </div>
+        <div className="pre-progress-track" aria-hidden="true">
+          <span style={{ width: '100%' }} />
+        </div>
+      </header>
+
+      <img
+        className="pre-profile-mudagiri pre-complete-mudagiri"
+        src={`${ASSET}/MUDAGIRI_PROFILE_Q5.png`}
+        alt="戦闘準備を整えたムダギリくん"
+      />
+
+      <section className="pre-panel pre-complete-panel">
+        <div className="pre-complete-label">冒険者データ 100%</div>
+        <h2 className="pre-complete-title">準備完了！<br />ムダの正体を暴くぞ！</h2>
+
+        <button type="button" className="pre-primary pre-next" onClick={onStartScan}>
+          家計スキャンを開始 ▶
+        </button>
+      </section>
     </div>
   );
 }
 
-function ProfileDoneScene({
-  selected,
-}: {
-  selected: FamilyProfile;
-}) {
-  const item = FAMILY_OPTIONS.find((x) => x.value === selected)!;
-
+function ScanPlaceholder() {
   return (
-    <div className="mgo-bottom mgo-bottom-done">
-      <DialogueWindow>
-        <div className="mgo-clear">PROFILE 01 CLEAR</div>
-        <div className="mgo-copy">
-          <strong>{item.title}</strong>だな。了解した。<br />
-          比較する世界線は決まった。
-        </div>
-        <div className="mgo-next-tease">
-          次は、住んでいる地域を登録する。
-        </div>
-      </DialogueWindow>
-      <div className="mgo-progress-label">TO BE CONTINUED — PROFILE 02</div>
-    </div>
-  );
-}
+    <div className="pre-profile pre-placeholder">
+      <img
+        className="pre-bg pre-bg-profile"
+        src={`${ASSET}/BG-002_PROFILE_FIXED.png`}
+        alt=""
+        aria-hidden="true"
+      />
+      <div className="pre-placeholder-shade" aria-hidden="true" />
 
-function DialogueWindow({
-  children,
-  compact = false,
-}: {
-  children: React.ReactNode;
-  compact?: boolean;
-}) {
-  return (
-    <div className={`mgo-dialogue ${compact ? 'is-compact' : ''}`}>
-      <div className="mgo-name">ムダギリくん</div>
-      {children}
+      <section className="pre-placeholder-card">
+        <div className="pre-placeholder-kicker">NEXT QUEST</div>
+        <h2>家計スキャン</h2>
+        <p>ここから先は次の実装フェーズ。</p>
+        <small>12カテゴリSCAN / BATTLE はまだ開始しません。</small>
+      </section>
     </div>
   );
 }
 
 const CSS = String.raw`
-:root {
-  color-scheme: dark;
-}
+:root { color-scheme: dark; }
 
-.mgo-root,
-.mgo-root * {
+.pre-root,
+.pre-root * {
   box-sizing: border-box;
 }
 
-.mgo-root {
+.pre-root {
   width: 100%;
   height: 100dvh;
   min-height: 100svh;
   overflow: hidden;
-  background: #050505;
+  background: #020609;
   color: #fff;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
 }
 
-.mgo-stage {
+.pre-stage {
   position: relative;
   width: 100%;
   height: 100dvh;
@@ -361,602 +538,713 @@ const CSS = String.raw`
   margin: 0 auto;
   overflow: hidden;
   isolation: isolate;
-  background: #0b84d8;
-  touch-action: manipulation;
+  background: #0c6fd2;
 }
 
-.mgo-world {
+.pre-opening,
+.pre-profile {
   position: absolute;
-  z-index: -5;
   inset: 0;
+  overflow: hidden;
+}
+
+.pre-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 53%;
   image-rendering: pixelated;
-  transform: scale(1.01);
+  user-select: none;
+  pointer-events: none;
 }
 
-.mgo-light,
-.mgo-vignette {
+.pre-bg-opening {
+  object-position: center center;
+}
+
+.pre-bg-profile {
+  object-position: 50% 52%;
+  transform: scale(1.02);
+  transition: transform .55s ease, object-position .55s ease;
+}
+
+.pre-q1 .pre-bg-profile { object-position: 47% 50%; transform: scale(1.015); }
+.pre-q2 .pre-bg-profile { object-position: 49% 51%; transform: scale(1.025); }
+.pre-q3 .pre-bg-profile { object-position: 51% 52%; transform: scale(1.035); }
+.pre-q4 .pre-bg-profile { object-position: 53% 53%; transform: scale(1.045); filter: brightness(.94) saturate(.95); }
+.pre-q5 .pre-bg-profile { object-position: 55% 54%; transform: scale(1.055); filter: brightness(.91) saturate(.92); }
+
+.pre-op-shade,
+.pre-profile-overlay,
+.pre-placeholder-shade {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.mgo-light {
-  z-index: -4;
-  background:
-    linear-gradient(180deg, rgba(0,52,95,.08), rgba(0,0,0,0) 42%, rgba(0,0,0,.2) 70%, rgba(0,0,0,.62) 100%);
-}
-
-.mgo-vignette {
+.pre-op-shade {
   z-index: -3;
-  box-shadow: inset 0 0 80px rgba(0,0,0,.32);
-}
-
-.mgo-title-hit,
-.mgo-full-hit {
-  position: absolute;
-  z-index: 10;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: inherit;
-  appearance: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mgo-title-hit::before {
-  content: "";
-  position: absolute;
-  inset: 0;
   background:
-    linear-gradient(180deg, rgba(1,27,49,.30) 0%, rgba(0,0,0,0) 40%),
-    linear-gradient(0deg, rgba(0,0,0,.56) 0%, rgba(0,0,0,0) 34%);
+    linear-gradient(180deg, rgba(0,39,90,.05) 0%, rgba(0,0,0,0) 48%),
+    linear-gradient(0deg, rgba(0,8,13,.92) 0%, rgba(0,8,13,.28) 25%, rgba(0,0,0,0) 48%);
 }
 
-.mgo-title-area {
+.pre-op-horde {
   position: absolute;
-  z-index: 2;
-  top: max(7dvh, calc(env(safe-area-inset-top) + 18px));
-  left: 20px;
-  right: 20px;
-  text-align: center;
-  text-shadow:
-    0 3px 0 rgba(0,0,0,.85),
-    0 7px 18px rgba(0,0,0,.5);
+  z-index: -6;
+  left: 50%;
+  top: 29%;
+  width: min(112%, 560px);
+  transform: translateX(-50%);
+  opacity: .72;
+  filter: drop-shadow(0 12px 20px rgba(0,0,0,.18));
+  animation: pre-horde 4.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.mgo-logo {
-  margin: 10px 0 0;
-  color: #fff;
-  font-size: clamp(39px, 12vw, 57px);
-  line-height: .95;
-  font-weight: 1000;
-  letter-spacing: -.055em;
-}
-
-.mgo-logo span,
-.mgo-logo strong {
-  display: inline;
-}
-
-.mgo-logo strong {
-  margin-left: .07em;
-  color: #ffd438;
-  font-weight: 1000;
-}
-
-.mgo-title-kicker {
-  color: #ffe29a;
-  font-size: 10px;
-  font-weight: 950;
-  letter-spacing: .22em;
-}
-
-.mgo-title-copy {
-  margin: 14px auto 0;
-  color: rgba(255,255,255,.94);
-  font-size: 14px;
-  line-height: 1.55;
-  font-weight: 800;
-}
-
-.mgo-title-copy b {
-  color: #fff1a9;
-  font-size: 17px;
-}
-
-.mgo-start {
+.pre-op-mudagiri {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: max(74px, calc(env(safe-area-inset-bottom) + 64px));
+  top: 44%;
+  width: min(43vw, 190px);
+  height: auto;
   transform: translateX(-50%);
-  min-width: 190px;
-  padding: 13px 18px;
-  border: 1px solid rgba(255,235,159,.95);
-  background: rgba(6,14,20,.82);
-  box-shadow:
-    0 0 0 3px rgba(0,0,0,.36),
-    0 12px 34px rgba(0,0,0,.35);
-  color: #fff7d1;
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: .13em;
-  text-align: center;
-  animation: mgo-start-pulse 1.25s steps(2, end) infinite;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 13px rgba(0,0,0,.32));
+  animation: pre-idle 2.4s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.mgo-start-arrow {
-  margin-right: 9px;
-  color: #ffd65a;
-}
-
-.mgo-title-foot {
+.pre-op-copy {
   position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  bottom: max(27px, calc(env(safe-area-inset-bottom) + 15px));
-  color: rgba(255,255,255,.72);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .06em;
+  z-index: 5;
+  top: max(31px, calc(env(safe-area-inset-top) + 18px));
+  left: 18px;
+  right: 18px;
   text-align: center;
+  text-shadow: 0 2px 0 rgba(0,0,0,.72), 0 6px 18px rgba(0,0,0,.22);
+}
+
+.pre-op-eyebrow {
+  font-size: clamp(11px, 3.1vw, 13px);
+  font-weight: 900;
+}
+
+.pre-op-title {
+  margin: 14px 0 0;
+  font-size: clamp(25px, 7.1vw, 32px);
+  line-height: 1.35;
+  font-weight: 1000;
+  letter-spacing: -.035em;
+}
+
+.pre-op-title strong {
+  color: #ffd629;
+  font-weight: 1000;
+}
+
+.pre-op-brand {
+  display: inline-block;
+  margin-top: 9px;
+  min-width: 153px;
+  padding: 8px 18px 9px;
+  border: 1.5px solid #ffd629;
+  border-radius: 9px;
+  background: rgba(0,15,22,.92);
+  color: #ffd629;
+  font-size: clamp(17px, 4.9vw, 21px);
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.pre-op-bottom {
+  position: absolute;
+  z-index: 10;
+  left: 20px;
+  right: 20px;
+  bottom: max(22px, calc(env(safe-area-inset-bottom) + 12px));
+  text-align: center;
+}
+
+.pre-op-value {
+  margin-bottom: 19px;
+  text-shadow: 0 2px 5px rgba(0,0,0,.88);
+}
+
+.pre-op-value span,
+.pre-op-value strong {
+  display: block;
+}
+
+.pre-op-value span {
+  font-size: clamp(11px, 3.1vw, 13px);
+  font-weight: 800;
+}
+
+.pre-op-value strong {
+  margin-top: 4px;
+  font-size: clamp(14px, 4vw, 17px);
+  font-weight: 1000;
+}
+
+.pre-primary {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffc12f;
+  color: #161616;
+  box-shadow: 0 4px 0 rgba(137,78,0,.55), 0 12px 26px rgba(0,0,0,.22);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 1000;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.pre-primary:active {
+  transform: translateY(2px);
+  filter: brightness(.96);
+}
+
+.pre-primary:focus-visible,
+.pre-select:focus-visible,
+.pre-back:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.pre-op-cta {
+  animation: pre-cta 2.2s ease-in-out infinite;
+}
+
+.pre-reassure {
+  margin-top: 14px;
+  color: rgba(255,255,255,.92);
+  font-size: 11px;
+  font-weight: 800;
   text-shadow: 0 2px 5px #000;
 }
 
-.mgo-hud {
-  position: absolute;
-  z-index: 25;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding:
-    max(15px, calc(env(safe-area-inset-top) + 8px))
-    16px
-    0;
-  text-shadow: 0 2px 8px rgba(0,0,0,.95);
-  pointer-events: none;
+.pre-profile-overlay {
+  z-index: -5;
+  background:
+    linear-gradient(180deg, rgba(0,50,105,.02) 0%, rgba(0,0,0,0) 58%, rgba(0,7,12,.36) 100%);
 }
 
-.mgo-hud-brand {
-  color: #ffe08a;
-  font-size: 9px;
-  font-weight: 950;
-  letter-spacing: .18em;
-}
-
-.mgo-hud-stage {
-  margin-top: 5px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .025em;
-}
-
-.mgo-hud-no {
-  min-width: 36px;
-  padding: 6px 7px;
-  border: 1px solid rgba(255,220,111,.86);
-  background: rgba(4,13,17,.58);
-  color: #ffe37d;
-  font-size: 11px;
-  font-weight: 950;
-  text-align: center;
-}
-
-.mgo-speaker {
-  position: absolute;
-  z-index: 18;
-  left: 50%;
-  bottom: 182px;
-  width: min(58vw, 244px);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.mgo-speaker-glow {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  width: 68%;
-  height: 32px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(255,220,95,.30) 0%, rgba(255,220,95,0) 72%);
-  filter: blur(8px);
-}
-
-.mgo-speaker-img {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: auto;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
-}
-
-.mgo-bottom {
+.pre-profile-hud {
   position: absolute;
   z-index: 30;
+  top: max(17px, calc(env(safe-area-inset-top) + 9px));
+  left: 20px;
+  right: 20px;
+}
+
+.pre-profile-hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 1000;
+  text-shadow: 0 2px 5px rgba(0,0,0,.85);
+}
+
+.pre-profile-hud-row span {
+  color: #ffe12f;
+}
+
+.pre-progress-track {
+  height: 8px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0,24,46,.88);
+  box-shadow: 0 1px 0 rgba(255,255,255,.18);
+}
+
+.pre-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffd429;
+  box-shadow: 0 0 8px rgba(255,212,41,.42);
+  transition: width .35s ease;
+}
+
+.pre-profile-mudagiri {
+  position: absolute;
+  z-index: 14;
+  left: 5px;
+  bottom: 48.5%;
+  width: min(41vw, 180px);
+  max-height: 28dvh;
+  object-fit: contain;
+  object-position: left bottom;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 9px 12px rgba(0,0,0,.34));
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+
+.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 49%; }
+.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 48.7%; transform: rotate(-2deg); }
+.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 48.8%; }
+.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 48.8%; }
+.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 49%; }
+
+.pre-panel {
+  position: absolute;
+  z-index: 20;
+  left: 20px;
+  right: 20px;
+  bottom: max(70px, calc(env(safe-area-inset-bottom) + 58px));
+  min-height: 288px;
+  padding: 19px 19px 15px;
+  border: 1.5px solid #ffc92c;
+  border-radius: 20px;
+  background: rgba(0,28,35,.96);
+  box-shadow: 0 16px 36px rgba(0,0,0,.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.pre-dialogue {
+  width: 72%;
+  min-height: 54px;
+  margin: -6px 0 17px auto;
+  display: flex;
+  align-items: center;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(5,47,56,.92);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.pre-question-no {
+  color: #ffd42b;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+.pre-panel h2 {
+  margin: 7px 0 0;
+  color: #fff;
+  font-size: clamp(22px, 6.1vw, 27px);
+  line-height: 1.25;
+  font-weight: 1000;
+  letter-spacing: -.035em;
+}
+
+.pre-helper {
+  margin: 5px 0 0;
+  color: rgba(255,255,255,.6);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.pre-input-wrap {
+  display: block;
+  margin-top: 15px;
+}
+
+.pre-select {
+  width: 100%;
+  min-height: 51px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 11px;
+  background: #fff;
+  color: #172027;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  appearance: auto;
+}
+
+.pre-next {
+  min-height: 50px;
+  margin-top: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.pre-back {
+  display: block;
+  margin: 9px auto -3px;
+  min-height: 32px;
+  padding: 3px 10px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,.55);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pre-profile-footer {
+  position: absolute;
+  z-index: 25;
   left: 0;
   right: 0;
-  bottom: 0;
-  padding:
-    0
-    max(12px, env(safe-area-inset-right))
-    max(13px, calc(env(safe-area-inset-bottom) + 8px))
-    max(12px, env(safe-area-inset-left));
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 10px));
+  color: rgba(255,255,255,.9);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .02em;
+  text-align: center;
+  text-shadow: 0 2px 4px #000;
 }
 
-.mgo-dialogue,
-.mgo-command-box,
-.mgo-family-grid {
-  border: 1px solid rgba(255,255,255,.92);
-  background:
-    linear-gradient(180deg, rgba(7,11,14,.96), rgba(2,4,5,.95));
-  box-shadow:
-    0 0 0 1px #000,
-    0 0 0 3px rgba(221,181,78,.32),
-    0 18px 42px rgba(0,0,0,.48);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.mgo-dialogue {
-  position: relative;
-  min-height: 148px;
-  padding: 30px 18px 24px;
-}
-
-.mgo-dialogue.is-compact {
-  min-height: 0;
-  padding: 26px 16px 15px;
-}
-
-.mgo-name {
+.pre-checkpoint {
   position: absolute;
-  top: -12px;
-  left: 16px;
-  padding: 5px 10px;
-  border: 1px solid #e8c459;
-  background: #080b0d;
-  color: #ffe79b;
+  z-index: 13;
+  top: 23.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 15px;
+  border: 1px solid #ffd42a;
+  border-radius: 8px;
+  background: rgba(0,24,32,.9);
+  color: #ffd42a;
+  font-size: 8px;
+  font-weight: 1000;
+  letter-spacing: .06em;
+  box-shadow: 0 5px 15px rgba(0,0,0,.2);
+}
+
+.pre-enemy-eyes {
+  position: absolute;
+  z-index: 8;
+  top: 29%;
+  right: 16%;
+  width: 76px;
+  height: 42px;
+  opacity: .42;
+  filter: drop-shadow(0 0 8px rgba(255,85,30,.24));
+  animation: pre-eyes 2.8s ease-in-out infinite;
+}
+
+.pre-enemy-eyes i {
+  position: absolute;
+  top: 13px;
+  width: 19px;
+  height: 9px;
+  border-radius: 70% 30% 70% 30%;
+  background: #ff712d;
+  box-shadow: 0 0 10px rgba(255,113,45,.45);
+}
+
+.pre-enemy-eyes i:first-child {
+  left: 11px;
+  transform: rotate(12deg);
+}
+
+.pre-enemy-eyes i:last-child {
+  right: 11px;
+  transform: scaleX(-1) rotate(12deg);
+}
+
+.pre-encounter-shadow {
+  position: absolute;
+  z-index: 8;
+  top: 22%;
+  right: 12%;
+  width: 88px;
+  height: 112px;
+  border-radius: 50% 50% 43% 43%;
+  background:
+    radial-gradient(circle at 37% 43%, rgba(255,90,50,.7) 0 3px, transparent 4px),
+    radial-gradient(circle at 63% 43%, rgba(255,90,50,.7) 0 3px, transparent 4px),
+    radial-gradient(ellipse at center, rgba(0,8,18,.86) 0 48%, rgba(0,8,18,.22) 70%, transparent 72%);
+  opacity: .58;
+  filter: blur(.2px);
+  animation: pre-shadow 2.6s ease-in-out infinite;
+}
+
+.pre-complete .pre-bg-profile {
+  object-position: 55% 54%;
+  transform: scale(1.06);
+  filter: brightness(.9) saturate(.94);
+}
+
+.pre-complete-overlay {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,211,59,.12), transparent 34%),
+    linear-gradient(180deg, rgba(0,42,86,.02), rgba(0,0,0,.4));
+}
+
+.pre-complete-mudagiri {
+  left: 50%;
+  bottom: 46%;
+  width: min(49vw, 210px);
+  transform: translateX(-50%);
+}
+
+.pre-complete-panel {
+  min-height: 245px;
+  text-align: center;
+  padding-top: 32px;
+}
+
+.pre-complete-label {
+  display: inline-block;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,214,44,.75);
+  border-radius: 999px;
+  color: #ffd62c;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 1000;
   letter-spacing: .05em;
 }
 
-.mgo-copy {
-  color: #fff;
-  font-size: clamp(14px, 4vw, 16px);
-  line-height: 1.72;
-  font-weight: 720;
-  text-shadow: 0 2px 7px rgba(0,0,0,.9);
+.pre-complete-title {
+  margin: 18px 0 0 !important;
+  font-size: clamp(25px, 7vw, 31px) !important;
+  line-height: 1.35 !important;
 }
 
-.mgo-copy strong {
-  color: #ffe998;
-  font-weight: 950;
+.pre-placeholder-shade {
+  background: rgba(0,8,14,.58);
+  backdrop-filter: blur(3px);
 }
 
-.mgo-tap {
+.pre-placeholder-card {
   position: absolute;
-  right: 14px;
-  bottom: 9px;
-  color: rgba(255,255,255,.7);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: .16em;
-}
-
-.mgo-tap span {
-  margin-right: 5px;
-  color: #eacb66;
-  animation: mgo-tap 1s steps(2, end) infinite;
-}
-
-.mgo-bottom-mode .mgo-dialogue,
-.mgo-bottom-profile .mgo-dialogue {
-  margin-bottom: 9px;
-}
-
-.mgo-command-box {
-  overflow: hidden;
-}
-
-.mgo-command {
-  width: 100%;
-  min-height: 61px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
-  border: 0;
-  border-bottom: 1px solid rgba(255,255,255,.12);
-  background: rgba(4,8,10,.82);
-  color: #fff;
-  text-align: left;
-  appearance: none;
-}
-
-.mgo-command:last-child {
-  border-bottom: 0;
-}
-
-.mgo-command.is-default {
-  background:
-    linear-gradient(90deg, rgba(229,190,80,.16), rgba(229,190,80,.03));
-  box-shadow: inset 3px 0 0 #e9c659;
-}
-
-.mgo-command:active {
-  background: rgba(229,190,80,.18);
-  transform: translateX(2px);
-}
-
-.mgo-command-icon {
-  width: 29px;
-  flex: 0 0 29px;
-  font-size: 20px;
+  z-index: 10;
+  top: 50%;
+  left: 20px;
+  right: 20px;
+  transform: translateY(-50%);
+  padding: 28px 22px;
+  border: 1.5px solid #ffd12b;
+  border-radius: 20px;
+  background: rgba(0,25,33,.96);
   text-align: center;
+  box-shadow: 0 16px 38px rgba(0,0,0,.44);
 }
 
-.mgo-command-main {
-  min-width: 0;
-  flex: 1;
-}
-
-.mgo-command-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 950;
-}
-
-.mgo-command-title em {
-  padding: 2px 6px;
-  border: 1px solid rgba(237,202,99,.72);
-  color: #f3d77d;
-  font-size: 8px;
-  font-style: normal;
-}
-
-.mgo-command-sub {
-  display: block;
-  margin-top: 4px;
-  overflow: hidden;
-  color: rgba(255,255,255,.62);
+.pre-placeholder-kicker {
+  color: #ffd52b;
   font-size: 10px;
-  font-weight: 680;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mgo-command-arrow {
-  color: #e9c65c;
-  font-family: Georgia, serif;
-  font-size: 24px;
-}
-
-.mgo-family-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  overflow: hidden;
-}
-
-.mgo-family {
-  min-height: 74px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 0;
-  border-right: 1px solid rgba(255,255,255,.12);
-  border-bottom: 1px solid rgba(255,255,255,.12);
-  background: rgba(4,8,10,.84);
-  color: #fff;
-  text-align: left;
-}
-
-.mgo-family:nth-child(2n) {
-  border-right: 0;
-}
-
-.mgo-family:nth-last-child(-n + 2) {
-  border-bottom: 0;
-}
-
-.mgo-family:active {
-  background: rgba(229,190,80,.18);
-}
-
-.mgo-family-icon {
-  width: 25px;
-  flex: 0 0 25px;
-  color: #e6c965;
-  font-size: 15px;
-  text-align: center;
-}
-
-.mgo-family b {
-  display: block;
-  font-size: 12px;
-  line-height: 1.2;
-}
-
-.mgo-family small {
-  display: block;
-  margin-top: 4px;
-  color: rgba(255,255,255,.55);
-  font-size: 9px;
-}
-
-.mgo-progress-label {
-  margin-top: 8px;
-  color: rgba(255,255,255,.55);
-  font-size: 8px;
-  font-weight: 900;
+  font-weight: 1000;
   letter-spacing: .14em;
-  text-align: center;
-  text-shadow: 0 2px 5px #000;
 }
 
-.mgo-clear {
-  display: inline-block;
-  margin-bottom: 10px;
-  padding: 4px 7px;
-  border: 1px solid rgba(255,223,120,.72);
-  color: #ffe17b;
-  font-size: 9px;
-  font-weight: 950;
-  letter-spacing: .12em;
+.pre-placeholder-card h2 {
+  margin: 9px 0 0;
+  font-size: 30px;
+  font-weight: 1000;
 }
 
-.mgo-next-tease {
-  margin-top: 12px;
-  padding-top: 11px;
-  border-top: 1px solid rgba(255,255,255,.11);
-  color: rgba(255,255,255,.72);
-  font-size: 11px;
-  font-weight: 750;
+.pre-placeholder-card p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.mgo-scene-profileDone .mgo-world {
-  filter: brightness(.88) saturate(.9);
+.pre-placeholder-card small {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255,255,255,.6);
+  font-size: 10px;
+  line-height: 1.6;
 }
 
-@keyframes mgo-tap {
-  0%, 44% { transform: translateY(0); opacity: .65; }
-  45%, 100% { transform: translateY(2px); opacity: 1; }
+.pre-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-@keyframes mgo-start-pulse {
-  0%, 48% { opacity: .86; }
-  49%, 100% { opacity: 1; }
+@keyframes pre-idle {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-4px); }
+}
+
+@keyframes pre-horde {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: .66; }
+  50% { transform: translateX(-50%) translateY(4px); opacity: .76; }
+}
+
+@keyframes pre-cta {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.035); }
+}
+
+@keyframes pre-eyes {
+  0%, 46%, 100% { opacity: .32; }
+  47%, 55% { opacity: .55; }
+}
+
+@keyframes pre-shadow {
+  0%, 100% { transform: translateY(0) scale(.98); opacity: .5; }
+  50% { transform: translateY(-3px) scale(1.02); opacity: .62; }
 }
 
 @media (max-height: 720px) {
-  .mgo-title-area {
-    top: max(5dvh, calc(env(safe-area-inset-top) + 8px));
+  .pre-op-copy {
+    top: max(20px, calc(env(safe-area-inset-top) + 8px));
   }
 
-  .mgo-logo {
-    font-size: clamp(34px, 10vw, 46px);
+  .pre-op-title {
+    margin-top: 8px;
+    font-size: clamp(23px, 6.6vw, 28px);
   }
 
-  .mgo-title-copy {
+  .pre-op-brand {
+    margin-top: 7px;
+    padding-top: 6px;
+    padding-bottom: 7px;
+    font-size: 17px;
+  }
+
+  .pre-op-horde {
+    top: 30%;
+    width: 104%;
+  }
+
+  .pre-op-mudagiri {
+    top: 43%;
+    width: min(38vw, 162px);
+  }
+
+  .pre-op-bottom {
+    bottom: max(11px, calc(env(safe-area-inset-bottom) + 5px));
+  }
+
+  .pre-op-value {
+    margin-bottom: 12px;
+  }
+
+  .pre-op-value strong {
+    margin-top: 1px;
+  }
+
+  .pre-primary {
+    min-height: 56px;
+  }
+
+  .pre-reassure {
     margin-top: 9px;
-    font-size: 12px;
   }
 
-  .mgo-title-copy b {
-    font-size: 14px;
+  .pre-profile-hud {
+    top: max(10px, calc(env(safe-area-inset-top) + 5px));
   }
 
-  .mgo-speaker {
-    bottom: 166px;
-    width: min(48vw, 196px);
+  .pre-profile-mudagiri {
+    bottom: 49.5%;
+    width: min(34vw, 148px);
+    max-height: 24dvh;
   }
 
-  .mgo-dialogue {
-    min-height: 129px;
-    padding: 27px 15px 21px;
+  .pre-panel {
+    bottom: max(43px, calc(env(safe-area-inset-bottom) + 34px));
+    min-height: 257px;
+    padding: 14px 16px 11px;
   }
 
-  .mgo-dialogue.is-compact {
-    min-height: 0;
-    padding: 23px 14px 12px;
+  .pre-dialogue {
+    min-height: 43px;
+    margin-bottom: 11px;
+    padding: 8px 10px;
+    font-size: 10px;
   }
 
-  .mgo-copy {
-    font-size: 13px;
-    line-height: 1.58;
+  .pre-panel h2 {
+    margin-top: 4px;
+    font-size: clamp(20px, 5.7vw, 24px);
   }
 
-  .mgo-command {
-    min-height: 53px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
-  .mgo-family {
-    min-height: 62px;
-  }
-}
-
-@media (max-width: 374px) {
-  .mgo-bottom {
-    padding-left: 9px;
-    padding-right: 9px;
-  }
-
-  .mgo-logo {
-    font-size: 38px;
-  }
-
-  .mgo-speaker {
-    bottom: 164px;
-    width: min(50vw, 180px);
-  }
-
-  .mgo-command {
-    gap: 8px;
-    padding-left: 9px;
-    padding-right: 9px;
-  }
-
-  .mgo-command-title {
-    font-size: 12px;
-  }
-
-  .mgo-command-sub {
+  .pre-helper {
+    margin-top: 3px;
     font-size: 9px;
   }
 
-  .mgo-family {
-    padding-left: 8px;
-    padding-right: 8px;
+  .pre-input-wrap {
+    margin-top: 10px;
   }
 
-  .mgo-family b {
-    font-size: 11px;
+  .pre-select,
+  .pre-next {
+    min-height: 44px;
+  }
+
+  .pre-next {
+    margin-top: 9px;
+  }
+
+  .pre-back {
+    margin-top: 5px;
+  }
+
+  .pre-profile-footer {
+    bottom: max(10px, calc(env(safe-area-inset-bottom) + 4px));
+    font-size: 8px;
+  }
+
+  .pre-checkpoint {
+    top: 22%;
+  }
+
+  .pre-complete-mudagiri {
+    width: min(42vw, 177px);
+  }
+
+  .pre-complete-panel {
+    min-height: 220px;
+  }
+}
+
+@media (min-width: 431px) {
+  .pre-panel {
+    left: 24px;
+    right: 24px;
   }
 }
 
 @media (min-width: 481px) {
-  .mgo-root {
+  .pre-root {
     display: grid;
     place-items: center;
-    background:
-      radial-gradient(circle at center, #123346 0%, #071014 48%, #020303 100%);
+    background: radial-gradient(circle at center, #133f58 0%, #061015 52%, #010203 100%);
   }
 
-  .mgo-stage {
+  .pre-stage {
     border-left: 1px solid rgba(255,255,255,.08);
     border-right: 1px solid rgba(255,255,255,.08);
-    box-shadow: 0 0 80px rgba(0,0,0,.72);
+    box-shadow: 0 0 80px rgba(0,0,0,.7);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mgo-start,
-  .mgo-tap span {
+  .pre-op-mudagiri,
+  .pre-op-horde,
+  .pre-op-cta,
+  .pre-enemy-eyes,
+  .pre-encounter-shadow {
     animation: none;
+  }
+
+  .pre-bg-profile,
+  .pre-progress-track span {
+    transition: none;
   }
 }
 `;
+
