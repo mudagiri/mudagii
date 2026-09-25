@@ -606,14 +606,16 @@ const CSS = String.raw`
 
 .pre-op-mudagiri {
   position: absolute;
-  z-index: 2;
+  z-index: 8;
   left: 50%;
-  top: 44%;
-  width: min(43vw, 190px);
+  bottom: 36.5%;
+  width: min(58vw, 245px);
   height: auto;
   transform: translateX(-50%);
   image-rendering: pixelated;
-  filter: drop-shadow(0 10px 13px rgba(0,0,0,.32));
+  filter:
+    drop-shadow(0 5px 0 rgba(0,0,0,.28))
+    drop-shadow(0 14px 18px rgba(0,0,0,.42));
   animation: pre-idle 2.4s ease-in-out infinite;
   pointer-events: none;
 }
@@ -778,11 +780,11 @@ const CSS = String.raw`
 
 .pre-profile-mudagiri {
   position: absolute;
-  z-index: 14;
+  z-index: 24;
   left: 5px;
-  bottom: 48.5%;
+  bottom: 39.5%;
   width: min(41vw, 180px);
-  max-height: 28dvh;
+  max-height: 29dvh;
   object-fit: contain;
   object-position: left bottom;
   image-rendering: pixelated;
@@ -791,11 +793,11 @@ const CSS = String.raw`
   transform-origin: 50% 100%;
 }
 
-.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 49%; }
-.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 48.7%; transform: rotate(-2deg); }
-.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 48.8%; }
-.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 48.8%; }
-.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 49%; }
+.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 39.8%; }
+.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 39.6%; transform: rotate(-2deg); }
+.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 39.6%; }
+.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 39.7%; }
+.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 39.9%; }
 
 .pre-panel {
   position: absolute;
@@ -1119,8 +1121,8 @@ const CSS = String.raw`
   }
 
   .pre-op-mudagiri {
-    top: 43%;
-    width: min(38vw, 162px);
+    bottom: 37.5%;
+    width: min(52vw, 196px);
   }
 
   .pre-op-bottom {
@@ -1148,7 +1150,7 @@ const CSS = String.raw`
   }
 
   .pre-profile-mudagiri {
-    bottom: 49.5%;
+    bottom: 39.8%;
     width: min(34vw, 148px);
     max-height: 24dvh;
   }
