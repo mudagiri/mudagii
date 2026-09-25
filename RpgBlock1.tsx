@@ -782,7 +782,7 @@ const CSS = String.raw`
   position: absolute;
   z-index: 24;
   left: 5px;
-  bottom: 39.5%;
+  bottom: 35.8%;
   width: min(41vw, 180px);
   max-height: 29dvh;
   object-fit: contain;
@@ -793,11 +793,11 @@ const CSS = String.raw`
   transform-origin: 50% 100%;
 }
 
-.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 39.8%; }
-.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 39.6%; transform: rotate(-2deg); }
-.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 39.6%; }
-.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 39.7%; }
-.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 39.9%; }
+.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 36.1%; }
+.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; transform: rotate(-2deg); }
+.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; }
+.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 36.0%; }
+.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 36.2%; }
 
 .pre-panel {
   position: absolute;
@@ -1150,7 +1150,7 @@ const CSS = String.raw`
   }
 
   .pre-profile-mudagiri {
-    bottom: 39.8%;
+    bottom: 36.1%;
     width: min(34vw, 148px);
     max-height: 24dvh;
   }
