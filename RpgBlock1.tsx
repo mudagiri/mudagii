@@ -793,7 +793,7 @@ const CSS = String.raw`
   transform-origin: 50% 100%;
 }
 
-.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 2px; bottom: 36.1%; }
+.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 7px; bottom: 34.9%; }
 .pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; transform: rotate(-2deg); }
 .pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; }
 .pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 36.0%; }
