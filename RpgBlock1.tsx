@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ToneMode } from './tone-mode-v3';
-import { ENEMY_ASSETS } from './enemy-assets-v1';
+import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -11,9 +11,9 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
-type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'battle';
+type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete';
 
-type BattleBranch = 'defeat' | 'spare' | 'unknown';
+type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 
 type ProfileFlow = {
   prefecture: string;
@@ -31,6 +31,27 @@ type QuestionConfig = {
   sprite: string;
   footer: string;
 };
+
+type ScanCategoryConfig = {
+  category: EnemyAssetCategory;
+  question: string;
+  helper: string;
+};
+
+const SCAN_CATEGORIES: ScanCategoryConfig[] = [
+  { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ ＋ 自宅インターネット' },
+  { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・水道' },
+  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・アプリなど' },
+  { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊をあわせた目安' },
+  { category: 'daily', question: '毎月の日用品・雑費はいくら？', helper: '消耗品・雑貨など' },
+  { category: 'fun', question: '毎月の娯楽費はいくら？', helper: '遊び・交際費など' },
+  { category: 'beautyFashion', question: '毎月の美容・服飾費はいくら？', helper: '美容院・服・コスメなど' },
+  { category: 'car', question: '毎月の車関連費はいくら？', helper: 'ローン・ガソリン・保険・駐車場など' },
+  { category: 'rent', question: '毎月の家賃・住宅ローンはいくら？', helper: '住居費の月額' },
+  { category: 'insurance', question: '毎月の保険料はいくら？', helper: '生命保険・医療保険など' },
+  { category: 'childEducation', question: '毎月の子どもの教育費はいくら？', helper: '子どもあり世帯のみ出現' },
+  { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '学び・資格・トレーニング等' },
+];
 
 const ASSET = './assets/prebattle';
 
@@ -129,9 +150,15 @@ export default function RpgBlock1({
   const [scene, setScene] = useState<Scene>(() => (step === 'profile' ? 'profile' : 'opening'));
   const [questionIndex, setQuestionIndex] = useState(0);
   const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
-  const [communicationCost, setCommunicationCost] = useState('');
+  const [scanIndex, setScanIndex] = useState(0);
+  const [scanValues, setScanValues] = useState<Partial<Record<EnemyAssetCategory, string>>>({});
 
   const question = QUESTIONS[questionIndex];
+  const applicableScanCategories = useMemo(
+    () => SCAN_CATEGORIES.filter((item) => item.category !== 'childEducation' || flow.household === 'children'),
+    [flow.household],
+  );
+  const currentScan = applicableScanCategories[scanIndex];
 
   useEffect(() => {
     const body = document.body;
@@ -178,12 +205,12 @@ export default function RpgBlock1({
       'FX-06_UNKNOWN.png',
     ].forEach((name) => preload(`./assets/battle1/${name}`));
 
-    [
-      ENEMY_ASSETS.mobile.trace,
-      ENEMY_ASSETS.mobile.normal,
-      ENEMY_ASSETS.mobile.defeated,
-      ENEMY_ASSETS.mobile.escape,
-    ].forEach(preload);
+    Object.values(ENEMY_ASSETS).forEach((enemy) => {
+      preload(enemy.trace);
+      preload(enemy.normal);
+      preload(enemy.defeated);
+      preload(enemy.escape);
+    });
   }, []);
 
   const beginAdventure = () => {
@@ -225,18 +252,25 @@ export default function RpgBlock1({
               onBack={previousQuestion}
             />
           ) : scene === 'complete' ? (
-            <CompleteScene onStartScan={() => setScene('scan')} />
-          ) : scene === 'scan' ? (
+            <CompleteScene onStartScan={() => { setScanIndex(0); setScene('scan'); }} />
+          ) : scene === 'scan' && currentScan ? (
             <ScanScene
-              value={communicationCost}
-              onChange={setCommunicationCost}
-              onStart={() => setScene('battle')}
+              key={currentScan.category}
+              config={currentScan}
+              current={scanIndex + 1}
+              total={applicableScanCategories.length}
+              value={scanValues[currentScan.category] ?? ''}
+              onChange={(value) => setScanValues((prev) => ({ ...prev, [currentScan.category]: value }))}
+              onDone={() => {
+                if (scanIndex >= applicableScanCategories.length - 1) {
+                  setScene('scanComplete');
+                  return;
+                }
+                setScanIndex((index) => index + 1);
+              }}
             />
           ) : (
-            <BattleScene
-              amount={Number(communicationCost.replace(/,/g, '')) || 0}
-              household={flow.household}
-            />
+            <ScanCompleteScene scanned={applicableScanCategories.length} />
           )}
         </section>
       </main>
@@ -370,7 +404,7 @@ function ProfileScene({
           setFlow={setFlow}
         />
 
-        <button type="button" className="pre-primary pre-next" onClick={onNext}>
+        <button type="button" className="pre-primary pre-next pre-fixed-profile-cta" onClick={onNext}>
           {question.no === 5 ? 'ムダ討伐へ ▶' : '次へ ▶'}
         </button>
 
@@ -512,7 +546,7 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
         <div className="pre-complete-label">冒険者データ 100%</div>
         <h2 className="pre-complete-title">準備完了！<br />ムダの正体を暴くぞ！</h2>
 
-        <button type="button" className="pre-primary pre-next" onClick={onStartScan}>
+        <button type="button" className="pre-primary pre-next pre-fixed-profile-cta" onClick={onStartScan}>
           家計スキャンを開始 ▶
         </button>
       </section>
@@ -522,255 +556,153 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
 
 const BATTLE_ASSET = './assets/battle1';
 
-function ScanScene({ value, onChange, onStart }: { value: string; onChange: (value: string) => void; onStart: () => void; }) {
+function ScanScene({
+  config,
+  current,
+  total,
+  value,
+  onChange,
+  onDone,
+}: {
+  config: ScanCategoryConfig;
+  current: number;
+  total: number;
+  value: string;
+  onChange: (value: string) => void;
+  onDone: () => void;
+}) {
+  const enemy = ENEMY_ASSETS[config.category];
+  const [phase, setPhase] = useState<ScanPhase>('input');
+  const timers = React.useRef<number[]>([]);
+
+  useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+
   const digits = value.replace(/\D/g, '').slice(0, 7);
-  const display = digits ? Number(digits).toLocaleString('ja-JP') : '';
-  const canStart = Number(digits) > 0;
+  const display = value === '' ? '' : Number(digits || '0').toLocaleString('ja-JP');
+  const canStart = value !== '';
+  const amount = Number(digits || '0');
+
+  const startScan = () => {
+    if (!canStart) return;
+    timers.current.forEach(window.clearTimeout);
+    timers.current = [];
+
+    if (amount === 0) {
+      setPhase('noSpend');
+      timers.current.push(window.setTimeout(onDone, 1050));
+      return;
+    }
+
+    setPhase('trace');
+    timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
+    timers.current.push(window.setTimeout(() => setPhase('detected'), 1250));
+    timers.current.push(window.setTimeout(onDone, 2350));
+  };
+
+  const progress = ((current - 1 + (phase === 'input' ? 0 : 1)) / total) * 100;
+  const isInput = phase === 'input';
+  const isTrace = phase === 'trace';
+  const isReveal = phase === 'reveal';
+  const isDetected = phase === 'detected';
+  const isNoSpend = phase === 'noSpend';
 
   return (
-    <div className="scan-scene">
+    <div className={`scan-scene scan-phase-${phase}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
 
       <header className="scan-hud">
         <div className="scan-hud-top">
           <span>家計スキャン</span>
-          <b>01 / 12</b>
+          <b>{current} / {total}</b>
         </div>
-        <div className="scan-progress">
-          <span style={{ width: `${100 / 12}%` }} />
-        </div>
+        <div className="scan-progress"><span style={{ width: `${progress}%` }} /></div>
       </header>
 
-      <img
-        className="scan-mudagiri"
-        src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`}
-        alt="ムダギリくん"
-      />
+      {!isInput && !isNoSpend && (
+        <>
+          <div className="battle-contact" aria-hidden="true" />
+          {isTrace ? (
+            <img className="battle-trace" src={enemy.trace} alt="" aria-hidden="true" />
+          ) : (
+            <img className="battle-enemy scan-detected-enemy" src={enemy.normal} alt={enemy.name} />
+          )}
+          {isReveal && (
+            <img className="battle-fx battle-fx-reveal" src={`${BATTLE_ASSET}/FX-01_REVEAL.png`} alt="" aria-hidden="true" />
+          )}
+        </>
+      )}
 
-      <section className="scan-panel">
-        <div className="scan-dialogue">……いるな。まずは近くの気配から探るぞ！</div>
+      <img className="scan-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
 
-        <div className="scan-number">SCAN 01</div>
-        <h2>毎月の通信費はいくら？</h2>
-        <p>スマホ ＋ 自宅インターネット</p>
-
-        <label className="scan-money">
-          <span className="pre-sr-only">毎月の通信費</span>
-          <span className="scan-yen">¥</span>
-          <input
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={display}
-            onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
-            placeholder="10,000"
-            aria-label="毎月の通信費"
-          />
-          <span className="scan-month">/ 月</span>
-        </label>
-
-        <button
-          type="button"
-          className="pre-primary scan-start"
-          disabled={!canStart}
-          onClick={onStart}
-        >
-          気配を探る ▶
-        </button>
-      </section>
+      {isInput ? (
+        <section className="scan-panel">
+          <div className="scan-dialogue">
+            {current === 1 ? '……いるな。まずは近くの気配から探るぞ！' : '次の気配だ。まだいるぞ！'}
+          </div>
+          <div className="scan-number">SCAN {String(current).padStart(2, '0')}</div>
+          <h2>{config.question}</h2>
+          <p>{config.helper}</p>
+          <label className="scan-money">
+            <span className="pre-sr-only">{config.question}</span>
+            <span className="scan-yen">¥</span>
+            <input
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={display}
+              onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
+              placeholder="0"
+              aria-label={config.question}
+            />
+            <span className="scan-month">/ 月</span>
+          </label>
+          <button type="button" className="pre-primary scan-start" disabled={!canStart} onClick={startScan}>
+            気配を探る ▶
+          </button>
+          <div className="scan-zero-hint">ない場合は 0 円でOK</div>
+        </section>
+      ) : (
+        <section className="battle-panel scan-result-panel">
+          <div className="battle-dialogue">
+            {isTrace && '……気配を捕捉した。'}
+            {isReveal && '来るぞ……！'}
+            {isDetected && `${enemy.name}、発見！`}
+            {isNoSpend && 'ここには敵の気配なし。次へ進むぞ！'}
+          </div>
+          <div className="battle-status">
+            <span>{config.question.replace('毎月の', '').replace('はいくら？', '')}</span>
+            <strong>¥{amount.toLocaleString('ja-JP')} / 月</strong>
+          </div>
+          {!isNoSpend && (
+            <div className="battle-loading">
+              <span className="battle-loading-dot" />
+              <span>{isDetected ? '敵影を記録' : '探索中'}</span>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
 
-function judgeCommunication(amount: number, household: FamilyProfile): BattleBranch {
-  const ranges: Record<FamilyProfile, { good: number; high: number }> = {
-    single: { good: 7000, high: 12000 },
-    couple: { good: 10000, high: 17000 },
-    children: { good: 13000, high: 22000 },
-    other: { good: 10000, high: 17000 },
-  };
-
-  const range = ranges[household];
-
-  if (amount <= range.good) return 'spare';
-  if (amount >= range.high) return 'defeat';
-  return 'unknown';
-}
-
-function BattleScene({ amount, household }: { amount: number; household: FamilyProfile; }) {
-  const branch = judgeCommunication(amount, household);
-  const [phase, setPhase] = useState<'trace' | 'reveal' | 'normal' | 'action' | 'result'>('trace');
-
-  useEffect(() => {
-    const timers = [
-      window.setTimeout(() => setPhase('reveal'), 700),
-      window.setTimeout(() => setPhase('normal'), 1500),
-      window.setTimeout(() => setPhase('action'), 2600),
-      window.setTimeout(() => setPhase('result'), branch === 'defeat' ? 3900 : 3600),
-    ];
-
-    return () => timers.forEach(window.clearTimeout);
-  }, [branch]);
-
-  const isTrace = phase === 'trace';
-  const isReveal = phase === 'reveal';
-  const isNormal = phase === 'normal';
-  const isAction = phase === 'action';
-  const isResult = phase === 'result';
-
-  const enemySrc =
-    branch === 'defeat' && (isAction || isResult)
-      ? ENEMY_ASSETS.mobile.defeated
-      : branch === 'spare' && (isAction || isResult)
-        ? ENEMY_ASSETS.mobile.escape
-        : ENEMY_ASSETS.mobile.normal;
-
-  const dialogue =
-    isTrace
-      ? '……気配を捕捉した。'
-      : isReveal
-        ? '来るぞ……！'
-        : isNormal
-          ? '通信ザウルス、発見！'
-          : branch === 'defeat'
-            ? 'こいつは斬るぞ！'
-            : branch === 'spare'
-              ? '……待て。こいつは斬る必要なし！'
-              : '……まだ斬れないな。';
-
-  const resultTitle =
-    branch === 'defeat'
-      ? '通信費に改善余地を発見'
-      : branch === 'spare'
-        ? '通信費は今のところ良好'
-        : '金額だけではムダと判断できません';
-
-  const resultSub =
-    branch === 'defeat'
-      ? '家計全体の解析はまだ続いています'
-      : branch === 'spare'
-        ? '必要な支出まで無理に斬りません'
-        : '追加情報があれば、さらに判定できます';
-
+function ScanCompleteScene({ scanned }: { scanned: number }) {
   return (
-    <div className={`battle-scene battle-${branch} battle-phase-${phase}`}>
+    <div className="scan-scene scan-complete-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
-
-      <header className="battle-hud">
-        <span>BATTLE 01 / 03</span>
-        <b>通信ザウルス</b>
-      </header>
-
-      <div className="battle-contact" aria-hidden="true" />
-
-      {isTrace ? (
-        <img
-          className="battle-trace"
-          src={ENEMY_ASSETS.mobile.trace}
-          alt=""
-          aria-hidden="true"
-        />
-      ) : (
-        <img
-          className="battle-enemy"
-          src={enemySrc}
-          alt="通信ザウルス"
-        />
-      )}
-
-      {(isReveal || isNormal) && (
-        <img
-          className={`battle-fx battle-fx-reveal ${isNormal ? 'battle-fx-fade' : ''}`}
-          src={`${BATTLE_ASSET}/FX-01_REVEAL.png`}
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-
-      {isAction && branch === 'defeat' && (
-        <>
-          <div className="battle-white-flash" aria-hidden="true" />
-          <img
-            className="battle-fx battle-fx-slash"
-            src={`${BATTLE_ASSET}/FX-02_SLASH.png`}
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            className="battle-fx battle-fx-hit"
-            src={`${BATTLE_ASSET}/FX-03_HIT.png`}
-            alt=""
-            aria-hidden="true"
-          />
-        </>
-      )}
-
-      {isResult && branch === 'defeat' && (
-        <img
-          className="battle-fx battle-fx-particles"
-          src={`${BATTLE_ASSET}/FX-04_DEFEAT_PARTICLES.png`}
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-
-      {(isAction || isResult) && branch === 'spare' && (
-        <img
-          className="battle-fx battle-fx-dust"
-          src={`${BATTLE_ASSET}/FX-05_ESCAPE_DUST.png`}
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-
-      {(isAction || isResult) && branch === 'unknown' && (
-        <img
-          className="battle-fx battle-fx-unknown"
-          src={`${BATTLE_ASSET}/FX-06_UNKNOWN.png`}
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-
-      <img
-        className="battle-mudagiri"
-        src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`}
-        alt="ムダギリくん"
-      />
-
-      <section className={`battle-panel ${isResult ? 'battle-panel-result' : ''}`}>
-        {!isResult ? (
-          <>
-            <div className="battle-dialogue">{dialogue}</div>
-
-            <div className="battle-status">
-              <span>通信費</span>
-              <strong>¥{amount.toLocaleString('ja-JP')} / 月</strong>
-            </div>
-
-            <div className="battle-loading">
-              <span className="battle-loading-dot" />
-              <span>解析中</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="battle-result-kicker">
-              {branch === 'defeat' ? '討伐' : branch === 'spare' ? '見逃し' : '要鑑定'}
-            </div>
-
-            <h2>{resultTitle}</h2>
-            <p>{resultSub}</p>
-
-            <button
-              type="button"
-              className="pre-primary battle-next"
-              onClick={() => window.alert('次のカテゴリは次フェーズで実装します')}
-            >
-              次の解析へ ▶
-            </button>
-          </>
-        )}
+      <div className="scan-complete-shade" aria-hidden="true" />
+      <img className="scan-complete-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
+      <section className="scan-complete-card">
+        <div className="scan-complete-kicker">HOUSEHOLD SCAN 100%</div>
+        <h2>対象カテゴリのスキャン完了</h2>
+        <p>敵影を記録した。<br /><strong>だが――斬るべきヤツは、全部じゃない。</strong></p>
+        <div className="scan-complete-count">{scanned}カテゴリを確認</div>
+        <button
+          type="button"
+          className="pre-primary scan-complete-next"
+          onClick={() => window.alert('次は既存の8タイプ診断 V3.1 へ接続します')}
+        >
+          属性診断へ ▶
+        </button>
       </section>
     </div>
   );
@@ -1633,6 +1565,34 @@ const CSS = String.raw`
     min-height: 56px !important;
     bottom: max(10px, calc(env(safe-area-inset-bottom) + 6px)) !important;
   }
+}
+
+
+/* ===== CATEGORY-DRIVEN SCAN V2 ===== */
+.scan-detected-enemy{animation:battle-enemy-in .22s ease-out both}
+.scan-result-panel{min-height:166px}
+.scan-zero-hint{margin-top:8px;text-align:center;color:rgba(255,255,255,.48);font-size:9px;font-weight:800}
+.scan-complete-scene{position:absolute;inset:0;overflow:hidden;background:#0d6ec5}
+.scan-complete-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.12),rgba(0,8,14,.7));backdrop-filter:blur(1px)}
+.scan-complete-mudagiri{position:absolute;z-index:10;left:50%;top:14%;width:min(48vw,205px);transform:translateX(-50%);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 16px rgba(0,0,0,.35))}
+.scan-complete-card{position:absolute;z-index:20;left:20px;right:20px;bottom:max(30px,calc(env(safe-area-inset-bottom) + 18px));padding:26px 20px 20px;border:1.5px solid #ffc92c;border-radius:20px;background:rgba(0,28,35,.965);text-align:center;box-shadow:0 16px 36px rgba(0,0,0,.42)}
+.scan-complete-kicker{color:#ffd42b;font-size:10px;font-weight:1000;letter-spacing:.08em}
+.scan-complete-card h2{margin:10px 0 0;color:#fff;font-size:clamp(24px,6.5vw,30px);line-height:1.3;font-weight:1000}
+.scan-complete-card p{margin:14px 0 0;color:rgba(255,255,255,.72);font-size:12px;line-height:1.7;font-weight:750}
+.scan-complete-card p strong{color:#fff}
+.scan-complete-count{margin-top:14px;padding:9px 12px;border-radius:9px;background:rgba(19,49,70,.72);color:#ffd42b;font-size:11px;font-weight:900}
+.scan-complete-next{margin-top:14px;min-height:54px}
+
+/* keep PROFILE primary actions on the approved thumb anchor */
+.pre-profile .pre-fixed-profile-cta,
+.pre-complete .pre-fixed-profile-cta {
+  position:absolute!important;
+  left:16px!important;
+  right:16px!important;
+  bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px))!important;
+  width:auto!important;
+  min-height:56px!important;
+  margin:0!important;
 }
 
 `;
