@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ToneMode } from './tone-mode-v3';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
+import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -11,7 +12,7 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
-type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete';
+type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete';
 
 type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 
@@ -177,6 +178,8 @@ export default function RpgBlock1({
   const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
   const [scanIndex, setScanIndex] = useState(0);
   const [scanValues, setScanValues] = useState<Partial<Record<EnemyAssetCategory, string>>>({});
+  const [typeIndex, setTypeIndex] = useState(0);
+  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
 
   const question = QUESTIONS[questionIndex];
   const applicableScanCategories = useMemo(
@@ -184,6 +187,9 @@ export default function RpgBlock1({
     [flow.household],
   );
   const currentScan = applicableScanCategories[scanIndex];
+  const discoveredCount = applicableScanCategories
+    .filter((item) => Number(scanValues[item.category] ?? '0') > 0).length;
+  const currentTypeQuestion = TYPE_QUESTIONS_V31[typeIndex];
 
   useEffect(() => {
     const body = document.body;
@@ -300,8 +306,33 @@ export default function RpgBlock1({
                 setScanIndex((index) => index + 1);
               }}
             />
+          ) : scene === 'scanComplete' ? (
+            <ScanCompleteScene
+              scanned={applicableScanCategories.length}
+              discovered={discoveredCount}
+              onStartAppraisal={() => {
+                setTypeIndex(0);
+                setTypeAnswers({});
+                setScene('typeQuiz');
+              }}
+            />
+          ) : scene === 'typeQuiz' && currentTypeQuestion ? (
+            <TypeQuizScene
+              key={currentTypeQuestion.id}
+              question={currentTypeQuestion}
+              current={typeIndex + 1}
+              total={TYPE_QUESTIONS_V31.length}
+              onAnswer={(answer) => {
+                setTypeAnswers((prev) => ({ ...prev, [currentTypeQuestion.id]: answer }));
+                if (typeIndex >= TYPE_QUESTIONS_V31.length - 1) {
+                  setScene('typeComplete');
+                  return;
+                }
+                setTypeIndex((index) => index + 1);
+              }}
+            />
           ) : (
-            <ScanCompleteScene scanned={applicableScanCategories.length} />
+            <TypeCompleteScene answers={typeAnswers} />
           )}
         </section>
       </main>
@@ -793,23 +824,189 @@ function ScanScene({
   );
 }
 
-function ScanCompleteScene({ scanned }: { scanned: number }) {
+function ScanCompleteScene({
+  scanned,
+  discovered,
+  onStartAppraisal,
+}: {
+  scanned: number;
+  discovered: number;
+  onStartAppraisal: () => void;
+}) {
   return (
-    <div className="scan-scene scan-complete-scene">
+    <div className="scan-scene scan-complete-scene appraisal-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
-      <div className="scan-complete-shade" aria-hidden="true" />
-      <img className="scan-complete-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
-      <section className="scan-complete-card">
-        <div className="scan-complete-kicker">ムダ探索 100%</div>
-        <h2>対象カテゴリのスキャン完了</h2>
-        <p>敵影を記録した。<br /><strong>だが――斬るべきヤツは、全部じゃない。</strong></p>
-        <div className="scan-complete-count">{scanned}カテゴリを確認</div>
+      <div className="appraisal-intro-shade" aria-hidden="true" />
+
+      <header className="appraisal-intro-hud">
+        <span>ムダ探索</span>
+        <b>100%</b>
+      </header>
+
+      <div className="appraisal-intro-summary" aria-hidden="true">
+        <span>{scanned}エリア探索完了</span>
+        <strong>敵影 {discovered}体</strong>
+      </div>
+
+      <img
+        className="appraisal-intro-mudagiri"
+        src={SCAN_MUDAGIRI_GUIDE}
+        alt="ムダギリくん"
+      />
+
+      <section className="appraisal-intro-card">
+        <div className="appraisal-intro-kicker">FINAL CHECK</div>
+        <h2>……まだ斬るな。</h2>
+        <p>
+          <strong>敵がいる＝ムダとは限らない。</strong><br />
+          同じ1万円でも、納得して使う金と<br />
+          なんとなく消える金は違う。
+        </p>
+        <div className="appraisal-intro-rule">
+          <span>次の目的</span>
+          <b>本当に倒すべき敵を選別する</b>
+        </div>
+        <div className="appraisal-intro-note">
+          まず8つの質問で、お金の使い方のクセを見抜くぞ。
+        </div>
+        <button type="button" className="pre-primary appraisal-intro-cta" onClick={onStartAppraisal}>
+          ムダ鑑定を始める ▶
+        </button>
+      </section>
+    </div>
+  );
+}
+
+type TypeQuestion = (typeof TYPE_QUESTIONS_V31)[number];
+
+function TypeQuizScene({
+  question,
+  current,
+  total,
+  onAnswer,
+}: {
+  question: TypeQuestion;
+  current: number;
+  total: number;
+  onAnswer: (answer: RawAnswerV31) => void;
+}) {
+  const [picked, setPicked] = useState<string | null>(null);
+
+  const choose = (choice: 'a' | 'b', strength: 1 | 2) => {
+    if (picked) return;
+    const id = `${choice}-${strength}`;
+    setPicked(id);
+    window.setTimeout(() => onAnswer({ choice, strength }), 240);
+  };
+
+  const progress = (current / total) * 100;
+
+  return (
+    <div className="scan-scene type-quiz-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="type-quiz-shade" aria-hidden="true" />
+
+      <header className="type-quiz-hud">
+        <div className="type-quiz-hud-row">
+          <span>ムダ鑑定</span>
+          <b>{current} / {total}</b>
+        </div>
+        <div className="type-quiz-progress" aria-hidden="true">
+          <span style={{ width: `${progress}%` }} />
+        </div>
+      </header>
+
+      <img className="type-quiz-mudagiri" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
+      <div className="type-quiz-dialogue">
+        {current === 1 ? 'ここからは、お前の「使い方のクセ」を見るぞ。' : '考えすぎなくていい。近い方を選べ。'}
+      </div>
+
+      <section className="type-quiz-card">
+        <div className="type-quiz-number">鑑定 {String(current).padStart(2, '0')}</div>
+        <h2>{question.prompt}</h2>
+        <p className="type-quiz-helper">どちらに、どのくらい近い？</p>
+
+        <div className="type-choice-stack">
+          <article className="type-choice-card">
+            <div className="type-choice-copy">{question.a.text}</div>
+            <div className="type-choice-actions">
+              <button
+                type="button"
+                className={picked === 'a-2' ? 'is-picked' : ''}
+                disabled={!!picked}
+                onClick={() => choose('a', 2)}
+              >
+                かなり近い
+              </button>
+              <button
+                type="button"
+                className={picked === 'a-1' ? 'is-picked' : ''}
+                disabled={!!picked}
+                onClick={() => choose('a', 1)}
+              >
+                やや近い
+              </button>
+            </div>
+          </article>
+
+          <div className="type-choice-or">OR</div>
+
+          <article className="type-choice-card">
+            <div className="type-choice-copy">{question.b.text}</div>
+            <div className="type-choice-actions">
+              <button
+                type="button"
+                className={picked === 'b-1' ? 'is-picked' : ''}
+                disabled={!!picked}
+                onClick={() => choose('b', 1)}
+              >
+                やや近い
+              </button>
+              <button
+                type="button"
+                className={picked === 'b-2' ? 'is-picked' : ''}
+                disabled={!!picked}
+                onClick={() => choose('b', 2)}
+              >
+                かなり近い
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <div className="type-quiz-foot">
+          {current < total ? `あと ${total - current} 問` : 'これで最後だ'}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TypeCompleteScene({ answers }: { answers: TypeAnswersV31 }) {
+  const answered = Object.keys(answers).length;
+
+  return (
+    <div className="scan-scene type-complete-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="type-complete-shade" aria-hidden="true" />
+      <img className="type-complete-mudagiri" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
+
+      <section className="type-complete-card">
+        <div className="type-complete-kicker">ムダ鑑定 {answered} / 8</div>
+        <h2>行動パターン<br />解析完了。</h2>
+        <p>
+          お前の「お金の使い方のクセ」は見えた。<br />
+          <strong>だが、金額だけじゃ斬れない敵がまだいる。</strong>
+        </p>
+        <div className="type-complete-next-label">
+          NEXT：必要な敵だけ追加鑑定
+        </div>
         <button
           type="button"
-          className="pre-primary scan-complete-next"
-          onClick={() => window.alert('次は既存の8タイプ診断 V3.1 へ接続します')}
+          className="pre-primary type-complete-cta"
+          onClick={() => window.alert('次は必要カテゴリだけの追加鑑定を実装します')}
         >
-          属性診断へ ▶
+          残った敵を鑑定する ▶
         </button>
       </section>
     </div>
@@ -1921,6 +2118,383 @@ const CSS = String.raw`
 .scan-complete-card p strong{color:#fff}
 .scan-complete-count{margin-top:14px;padding:9px 12px;border-radius:9px;background:rgba(19,49,70,.72);color:#ffd42b;font-size:11px;font-weight:900}
 .scan-complete-next{margin-top:14px;min-height:54px}
+
+/* ===== APPRAISAL INTRO / TYPE QUIZ V1 ===== */
+.appraisal-intro-scene,
+.type-quiz-scene,
+.type-complete-scene{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  background:#0d6ec5;
+}
+.appraisal-intro-shade,
+.type-quiz-shade,
+.type-complete-shade{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg,rgba(2,17,35,.30) 0%,rgba(4,17,30,.20) 35%,rgba(0,8,14,.76) 100%);
+  pointer-events:none;
+}
+.appraisal-intro-hud{
+  position:absolute;
+  z-index:30;
+  top:max(30px,calc(env(safe-area-inset-top) + 20px));
+  left:22px;
+  right:22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#fff;
+  font-size:17px;
+  font-weight:1000;
+  text-shadow:0 2px 5px rgba(0,0,0,.72);
+}
+.appraisal-intro-hud span{color:#ffe12f}
+.appraisal-intro-hud b{font-size:18px}
+.appraisal-intro-summary{
+  position:absolute;
+  z-index:12;
+  top:max(86px,calc(env(safe-area-inset-top) + 74px));
+  left:50%;
+  transform:translateX(-50%);
+  width:min(78%,305px);
+  padding:12px 16px;
+  border:1px solid rgba(255,218,47,.34);
+  border-radius:14px;
+  background:rgba(3,24,39,.54);
+  text-align:center;
+  box-shadow:0 10px 24px rgba(0,0,0,.16);
+}
+.appraisal-intro-summary span{
+  display:block;
+  color:rgba(255,255,255,.72);
+  font-size:12px;
+  font-weight:850;
+}
+.appraisal-intro-summary strong{
+  display:block;
+  margin-top:2px;
+  color:#fff;
+  font-size:21px;
+  font-weight:1000;
+}
+.appraisal-intro-mudagiri{
+  position:absolute;
+  z-index:14;
+  left:5%;
+  top:20%;
+  width:min(40vw,170px);
+  max-height:28dvh;
+  object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 12px 16px rgba(0,0,0,.32));
+}
+.appraisal-intro-card{
+  position:absolute;
+  z-index:22;
+  left:18px;
+  right:18px;
+  bottom:max(24px,calc(env(safe-area-inset-bottom) + 14px));
+  padding:22px 19px 18px;
+  border:1.5px solid #f1c92f;
+  border-radius:20px;
+  background:rgba(0,27,35,.97);
+  box-shadow:0 18px 38px rgba(0,0,0,.42);
+  text-align:center;
+}
+.appraisal-intro-kicker{
+  color:#ffd42b;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.12em;
+}
+.appraisal-intro-card h2{
+  margin:8px 0 0;
+  color:#fff;
+  font-size:clamp(29px,8vw,36px);
+  line-height:1.1;
+  font-weight:1000;
+  letter-spacing:-.04em;
+}
+.appraisal-intro-card p{
+  margin:14px 0 0;
+  color:rgba(255,255,255,.78);
+  font-size:14px;
+  line-height:1.7;
+  font-weight:760;
+}
+.appraisal-intro-card p strong{color:#fff}
+.appraisal-intro-rule{
+  margin-top:14px;
+  padding:10px 12px;
+  border-radius:11px;
+  background:rgba(21,54,72,.76);
+}
+.appraisal-intro-rule span{
+  display:block;
+  color:#ffd42b;
+  font-size:10px;
+  font-weight:1000;
+}
+.appraisal-intro-rule b{
+  display:block;
+  margin-top:2px;
+  color:#fff;
+  font-size:15px;
+  font-weight:1000;
+}
+.appraisal-intro-note{
+  margin-top:11px;
+  color:rgba(255,255,255,.72);
+  font-size:12px;
+  line-height:1.5;
+  font-weight:800;
+}
+.appraisal-intro-cta{margin-top:14px;min-height:56px}
+
+.type-quiz-hud{
+  position:absolute;
+  z-index:30;
+  top:max(28px,calc(env(safe-area-inset-top) + 18px));
+  left:20px;
+  right:20px;
+}
+.type-quiz-hud-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:#fff;
+  font-size:16px;
+  font-weight:1000;
+  text-shadow:0 2px 5px rgba(0,0,0,.78);
+}
+.type-quiz-hud-row span{color:#ffe12f}
+.type-quiz-hud-row b{font-size:17px}
+.type-quiz-progress{
+  height:14px;
+  margin-top:7px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+  background:rgba(0,20,42,.94);
+}
+.type-quiz-progress span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#f6bd22,#ffe65a);
+  box-shadow:0 0 12px rgba(255,218,44,.4);
+  transition:width .24s ease;
+}
+.type-quiz-mudagiri{
+  position:absolute;
+  z-index:14;
+  left:3%;
+  top:13.5%;
+  width:min(36vw,154px);
+  max-height:24dvh;
+  object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.32));
+}
+.type-quiz-dialogue{
+  position:absolute;
+  z-index:16;
+  top:15%;
+  right:5%;
+  width:59%;
+  min-height:66px;
+  display:flex;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:13px;
+  background:rgba(5,47,56,.93);
+  color:#fff;
+  font-size:14px;
+  line-height:1.45;
+  font-weight:850;
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
+}
+.type-quiz-card{
+  position:absolute;
+  z-index:22;
+  left:16px;
+  right:16px;
+  bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px));
+  padding:17px 16px 14px;
+  border:1.5px solid #f1c92f;
+  border-radius:19px;
+  background:rgba(0,27,35,.975);
+  box-shadow:0 18px 38px rgba(0,0,0,.42);
+}
+.type-quiz-number{
+  color:#ffd42b;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.08em;
+}
+.type-quiz-card h2{
+  margin:7px 0 0;
+  color:#fff;
+  font-size:clamp(20px,5.8vw,25px);
+  line-height:1.28;
+  font-weight:1000;
+  letter-spacing:-.035em;
+}
+.type-quiz-helper{
+  margin:6px 0 0;
+  color:rgba(255,255,255,.68);
+  font-size:12px;
+  font-weight:800;
+}
+.type-choice-stack{margin-top:12px}
+.type-choice-card{
+  padding:11px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:13px;
+  background:rgba(18,53,68,.70);
+}
+.type-choice-copy{
+  color:#fff;
+  font-size:14px;
+  line-height:1.42;
+  font-weight:900;
+}
+.type-choice-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:9px;
+}
+.type-choice-actions button{
+  min-height:42px;
+  padding:8px 6px;
+  border:1px solid rgba(255,215,47,.48);
+  border-radius:10px;
+  background:rgba(4,28,38,.88);
+  color:#fff;
+  font:inherit;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease;
+}
+.type-choice-actions button:active{transform:scale(.98)}
+.type-choice-actions button.is-picked{
+  border-color:#ffe04a;
+  background:rgba(120,92,0,.74);
+  box-shadow:0 0 0 2px rgba(255,224,74,.12) inset;
+}
+.type-choice-actions button:disabled{cursor:default}
+.type-choice-or{
+  padding:5px 0;
+  text-align:center;
+  color:rgba(255,255,255,.42);
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.18em;
+}
+.type-quiz-foot{
+  margin-top:9px;
+  text-align:center;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:850;
+}
+
+.type-complete-shade{
+  background:linear-gradient(180deg,rgba(3,20,38,.25),rgba(0,8,14,.78));
+}
+.type-complete-mudagiri{
+  position:absolute;
+  z-index:14;
+  left:50%;
+  top:12%;
+  width:min(44vw,188px);
+  transform:translateX(-50%);
+  object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 12px 16px rgba(0,0,0,.34));
+}
+.type-complete-card{
+  position:absolute;
+  z-index:22;
+  left:18px;
+  right:18px;
+  bottom:max(28px,calc(env(safe-area-inset-bottom) + 16px));
+  padding:24px 19px 18px;
+  border:1.5px solid #f1c92f;
+  border-radius:20px;
+  background:rgba(0,27,35,.97);
+  text-align:center;
+  box-shadow:0 18px 38px rgba(0,0,0,.42);
+}
+.type-complete-kicker{
+  color:#ffd42b;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.08em;
+}
+.type-complete-card h2{
+  margin:9px 0 0;
+  color:#fff;
+  font-size:clamp(28px,7.5vw,34px);
+  line-height:1.14;
+  font-weight:1000;
+}
+.type-complete-card p{
+  margin:13px 0 0;
+  color:rgba(255,255,255,.76);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:760;
+}
+.type-complete-card p strong{color:#fff}
+.type-complete-next-label{
+  margin-top:13px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:rgba(20,53,71,.76);
+  color:#ffd42b;
+  font-size:11px;
+  font-weight:1000;
+}
+.type-complete-cta{margin-top:13px;min-height:54px}
+
+@media(max-height:720px){
+  .appraisal-intro-mudagiri{top:17%;width:min(34vw,142px)}
+  .appraisal-intro-card{padding:17px 16px 14px}
+  .appraisal-intro-card h2{font-size:27px}
+  .appraisal-intro-card p{margin-top:9px;font-size:12px;line-height:1.55}
+  .appraisal-intro-rule{margin-top:9px;padding:8px 10px}
+  .appraisal-intro-note{margin-top:7px;font-size:11px}
+  .appraisal-intro-cta{margin-top:9px;min-height:49px}
+
+  .type-quiz-mudagiri{top:12%;width:min(30vw,128px)}
+  .type-quiz-dialogue{top:13%;min-height:54px;padding:9px 11px;font-size:12px}
+  .type-quiz-card{padding:13px 13px 11px}
+  .type-quiz-card h2{font-size:18px}
+  .type-quiz-helper{font-size:10.5px}
+  .type-choice-stack{margin-top:9px}
+  .type-choice-card{padding:8px 9px}
+  .type-choice-copy{font-size:12px}
+  .type-choice-actions{margin-top:6px;gap:6px}
+  .type-choice-actions button{min-height:36px;padding:6px 4px;font-size:10.5px}
+  .type-choice-or{padding:3px 0}
+  .type-quiz-foot{margin-top:6px;font-size:10px}
+
+  .type-complete-mudagiri{top:9%;width:min(37vw,156px)}
+  .type-complete-card{padding:18px 16px 14px}
+  .type-complete-card h2{font-size:27px}
+  .type-complete-card p{font-size:12px}
+  .type-complete-cta{min-height:49px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .type-quiz-progress span,.type-choice-actions button{transition:none!important}
+}
 
 /* keep PROFILE primary actions on the approved thumb anchor */
 .pre-profile .pre-fixed-profile-cta,
