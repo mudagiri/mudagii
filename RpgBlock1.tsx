@@ -594,6 +594,17 @@ function ScanScene({
     }
 
     setPhase('trace');
+
+    // SCAN V2.1 prototype:
+    // 通信ザウルスだけ先に「NORMAL画像→黒シルエット→同一座標REVEAL」を検証する。
+    // 承認後に残り11体へ共通化する。
+    if (config.category === 'mobile') {
+      timers.current.push(window.setTimeout(() => setPhase('reveal'), 420));
+      timers.current.push(window.setTimeout(() => setPhase('detected'), 780));
+      timers.current.push(window.setTimeout(onDone, 1550));
+      return;
+    }
+
     timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
     timers.current.push(window.setTimeout(() => setPhase('detected'), 1250));
     timers.current.push(window.setTimeout(onDone, 2350));
@@ -622,13 +633,35 @@ function ScanScene({
       {!isInput && !isNoSpend && (
         <>
           <div className="battle-contact" aria-hidden="true" />
-          {isTrace ? (
-            <img className="battle-trace" src={enemy.trace} alt="" aria-hidden="true" />
+
+          {config.category === 'mobile' ? (
+            <div className="scan-enemy-stage scan-enemy-stage-mobile">
+              <img
+                className={`scan-v21-enemy ${isTrace ? 'scan-v21-trace' : 'scan-v21-normal'}`}
+                src={enemy.normal}
+                alt={isTrace ? '' : enemy.name}
+                aria-hidden={isTrace ? 'true' : undefined}
+              />
+              {isReveal && (
+                <img
+                  className="scan-v21-reveal"
+                  src={`${BATTLE_ASSET}/FX-01_REVEAL.png`}
+                  alt=""
+                  aria-hidden="true"
+                />
+              )}
+            </div>
           ) : (
-            <img className="battle-enemy scan-detected-enemy" src={enemy.normal} alt={enemy.name} />
-          )}
-          {isReveal && (
-            <img className="battle-fx battle-fx-reveal" src={`${BATTLE_ASSET}/FX-01_REVEAL.png`} alt="" aria-hidden="true" />
+            <>
+              {isTrace ? (
+                <img className="battle-trace" src={enemy.trace} alt="" aria-hidden="true" />
+              ) : (
+                <img className="battle-enemy scan-detected-enemy" src={enemy.normal} alt={enemy.name} />
+              )}
+              {isReveal && (
+                <img className="battle-fx battle-fx-reveal" src={`${BATTLE_ASSET}/FX-01_REVEAL.png`} alt="" aria-hidden="true" />
+              )}
+            </>
           )}
         </>
       )}
@@ -1567,6 +1600,76 @@ const CSS = String.raw`
   }
 }
 
+
+/* ===== SCAN V2.1 PROTOTYPE : 通信ザウルス =====
+   NORMAL画像をそのまま黒シルエット化するので、
+   TRACE→NORMALで輪郭・位置・サイズがズレない。
+   REVEAL FXも同じenemy-stageを基準に配置する。 */
+.scan-enemy-stage{
+  position:absolute;
+  z-index:10;
+  right:-1%;
+  bottom:31%;
+  width:57%;
+  aspect-ratio:1 / 1;
+  pointer-events:none;
+}
+.scan-enemy-stage-mobile{
+  --enemy-scale:1;
+  --enemy-x:0px;
+  --enemy-y:0px;
+  --fx-scale:1.10;
+}
+.scan-v21-enemy,
+.scan-v21-reveal{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  image-rendering:pixelated;
+  pointer-events:none;
+}
+.scan-v21-enemy{
+  transform:translate(var(--enemy-x),var(--enemy-y)) scale(var(--enemy-scale));
+  transform-origin:55% 90%;
+  filter:drop-shadow(0 11px 14px rgba(0,0,0,.26));
+}
+.scan-v21-trace{
+  opacity:.72;
+  filter:brightness(0) saturate(0) drop-shadow(0 0 9px rgba(125,80,255,.48)) drop-shadow(0 11px 14px rgba(0,0,0,.34));
+  animation:scan-v21-trace-pulse .42s ease-in-out infinite alternate;
+}
+.scan-v21-normal{
+  opacity:1;
+  animation:scan-v21-enemy-in .18s ease-out both;
+}
+.scan-v21-reveal{
+  z-index:2;
+  transform:scale(var(--fx-scale));
+  transform-origin:50% 55%;
+  mix-blend-mode:screen;
+  animation:scan-v21-reveal .36s ease-out both;
+}
+@keyframes scan-v21-trace-pulse{
+  from{transform:translate(var(--enemy-x),var(--enemy-y)) scale(calc(var(--enemy-scale) * .97));opacity:.58}
+  to{transform:translate(var(--enemy-x),var(--enemy-y)) scale(calc(var(--enemy-scale) * 1.015));opacity:.78}
+}
+@keyframes scan-v21-enemy-in{
+  from{transform:translate(var(--enemy-x),var(--enemy-y)) scale(calc(var(--enemy-scale) * .96));opacity:.25}
+  to{transform:translate(var(--enemy-x),var(--enemy-y)) scale(var(--enemy-scale));opacity:1}
+}
+@keyframes scan-v21-reveal{
+  0%{transform:scale(calc(var(--fx-scale) * .82));opacity:0}
+  45%{transform:scale(calc(var(--fx-scale) * 1.04));opacity:.95}
+  100%{transform:scale(var(--fx-scale));opacity:.18}
+}
+@media(max-height:720px){
+  .scan-enemy-stage{bottom:28.5%}
+}
+@media(prefers-reduced-motion:reduce){
+  .scan-v21-enemy,.scan-v21-reveal{animation:none!important}
+}
 
 /* ===== CATEGORY-DRIVEN SCAN V2 ===== */
 .scan-detected-enemy{animation:battle-enemy-in .22s ease-out both}
