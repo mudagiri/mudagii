@@ -53,6 +53,33 @@ const SCAN_CATEGORIES: ScanCategoryConfig[] = [
   { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '学び・資格・トレーニング等' },
 ];
 
+
+type ScanEnemyLayout = {
+  scale: number;
+  x: number;
+  y: number;
+  fxScale: number;
+  fxY: number;
+};
+
+// SCAN V2.1 共通レイアウト。
+// まずは承認済みの通信ザウルス基準を全敵へ展開し、
+// 実機一周後にズレる敵だけこの数値を個別調整する。
+const SCAN_ENEMY_LAYOUT: Record<EnemyAssetCategory, ScanEnemyLayout> = {
+  mobile:          { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  energy:          { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  sub:             { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  food:            { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  daily:           { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  fun:             { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  beautyFashion:   { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  car:             { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  rent:            { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  insurance:       { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  childEducation:  { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+  selfDevelopment: { scale: 1.00, x: 0, y: 0, fxScale: 1.10, fxY: -13 },
+};
+
 const ASSET = './assets/prebattle';
 
 const PREFECTURES = [
@@ -572,6 +599,14 @@ function ScanScene({
   onDone: () => void;
 }) {
   const enemy = ENEMY_ASSETS[config.category];
+  const layout = SCAN_ENEMY_LAYOUT[config.category];
+  const enemyStageStyle = {
+    '--enemy-scale': layout.scale,
+    '--enemy-x': `${layout.x}px`,
+    '--enemy-y': `${layout.y}px`,
+    '--fx-scale': layout.fxScale,
+    '--fx-y': `${layout.fxY}%`,
+  } as React.CSSProperties;
   const [phase, setPhase] = useState<ScanPhase>('input');
   const timers = React.useRef<number[]>([]);
 
@@ -595,19 +630,10 @@ function ScanScene({
 
     setPhase('trace');
 
-    // SCAN V2.1 prototype:
-    // 通信ザウルスだけ先に「NORMAL画像→黒シルエット→同一座標REVEAL」を検証する。
-    // 承認後に残り11体へ共通化する。
-    if (config.category === 'mobile') {
-      timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
-      timers.current.push(window.setTimeout(() => setPhase('detected'), 1100));
-      timers.current.push(window.setTimeout(onDone, 1950));
-      return;
-    }
-
+    // SCAN V2.1: 承認済みの通信ザウルス基準を全敵へ共通化。
     timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
-    timers.current.push(window.setTimeout(() => setPhase('detected'), 1250));
-    timers.current.push(window.setTimeout(onDone, 2350));
+    timers.current.push(window.setTimeout(() => setPhase('detected'), 1100));
+    timers.current.push(window.setTimeout(onDone, 1950));
   };
 
   const progress = ((current - 1 + (phase === 'input' ? 0 : 1)) / total) * 100;
@@ -634,35 +660,22 @@ function ScanScene({
         <>
           <div className="battle-contact" aria-hidden="true" />
 
-          {config.category === 'mobile' ? (
-            <div className="scan-enemy-stage scan-enemy-stage-mobile">
+          <div className="scan-enemy-stage" style={enemyStageStyle}>
+            <img
+              className={`scan-v21-enemy ${isTrace ? 'scan-v21-trace' : 'scan-v21-normal'}`}
+              src={enemy.normal}
+              alt={isTrace ? '' : enemy.name}
+              aria-hidden={isTrace ? 'true' : undefined}
+            />
+            {isReveal && (
               <img
-                className={`scan-v21-enemy ${isTrace ? 'scan-v21-trace' : 'scan-v21-normal'}`}
-                src={enemy.normal}
-                alt={isTrace ? '' : enemy.name}
-                aria-hidden={isTrace ? 'true' : undefined}
+                className="scan-v21-reveal"
+                src={`${BATTLE_ASSET}/FX-01_REVEAL.png`}
+                alt=""
+                aria-hidden="true"
               />
-              {isReveal && (
-                <img
-                  className="scan-v21-reveal"
-                  src={`${BATTLE_ASSET}/FX-01_REVEAL.png`}
-                  alt=""
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-          ) : (
-            <>
-              {isTrace ? (
-                <img className="battle-trace" src={enemy.trace} alt="" aria-hidden="true" />
-              ) : (
-                <img className="battle-enemy scan-detected-enemy" src={enemy.normal} alt={enemy.name} />
-              )}
-              {isReveal && (
-                <img className="battle-fx battle-fx-reveal" src={`${BATTLE_ASSET}/FX-01_REVEAL.png`} alt="" aria-hidden="true" />
-              )}
-            </>
-          )}
+            )}
+          </div>
         </>
       )}
 
@@ -1601,10 +1614,10 @@ const CSS = String.raw`
 }
 
 
-/* ===== SCAN V2.1 PROTOTYPE : 通信ザウルス =====
-   NORMAL画像をそのまま黒シルエット化するので、
-   TRACE→NORMALで輪郭・位置・サイズがズレない。
-   REVEAL FXも同じenemy-stageを基準に配置する。 */
+/* ===== SCAN V2.1 COMMON : 全12敵 =====
+   NORMAL画像を黒シルエット化してTRACEを生成。
+   TRACE→NORMALで輪郭・位置・サイズを固定。
+   REVEAL FXも同じenemy-stage基準で足元へ配置する。 */
 .scan-enemy-stage{
   position:absolute;
   z-index:10;
@@ -1613,12 +1626,11 @@ const CSS = String.raw`
   width:57%;
   aspect-ratio:1 / 1;
   pointer-events:none;
-}
-.scan-enemy-stage-mobile{
   --enemy-scale:1;
   --enemy-x:0px;
   --enemy-y:0px;
   --fx-scale:1.10;
+  --fx-y:-13%;
 }
 .scan-v21-enemy,
 .scan-v21-reveal{
@@ -1648,7 +1660,7 @@ const CSS = String.raw`
   z-index:2;
   inset:auto;
   left:50%;
-  bottom:-13%;
+  bottom:var(--fx-y);
   width:118%;
   height:118%;
   object-position:center bottom;
