@@ -229,6 +229,9 @@ export default function RpgBlock1({
       'FX-05_ESCAPE_DUST.png',
       'FX-06_UNKNOWN.png',
     ].forEach((name) => preload(`./assets/battle1/${name}`));
+    preload(SCAN_MUDAGIRI_GUIDE);
+    preload(SCAN_MUDAGIRI_RUN);
+    preload(SCAN_MUDAGIRI_BATTLE);
 
     Object.values(ENEMY_ASSETS).forEach((enemy) => {
       preload(enemy.trace);
@@ -588,6 +591,9 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
 }
 
 const BATTLE_ASSET = './assets/battle1';
+const SCAN_MUDAGIRI_GUIDE = `${ASSET}/MUDAGIRI_PROFILE_Q1.png`;
+const SCAN_MUDAGIRI_RUN = `${ASSET}/MUDAGIRI_PROFILE_Q2.png`;
+const SCAN_MUDAGIRI_BATTLE = `${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`;
 
 function ScanScene({
   config,
@@ -662,6 +668,11 @@ function ScanScene({
   const discoveredNow = discoveredBefore + (isDetected && amount > 0 ? 1 : 0);
   const progressPercent = Math.round((completedAreas / total) * 100);
   const hudMode = isTrace ? '気配を追跡' : isReveal ? '反応あり' : isDetected ? '敵影発見' : isNoSpend ? '気配なし' : '探索中';
+  const mudagiriSprite = isInput || isNoSpend
+    ? SCAN_MUDAGIRI_GUIDE
+    : isTrace
+      ? SCAN_MUDAGIRI_RUN
+      : SCAN_MUDAGIRI_BATTLE;
 
   return (
     <div className={`scan-scene scan-phase-${phase}`}>
@@ -713,7 +724,7 @@ function ScanScene({
 
       <img
         className={`scan-mudagiri scan-mudagiri-${phase}`}
-        src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`}
+        src={mudagiriSprite}
         alt="ムダギリくん"
       />
 
@@ -772,7 +783,7 @@ function ScanCompleteScene({ scanned }: { scanned: number }) {
     <div className="scan-scene scan-complete-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-complete-shade" aria-hidden="true" />
-      <img className="scan-complete-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
+      <img className="scan-complete-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
       <section className="scan-complete-card">
         <div className="scan-complete-kicker">ムダ探索 100%</div>
         <h2>対象カテゴリのスキャン完了</h2>
@@ -1568,9 +1579,9 @@ const CSS = String.raw`
 .battle-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;image-rendering:pixelated;user-select:none;pointer-events:none}
 .scan-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.05) 0%,rgba(0,0,0,0) 52%),linear-gradient(0deg,rgba(0,10,15,.5) 0%,rgba(0,0,0,0) 47%);pointer-events:none}
 .scan-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:20px;right:20px}
-.scan-hud-top{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:13px;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.82)}
+.scan-hud-top{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:15px;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.82)}
 .scan-hud-top span{color:#ffe12f;letter-spacing:.02em}
-.scan-hud-top b{font-size:14px}
+.scan-hud-top b{font-size:16px}
 .scan-progress{height:13px;margin-top:7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(0,20,42,.92);overflow:hidden;box-shadow:0 2px 7px rgba(0,0,0,.24)}
 .scan-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#f6bd22,#ffe65a);box-shadow:0 0 12px rgba(255,218,44,.46);transition:width .28s ease}
 
@@ -1596,7 +1607,7 @@ const CSS = String.raw`
 }
 .scan-world-mode{
   color:#ffd62f;
-  font-size:10px;
+  font-size:12px;
   font-weight:1000;
   letter-spacing:.16em;
   text-shadow:0 2px 4px rgba(0,0,0,.65);
@@ -1608,13 +1619,13 @@ const CSS = String.raw`
   gap:6px;
   margin-top:2px;
   color:rgba(255,255,255,.92);
-  font-size:13px;
+  font-size:15px;
   font-weight:900;
   text-shadow:0 2px 5px rgba(0,0,0,.72);
 }
 .scan-world-count strong{
   color:#fff;
-  font-size:32px;
+  font-size:36px;
   line-height:1;
   font-weight:1000;
   letter-spacing:-.04em;
@@ -1622,7 +1633,7 @@ const CSS = String.raw`
 .scan-world-remaining{
   margin-top:3px;
   color:rgba(255,255,255,.64);
-  font-size:11px;
+  font-size:13px;
   font-weight:850;
   letter-spacing:.04em;
 }
@@ -1650,25 +1661,25 @@ const CSS = String.raw`
   transform-origin:48% 100%;
   transition:left .42s cubic-bezier(.2,.8,.2,1),bottom .42s cubic-bezier(.2,.8,.2,1),width .42s cubic-bezier(.2,.8,.2,1),transform .42s ease,opacity .2s ease;
 }
-.scan-mudagiri-input{left:3%;bottom:39.8%;width:min(40vw,170px);transform:translate3d(0,0,0) rotate(0deg)}
-.scan-mudagiri-trace{left:12%;bottom:34.4%;width:min(35vw,148px);transform:translate3d(0,0,0) rotate(-3deg);animation:scan-search-step .55s ease-in-out infinite alternate}
+.scan-mudagiri-input{left:2.4%;bottom:39.2%;width:min(39vw,166px);transform:translate3d(0,0,0) rotate(0deg)}
+.scan-mudagiri-trace{left:11.8%;bottom:34.2%;width:min(35vw,150px);transform:translate3d(0,0,0) rotate(-4deg);animation:scan-search-step .55s ease-in-out infinite alternate}
 .scan-mudagiri-reveal{left:14%;bottom:33.2%;width:min(35vw,148px);transform:translate3d(4px,-2px,0) rotate(-4deg)}
 .scan-mudagiri-detected{left:8%;bottom:32.4%;width:min(37vw,156px);transform:translate3d(0,0,0) rotate(-1deg)}
-.scan-mudagiri-noSpend{left:6%;bottom:33.2%;width:min(36vw,152px);transform:translate3d(0,0,0) rotate(1deg)}
+.scan-mudagiri-noSpend{left:4.5%;bottom:37.2%;width:min(38vw,162px);transform:translate3d(0,0,0) rotate(0deg)}
 @keyframes scan-search-step{
   from{transform:translate3d(0,0,0) rotate(-3deg)}
   to{transform:translate3d(7px,-3px,0) rotate(-1deg)}
 }
 .scan-panel{position:absolute;z-index:20;left:20px;right:20px;bottom:max(34px,calc(env(safe-area-inset-bottom) + 24px));min-height:320px;padding:20px 19px 18px;border:1.5px solid #ffc92c;border-radius:20px;background:rgba(0,28,35,.965);box-shadow:0 16px 36px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
-.scan-dialogue{width:70%;min-height:61px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(5,47,56,.94);font-size:13px;font-weight:850;line-height:1.5}
-.scan-number{color:#ffd42b;font-size:12px;font-weight:1000;letter-spacing:.03em}
+.scan-dialogue{width:70%;min-height:66px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:13px 15px;border-radius:12px;background:rgba(5,47,56,.94);font-size:15px;font-weight:850;line-height:1.5}
+.scan-number{color:#ffd42b;font-size:13px;font-weight:1000;letter-spacing:.03em}
 .scan-panel h2{margin:7px 0 0;font-size:clamp(22px,6.1vw,27px);line-height:1.25;font-weight:1000;letter-spacing:-.035em}
-.scan-panel p{margin:6px 0 0;color:rgba(255,255,255,.72);font-size:12px;font-weight:750;line-height:1.45}
+.scan-panel p{margin:6px 0 0;color:rgba(255,255,255,.78);font-size:13px;font-weight:780;line-height:1.45}
 .scan-money{display:flex;align-items:center;margin-top:16px;min-height:58px;padding:0 14px;border-radius:11px;background:#fff;color:#16212a}
 .scan-yen{font-size:18px;font-weight:1000}
 .scan-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#16212a;font:inherit;font-size:24px;font-weight:1000;text-align:right}
 .scan-money input::placeholder{color:#aab2b8}
-.scan-month{margin-left:7px;color:#5d6870;font-size:13px;font-weight:900}
+.scan-month{margin-left:7px;color:#5d6870;font-size:14px;font-weight:900}
 .scan-start{margin-top:13px;min-height:54px}
 .scan-start:disabled{opacity:.45;cursor:not-allowed;animation:none}
 .battle-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;text-shadow:0 2px 5px rgba(0,0,0,.8)}
@@ -1693,7 +1704,7 @@ const CSS = String.raw`
 .battle-fx-unknown{right:2%;bottom:29%;width:61%;opacity:.82;animation:battle-unknown-fx .7s ease-out both}
 .battle-white-flash{position:absolute;inset:0;z-index:22;background:rgba(255,255,255,.9);pointer-events:none;animation:battle-flash .12s linear both}
 .battle-panel{position:absolute;z-index:25;left:12px;right:12px;bottom:max(12px,calc(env(safe-area-inset-bottom) + 7px));min-height:166px;padding:15px 16px 14px;border:1.5px solid #f0c92f;border-radius:15px;background:rgba(5,20,34,.96);box-shadow:0 13px 30px rgba(0,0,0,.42)}
-.battle-dialogue{color:#fff;font-size:15px;font-weight:1000;line-height:1.4}
+.battle-dialogue{color:#fff;font-size:16px;font-weight:1000;line-height:1.4}
 .battle-status{display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding:10px 12px;border-radius:10px;background:rgba(19,49,70,.72);color:rgba(255,255,255,.72);font-size:10px;font-weight:800}
 .battle-status strong{color:#fff;font-size:12px;font-weight:1000}
 .battle-loading{display:flex;justify-content:center;align-items:center;gap:7px;margin-top:13px;color:#f6d93b;font-size:10px;font-weight:900}
@@ -1722,16 +1733,16 @@ const CSS = String.raw`
 @media(max-height:720px){
   .scan-panel{bottom:max(13px,calc(env(safe-area-inset-bottom) + 8px));min-height:270px;padding-top:14px}
   .scan-world-hud{top:max(75px,calc(env(safe-area-inset-top) + 61px));padding:9px 14px 10px;width:min(74%,270px)}
-  .scan-world-count strong{font-size:27px}
-  .scan-world-mode{font-size:9px}
-  .scan-world-count{font-size:12px}
-  .scan-world-remaining{font-size:10px}
-  .scan-mudagiri-input{left:3%;bottom:40%;width:min(35vw,148px)}
-  .scan-mudagiri-trace{left:12%;bottom:34.5%;width:min(31vw,132px)}
+  .scan-world-count strong{font-size:30px}
+  .scan-world-mode{font-size:11px}
+  .scan-world-count{font-size:13px}
+  .scan-world-remaining{font-size:11px}
+  .scan-mudagiri-input{left:2.2%;bottom:39.5%;width:min(34vw,144px)}
+  .scan-mudagiri-trace{left:11.5%;bottom:34.2%;width:min(31vw,134px)}
   .scan-mudagiri-reveal{left:14%;bottom:33.5%;width:min(31vw,132px)}
   .scan-mudagiri-detected{left:8%;bottom:32.5%;width:min(33vw,140px)}
-  .scan-mudagiri-noSpend{left:6%;bottom:33%;width:min(32vw,136px)}
-  .scan-dialogue{min-height:48px;margin-bottom:11px;padding:9px 11px;font-size:11.5px}
+  .scan-mudagiri-noSpend{left:4.2%;bottom:37%;width:min(33vw,140px)}
+  .scan-dialogue{min-height:52px;margin-bottom:11px;padding:10px 12px;font-size:13px}
   .scan-money{min-height:48px;margin-top:11px}
   .scan-money input{font-size:21px}
   .scan-start{min-height:46px;margin-top:9px}
@@ -1858,7 +1869,7 @@ const CSS = String.raw`
 /* ===== CATEGORY-DRIVEN SCAN V2 ===== */
 .scan-detected-enemy{animation:battle-enemy-in .22s ease-out both}
 .scan-result-panel{min-height:166px}
-.scan-zero-hint{margin-top:9px;text-align:center;color:rgba(255,255,255,.62);font-size:11px;font-weight:800}
+.scan-zero-hint{margin-top:10px;text-align:center;color:rgba(255,255,255,.7);font-size:12px;font-weight:800}
 .scan-complete-scene{position:absolute;inset:0;overflow:hidden;background:#0d6ec5}
 .scan-complete-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.12),rgba(0,8,14,.7));backdrop-filter:blur(1px)}
 .scan-complete-mudagiri{position:absolute;z-index:10;left:50%;top:14%;width:min(48vw,205px);transform:translateX(-50%);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 16px rgba(0,0,0,.35))}
