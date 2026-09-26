@@ -638,23 +638,26 @@ function ScanScene({
 
     if (amount === 0) {
       setPhase('noSpend');
-      timers.current.push(window.setTimeout(onDone, 1050));
       return;
     }
 
     setPhase('trace');
 
-    // SCAN V2.2: 序盤は見せる、中盤は加速、終盤は少し溜める。
-    // 同じ1.95秒を12回繰り返さず、探索のリズムに波を作る。
+    // 序盤はしっかり見せ、中盤はテンポアップ、終盤は少し溜める。
+    // 「発見」後は自動遷移せず、ユーザーが敵を確認してから次へ進む。
     const isOpeningScan = current <= 2;
     const isEndingScan = current >= Math.max(total - 1, 1);
     const revealAt = isOpeningScan ? 550 : isEndingScan ? 470 : 330;
     const detectedAt = isOpeningScan ? 1100 : isEndingScan ? 930 : 690;
-    const doneAt = isOpeningScan ? 1950 : isEndingScan ? 1650 : 1250;
 
     timers.current.push(window.setTimeout(() => setPhase('reveal'), revealAt));
     timers.current.push(window.setTimeout(() => setPhase('detected'), detectedAt));
-    timers.current.push(window.setTimeout(onDone, doneAt));
+  };
+
+  const continueScan = () => {
+    timers.current.forEach(window.clearTimeout);
+    timers.current = [];
+    onDone();
   };
 
   const progress = ((current - 1 + (phase === 'input' ? 0 : 1)) / total) * 100;
@@ -698,6 +701,13 @@ function ScanScene({
           {remainingAreas > 0 ? `あと ${remainingAreas} エリア` : '全エリア探索完了'}
         </div>
       </div>
+
+      {isDetected && (
+        <div className="scan-encounter-pop" role="status" aria-live="polite">
+          <span>ENCOUNTER!</span>
+          <strong>{enemy.name}が現れた！</strong>
+        </div>
+      )}
 
       {!isInput && !isNoSpend && (
         <>
@@ -759,18 +769,23 @@ function ScanScene({
           <div className="battle-dialogue">
             {isTrace && '……気配を捕捉した。'}
             {isReveal && '来るぞ……！'}
-            {isDetected && `${enemy.name}、発見！`}
-            {isNoSpend && 'ここには敵の気配なし。次へ進むぞ！'}
+            {isDetected && '見つけた。こいつはあとで判定するぞ。'}
+            {isNoSpend && 'ここには敵の気配なし。次を探すぞ！'}
           </div>
           <div className="battle-status">
             <span>{config.question.replace('毎月の', '').replace('はいくら？', '')}</span>
             <strong>¥{amount.toLocaleString('ja-JP')} / 月</strong>
           </div>
-          {!isNoSpend && (
+          {(isTrace || isReveal) && (
             <div className="battle-loading">
               <span className="battle-loading-dot" />
-              <span>{isDetected ? '敵影を記録' : '探索中'}</span>
+              <span>探索中</span>
             </div>
+          )}
+          {(isDetected || isNoSpend) && (
+            <button type="button" className="pre-primary scan-next-search" onClick={continueScan}>
+              {current === total ? '探索結果へ ▶' : '次を探す ▶'}
+            </button>
           )}
         </section>
       )}
@@ -1646,6 +1661,28 @@ const CSS = String.raw`
   box-shadow:0 8px 24px rgba(0,0,0,.18),0 0 22px rgba(255,213,45,.08);
 }
 .scan-world-noSpend .scan-world-mode{color:#a7e8c0}
+.scan-encounter-pop{
+  position:absolute;
+  z-index:32;
+  top:max(290px,calc(env(safe-area-inset-top) + 276px));
+  left:50%;
+  width:min(84%,328px);
+  transform:translateX(-50%);
+  padding:10px 14px 11px;
+  border:1.5px solid rgba(255,217,47,.92);
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(5,20,34,.97),rgba(3,16,29,.96));
+  box-shadow:0 10px 28px rgba(0,0,0,.34),0 0 20px rgba(255,211,42,.12);
+  text-align:center;
+  pointer-events:none;
+  animation:scan-encounter-pop-in .24s cubic-bezier(.2,.9,.24,1.18) both;
+}
+.scan-encounter-pop span{display:block;color:#ffd62f;font-size:10px;font-weight:1000;letter-spacing:.16em;line-height:1.1}
+.scan-encounter-pop strong{display:block;margin-top:4px;color:#fff;font-size:clamp(18px,5vw,22px);font-weight:1000;line-height:1.25;text-shadow:0 2px 5px rgba(0,0,0,.5)}
+@keyframes scan-encounter-pop-in{
+  from{opacity:0;transform:translateX(-50%) translateY(-6px) scale(.94)}
+  to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+}
 .scan-mudagiri{
   position:absolute;
   z-index:24;
@@ -1682,6 +1719,7 @@ const CSS = String.raw`
 .scan-month{margin-left:7px;color:#5d6870;font-size:14px;font-weight:900}
 .scan-start{margin-top:13px;min-height:54px}
 .scan-start:disabled{opacity:.45;cursor:not-allowed;animation:none}
+.scan-next-search{margin-top:13px;min-height:52px;font-size:15px}
 .battle-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;text-shadow:0 2px 5px rgba(0,0,0,.8)}
 .battle-hud span{color:rgba(255,255,255,.9);font-size:9px;font-weight:900}
 .battle-hud b{color:#ffe12f;font-size:11px;font-weight:1000}
@@ -1733,6 +1771,8 @@ const CSS = String.raw`
 @media(max-height:720px){
   .scan-panel{bottom:max(13px,calc(env(safe-area-inset-bottom) + 8px));min-height:270px;padding-top:14px}
   .scan-world-hud{top:max(96px,calc(env(safe-area-inset-top) + 82px));padding:12px 16px 13px;width:min(80%,292px)}
+  .scan-encounter-pop{top:max(245px,calc(env(safe-area-inset-top) + 231px));width:min(82%,304px);padding:8px 12px 9px}
+  .scan-encounter-pop strong{font-size:17px}
   .scan-world-count strong{font-size:34px}
   .scan-world-mode{font-size:12px}
   .scan-world-count{font-size:15px}
@@ -1746,13 +1786,14 @@ const CSS = String.raw`
   .scan-money{min-height:48px;margin-top:11px}
   .scan-money input{font-size:21px}
   .scan-start{min-height:46px;margin-top:9px}
+  .scan-next-search{min-height:44px;margin-top:10px;font-size:14px}
   .battle-trace,.battle-enemy{bottom:28.5%}
   .battle-mudagiri{bottom:27%;width:38%}
   .battle-panel{min-height:145px;padding-top:12px}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat,.scan-mudagiri{animation:none!important;transition:none!important}
+  .battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat,.scan-mudagiri,.scan-encounter-pop{animation:none!important;transition:none!important}
 }
 
 /* === PROFILE CTA TAP-ANCHOR PATCH 2026-09-25 === */
