@@ -599,9 +599,9 @@ function ScanScene({
     // 通信ザウルスだけ先に「NORMAL画像→黒シルエット→同一座標REVEAL」を検証する。
     // 承認後に残り11体へ共通化する。
     if (config.category === 'mobile') {
-      timers.current.push(window.setTimeout(() => setPhase('reveal'), 420));
-      timers.current.push(window.setTimeout(() => setPhase('detected'), 780));
-      timers.current.push(window.setTimeout(onDone, 1550));
+      timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
+      timers.current.push(window.setTimeout(() => setPhase('detected'), 1100));
+      timers.current.push(window.setTimeout(onDone, 1950));
       return;
     }
 
@@ -1646,10 +1646,16 @@ const CSS = String.raw`
 }
 .scan-v21-reveal{
   z-index:2;
-  transform:scale(var(--fx-scale));
-  transform-origin:50% 55%;
+  inset:auto;
+  left:50%;
+  bottom:-13%;
+  width:118%;
+  height:118%;
+  object-position:center bottom;
+  transform:translateX(-50%) scale(var(--fx-scale));
+  transform-origin:50% 82%;
   mix-blend-mode:screen;
-  animation:scan-v21-reveal .36s ease-out both;
+  animation:scan-v21-reveal .48s ease-out both;
 }
 @keyframes scan-v21-trace-pulse{
   from{transform:translate(var(--enemy-x),var(--enemy-y)) scale(calc(var(--enemy-scale) * .97));opacity:.58}
@@ -1660,9 +1666,9 @@ const CSS = String.raw`
   to{transform:translate(var(--enemy-x),var(--enemy-y)) scale(var(--enemy-scale));opacity:1}
 }
 @keyframes scan-v21-reveal{
-  0%{transform:scale(calc(var(--fx-scale) * .82));opacity:0}
-  45%{transform:scale(calc(var(--fx-scale) * 1.04));opacity:.95}
-  100%{transform:scale(var(--fx-scale));opacity:.18}
+  0%{transform:translateX(-50%) scale(calc(var(--fx-scale) * .82));opacity:0}
+  45%{transform:translateX(-50%) scale(calc(var(--fx-scale) * 1.04));opacity:.95}
+  100%{transform:translateX(-50%) scale(var(--fx-scale));opacity:.18}
 }
 @media(max-height:720px){
   .scan-enemy-stage{bottom:28.5%}
