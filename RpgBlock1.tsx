@@ -17,7 +17,7 @@ type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 
 type ProfileFlow = {
   prefecture: string;
-  ageBand: string;
+  age: string;
   household: FamilyProfile;
   workStyle: string;
   housingType: string;
@@ -90,8 +90,6 @@ const PREFECTURES = [
   '佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
 ];
 
-const AGE_BANDS = ['20代', '30代', '40代', '50代', '60代以上', '19歳以下'];
-
 const HOUSEHOLDS: { value: FamilyProfile; label: string }[] = [
   { value: 'single', label: 'ひとり暮らし' },
   { value: 'couple', label: '夫婦・パートナー' },
@@ -129,8 +127,8 @@ const QUESTIONS: QuestionConfig[] = [
   {
     no: 2,
     dialogue: 'よし、その調子！次いくぞ！',
-    question: '年代は？',
-    helper: '同世代の家計と比較',
+    question: '年齢は？',
+    helper: '年齢に近い家計データと比較',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q2.png`,
     footer: '冒険準備 40%',
   },
@@ -162,7 +160,7 @@ const QUESTIONS: QuestionConfig[] = [
 
 const INITIAL_FLOW: ProfileFlow = {
   prefecture: '東京都',
-  ageBand: '30代',
+  age: '30',
   household: 'single',
   workStyle: '会社員',
   housingType: '賃貸',
@@ -286,6 +284,9 @@ export default function RpgBlock1({
               config={currentScan}
               current={scanIndex + 1}
               total={applicableScanCategories.length}
+              discoveredBefore={applicableScanCategories
+                .slice(0, scanIndex)
+                .filter((item) => Number(scanValues[item.category] ?? '0') > 0).length}
               value={scanValues[currentScan.category] ?? ''}
               onChange={(value) => setScanValues((prev) => ({ ...prev, [currentScan.category]: value }))}
               onDone={() => {
@@ -477,17 +478,22 @@ function ProfileInput({
 
   if (no === 2) {
     return (
-      <label className="pre-input-wrap">
-        <span className="pre-sr-only">年代</span>
-        <select
-          className={selectClass}
-          value={flow.ageBand}
-          onChange={(e) => setFlow((v) => ({ ...v, ageBand: e.target.value }))}
-        >
-          {AGE_BANDS.map((ageBand) => (
-            <option key={ageBand} value={ageBand}>{ageBand}</option>
-          ))}
-        </select>
+      <label className="pre-input-wrap pre-age-wrap">
+        <span className="pre-sr-only">年齢</span>
+        <div className="pre-age-input">
+          <input
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={3}
+            value={flow.age}
+            onChange={(e) => {
+              const age = e.target.value.replace(/\D/g, '').slice(0, 3);
+              setFlow((v) => ({ ...v, age }));
+            }}
+            aria-label="年齢"
+          />
+          <span>歳</span>
+        </div>
       </label>
     );
   }
@@ -587,6 +593,7 @@ function ScanScene({
   config,
   current,
   total,
+  discoveredBefore,
   value,
   onChange,
   onDone,
@@ -594,6 +601,7 @@ function ScanScene({
   config: ScanCategoryConfig;
   current: number;
   total: number;
+  discoveredBefore: number;
   value: string;
   onChange: (value: string) => void;
   onDone: () => void;
@@ -630,10 +638,17 @@ function ScanScene({
 
     setPhase('trace');
 
-    // SCAN V2.1: 承認済みの通信ザウルス基準を全敵へ共通化。
-    timers.current.push(window.setTimeout(() => setPhase('reveal'), 550));
-    timers.current.push(window.setTimeout(() => setPhase('detected'), 1100));
-    timers.current.push(window.setTimeout(onDone, 1950));
+    // SCAN V2.2: 序盤は見せる、中盤は加速、終盤は少し溜める。
+    // 同じ1.95秒を12回繰り返さず、探索のリズムに波を作る。
+    const isOpeningScan = current <= 2;
+    const isEndingScan = current >= Math.max(total - 1, 1);
+    const revealAt = isOpeningScan ? 550 : isEndingScan ? 470 : 330;
+    const detectedAt = isOpeningScan ? 1100 : isEndingScan ? 930 : 690;
+    const doneAt = isOpeningScan ? 1950 : isEndingScan ? 1650 : 1250;
+
+    timers.current.push(window.setTimeout(() => setPhase('reveal'), revealAt));
+    timers.current.push(window.setTimeout(() => setPhase('detected'), detectedAt));
+    timers.current.push(window.setTimeout(onDone, doneAt));
   };
 
   const progress = ((current - 1 + (phase === 'input' ? 0 : 1)) / total) * 100;
@@ -642,6 +657,11 @@ function ScanScene({
   const isReveal = phase === 'reveal';
   const isDetected = phase === 'detected';
   const isNoSpend = phase === 'noSpend';
+  const completedAreas = current - 1 + (isInput ? 0 : 1);
+  const remainingAreas = Math.max(total - completedAreas, 0);
+  const discoveredNow = discoveredBefore + (isDetected && amount > 0 ? 1 : 0);
+  const progressPercent = Math.round((completedAreas / total) * 100);
+  const hudMode = isTrace ? 'SEARCHING' : isReveal ? 'SIGNAL' : isDetected ? 'ENEMY FOUND' : isNoSpend ? 'NO SIGNAL' : 'EXPLORING';
 
   return (
     <div className={`scan-scene scan-phase-${phase}`}>
@@ -650,11 +670,23 @@ function ScanScene({
 
       <header className="scan-hud">
         <div className="scan-hud-top">
-          <span>家計スキャン</span>
-          <b>{current} / {total}</b>
+          <span>HOUSEHOLD SCAN</span>
+          <b>{progressPercent}%</b>
         </div>
         <div className="scan-progress"><span style={{ width: `${progress}%` }} /></div>
       </header>
+
+      <div className={`scan-world-hud scan-world-${phase}`} aria-live="polite">
+        <div className="scan-world-mode">{hudMode}</div>
+        <div className="scan-world-count">
+          <span>敵影</span>
+          <strong>{discoveredNow}</strong>
+          <span>体 確認</span>
+        </div>
+        <div className="scan-world-remaining">
+          {remainingAreas > 0 ? `あと ${remainingAreas} エリア` : '全エリア探索完了'}
+        </div>
+      </div>
 
       {!isInput && !isNoSpend && (
         <>
@@ -1114,6 +1146,35 @@ const CSS = String.raw`
   appearance: auto;
 }
 
+.pre-age-input {
+  width: 100%;
+  min-height: 51px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: #fff;
+  color: #172027;
+}
+.pre-age-input input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172027;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 1000;
+  text-align: right;
+}
+.pre-age-input span {
+  margin-left: 8px;
+  color: #5c6871;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .pre-next {
   min-height: 50px;
   margin-top: 12px;
@@ -1501,6 +1562,68 @@ const CSS = String.raw`
 .scan-hud-top span{color:#ffe12f}
 .scan-progress{height:8px;margin-top:5px;border-radius:999px;background:rgba(0,24,46,.88);overflow:hidden}
 .scan-progress span{display:block;height:100%;border-radius:inherit;background:#ffd429}
+
+/* SCAN V2.2 upper-half exploration HUD.
+   Background remains visible; only a light, game-like information layer is added. */
+.scan-world-hud{
+  position:absolute;
+  z-index:12;
+  top:max(86px,calc(env(safe-area-inset-top) + 72px));
+  left:50%;
+  width:min(74%,286px);
+  transform:translateX(-50%);
+  padding:10px 16px 11px;
+  border:1px solid rgba(255,220,62,.34);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(3,25,42,.56),rgba(3,23,35,.34));
+  box-shadow:0 8px 24px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.035);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  text-align:center;
+  pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease,background .2s ease;
+}
+.scan-world-mode{
+  color:#ffd62f;
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:.16em;
+  text-shadow:0 2px 4px rgba(0,0,0,.65);
+}
+.scan-world-count{
+  display:flex;
+  justify-content:center;
+  align-items:baseline;
+  gap:6px;
+  margin-top:2px;
+  color:rgba(255,255,255,.92);
+  font-size:11px;
+  font-weight:900;
+  text-shadow:0 2px 5px rgba(0,0,0,.72);
+}
+.scan-world-count strong{
+  color:#fff;
+  font-size:28px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-.04em;
+}
+.scan-world-remaining{
+  margin-top:3px;
+  color:rgba(255,255,255,.64);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.04em;
+}
+.scan-world-trace,.scan-world-reveal{
+  opacity:.72;
+  transform:translateX(-50%) scale(.985);
+}
+.scan-world-detected{
+  background:linear-gradient(180deg,rgba(19,48,48,.68),rgba(5,29,38,.42));
+  box-shadow:0 8px 24px rgba(0,0,0,.18),0 0 22px rgba(255,213,45,.08);
+}
+.scan-world-noSpend .scan-world-mode{color:#a7e8c0}
 .scan-mudagiri{position:absolute;z-index:14;left:4px;bottom:35.5%;width:min(43vw,184px);max-height:29dvh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.34));pointer-events:none}
 .scan-panel{position:absolute;z-index:20;left:20px;right:20px;bottom:max(34px,calc(env(safe-area-inset-bottom) + 24px));min-height:320px;padding:20px 19px 18px;border:1.5px solid #ffc92c;border-radius:20px;background:rgba(0,28,35,.965);box-shadow:0 16px 36px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
 .scan-dialogue{width:72%;min-height:58px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:11px 13px;border-radius:12px;background:rgba(5,47,56,.93);font-size:11px;font-weight:800;line-height:1.55}
@@ -1564,6 +1687,8 @@ const CSS = String.raw`
 
 @media(max-height:720px){
   .scan-panel{bottom:max(13px,calc(env(safe-area-inset-bottom) + 8px));min-height:270px;padding-top:14px}
+  .scan-world-hud{top:max(69px,calc(env(safe-area-inset-top) + 55px));padding:7px 13px 8px;width:min(70%,260px)}
+  .scan-world-count strong{font-size:23px}
   .scan-mudagiri{bottom:34%;width:min(36vw,150px)}
   .scan-dialogue{min-height:45px;margin-bottom:11px;padding:8px 10px;font-size:10px}
   .scan-money{min-height:48px;margin-top:11px}
