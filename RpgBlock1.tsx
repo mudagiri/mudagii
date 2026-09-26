@@ -661,7 +661,7 @@ function ScanScene({
   const remainingAreas = Math.max(total - completedAreas, 0);
   const discoveredNow = discoveredBefore + (isDetected && amount > 0 ? 1 : 0);
   const progressPercent = Math.round((completedAreas / total) * 100);
-  const hudMode = isTrace ? 'SEARCHING' : isReveal ? 'SIGNAL' : isDetected ? 'ENEMY FOUND' : isNoSpend ? 'NO SIGNAL' : 'EXPLORING';
+  const hudMode = isTrace ? '気配を追跡' : isReveal ? '反応あり' : isDetected ? '敵影発見' : isNoSpend ? '気配なし' : '探索中';
 
   return (
     <div className={`scan-scene scan-phase-${phase}`}>
@@ -670,7 +670,7 @@ function ScanScene({
 
       <header className="scan-hud">
         <div className="scan-hud-top">
-          <span>HOUSEHOLD SCAN</span>
+          <span>ムダ探索</span>
           <b>{progressPercent}%</b>
         </div>
         <div className="scan-progress"><span style={{ width: `${progress}%` }} /></div>
@@ -711,14 +711,18 @@ function ScanScene({
         </>
       )}
 
-      <img className="scan-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
+      <img
+        className={`scan-mudagiri scan-mudagiri-${phase}`}
+        src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`}
+        alt="ムダギリくん"
+      />
 
       {isInput ? (
         <section className="scan-panel">
           <div className="scan-dialogue">
             {current === 1 ? '……いるな。まずは近くの気配から探るぞ！' : '次の気配だ。まだいるぞ！'}
           </div>
-          <div className="scan-number">SCAN {String(current).padStart(2, '0')}</div>
+          <div className="scan-number">探索 {String(current).padStart(2, '0')}</div>
           <h2>{config.question}</h2>
           <p>{config.helper}</p>
           <label className="scan-money">
@@ -770,7 +774,7 @@ function ScanCompleteScene({ scanned }: { scanned: number }) {
       <div className="scan-complete-shade" aria-hidden="true" />
       <img className="scan-complete-mudagiri" src={`${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`} alt="ムダギリくん" />
       <section className="scan-complete-card">
-        <div className="scan-complete-kicker">HOUSEHOLD SCAN 100%</div>
+        <div className="scan-complete-kicker">ムダ探索 100%</div>
         <h2>対象カテゴリのスキャン完了</h2>
         <p>敵影を記録した。<br /><strong>だが――斬るべきヤツは、全部じゃない。</strong></p>
         <div className="scan-complete-count">{scanned}カテゴリを確認</div>
@@ -1183,16 +1187,22 @@ const CSS = String.raw`
 }
 
 .pre-back {
+  position: absolute;
+  z-index: 32;
+  left: 50%;
+  bottom: -34px;
+  transform: translateX(-50%);
   display: block;
-  margin: 9px auto -3px;
-  min-height: 32px;
-  padding: 3px 10px;
+  margin: 0;
+  min-height: 30px;
+  padding: 3px 12px;
   border: 0;
   background: transparent;
-  color: rgba(255,255,255,.55);
+  color: rgba(255,255,255,.72);
   font: inherit;
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -1496,7 +1506,7 @@ const CSS = String.raw`
   }
 
   .pre-back {
-    margin-top: 5px;
+    bottom: -31px;
   }
 
   .pre-profile-footer {
@@ -1557,11 +1567,12 @@ const CSS = String.raw`
 .scan-scene,.battle-scene{position:absolute;inset:0;overflow:hidden;background:#0d6ec5}
 .battle-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;image-rendering:pixelated;user-select:none;pointer-events:none}
 .scan-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.05) 0%,rgba(0,0,0,0) 52%),linear-gradient(0deg,rgba(0,10,15,.5) 0%,rgba(0,0,0,0) 47%);pointer-events:none}
-.scan-hud{position:absolute;z-index:20;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:20px;right:20px}
-.scan-hud-top{display:flex;justify-content:space-between;color:#fff;font-size:11px;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.8)}
-.scan-hud-top span{color:#ffe12f}
-.scan-progress{height:8px;margin-top:5px;border-radius:999px;background:rgba(0,24,46,.88);overflow:hidden}
-.scan-progress span{display:block;height:100%;border-radius:inherit;background:#ffd429}
+.scan-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:20px;right:20px}
+.scan-hud-top{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:13px;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.82)}
+.scan-hud-top span{color:#ffe12f;letter-spacing:.02em}
+.scan-hud-top b{font-size:14px}
+.scan-progress{height:13px;margin-top:7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(0,20,42,.92);overflow:hidden;box-shadow:0 2px 7px rgba(0,0,0,.24)}
+.scan-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#f6bd22,#ffe65a);box-shadow:0 0 12px rgba(255,218,44,.46);transition:width .28s ease}
 
 /* SCAN V2.2 upper-half exploration HUD.
    Background remains visible; only a light, game-like information layer is added. */
@@ -1572,7 +1583,7 @@ const CSS = String.raw`
   left:50%;
   width:min(74%,286px);
   transform:translateX(-50%);
-  padding:10px 16px 11px;
+  padding:12px 17px 13px;
   border:1px solid rgba(255,220,62,.34);
   border-radius:14px;
   background:linear-gradient(180deg,rgba(3,25,42,.56),rgba(3,23,35,.34));
@@ -1585,7 +1596,7 @@ const CSS = String.raw`
 }
 .scan-world-mode{
   color:#ffd62f;
-  font-size:8px;
+  font-size:10px;
   font-weight:1000;
   letter-spacing:.16em;
   text-shadow:0 2px 4px rgba(0,0,0,.65);
@@ -1597,13 +1608,13 @@ const CSS = String.raw`
   gap:6px;
   margin-top:2px;
   color:rgba(255,255,255,.92);
-  font-size:11px;
+  font-size:13px;
   font-weight:900;
   text-shadow:0 2px 5px rgba(0,0,0,.72);
 }
 .scan-world-count strong{
   color:#fff;
-  font-size:28px;
+  font-size:32px;
   line-height:1;
   font-weight:1000;
   letter-spacing:-.04em;
@@ -1611,7 +1622,7 @@ const CSS = String.raw`
 .scan-world-remaining{
   margin-top:3px;
   color:rgba(255,255,255,.64);
-  font-size:9px;
+  font-size:11px;
   font-weight:850;
   letter-spacing:.04em;
 }
@@ -1624,17 +1635,40 @@ const CSS = String.raw`
   box-shadow:0 8px 24px rgba(0,0,0,.18),0 0 22px rgba(255,213,45,.08);
 }
 .scan-world-noSpend .scan-world-mode{color:#a7e8c0}
-.scan-mudagiri{position:absolute;z-index:14;left:4px;bottom:35.5%;width:min(43vw,184px);max-height:29dvh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.34));pointer-events:none}
+.scan-mudagiri{
+  position:absolute;
+  z-index:24;
+  left:3%;
+  bottom:39.8%;
+  width:min(40vw,170px);
+  max-height:28dvh;
+  object-fit:contain;
+  object-position:left bottom;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 10px 13px rgba(0,0,0,.34));
+  pointer-events:none;
+  transform-origin:48% 100%;
+  transition:left .42s cubic-bezier(.2,.8,.2,1),bottom .42s cubic-bezier(.2,.8,.2,1),width .42s cubic-bezier(.2,.8,.2,1),transform .42s ease,opacity .2s ease;
+}
+.scan-mudagiri-input{left:3%;bottom:39.8%;width:min(40vw,170px);transform:translate3d(0,0,0) rotate(0deg)}
+.scan-mudagiri-trace{left:12%;bottom:34.4%;width:min(35vw,148px);transform:translate3d(0,0,0) rotate(-3deg);animation:scan-search-step .55s ease-in-out infinite alternate}
+.scan-mudagiri-reveal{left:14%;bottom:33.2%;width:min(35vw,148px);transform:translate3d(4px,-2px,0) rotate(-4deg)}
+.scan-mudagiri-detected{left:8%;bottom:32.4%;width:min(37vw,156px);transform:translate3d(0,0,0) rotate(-1deg)}
+.scan-mudagiri-noSpend{left:6%;bottom:33.2%;width:min(36vw,152px);transform:translate3d(0,0,0) rotate(1deg)}
+@keyframes scan-search-step{
+  from{transform:translate3d(0,0,0) rotate(-3deg)}
+  to{transform:translate3d(7px,-3px,0) rotate(-1deg)}
+}
 .scan-panel{position:absolute;z-index:20;left:20px;right:20px;bottom:max(34px,calc(env(safe-area-inset-bottom) + 24px));min-height:320px;padding:20px 19px 18px;border:1.5px solid #ffc92c;border-radius:20px;background:rgba(0,28,35,.965);box-shadow:0 16px 36px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
-.scan-dialogue{width:72%;min-height:58px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:11px 13px;border-radius:12px;background:rgba(5,47,56,.93);font-size:11px;font-weight:800;line-height:1.55}
-.scan-number{color:#ffd42b;font-size:10px;font-weight:1000}
+.scan-dialogue{width:70%;min-height:61px;margin:-7px 0 17px auto;display:flex;align-items:center;padding:12px 14px;border-radius:12px;background:rgba(5,47,56,.94);font-size:13px;font-weight:850;line-height:1.5}
+.scan-number{color:#ffd42b;font-size:12px;font-weight:1000;letter-spacing:.03em}
 .scan-panel h2{margin:7px 0 0;font-size:clamp(22px,6.1vw,27px);line-height:1.25;font-weight:1000;letter-spacing:-.035em}
-.scan-panel p{margin:5px 0 0;color:rgba(255,255,255,.62);font-size:10px;font-weight:700}
+.scan-panel p{margin:6px 0 0;color:rgba(255,255,255,.72);font-size:12px;font-weight:750;line-height:1.45}
 .scan-money{display:flex;align-items:center;margin-top:16px;min-height:58px;padding:0 14px;border-radius:11px;background:#fff;color:#16212a}
 .scan-yen{font-size:18px;font-weight:1000}
 .scan-money input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#16212a;font:inherit;font-size:24px;font-weight:1000;text-align:right}
 .scan-money input::placeholder{color:#aab2b8}
-.scan-month{margin-left:7px;color:#6b757d;font-size:11px;font-weight:900}
+.scan-month{margin-left:7px;color:#5d6870;font-size:13px;font-weight:900}
 .scan-start{margin-top:13px;min-height:54px}
 .scan-start:disabled{opacity:.45;cursor:not-allowed;animation:none}
 .battle-hud{position:absolute;z-index:30;top:max(17px,calc(env(safe-area-inset-top) + 9px));left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;text-shadow:0 2px 5px rgba(0,0,0,.8)}
@@ -1687,10 +1721,17 @@ const CSS = String.raw`
 
 @media(max-height:720px){
   .scan-panel{bottom:max(13px,calc(env(safe-area-inset-bottom) + 8px));min-height:270px;padding-top:14px}
-  .scan-world-hud{top:max(69px,calc(env(safe-area-inset-top) + 55px));padding:7px 13px 8px;width:min(70%,260px)}
-  .scan-world-count strong{font-size:23px}
-  .scan-mudagiri{bottom:34%;width:min(36vw,150px)}
-  .scan-dialogue{min-height:45px;margin-bottom:11px;padding:8px 10px;font-size:10px}
+  .scan-world-hud{top:max(75px,calc(env(safe-area-inset-top) + 61px));padding:9px 14px 10px;width:min(74%,270px)}
+  .scan-world-count strong{font-size:27px}
+  .scan-world-mode{font-size:9px}
+  .scan-world-count{font-size:12px}
+  .scan-world-remaining{font-size:10px}
+  .scan-mudagiri-input{left:3%;bottom:40%;width:min(35vw,148px)}
+  .scan-mudagiri-trace{left:12%;bottom:34.5%;width:min(31vw,132px)}
+  .scan-mudagiri-reveal{left:14%;bottom:33.5%;width:min(31vw,132px)}
+  .scan-mudagiri-detected{left:8%;bottom:32.5%;width:min(33vw,140px)}
+  .scan-mudagiri-noSpend{left:6%;bottom:33%;width:min(32vw,136px)}
+  .scan-dialogue{min-height:48px;margin-bottom:11px;padding:9px 11px;font-size:11.5px}
   .scan-money{min-height:48px;margin-top:11px}
   .scan-money input{font-size:21px}
   .scan-start{min-height:46px;margin-top:9px}
@@ -1700,7 +1741,7 @@ const CSS = String.raw`
 }
 
 @media(prefers-reduced-motion:reduce){
-  .battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat{animation:none!important}
+  .battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat,.scan-mudagiri{animation:none!important;transition:none!important}
 }
 
 /* === PROFILE CTA TAP-ANCHOR PATCH 2026-09-25 === */
@@ -1817,7 +1858,7 @@ const CSS = String.raw`
 /* ===== CATEGORY-DRIVEN SCAN V2 ===== */
 .scan-detected-enemy{animation:battle-enemy-in .22s ease-out both}
 .scan-result-panel{min-height:166px}
-.scan-zero-hint{margin-top:8px;text-align:center;color:rgba(255,255,255,.48);font-size:9px;font-weight:800}
+.scan-zero-hint{margin-top:9px;text-align:center;color:rgba(255,255,255,.62);font-size:11px;font-weight:800}
 .scan-complete-scene{position:absolute;inset:0;overflow:hidden;background:#0d6ec5}
 .scan-complete-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,34,79,.12),rgba(0,8,14,.7));backdrop-filter:blur(1px)}
 .scan-complete-mudagiri{position:absolute;z-index:10;left:50%;top:14%;width:min(48vw,205px);transform:translateX(-50%);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 16px rgba(0,0,0,.35))}
