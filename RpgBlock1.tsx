@@ -896,13 +896,43 @@ function TypeQuizScene({
     if (picked) return;
     const id = `${choice}-${strength}`;
     setPicked(id);
-    window.setTimeout(() => onAnswer({ choice, strength }), 240);
+    window.setTimeout(() => onAnswer({ choice, strength }), 260);
   };
 
   const progress = (current / total) * 100;
 
+  const guideSprite =
+    current <= 2
+      ? `${ASSET}/MUDAGIRI_PROFILE_Q1.png`
+      : current <= 5
+        ? `${ASSET}/MUDAGIRI_PROFILE_Q3.png`
+        : `${ASSET}/MUDAGIRI_PROFILE_Q4.png`;
+
+  const guideLine =
+    current === 1 ? 'まずは直感で答えろ。正解探しはナシだ。'
+      : current === 2 ? 'いいぞ。そのまま普段の自分で選べ。'
+      : current === 3 ? 'なるほど……少し傾向が見えてきた。'
+      : current === 4 ? 'ここは迷った方じゃなく、普段に近い方だ。'
+      : current === 5 ? '半分突破。ここからさらに絞るぞ。'
+      : current === 6 ? '金の使い方には、けっこうクセが出る。'
+      : current === 7 ? 'あと2つ。だいぶ見えてきたぞ。'
+      : '最後だ。これでお前のクセが読める。';
+
+  const options: {
+    id: string;
+    label: string;
+    sub: string;
+    choice: 'a' | 'b';
+    strength: 1 | 2;
+  }[] = [
+    { id: 'a-2', label: 'かなり A 寄り', sub: 'Aにかなり近い', choice: 'a', strength: 2 },
+    { id: 'a-1', label: 'やや A 寄り', sub: 'Aに少し近い', choice: 'a', strength: 1 },
+    { id: 'b-1', label: 'やや B 寄り', sub: 'Bに少し近い', choice: 'b', strength: 1 },
+    { id: 'b-2', label: 'かなり B 寄り', sub: 'Bにかなり近い', choice: 'b', strength: 2 },
+  ];
+
   return (
-    <div className="scan-scene type-quiz-scene">
+    <div className={`scan-scene type-quiz-scene type-quiz-q${current}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="type-quiz-shade" aria-hidden="true" />
 
@@ -916,62 +946,46 @@ function TypeQuizScene({
         </div>
       </header>
 
-      <img className="type-quiz-mudagiri" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
-      <div className="type-quiz-dialogue">
-        {current === 1 ? 'ここからは、お前の「使い方のクセ」を見るぞ。' : '考えすぎなくていい。近い方を選べ。'}
+      <div className="type-quiz-guide">
+        <img className="type-quiz-mudagiri" src={guideSprite} alt="ムダギリくん" />
+        <div className="type-quiz-dialogue">{guideLine}</div>
       </div>
 
       <section className="type-quiz-card">
         <div className="type-quiz-number">鑑定 {String(current).padStart(2, '0')}</div>
         <h2>{question.prompt}</h2>
-        <p className="type-quiz-helper">どちらに、どのくらい近い？</p>
 
-        <div className="type-choice-stack">
-          <article className="type-choice-card">
-            <div className="type-choice-copy">{question.a.text}</div>
-            <div className="type-choice-actions">
-              <button
-                type="button"
-                className={picked === 'a-2' ? 'is-picked' : ''}
-                disabled={!!picked}
-                onClick={() => choose('a', 2)}
-              >
-                かなり近い
-              </button>
-              <button
-                type="button"
-                className={picked === 'a-1' ? 'is-picked' : ''}
-                disabled={!!picked}
-                onClick={() => choose('a', 1)}
-              >
-                やや近い
-              </button>
-            </div>
-          </article>
+        <div className="type-pair" aria-label="比較する2つの考え方">
+          <div className="type-side type-side-a">
+            <span className="type-side-badge">A</span>
+            <strong>{question.a.text}</strong>
+          </div>
+          <div className="type-pair-vs">VS</div>
+          <div className="type-side type-side-b">
+            <span className="type-side-badge">B</span>
+            <strong>{question.b.text}</strong>
+          </div>
+        </div>
 
-          <div className="type-choice-or">OR</div>
+        <p className="type-quiz-helper">
+          <strong>4つのうち、一番近いものを1つ選んで</strong>
+        </p>
 
-          <article className="type-choice-card">
-            <div className="type-choice-copy">{question.b.text}</div>
-            <div className="type-choice-actions">
-              <button
-                type="button"
-                className={picked === 'b-1' ? 'is-picked' : ''}
-                disabled={!!picked}
-                onClick={() => choose('b', 1)}
-              >
-                やや近い
-              </button>
-              <button
-                type="button"
-                className={picked === 'b-2' ? 'is-picked' : ''}
-                disabled={!!picked}
-                onClick={() => choose('b', 2)}
-              >
-                かなり近い
-              </button>
-            </div>
-          </article>
+        <div className="type-scale" role="radiogroup" aria-label="AとBのどちらにどのくらい近いか">
+          {options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={picked === option.id}
+              className={`type-scale-option ${option.id.startsWith('a') ? 'is-a' : 'is-b'} ${picked === option.id ? 'is-picked' : ''}`}
+              disabled={!!picked}
+              onClick={() => choose(option.choice, option.strength)}
+            >
+              <span>{option.label}</span>
+              <small>{option.sub}</small>
+            </button>
+          ))}
         </div>
 
         <div className="type-quiz-foot">
@@ -2119,7 +2133,7 @@ const CSS = String.raw`
 .scan-complete-count{margin-top:14px;padding:9px 12px;border-radius:9px;background:rgba(19,49,70,.72);color:#ffd42b;font-size:11px;font-weight:900}
 .scan-complete-next{margin-top:14px;min-height:54px}
 
-/* ===== APPRAISAL INTRO / TYPE QUIZ V1 ===== */
+/* ===== APPRAISAL INTRO / TYPE QUIZ V2 : GUIDE + SINGLE 4-CHOICE ===== */
 .appraisal-intro-scene,
 .type-quiz-scene,
 .type-complete-scene{
@@ -2137,6 +2151,8 @@ const CSS = String.raw`
     linear-gradient(180deg,rgba(2,17,35,.30) 0%,rgba(4,17,30,.20) 35%,rgba(0,8,14,.76) 100%);
   pointer-events:none;
 }
+
+/* --- scan -> appraisal bridge --- */
 .appraisal-intro-hud{
   position:absolute;
   z-index:30;
@@ -2147,20 +2163,20 @@ const CSS = String.raw`
   align-items:center;
   justify-content:space-between;
   color:#fff;
-  font-size:17px;
+  font-size:18px;
   font-weight:1000;
   text-shadow:0 2px 5px rgba(0,0,0,.72);
 }
 .appraisal-intro-hud span{color:#ffe12f}
-.appraisal-intro-hud b{font-size:18px}
+.appraisal-intro-hud b{font-size:20px}
 .appraisal-intro-summary{
   position:absolute;
   z-index:12;
-  top:max(86px,calc(env(safe-area-inset-top) + 74px));
+  top:max(88px,calc(env(safe-area-inset-top) + 76px));
   left:50%;
   transform:translateX(-50%);
-  width:min(78%,305px);
-  padding:12px 16px;
+  width:min(80%,315px);
+  padding:13px 17px;
   border:1px solid rgba(255,218,47,.34);
   border-radius:14px;
   background:rgba(3,24,39,.54);
@@ -2169,25 +2185,26 @@ const CSS = String.raw`
 }
 .appraisal-intro-summary span{
   display:block;
-  color:rgba(255,255,255,.72);
-  font-size:12px;
+  color:rgba(255,255,255,.76);
+  font-size:14px;
   font-weight:850;
 }
 .appraisal-intro-summary strong{
   display:block;
-  margin-top:2px;
+  margin-top:3px;
   color:#fff;
-  font-size:21px;
+  font-size:24px;
   font-weight:1000;
 }
 .appraisal-intro-mudagiri{
   position:absolute;
   z-index:14;
-  left:5%;
-  top:20%;
-  width:min(40vw,170px);
+  left:4%;
+  bottom:48.5%;
+  width:min(41vw,174px);
   max-height:28dvh;
   object-fit:contain;
+  object-position:left bottom;
   image-rendering:pixelated;
   filter:drop-shadow(0 12px 16px rgba(0,0,0,.32));
 }
@@ -2197,7 +2214,7 @@ const CSS = String.raw`
   left:18px;
   right:18px;
   bottom:max(24px,calc(env(safe-area-inset-bottom) + 14px));
-  padding:22px 19px 18px;
+  padding:23px 19px 18px;
   border:1.5px solid #f1c92f;
   border-radius:20px;
   background:rgba(0,27,35,.97);
@@ -2206,54 +2223,55 @@ const CSS = String.raw`
 }
 .appraisal-intro-kicker{
   color:#ffd42b;
-  font-size:12px;
+  font-size:14px;
   font-weight:1000;
   letter-spacing:.12em;
 }
 .appraisal-intro-card h2{
   margin:8px 0 0;
   color:#fff;
-  font-size:clamp(29px,8vw,36px);
-  line-height:1.1;
+  font-size:clamp(31px,8.4vw,38px);
+  line-height:1.08;
   font-weight:1000;
   letter-spacing:-.04em;
 }
 .appraisal-intro-card p{
   margin:14px 0 0;
-  color:rgba(255,255,255,.78);
-  font-size:14px;
-  line-height:1.7;
-  font-weight:760;
+  color:rgba(255,255,255,.82);
+  font-size:15px;
+  line-height:1.72;
+  font-weight:780;
 }
-.appraisal-intro-card p strong{color:#fff}
+.appraisal-intro-card p strong{color:#fff;font-size:16px}
 .appraisal-intro-rule{
   margin-top:14px;
-  padding:10px 12px;
+  padding:11px 12px;
   border-radius:11px;
   background:rgba(21,54,72,.76);
 }
 .appraisal-intro-rule span{
   display:block;
   color:#ffd42b;
-  font-size:10px;
+  font-size:12px;
   font-weight:1000;
 }
 .appraisal-intro-rule b{
   display:block;
-  margin-top:2px;
+  margin-top:3px;
   color:#fff;
-  font-size:15px;
+  font-size:17px;
   font-weight:1000;
 }
 .appraisal-intro-note{
   margin-top:11px;
-  color:rgba(255,255,255,.72);
-  font-size:12px;
-  line-height:1.5;
-  font-weight:800;
+  color:rgba(255,255,255,.76);
+  font-size:14px;
+  line-height:1.55;
+  font-weight:850;
 }
-.appraisal-intro-cta{margin-top:14px;min-height:56px}
+.appraisal-intro-cta{margin-top:14px;min-height:58px;font-size:16px}
 
+/* --- type appraisal --- */
 .type-quiz-hud{
   position:absolute;
   z-index:30;
@@ -2266,15 +2284,15 @@ const CSS = String.raw`
   justify-content:space-between;
   align-items:center;
   color:#fff;
-  font-size:16px;
+  font-size:18px;
   font-weight:1000;
   text-shadow:0 2px 5px rgba(0,0,0,.78);
 }
 .type-quiz-hud-row span{color:#ffe12f}
-.type-quiz-hud-row b{font-size:17px}
+.type-quiz-hud-row b{font-size:20px}
 .type-quiz-progress{
-  height:14px;
-  margin-top:7px;
+  height:16px;
+  margin-top:8px;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.15);
   border-radius:999px;
@@ -2288,122 +2306,202 @@ const CSS = String.raw`
   box-shadow:0 0 12px rgba(255,218,44,.4);
   transition:width .24s ease;
 }
+
+/* Mudagiri is not the protagonist here: he sits beside the question as guide/appraiser. */
+.type-quiz-guide{
+  position:absolute;
+  z-index:18;
+  left:0;
+  right:0;
+  bottom:50.8%;
+  height:158px;
+  pointer-events:none;
+}
 .type-quiz-mudagiri{
   position:absolute;
-  z-index:14;
-  left:3%;
-  top:13.5%;
-  width:min(36vw,154px);
-  max-height:24dvh;
+  z-index:2;
+  left:2%;
+  bottom:-10px;
+  width:min(38vw,160px);
+  max-height:23dvh;
   object-fit:contain;
+  object-position:left bottom;
   image-rendering:pixelated;
   filter:drop-shadow(0 10px 14px rgba(0,0,0,.32));
+  transform-origin:50% 100%;
+  animation:type-guide-enter .22s ease-out both;
 }
 .type-quiz-dialogue{
   position:absolute;
-  z-index:16;
-  top:15%;
-  right:5%;
-  width:59%;
-  min-height:66px;
+  z-index:3;
+  right:4%;
+  bottom:24px;
+  width:61%;
+  min-height:72px;
   display:flex;
   align-items:center;
-  padding:12px 14px;
+  padding:13px 15px;
+  border:1px solid rgba(255,255,255,.07);
   border-radius:13px;
-  background:rgba(5,47,56,.93);
+  background:rgba(5,47,56,.95);
   color:#fff;
-  font-size:14px;
+  font-size:17px;
   line-height:1.45;
-  font-weight:850;
-  box-shadow:0 8px 18px rgba(0,0,0,.16);
+  font-weight:900;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
 }
+@keyframes type-guide-enter{
+  from{opacity:.3;transform:translateY(5px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
 .type-quiz-card{
   position:absolute;
   z-index:22;
   left:16px;
   right:16px;
-  bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px));
-  padding:17px 16px 14px;
+  bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px));
+  padding:17px 16px 13px;
   border:1.5px solid #f1c92f;
   border-radius:19px;
-  background:rgba(0,27,35,.975);
+  background:rgba(0,27,35,.978);
   box-shadow:0 18px 38px rgba(0,0,0,.42);
 }
 .type-quiz-number{
   color:#ffd42b;
-  font-size:12px;
+  font-size:14px;
   font-weight:1000;
   letter-spacing:.08em;
 }
 .type-quiz-card h2{
   margin:7px 0 0;
   color:#fff;
-  font-size:clamp(20px,5.8vw,25px);
-  line-height:1.28;
+  font-size:clamp(24px,6.7vw,29px);
+  line-height:1.22;
   font-weight:1000;
   letter-spacing:-.035em;
 }
-.type-quiz-helper{
-  margin:6px 0 0;
-  color:rgba(255,255,255,.68);
-  font-size:12px;
-  font-weight:800;
+.type-pair{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:7px;
+  margin-top:12px;
 }
-.type-choice-stack{margin-top:12px}
-.type-choice-card{
-  padding:11px;
+.type-side{
+  position:relative;
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  padding:10px 12px 10px 48px;
   border:1px solid rgba(255,255,255,.12);
-  border-radius:13px;
-  background:rgba(18,53,68,.70);
+  border-radius:12px;
+  background:rgba(18,53,68,.72);
 }
-.type-choice-copy{
+.type-side-badge{
+  position:absolute;
+  left:11px;
+  top:50%;
+  width:27px;
+  height:27px;
+  display:grid;
+  place-items:center;
+  transform:translateY(-50%);
+  border-radius:8px;
+  background:#f2ca2f;
+  color:#10232d;
+  font-size:16px;
+  font-weight:1000;
+}
+.type-side strong{
+  color:#fff;
+  font-size:16px;
+  line-height:1.38;
+  font-weight:950;
+}
+.type-pair-vs{
+  position:absolute;
+  z-index:2;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  min-width:34px;
+  padding:3px 6px;
+  border-radius:999px;
+  background:#071d28;
+  color:rgba(255,255,255,.55);
+  font-size:10px;
+  font-weight:1000;
+  text-align:center;
+  letter-spacing:.08em;
+}
+.type-quiz-helper{
+  margin:11px 0 0;
   color:#fff;
   font-size:14px;
-  line-height:1.42;
-  font-weight:900;
+  line-height:1.4;
+  text-align:center;
+  font-weight:850;
 }
-.type-choice-actions{
+.type-quiz-helper strong{
+  color:#ffe04a;
+  font-size:15px;
+  font-weight:1000;
+}
+.type-scale{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
   margin-top:9px;
+  padding:9px;
+  border:1px solid rgba(255,218,47,.22);
+  border-radius:13px;
+  background:rgba(5,25,35,.66);
 }
-.type-choice-actions button{
-  min-height:42px;
-  padding:8px 6px;
-  border:1px solid rgba(255,215,47,.48);
+.type-scale-option{
+  min-height:54px;
+  padding:8px 7px;
+  border:1px solid rgba(255,255,255,.14);
   border-radius:10px;
-  background:rgba(4,28,38,.88);
+  background:rgba(18,53,68,.78);
   color:#fff;
   font:inherit;
-  font-size:12px;
-  font-weight:900;
   cursor:pointer;
-  transition:transform .12s ease,background .12s ease,border-color .12s ease;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;
 }
-.type-choice-actions button:active{transform:scale(.98)}
-.type-choice-actions button.is-picked{
-  border-color:#ffe04a;
-  background:rgba(120,92,0,.74);
-  box-shadow:0 0 0 2px rgba(255,224,74,.12) inset;
-}
-.type-choice-actions button:disabled{cursor:default}
-.type-choice-or{
-  padding:5px 0;
-  text-align:center;
-  color:rgba(255,255,255,.42);
-  font-size:9px;
+.type-scale-option span{
+  display:block;
+  font-size:14px;
+  line-height:1.15;
   font-weight:1000;
-  letter-spacing:.18em;
 }
+.type-scale-option small{
+  display:block;
+  margin-top:3px;
+  color:rgba(255,255,255,.64);
+  font-size:11px;
+  line-height:1.15;
+  font-weight:800;
+}
+.type-scale-option:active{transform:scale(.98)}
+.type-scale-option.is-a{border-color:rgba(255,214,47,.28)}
+.type-scale-option.is-b{border-color:rgba(107,206,255,.30)}
+.type-scale-option.is-picked{
+  border-color:#ffe04a;
+  background:rgba(120,92,0,.78);
+  box-shadow:0 0 0 2px rgba(255,224,74,.14) inset,0 0 18px rgba(255,218,47,.12);
+}
+.type-scale-option:disabled{cursor:default}
+.type-scale-option:disabled:not(.is-picked){opacity:.58}
 .type-quiz-foot{
   margin-top:9px;
   text-align:center;
-  color:rgba(255,255,255,.58);
-  font-size:11px;
-  font-weight:850;
+  color:rgba(255,255,255,.68);
+  font-size:13px;
+  font-weight:900;
 }
 
+/* --- after 8 questions --- */
 .type-complete-shade{
   background:linear-gradient(180deg,rgba(3,20,38,.25),rgba(0,8,14,.78));
 }
@@ -2411,7 +2509,7 @@ const CSS = String.raw`
   position:absolute;
   z-index:14;
   left:50%;
-  top:12%;
+  bottom:49%;
   width:min(44vw,188px);
   transform:translateX(-50%);
   object-fit:contain;
@@ -2424,7 +2522,7 @@ const CSS = String.raw`
   left:18px;
   right:18px;
   bottom:max(28px,calc(env(safe-area-inset-bottom) + 16px));
-  padding:24px 19px 18px;
+  padding:25px 19px 18px;
   border:1.5px solid #f1c92f;
   border-radius:20px;
   background:rgba(0,27,35,.97);
@@ -2433,67 +2531,89 @@ const CSS = String.raw`
 }
 .type-complete-kicker{
   color:#ffd42b;
-  font-size:12px;
+  font-size:14px;
   font-weight:1000;
   letter-spacing:.08em;
 }
 .type-complete-card h2{
   margin:9px 0 0;
   color:#fff;
-  font-size:clamp(28px,7.5vw,34px);
-  line-height:1.14;
+  font-size:clamp(30px,8vw,36px);
+  line-height:1.12;
   font-weight:1000;
 }
 .type-complete-card p{
-  margin:13px 0 0;
-  color:rgba(255,255,255,.76);
-  font-size:14px;
-  line-height:1.65;
-  font-weight:760;
+  margin:14px 0 0;
+  color:rgba(255,255,255,.80);
+  font-size:15px;
+  line-height:1.68;
+  font-weight:780;
 }
-.type-complete-card p strong{color:#fff}
+.type-complete-card p strong{color:#fff;font-size:16px}
 .type-complete-next-label{
-  margin-top:13px;
-  padding:10px 12px;
+  margin-top:14px;
+  padding:11px 12px;
   border-radius:10px;
   background:rgba(20,53,71,.76);
   color:#ffd42b;
-  font-size:11px;
+  font-size:13px;
   font-weight:1000;
 }
-.type-complete-cta{margin-top:13px;min-height:54px}
+.type-complete-cta{margin-top:13px;min-height:56px;font-size:16px}
 
+/* Compact phones: keep the larger hierarchy, only compress spacing. */
 @media(max-height:720px){
-  .appraisal-intro-mudagiri{top:17%;width:min(34vw,142px)}
-  .appraisal-intro-card{padding:17px 16px 14px}
-  .appraisal-intro-card h2{font-size:27px}
-  .appraisal-intro-card p{margin-top:9px;font-size:12px;line-height:1.55}
+  .appraisal-intro-summary{top:max(80px,calc(env(safe-area-inset-top) + 68px));padding:10px 14px}
+  .appraisal-intro-summary span{font-size:12px}
+  .appraisal-intro-summary strong{font-size:20px}
+  .appraisal-intro-mudagiri{bottom:50%;width:min(34vw,142px)}
+  .appraisal-intro-card{padding:17px 16px 13px}
+  .appraisal-intro-kicker{font-size:12px}
+  .appraisal-intro-card h2{font-size:28px}
+  .appraisal-intro-card p{margin-top:9px;font-size:13px;line-height:1.52}
+  .appraisal-intro-card p strong{font-size:14px}
   .appraisal-intro-rule{margin-top:9px;padding:8px 10px}
-  .appraisal-intro-note{margin-top:7px;font-size:11px}
-  .appraisal-intro-cta{margin-top:9px;min-height:49px}
+  .appraisal-intro-rule b{font-size:15px}
+  .appraisal-intro-note{margin-top:7px;font-size:12px}
+  .appraisal-intro-cta{margin-top:9px;min-height:50px;font-size:15px}
 
-  .type-quiz-mudagiri{top:12%;width:min(30vw,128px)}
-  .type-quiz-dialogue{top:13%;min-height:54px;padding:9px 11px;font-size:12px}
-  .type-quiz-card{padding:13px 13px 11px}
-  .type-quiz-card h2{font-size:18px}
-  .type-quiz-helper{font-size:10.5px}
-  .type-choice-stack{margin-top:9px}
-  .type-choice-card{padding:8px 9px}
-  .type-choice-copy{font-size:12px}
-  .type-choice-actions{margin-top:6px;gap:6px}
-  .type-choice-actions button{min-height:36px;padding:6px 4px;font-size:10.5px}
-  .type-choice-or{padding:3px 0}
-  .type-quiz-foot{margin-top:6px;font-size:10px}
+  .type-quiz-hud-row{font-size:17px}
+  .type-quiz-hud-row b{font-size:18px}
+  .type-quiz-progress{height:14px}
 
-  .type-complete-mudagiri{top:9%;width:min(37vw,156px)}
+  .type-quiz-guide{bottom:54.5%;height:124px}
+  .type-quiz-mudagiri{left:1%;bottom:-8px;width:min(29vw,122px);max-height:19dvh}
+  .type-quiz-dialogue{right:3%;bottom:18px;width:68%;min-height:55px;padding:9px 11px;font-size:14px;line-height:1.38}
+
+  .type-quiz-card{left:12px;right:12px;bottom:max(8px,calc(env(safe-area-inset-bottom) + 4px));padding:11px 12px 9px}
+  .type-quiz-number{font-size:12px}
+  .type-quiz-card h2{margin-top:5px;font-size:20px;line-height:1.18}
+  .type-pair{gap:5px;margin-top:8px}
+  .type-side{min-height:47px;padding:7px 9px 7px 42px}
+  .type-side-badge{left:9px;width:25px;height:25px;font-size:14px}
+  .type-side strong{font-size:13px;line-height:1.25}
+  .type-quiz-helper{margin-top:7px;font-size:12px}
+  .type-quiz-helper strong{font-size:13px}
+  .type-scale{gap:6px;margin-top:6px;padding:6px}
+  .type-scale-option{min-height:44px;padding:6px 5px}
+  .type-scale-option span{font-size:12px}
+  .type-scale-option small{font-size:9.5px}
+  .type-quiz-foot{margin-top:5px;font-size:11px}
+
+  .type-complete-mudagiri{bottom:51%;width:min(37vw,156px)}
   .type-complete-card{padding:18px 16px 14px}
-  .type-complete-card h2{font-size:27px}
-  .type-complete-card p{font-size:12px}
-  .type-complete-cta{min-height:49px}
+  .type-complete-kicker{font-size:12px}
+  .type-complete-card h2{font-size:28px}
+  .type-complete-card p{font-size:13px}
+  .type-complete-card p strong{font-size:14px}
+  .type-complete-next-label{font-size:12px}
+  .type-complete-cta{min-height:50px;font-size:15px}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .type-quiz-progress span,.type-choice-actions button{transition:none!important}
+  .type-quiz-progress span,
+  .type-scale-option,
+  .type-quiz-mudagiri{transition:none!important;animation:none!important}
 }
 
 /* keep PROFILE primary actions on the approved thumb anchor */
