@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { ToneMode } from './tone-mode-v3';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
+import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
+import { resolveComparableV1 } from './comparable-resolver-v1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -12,9 +14,37 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
 };
 
-type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete';
+type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
 
 type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
+
+type AppraisalStatus = 'battle' | 'protect' | 'safe' | 'review' | 'na';
+type AppraisalAnswer = {
+  satisfaction?: Satisfaction;
+  rentPreference?: 'burdenHigh'|'burdenSome'|'reasonable'|'protect';
+  insuranceUnderstanding?: 'none'|'vague'|'mostly'|'clear';
+  educationPreference?: 'reviewHigh'|'reviewSome'|'necessary'|'protect';
+  selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
+  subUnusedAmount?: number;
+  subUsage?: 'none'|'one'|'several'|'unknown';
+};
+type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
+type AppraisalQuestion = {
+  category: EnemyAssetCategory;
+  reason: string;
+  question: string;
+  kind: 'satisfaction'|'rent'|'insurance'|'education'|'selfDevelopment'|'subUsage';
+};
+type FinalEnemyJudgement = {
+  category: EnemyAssetCategory;
+  status: AppraisalStatus;
+  attentionFlag: boolean;
+  reducible: number;
+  priority: number;
+  actual: number;
+  reviewPriority?: 'high'|'medium'|'low';
+};
+
 
 type ProfileFlow = {
   prefecture: string;
@@ -22,10 +52,11 @@ type ProfileFlow = {
   household: FamilyProfile;
   workStyle: string;
   housingType: string;
+  monthlyTakeHome: string;
 };
 
 type QuestionConfig = {
-  no: 1 | 2 | 3 | 4 | 5;
+  no: 1 | 2 | 3 | 4 | 5 | 6;
   dialogue: string;
   question: string;
   helper: string;
@@ -123,7 +154,7 @@ const QUESTIONS: QuestionConfig[] = [
     question: 'どこに住んでる？',
     helper: '地域ごとの家計データと比較',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q1.png`,
-    footer: 'あと4問で冒険開始',
+    footer: 'あと5問で冒険開始',
   },
   {
     no: 2,
@@ -131,15 +162,15 @@ const QUESTIONS: QuestionConfig[] = [
     question: '年齢は？',
     helper: '年齢に近い家計データと比較',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q2.png`,
-    footer: '冒険準備 40%',
+    footer: '冒険準備 33%',
   },
   {
     no: 3,
-    dialogue: 'いいぞ！もう半分以上きた！',
+    dialogue: 'いいぞ！半分まできた！',
     question: '誰と暮らしてる？',
     helper: '世帯人数に合わせて比較',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q3.png`,
-    footer: 'CHECK POINT 60%',
+    footer: 'CHECK POINT 50%',
   },
   {
     no: 4,
@@ -147,15 +178,23 @@ const QUESTIONS: QuestionConfig[] = [
     question: '働き方は？',
     helper: '暮らし方に合わせて診断',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q4.png`,
-    footer: '敵はすぐそこだ',
+    footer: '冒険準備 67%',
   },
   {
     no: 5,
-    dialogue: 'いたぞ……！あと一つだ！',
+    dialogue: '近いぞ……。住まいも確認しておこう。',
     question: '今の住まいは？',
     helper: '住宅費の基準を調整',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q5.png`,
-    footer: '冒険者データ100%',
+    footer: 'あと1問で準備完了',
+  },
+  {
+    no: 6,
+    dialogue: '最後だ。家計のものさしを合わせるぞ！',
+    question: '毎月の手取りは？',
+    helper: '税金などが引かれた後。だいたいの平均でOK',
+    sprite: `${ASSET}/MUDAGIRI_PROFILE_Q1.png`,
+    footer: '冒険者データ 100%',
   },
 ];
 
@@ -165,6 +204,7 @@ const INITIAL_FLOW: ProfileFlow = {
   household: 'single',
   workStyle: '会社員',
   housingType: '賃貸',
+  monthlyTakeHome: '',
 };
 
 export default function RpgBlock1({
@@ -180,6 +220,9 @@ export default function RpgBlock1({
   const [scanValues, setScanValues] = useState<Partial<Record<EnemyAssetCategory, string>>>({});
   const [typeIndex, setTypeIndex] = useState(0);
   const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
+  const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>({});
+  const [appraisalIndex, setAppraisalIndex] = useState(0);
+  const [battleIndex, setBattleIndex] = useState(0);
 
   const question = QUESTIONS[questionIndex];
   const applicableScanCategories = useMemo(
@@ -190,6 +233,180 @@ export default function RpgBlock1({
   const discoveredCount = applicableScanCategories
     .filter((item) => Number(scanValues[item.category] ?? '0') > 0).length;
   const currentTypeQuestion = TYPE_QUESTIONS_V31[typeIndex];
+  const numericExpenses = useMemo(() => {
+    const out = {} as Record<Category, number>;
+    SCAN_CATEGORIES.forEach(({ category }) => {
+      out[category as Category] = Number(scanValues[category] ?? '0') || 0;
+    });
+    if (flow.household !== 'children') out.childEducation = 0;
+    return out;
+  }, [scanValues, flow.household]);
+
+  const incomeNumber = Number(flow.monthlyTakeHome || '0') || 0;
+  const householdForComparable = flow.household === 'single' ? 'single' : 'multi';
+
+  const comparable = useMemo(() => {
+    if (incomeNumber <= 0) return {} as Partial<Record<Category, number | null>>;
+    return resolveComparableV1({
+      household: householdForComparable,
+      age: Math.max(18, Number(flow.age || '30') || 30),
+      annualIncome: incomeNumber * 12,
+      prefecture: flow.prefecture,
+      expenses: numericExpenses,
+    });
+  }, [householdForComparable, flow.age, flow.prefecture, incomeNumber, numericExpenses]);
+
+  const appraisalQuestions = useMemo<AppraisalQuestion[]>(() => {
+    if (incomeNumber <= 0) return [];
+    const qs: AppraisalQuestion[] = [];
+    const actual = (c: EnemyAssetCategory) => numericExpenses[c as Category] || 0;
+    const comp = (c: EnemyAssetCategory) => comparable[c as Category] ?? null;
+
+    if (actual('sub') > 0) {
+      qs.push({
+        category: 'sub',
+        kind: 'subUsage',
+        reason: '使っていない契約ほど、金額まで覚えていないことがあります。',
+        question: '使ってない・ほぼ使ってないサブスク、ありそう？',
+      });
+    }
+    (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach((category) => {
+      const c = comp(category);
+      if (actual(category) > 0 && c !== null && actual(category) > c) {
+        const copy = category === 'food'
+          ? ['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']
+          : category === 'fun'
+            ? ['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']
+            : ['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
+        qs.push({ category, kind:'satisfaction', reason:copy[0], question:copy[1] });
+      }
+    });
+    const rent = actual('rent');
+    const rentComparable = comp('rent');
+    if (rent > 0 && (rent / incomeNumber > .35 || (rentComparable !== null && rent > rentComparable * 1.25))) {
+      qs.push({
+        category:'rent',
+        kind:'rent',
+        reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',
+        question:'今の住居費について、一番近いのは？',
+      });
+    }
+    if (actual('insurance') > 0) {
+      qs.push({
+        category:'insurance',
+        kind:'insurance',
+        reason:'保険は、保険料だけでは必要・不要を判断できません。',
+        question:'今入っている保険、何のための保障か把握してる？',
+      });
+    }
+    if (flow.household === 'children' && actual('childEducation') > 0) {
+      qs.push({
+        category:'childEducation',
+        kind:'education',
+        reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',
+        question:'今の教育費について、一番近いのは？',
+      });
+    }
+    if (actual('selfDevelopment') > 0) {
+      qs.push({
+        category:'selfDevelopment',
+        kind:'selfDevelopment',
+        reason:'自己投資は、金額より「何につながっているか」が重要です。',
+        question:'その自己投資、目的や成果は見えてる？',
+      });
+    }
+    return qs;
+  }, [incomeNumber, numericExpenses, comparable, flow.household]);
+
+  const diagnosis = useMemo(() => {
+    if (incomeNumber <= 0) return null;
+    const categories = SCAN_CATEGORIES
+      .filter(({ category }) => category !== 'childEducation' || flow.household === 'children')
+      .map(({ category }) => {
+        const answer = appraisalAnswers[category];
+        return {
+          category: category as Category,
+          actual: numericExpenses[category as Category] || 0,
+          comparable: comparable[category as Category] ?? null,
+          satisfaction: answer?.satisfaction,
+          unusedAmount: category === 'sub' ? answer?.subUnusedAmount : undefined,
+        };
+      });
+    const totalExpenses = categories.reduce((sum, c) => sum + c.actual, 0);
+    // V2.9 does not publish Battle Score yet. Saving/emergency inputs belong to RESULT V3.0.
+    // These neutral placeholders do not affect category reducible amounts or enemy priority.
+    return runDiagnosisV2({
+      monthlyTakeHomeIncome: incomeNumber,
+      monthlySavingInvestment: 0,
+      freeCashFlow: incomeNumber - totalExpenses,
+      emergencyMonths: 3,
+      categories,
+    });
+  }, [incomeNumber, numericExpenses, comparable, appraisalAnswers, flow.household]);
+
+  const finalJudgements = useMemo<FinalEnemyJudgement[]>(() => {
+    if (!diagnosis) return [];
+    const enemyPriority = new Map(diagnosis.enemies.map((e) => [e.category, e.priority]));
+    const results: FinalEnemyJudgement[] = diagnosis.categories.map((r) => {
+      const category = r.category as EnemyAssetCategory;
+      const answer = appraisalAnswers[category];
+      let status: AppraisalStatus = r.reducible > 0 ? 'battle' : r.needsReview ? 'review' : 'safe';
+      let attentionFlag = false;
+      let reviewPriority: 'high'|'medium'|'low'|undefined;
+
+      if (category === 'rent') {
+        const rentComparable = r.comparable ?? comparable.rent ?? null;
+        const burdenHigh =
+          r.actual > 0 &&
+          (
+            r.actual / incomeNumber > .35 ||
+            (rentComparable !== null && rentComparable !== undefined && r.actual > rentComparable * 1.25)
+          );
+        attentionFlag = burdenHigh;
+        if (burdenHigh && !(answer?.rentPreference === 'protect' || answer?.rentPreference === 'reasonable')) status = 'review';
+        else if (answer?.rentPreference === 'protect' || answer?.rentPreference === 'reasonable') status = 'protect';
+      }
+      if (category === 'sub' && r.actual > 0) {
+        if (answer?.subUsage === 'none') status = 'safe';
+        else if (answer?.subUsage) { status = 'review'; reviewPriority = answer.subUsage === 'unknown' ? 'high' : 'medium'; }
+      }
+      if (category === 'insurance' && r.actual > 0) {
+        status = 'review';
+        reviewPriority =
+          answer?.insuranceUnderstanding === 'none' ? 'high' :
+          answer?.insuranceUnderstanding === 'vague' ? 'medium' : 'low';
+      }
+      if (category === 'childEducation' && r.actual > 0) {
+        status = answer?.educationPreference === 'necessary' || answer?.educationPreference === 'protect' ? 'protect' : 'review';
+        if (status === 'review') reviewPriority = answer?.educationPreference === 'reviewHigh' ? 'high' : 'medium';
+      }
+      if (category === 'selfDevelopment' && r.actual > 0) {
+        status = answer?.selfDevelopmentValue === 'purpose' || answer?.selfDevelopmentValue === 'results' ? 'protect' : 'review';
+        if (status === 'review') reviewPriority = answer?.selfDevelopmentValue === 'inertia' ? 'high' : 'medium';
+      }
+      if (category === 'car' && r.actual === 0) status = 'na';
+
+      return {
+        category,
+        status,
+        attentionFlag,
+        reducible: r.reducible,
+        priority: enemyPriority.get(r.category) ?? 0,
+        actual: r.actual,
+        reviewPriority,
+      };
+    });
+    if (flow.household !== 'children') {
+      results.push({ category:'childEducation', status:'na', attentionFlag:false, reducible:0, priority:0, actual:0 });
+    }
+    return results;
+  }, [diagnosis, appraisalAnswers, incomeNumber, flow.household]);
+
+  const battleTargets = useMemo(
+    () => finalJudgements.filter((x) => x.status === 'battle').sort((a,b) => b.priority - a.priority).slice(0,3),
+    [finalJudgements],
+  );
+
 
   useEffect(() => {
     const body = document.body;
@@ -331,8 +548,63 @@ export default function RpgBlock1({
                 setTypeIndex((index) => index + 1);
               }}
             />
+          ) : scene === 'typeComplete' ? (
+            <TypeCompleteScene
+              answers={typeAnswers}
+              onContinue={() => {
+                setAppraisalIndex(0);
+                setAppraisalAnswers({});
+                setScene(appraisalQuestions.length ? 'appraisal' : 'appraisalComplete');
+              }}
+            />
+          ) : scene === 'appraisal' && appraisalQuestions[appraisalIndex] ? (
+            <AdditionalAppraisalScene
+              key={`${appraisalQuestions[appraisalIndex].category}-${appraisalIndex}`}
+              item={appraisalQuestions[appraisalIndex]}
+              current={appraisalIndex + 1}
+              total={appraisalQuestions.length}
+              onAnswer={(answer) => {
+                setAppraisalAnswers((prev) => ({
+                  ...prev,
+                  [appraisalQuestions[appraisalIndex].category]: {
+                    ...prev[appraisalQuestions[appraisalIndex].category],
+                    ...answer,
+                  },
+                }));
+                if (appraisalIndex >= appraisalQuestions.length - 1) setScene('appraisalComplete');
+                else setAppraisalIndex((i) => i + 1);
+              }}
+            />
+          ) : scene === 'appraisalComplete' ? (
+            <AppraisalCompleteScene
+              judgements={finalJudgements}
+              onContinue={() => setScene('battleIntro')}
+            />
+          ) : scene === 'battleIntro' ? (
+            <BattleIntroScene
+              targets={battleTargets}
+              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              onStart={() => {
+                setBattleIndex(0);
+                setScene(battleTargets.length ? 'battle' : 'battleComplete');
+              }}
+            />
+          ) : scene === 'battle' && battleTargets[battleIndex] ? (
+            <PriorityBattleScene
+              key={`${battleTargets[battleIndex].category}-${battleIndex}`}
+              target={battleTargets[battleIndex]}
+              current={battleIndex + 1}
+              total={battleTargets.length}
+              onDone={() => {
+                if (battleIndex >= battleTargets.length - 1) setScene('battleComplete');
+                else setBattleIndex((i) => i + 1);
+              }}
+            />
           ) : (
-            <TypeCompleteScene answers={typeAnswers} />
+            <BattleCompleteScene
+              battleCount={battleTargets.length}
+              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+            />
           )}
         </section>
       </main>
@@ -407,9 +679,9 @@ function ProfileScene({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const progress = (question.no / 5) * 100;
+  const progress = (question.no / 6) * 100;
   const isWarning = question.no === 4;
-  const isEncounter = question.no === 5;
+  const isEncounter = question.no >= 5;
 
   return (
     <div className={`pre-profile pre-q${question.no}`}>
@@ -432,7 +704,7 @@ function ProfileScene({
       <header className="pre-profile-hud">
         <div className="pre-profile-hud-row">
           <span>冒険準備</span>
-          <b>{question.no} / 5</b>
+          <b>{question.no} / 6</b>
         </div>
         <div className="pre-progress-track" aria-hidden="true">
           <span style={{ width: `${progress}%` }} />
@@ -441,7 +713,7 @@ function ProfileScene({
 
       {question.no === 3 && (
         <div className="pre-checkpoint" aria-hidden="true">
-          CHECK POINT 60%
+          CHECK POINT 50%
         </div>
       )}
 
@@ -466,8 +738,13 @@ function ProfileScene({
           setFlow={setFlow}
         />
 
-        <button type="button" className="pre-primary pre-next pre-fixed-profile-cta" onClick={onNext}>
-          {question.no === 5 ? 'ムダ討伐へ ▶' : '次へ ▶'}
+        <button
+          type="button"
+          className="pre-primary pre-next pre-fixed-profile-cta"
+          onClick={onNext}
+          disabled={(question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
+        >
+          {question.no === 6 ? '準備完了 ▶' : '次へ ▶'}
         </button>
 
         {index > 0 && (
@@ -487,7 +764,7 @@ function ProfileInput({
   flow,
   setFlow,
 }: {
-  no: 1 | 2 | 3 | 4 | 5;
+  no: 1 | 2 | 3 | 4 | 5 | 6;
   flow: ProfileFlow;
   setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
 }) {
@@ -566,18 +843,42 @@ function ProfileInput({
     );
   }
 
+  if (no === 5) {
+    return (
+      <label className="pre-input-wrap">
+        <span className="pre-sr-only">住まい</span>
+        <select
+          className={selectClass}
+          value={flow.housingType}
+          onChange={(e) => setFlow((v) => ({ ...v, housingType: e.target.value }))}
+        >
+          {HOUSING_TYPES.map((housingType) => (
+            <option key={housingType} value={housingType}>{housingType}</option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
   return (
-    <label className="pre-input-wrap">
-      <span className="pre-sr-only">住まい</span>
-      <select
-        className={selectClass}
-        value={flow.housingType}
-        onChange={(e) => setFlow((v) => ({ ...v, housingType: e.target.value }))}
-      >
-        {HOUSING_TYPES.map((housingType) => (
-          <option key={housingType} value={housingType}>{housingType}</option>
-        ))}
-      </select>
+    <label className="pre-input-wrap pre-income-wrap">
+      <span className="pre-sr-only">毎月の手取り</span>
+      <div className="pre-age-input pre-income-input">
+        <span className="pre-income-yen">¥</span>
+        <input
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={9}
+          value={flow.monthlyTakeHome === '' ? '' : Number(flow.monthlyTakeHome).toLocaleString('ja-JP')}
+          onChange={(e) => {
+            const monthlyTakeHome = e.target.value.replace(/\D/g, '').slice(0, 8);
+            setFlow((v) => ({ ...v, monthlyTakeHome }));
+          }}
+          placeholder="350,000"
+          aria-label="毎月の手取り"
+        />
+        <span>/ 月</span>
+      </div>
     </label>
   );
 }
@@ -596,7 +897,7 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
       <header className="pre-profile-hud">
         <div className="pre-profile-hud-row">
           <span>冒険準備</span>
-          <b>5 / 5</b>
+          <b>6 / 6</b>
         </div>
         <div className="pre-progress-track" aria-hidden="true">
           <span style={{ width: '100%' }} />
@@ -996,7 +1297,7 @@ function TypeQuizScene({
   );
 }
 
-function TypeCompleteScene({ answers }: { answers: TypeAnswersV31 }) {
+function TypeCompleteScene({ answers, onContinue }: { answers: TypeAnswersV31; onContinue: () => void }) {
   const answered = Object.keys(answers).length;
 
   return (
@@ -1010,7 +1311,7 @@ function TypeCompleteScene({ answers }: { answers: TypeAnswersV31 }) {
         <h2>行動パターン<br />解析完了。</h2>
         <p>
           お前の「お金の使い方のクセ」は見えた。<br />
-          <strong>だが、金額だけじゃ斬れない敵がまだいる。</strong>
+          <strong>次は、金額だけでは決められない敵だけ見極める。</strong>
         </p>
         <div className="type-complete-next-label">
           NEXT：必要な敵だけ追加鑑定
@@ -1018,14 +1319,254 @@ function TypeCompleteScene({ answers }: { answers: TypeAnswersV31 }) {
         <button
           type="button"
           className="pre-primary type-complete-cta"
-          onClick={() => window.alert('次は必要カテゴリだけの追加鑑定を実装します')}
+          onClick={onContinue}
         >
-          残った敵を鑑定する ▶
+          最終鑑定へ ▶
         </button>
       </section>
     </div>
   );
 }
+
+
+const SAT_OPTIONS: { label:string; sub:string; value:Satisfaction }[] = [
+  { label:'かなり見直したい', sub:'減らせるなら減らしたい', value:'waste' },
+  { label:'少し見直したい', sub:'ちょっと使いすぎかも', value:'inertia' },
+  { label:'今くらいでいい', sub:'このくらいなら納得', value:'satisfied' },
+  { label:'大切なので守りたい', sub:'ここは削りたくない', value:'verySatisfied' },
+];
+
+function AdditionalAppraisalScene({
+  item,current,total,onAnswer,
+}:{
+  item:AppraisalQuestion; current:number; total:number;
+  onAnswer:(answer:AppraisalAnswer)=>void;
+}) {
+  const enemy = ENEMY_ASSETS[item.category];
+  const [feedback,setFeedback] = useState<{label:string;detail:string;kind:AppraisalStatus}|null>(null);
+  const remaining = total-current+1;
+  const commit = (answer:AppraisalAnswer, kind:AppraisalStatus, label:string, detail:string) => {
+    setFeedback({kind,label,detail});
+    window.setTimeout(() => onAnswer(answer), 650);
+  };
+
+  const choiceSets: Record<string,{label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[]> = {
+    subUsage:[
+      {label:'ないと思う',sub:'ほぼ全部使っている',patch:{subUsage:'none',subUnusedAmount:0},kind:'safe',feedback:'問題なし'},
+      {label:'1つくらいありそう',sub:'使ってない契約があるかも',patch:{subUsage:'one'},kind:'review',feedback:'要確認'},
+      {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
+      {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
+    ],
+    rent:[
+      {label:'かなり負担を感じる',sub:'家計を圧迫している',patch:{rentPreference:'burdenHigh'}},
+      {label:'少し負担を感じる',sub:'できれば軽くしたい',patch:{rentPreference:'burdenSome'}},
+      {label:'今の家なら妥当',sub:'金額には納得している',patch:{rentPreference:'reasonable'}},
+      {label:'今の住環境を優先',sub:'高くてもここは守りたい',patch:{rentPreference:'protect'}},
+    ],
+    insurance:[
+      {label:'ほとんど分からない',sub:'何に備えているか曖昧',patch:{insuranceUnderstanding:'none'}},
+      {label:'なんとなく分かる',sub:'ざっくりは把握',patch:{insuranceUnderstanding:'vague'}},
+      {label:'だいたい把握',sub:'主な保障は分かる',patch:{insuranceUnderstanding:'mostly'}},
+      {label:'目的まで把握',sub:'保障内容も説明できる',patch:{insuranceUnderstanding:'clear'}},
+    ],
+    education:[
+      {label:'かなり見直したい',sub:'負担が大きい',patch:{educationPreference:'reviewHigh'}},
+      {label:'少し負担を感じる',sub:'家計とのバランスが気になる',patch:{educationPreference:'reviewSome'}},
+      {label:'必要な教育費',sub:'今の内容は維持したい',patch:{educationPreference:'necessary'}},
+      {label:'優先して守りたい',sub:'他を削ってでも大切',patch:{educationPreference:'protect'}},
+    ],
+    selfDevelopment:[
+      {label:'惰性になってる',sub:'続ける理由が弱い',patch:{selfDevelopmentValue:'inertia'}},
+      {label:'効果がよく分からない',sub:'成果とのつながりが曖昧',patch:{selfDevelopmentValue:'unclear'}},
+      {label:'目的は明確',sub:'何のためか説明できる',patch:{selfDevelopmentValue:'purpose'}},
+      {label:'成果につながってる',sub:'続ける価値を感じている',patch:{selfDevelopmentValue:'results'}},
+    ],
+  };
+
+  const options: {label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[] =
+    item.kind === 'satisfaction'
+      ? SAT_OPTIONS.map(x=>({label:x.label,sub:x.sub,patch:{satisfaction:x.value} as AppraisalAnswer}))
+      : choiceSets[item.kind] ?? [];
+
+  return (
+    <div className="scan-scene appraisal-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="scan-shade" aria-hidden="true" />
+      <header className="appraisal-hud">
+        <span>追加鑑定</span>
+        <b>未鑑定 {remaining}体</b>
+      </header>
+      <img className="appraisal-enemy" src={enemy.normal} alt={enemy.name} />
+      <img className="appraisal-mudagiri is-small" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
+      <section className="appraisal-card appraisal-question-card">
+        <div className="appraisal-kicker">{enemy.name} を鑑定中</div>
+        <p className="appraisal-reason">{item.reason}</p>
+        <h3>{item.question}</h3>
+        {feedback ? (
+          <div className={`appraisal-feedback is-${feedback.kind}`}>
+            <strong>{feedback.label}</strong>
+            <span>{feedback.detail}</span>
+          </div>
+        ) : (
+          <div className="appraisal-options">
+            {options.map((o,i)=>{
+              const inferredKind: AppraisalStatus =
+                o.kind ?? (
+                  item.kind === 'satisfaction'
+                    ? (o.patch.satisfaction === 'verySatisfied' ? 'protect' : 'battle')
+                    : item.kind === 'rent'
+                      ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'review')
+                      : item.kind === 'insurance'
+                        ? 'review'
+                        : item.kind === 'education'
+                          ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'review')
+                          : item.kind === 'selfDevelopment'
+                            ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
+                            : 'review'
+                );
+              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
+              const detail = inferredKind==='protect'?'ここは本人の価値を優先':inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
+              return (
+                <button type="button" key={i} className="appraisal-option" onClick={()=>commit(o.patch,inferredKind,label,detail)}>
+                  <strong>{o.label}</strong><span>{o.sub}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function AppraisalCompleteScene({
+  judgements,onContinue,
+}:{
+  judgements:FinalEnemyJudgement[]; onContinue:()=>void;
+}) {
+  const counts = {
+    battle:judgements.filter(x=>x.status==='battle').length,
+    protect:judgements.filter(x=>x.status==='protect').length,
+    safe:judgements.filter(x=>x.status==='safe').length,
+    review:judgements.filter(x=>x.status==='review').length,
+    na:judgements.filter(x=>x.status==='na').length,
+  };
+  return (
+    <div className="scan-scene appraisal-scene appraisal-complete-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="type-complete-shade" aria-hidden="true" />
+      <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
+      <section className="appraisal-card">
+        <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
+        <h2>鑑定完了。</h2>
+        <p className="appraisal-reason">
+          高いからって、全部斬る必要はない。<br />
+          <strong>大切なものを守るために、ムダだけ斬るぞ。</strong>
+        </p>
+        <div className="judgement-grid">
+          <div><b>{counts.battle}</b><span>討伐候補</span></div>
+          <div><b>{counts.protect}</b><span>守る支出</span></div>
+          <div><b>{counts.safe}</b><span>問題なし</span></div>
+          <div><b>{counts.review}</b><span>要鑑定</span></div>
+          <div><b>{counts.na}</b><span>対象外</span></div>
+        </div>
+        <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
+          討伐優先度を解析する ▶
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function BattleIntroScene({
+  targets,reviewCount,onStart,
+}:{
+  targets:FinalEnemyJudgement[]; reviewCount:number; onStart:()=>void;
+}) {
+  return (
+    <div className="scan-scene battle-intro-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="type-complete-shade" aria-hidden="true" />
+      <section className="battle-intro-card">
+        <div className="appraisal-kicker">{targets.length ? 'PRIORITY ANALYSIS' : 'HOUSEHOLD DEFENSE'}</div>
+        <h2>{targets.length ? '今回、斬るべき敵は――' : '家計防衛成功！'}</h2>
+        {targets.length ? (
+          <div className="battle-targets">
+            {targets.map((t,i)=>{
+              const e=ENEMY_ASSETS[t.category];
+              return <div key={t.category}><img src={e.normal} alt="" /><span>#{i+1}</span><strong>{e.name}</strong></div>;
+            })}
+          </div>
+        ) : (
+          <p className="appraisal-reason">無理に斬る敵はいなかった。<br /><strong>かなり上手くお金を使えてるぞ。</strong></p>
+        )}
+        {reviewCount>0 && <div className="battle-review-note">🔍 金額だけでは断定できない敵が {reviewCount} 体残っています</div>}
+        <button type="button" className="pre-primary appraisal-next" onClick={onStart}>
+          {targets.length ? `討伐を開始する ▶` : '結果へ進む ▶'}
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function PriorityBattleScene({
+  target,current,total,onDone,
+}:{
+  target:FinalEnemyJudgement; current:number; total:number; onDone:()=>void;
+}) {
+  const enemy=ENEMY_ASSETS[target.category];
+  const [phase,setPhase]=useState<'ready'|'slash'|'defeated'>('ready');
+  const attack=()=>{
+    setPhase('slash');
+    window.setTimeout(()=>setPhase('defeated'),420);
+  };
+  return (
+    <div className={`scan-scene battle-scene battle-defeat battle-phase-${phase==='slash'?'action':'result'}`}>
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="scan-shade" aria-hidden="true" />
+      <header className="battle-hud"><span>BATTLE {current} / {total}</span><b>{enemy.name}</b></header>
+      <div className="battle-contact" aria-hidden="true" />
+      <img className="battle-enemy" src={phase==='defeated'?enemy.defeated:enemy.normal} alt={enemy.name} />
+      <img className="battle-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
+      {phase==='slash' && <>
+        <img className="battle-fx battle-fx-slash" src={`${BATTLE_ASSET}/FX-02_SLASH.png`} alt="" />
+        <img className="battle-fx battle-fx-hit" src={`${BATTLE_ASSET}/FX-03_HIT.png`} alt="" />
+        <div className="battle-white-flash" />
+      </>}
+      {phase==='defeated' && <img className="battle-fx battle-fx-particles" src={`${BATTLE_ASSET}/FX-04_DEFEAT_PARTICLES.png`} alt="" />}
+      <section className="battle-panel battle-panel-result">
+        <div className="battle-result-kicker">{phase==='ready'?'TARGET LOCK':'WEAK POINT'}</div>
+        <h2>{phase==='ready'?`${enemy.name}を討伐する！`:'改善余地を発見！'}</h2>
+        <p>{phase==='ready'?'金額だけでなく、改善余地と動かしやすさから優先された敵だ。':'正確な金額は冒険終了後のRESULTでまとめて確認するぞ。'}</p>
+        {phase==='ready'
+          ? <button type="button" className="pre-primary battle-next" onClick={attack}>ムダ斬り！ ▶</button>
+          : phase==='defeated'
+            ? <button type="button" className="pre-primary battle-next" onClick={onDone}>{current===total?'討伐結果へ ▶':'次の敵へ ▶'}</button>
+            : <div className="battle-loading"><span className="battle-loading-dot"/><span>SLASH!</span></div>}
+      </section>
+    </div>
+  );
+}
+
+function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;reviewCount:number}) {
+  return (
+    <div className="scan-scene battle-intro-scene">
+      <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
+      <div className="type-complete-shade" aria-hidden="true" />
+      <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
+      <section className="battle-intro-card">
+        <div className="appraisal-kicker">QUEST CLEAR</div>
+        <h2>{battleCount ? `${battleCount}体の討伐完了！` : '家計防衛成功！'}</h2>
+        <p className="appraisal-reason">
+          {reviewCount ? `まだ ${reviewCount} 体は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
+          <br /><strong>次は、称号と家計の全結果を開示する。</strong>
+        </p>
+        <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
+      </section>
+    </div>
+  );
+}
+
 
 const CSS = String.raw`
 :root { color-scheme: dark; }
@@ -2626,6 +3167,91 @@ const CSS = String.raw`
   width:auto!important;
   min-height:56px!important;
   margin:0!important;
+}
+
+
+/* ===== V2.9 ADDITIONAL APPRAISAL / PRIORITY BATTLE ===== */
+.appraisal-scene,.battle-intro-scene{position:absolute;inset:0;overflow:hidden}
+.appraisal-hud{position:absolute;z-index:30;top:max(28px,calc(env(safe-area-inset-top) + 18px));left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:1000;text-shadow:0 2px 5px rgba(0,0,0,.8)}
+.appraisal-hud span{color:#ffd62f;font-size:14px;letter-spacing:.08em}.appraisal-hud b{font-size:14px}
+.appraisal-enemy{position:absolute;z-index:8;right:3%;top:13%;width:min(43vw,180px);max-height:29dvh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 14px rgba(0,0,0,.32))}
+.appraisal-mudagiri{position:absolute;z-index:10;left:4%;top:13%;width:min(39vw,164px);max-height:28dvh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 14px rgba(0,0,0,.3))}
+.appraisal-mudagiri.is-small{width:min(32vw,136px);top:18%}
+.appraisal-card,.battle-intro-card{position:absolute;z-index:25;left:18px;right:18px;bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));padding:20px 18px 18px;border:1.5px solid #f0c92f;border-radius:18px;background:rgba(5,20,34,.965);box-shadow:0 15px 34px rgba(0,0,0,.44)}
+.appraisal-question-card{padding-top:17px}
+.appraisal-kicker{color:#ffd42b;font-size:12px;font-weight:1000;letter-spacing:.08em}
+.appraisal-card h2,.battle-intro-card h2{margin:8px 0 0;color:#fff;font-size:clamp(25px,7vw,31px);line-height:1.18;font-weight:1000;letter-spacing:-.035em}
+.appraisal-card h3{margin:12px 0 0;color:#fff;font-size:clamp(20px,5.5vw,24px);line-height:1.32;font-weight:1000}
+.appraisal-reason{margin:10px 0 0;padding:11px 12px;border-radius:11px;background:rgba(20,53,73,.78);color:rgba(255,255,255,.83);font-size:14px;font-weight:800;line-height:1.5}
+.appraisal-reason strong{color:#fff}
+.appraisal-money{margin-top:13px}
+.appraisal-next{margin-top:14px;min-height:54px}.appraisal-next:disabled{opacity:.45;cursor:not-allowed}
+.appraisal-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.appraisal-option{min-height:67px;padding:10px 9px;border:1px solid rgba(255,214,47,.45);border-radius:11px;background:rgba(15,48,66,.92);color:#fff;text-align:left;cursor:pointer}
+.appraisal-option strong{display:block;font-size:14px;font-weight:1000;line-height:1.25}.appraisal-option span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:10px;font-weight:800;line-height:1.25}
+.appraisal-option:active{transform:translateY(1px);background:rgba(28,70,89,.98)}
+.judgement-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.judgement-grid div{display:flex;align-items:baseline;justify-content:space-between;padding:10px 11px;border-radius:10px;background:rgba(20,53,73,.78)}
+.judgement-grid b{color:#ffd62f;font-size:22px;font-weight:1000}.judgement-grid span{color:#fff;font-size:11px;font-weight:900}
+.battle-intro-card{top:50%;bottom:auto;transform:translateY(-37%)}
+.battle-targets{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.battle-targets div{position:relative;min-width:0;padding:8px 5px 9px;border:1px solid rgba(255,214,47,.42);border-radius:11px;background:rgba(20,53,73,.78);text-align:center}
+.battle-targets img{width:100%;height:82px;object-fit:contain;image-rendering:pixelated}.battle-targets span{position:absolute;left:6px;top:6px;color:#ffd62f;font-size:9px;font-weight:1000}.battle-targets strong{display:block;overflow:hidden;color:#fff;font-size:10px;font-weight:1000;white-space:nowrap;text-overflow:ellipsis}
+.battle-review-note,.result-next-lock{margin-top:12px;padding:10px 11px;border-radius:10px;background:rgba(20,53,73,.78);color:rgba(255,255,255,.78);font-size:11px;font-weight:900;line-height:1.45}
+.money-calibrate-scene .appraisal-card{min-height:330px}
+.money-calibrate-scene .appraisal-mudagiri{top:10%}
+@media(max-height:720px){
+  .appraisal-enemy{top:11%;width:min(36vw,150px);max-height:23dvh}
+  .appraisal-mudagiri{top:11%;width:min(34vw,145px);max-height:23dvh}
+  .appraisal-mudagiri.is-small{top:14%;width:min(28vw,120px)}
+  .appraisal-card{bottom:max(10px,calc(env(safe-area-inset-bottom) + 7px));padding:14px 15px 13px}
+  .appraisal-card h2,.battle-intro-card h2{font-size:23px}.appraisal-card h3{font-size:18px}
+  .appraisal-reason{margin-top:7px;padding:8px 10px;font-size:12px}
+  .appraisal-options{gap:6px;margin-top:9px}.appraisal-option{min-height:55px;padding:7px 8px}.appraisal-option strong{font-size:12px}.appraisal-option span{font-size:9px}
+  .appraisal-next{min-height:46px;margin-top:9px}
+  .battle-targets img{height:62px}
+  .battle-intro-card{transform:translateY(-40%)}
+}
+
+.pre-income-input{grid-template-columns:auto 1fr auto}.pre-income-yen{color:#ffd62f;font-weight:1000}
+.pre-next:disabled{opacity:.45;cursor:not-allowed}
+.appraisal-feedback{margin-top:13px;min-height:142px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid rgba(255,214,47,.5);border-radius:13px;background:rgba(12,39,56,.96);text-align:center;animation:appraisal-pop .18s ease-out}
+.appraisal-feedback strong{font-size:25px;font-weight:1000;color:#ffd62f}.appraisal-feedback span{margin-top:7px;font-size:13px;font-weight:900;color:rgba(255,255,255,.8)}
+.appraisal-feedback.is-review strong{color:#ffca3a}.appraisal-feedback.is-protect strong{color:#8ce6b0}.appraisal-feedback.is-safe strong{color:#8ed7ff}
+@keyframes appraisal-pop{from{transform:scale(.96);opacity:.25}to{transform:scale(1);opacity:1}}
+.judgement-grid{grid-template-columns:repeat(5,1fr)}
+.judgement-grid div{display:block;text-align:center}.judgement-grid b,.judgement-grid span{display:block}.judgement-grid span{margin-top:2px;font-size:9px}
+@media(max-width:380px){.judgement-grid{gap:4px}.judgement-grid div{padding:8px 4px}.judgement-grid b{font-size:19px}.judgement-grid span{font-size:8px}}
+
+/* V2.9 reviewed mobile typography */
+.pre-question,.appraisal-question{font-size:clamp(20px,5.6vw,24px);line-height:1.32;font-weight:1000}
+.pre-helper,.appraisal-reason{font-size:clamp(13px,3.55vw,15px);line-height:1.55}
+.pre-dialogue{font-size:clamp(14px,3.85vw,16px);line-height:1.5}
+.pre-age-input input,.pre-income-input input{font-size:clamp(24px,7.2vw,31px);line-height:1.15;font-weight:1000}
+.pre-income-input span{font-size:clamp(14px,3.8vw,16px)}
+.appraisal-option strong{font-size:clamp(15px,4.15vw,17px);line-height:1.35}
+.appraisal-option span{font-size:clamp(12px,3.3vw,14px);line-height:1.4}
+.pre-primary,.pre-next,.appraisal-option{min-height:56px}
+.pre-primary,.pre-next{font-size:clamp(16px,4.45vw,18px);font-weight:1000}
+@media(max-height:700px){
+  .pre-character{transform:scale(.93);transform-origin:bottom left}
+  .pre-card{padding-top:12px;padding-bottom:10px}
+  .pre-question{margin-top:3px}
+  .pre-helper{margin-top:3px}
+  .appraisal-enemy{transform:scale(.92);transform-origin:center bottom}
+  .appraisal-card{padding-top:11px;padding-bottom:10px}
+  .appraisal-options{gap:7px}
+}
+@media(min-width:421px) and (min-height:850px){
+  .pre-question,.appraisal-question{font-size:24px}
+  .pre-dialogue{font-size:16px}
+}
+
+/* FINAL AUDIT: never shrink primary tap targets below 56px */
+.scan-start,.scan-next-search,.battle-next,.appraisal-next,.type-complete-cta,.appraisal-intro-cta{min-height:56px!important}
+.scan-start,.scan-next-search,.battle-next{font-size:clamp(15px,4.1vw,17px)}
+@media(max-height:700px){
+  .scan-start,.scan-next-search,.battle-next,.appraisal-next,.type-complete-cta,.appraisal-intro-cta{min-height:56px!important}
 }
 
 `;
