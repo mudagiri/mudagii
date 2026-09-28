@@ -35,12 +35,12 @@ function reason(x:FinalCategoryV3):string{
 function appraisalSummary(x:FinalCategoryV3):string|null{
  const a=x.appraisal;if(!a)return null;
  if(x.category==='sub'){if(a.subUsage==='none')return 'ほぼ全部使っている';if(a.subUnusedAmount&&a.subUnusedAmount>0)return `未使用分 月¥${a.subUnusedAmount.toLocaleString('ja-JP')}を確認`;if(a.subUsage==='one')return '使っていない契約が1つくらいありそう';if(a.subUsage==='several')return '使っていない契約が2〜3個ありそう';if(a.subUsage==='unknown')return '契約状況を把握できていない';}
- if(x.category==='car')return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as any)[a.carNeed]??null;
- if(x.category==='rent')return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as any)[a.rentPreference]??null;
- if(x.category==='food'||x.category==='fun'||x.category==='beautyFashion')return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as any)[a.satisfaction]??null;
- if(x.category==='insurance')return ({clear:'目的まで把握している',mostly:'目的はだいたい把握',unclear:'保障目的が曖昧'} as any)[a.insurancePurpose]??null;
- if(x.category==='childEducation')return ({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as any)[a.educationPreference]??null;
- if(x.category==='selfDevelopment')return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながっている'} as any)[a.selfDevelopmentValue]??null;
+ if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
+ if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
+ if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
+ if(x.category==='insurance'&&a.insurancePurpose)return ({clear:'目的まで把握している',mostly:'目的はだいたい把握',unclear:'保障目的が曖昧'} as Record<string,string>)[a.insurancePurpose]??null;
+ if(x.category==='childEducation'&&a.educationPreference)return ({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as Record<string,string>)[a.educationPreference]??null;
+ if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながっている'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
 }
 function nextCheck(x:FinalCategoryV3):string{
