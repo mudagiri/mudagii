@@ -1,5 +1,5 @@
 const CFG={VERSION:'MUDAGIRI_SHEET_V3',SHEETS:{DIAG:'Diagnoses_V3',EVENT:'Events_V3',LEAD:'Leads_V3',META:'Meta'}};
-function setupMudagiriV2(){
+function setupMudagiriV3(){
  const ss=SpreadsheetApp.getActive();
  ensure_(ss,CFG.SHEETS.DIAG,['diagnosis_id','created_at','schema_version','type_model_version','methodology_version','household','age','monthly_income','monthly_saving','type_code','axis_fv','axis_pi','axis_au','strength_fv','strength_pi','strength_au','near_middle_fv','near_middle_pi','near_middle_au','monthly_improvement','future_goal','needs_review_json','expenses_json','raw_type_answers_json','raw_json','tone_mode']);
  ensure_(ss,CFG.SHEETS.EVENT,['event_id','anonymous_user_id','diagnosis_id','created_at','name','data_json']);
@@ -12,7 +12,7 @@ function doGet(){return ContentService.createTextOutput(JSON.stringify({ok:true,
 function doPost(e){
  const lock=LockService.getScriptLock();lock.waitLock(10000);
  try{
-  setupMudagiriV2(); const body=JSON.parse((e&&e.postData&&e.postData.contents)||'{}');
+  setupMudagiriV3(); const body=JSON.parse((e&&e.postData&&e.postData.contents)||'{}');
   if(body.kind==='diagnosis_v3') saveDiagnosis_(body); else if(body.kind==='event_v3') saveEvent_(body); else if(body.kind==='lead_v3') saveLead_(body); else throw new Error('unknown kind');
   return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
  }catch(err){return ContentService.createTextOutput(JSON.stringify({ok:false,error:String(err)})).setMimeType(ContentService.MimeType.JSON)}
@@ -20,8 +20,10 @@ function doPost(e){
 }
 function saveDiagnosis_(b){
  const s=SpreadsheetApp.getActive().getSheetByName(CFG.SHEETS.DIAG),id=String(b.diagnosisId||'');if(!id)throw new Error('diagnosisId required');
- if(find_(s,1,id)>1)return; const t=b.type||{},a=t.axes||{},st=t.strength||{},nm=t.nearMiddle||{};
- s.appendRow([id,b.createdAt||new Date().toISOString(),b.schemaVersion||CFG.VERSION,b.typeModelVersion||'',b.methodologyVersion||'',b.household||'',num_(b.age),num_(b.monthlyIncome),num_(b.monthlySaving),t.code||'',num_(a.fv),num_(a.pi),num_(a.au),num_(st.fv),num_(st.pi),num_(st.au),!!nm.fv,!!nm.pi,!!nm.au,num_(b.monthlyImprovement),b.goal||'',JSON.stringify(b.needsReview||[]),JSON.stringify(b.expenses||{}),JSON.stringify(b.typeAnswers||{}),JSON.stringify(b),b.toneMode||'']);
+ const p=b.profile||{},m=b.methodology||{},r=b.result||{},statuses=r.finalStatuses||{};
+ const review=Object.keys(statuses).filter(k=>statuses[k]&&(statuses[k].status==='review'||statuses[k].status==='battle'));
+ const row=[id,b.createdAt||new Date().toISOString(),b.schemaVersion||CFG.VERSION,m.type||'',m.diagnosis||'',p.household||'',num_(p.age),num_(p.monthlyTakeHome),'',r.typeCode||'','','','','','','',false,false,false,num_(r.improvement&&r.improvement.monthly),'',JSON.stringify(review),JSON.stringify(b.rawExpenses||{}),JSON.stringify(b.typeAnswers||{}),JSON.stringify(b),b.toneMode||''];
+ const found=find_(s,1,id);if(found>1)s.getRange(found,1,1,row.length).setValues([row]);else s.appendRow(row);
 }
 function saveEvent_(b){
  const ss=SpreadsheetApp.getActive(),s=ss.getSheetByName(CFG.SHEETS.EVENT),id=String(b.eventId||'');if(!id)throw new Error('eventId required');if(find_(s,1,id)>1)return;
