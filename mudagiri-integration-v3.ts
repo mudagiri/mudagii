@@ -8,7 +8,7 @@ export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
 export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown' }
-export type BattleBasis='confirmed'|'benchmark_plus_intent'|'benchmark_check'|'none';
+export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null }
 
 export const ALL_CATEGORIES:Category[]=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
@@ -33,7 +33,7 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
 
  if(category==='sub'){
    if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false,battleBasis:'none'};
-   if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='insurance'){
@@ -45,32 +45,32 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
      (ap.insuranceDuplicate==='none'||ap.insuranceDuplicate==='intentional');
    if(protectedInsurance)return {status:'protect',attentionFlag:false,battleBasis:'none'};
    if(ap&&(ap.insuranceLastReview==='over3y'||ap.insuranceLastReview==='never'||ap.insurancePurpose==='unclear'||ap.insuranceDuplicate==='possible'))
-     return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+     return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='rent'){
    if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='childEducation'){
    if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(ap?.educationPreference==='reviewHigh'||ap?.educationPreference==='reviewSome')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   if(ap?.educationPreference==='reviewHigh'||ap?.educationPreference==='reviewSome')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='selfDevelopment'){
    if(ap?.selfDevelopmentValue==='purpose'||ap?.selfDevelopmentValue==='results')return {status:'protect',attentionFlag:false,battleBasis:'none'};
-   if(ap?.selfDevelopmentValue==='inertia'||ap?.selfDevelopmentValue==='unclear')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   if(ap?.selfDevelopmentValue==='inertia'||ap?.selfDevelopmentValue==='unclear')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if((category==='food'||category==='fun'||category==='beautyFashion')){
    if(ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(engine?.needsReview&&ap?.satisfaction)return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   if(engine?.needsReview&&(ap?.satisfaction==='waste'||ap?.satisfaction==='inertia'))return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.satisfaction==='satisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
  }
- // Objective benchmark screen categories may be fought as a review quest.
- // This never creates a confirmed saving amount.
+ // Benchmark-only CHECK is information, not an enemy. Averages never create an RPG battle by themselves.
  if((category==='mobile'||category==='energy'||category==='daily')&&engine?.state==='CHECK')
-   return {status:'battle',attentionFlag:false,battleBasis:'benchmark_check'};
+   return {status:'review',attentionFlag:true,battleBasis:'none'};
  if(engine?.needsReview)return {status:'review',attentionFlag:true,battleBasis:'none'};
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
 }
