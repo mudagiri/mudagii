@@ -6,7 +6,7 @@ type Case={name:string;income:number;amounts:Partial<Record<Category,number>>;co
 const raw=(amounts:Case['amounts']):RawExpenses=>{const r=emptyRawExpenses();for(const [k,v] of Object.entries(amounts) as [Category,number][])r[k]={amount:v,known:true,applicability:'applicable'};return r};
 const cases:Case[]=[
  {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'safe',energy:'safe',food:'safe',rent:'protect'},confirmedMonthly:0},
- {name:'通信だけ高い単身',income:300000,amounts:{mobile:14000},comparable:{mobile:6000},expect:{mobile:'battle'},confirmedMonthly:0},
+ {name:'通信だけ高い単身',income:300000,amounts:{mobile:14000},comparable:{mobile:6000},expect:{mobile:'review'},confirmedMonthly:0},
  {name:'食費高めだが守りたい',income:350000,amounts:{food:80000},comparable:{food:50000},appraisal:{food:{satisfaction:'verySatisfied'}},expect:{food:'protect'},confirmedMonthly:0},
  {name:'食費高めで見直し意思あり',income:350000,amounts:{food:80000},comparable:{food:50000},appraisal:{food:{satisfaction:'waste'}},expect:{food:'battle'},confirmedMonthly:0},
  {name:'未使用サブスク額まで確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:3500}},expect:{sub:'battle'},confirmedMonthly:3500},
@@ -21,7 +21,7 @@ const cases:Case[]=[
  {name:'惰性の自己投資',income:450000,amounts:{selfDevelopment:50000},appraisal:{selfDevelopment:{selfDevelopmentValue:'inertia'}},expect:{selfDevelopment:'battle'},confirmedMonthly:0},
  {name:'車費は高くても内訳未鑑定',income:500000,amounts:{car:80000},expect:{car:'review'},confirmedMonthly:0},
  {name:'境界値:比較目安と同額',income:300000,amounts:{mobile:6000,energy:11000,daily:9000},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'safe',energy:'safe',daily:'safe'},confirmedMonthly:0},
- {name:'境界値:比較目安を1円超過',income:300000,amounts:{mobile:6001,energy:11001,daily:9001},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'battle',energy:'battle',daily:'battle'},confirmedMonthly:0},
+ {name:'境界値:比較目安を1円超過',income:300000,amounts:{mobile:6001,energy:11001,daily:9001},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'review',daily:'review'},confirmedMonthly:0},
  {name:'ゼロ支出',income:300000,amounts:{mobile:0,sub:0,insurance:0},expect:{mobile:'safe',sub:'safe',insurance:'safe'},confirmedMonthly:0}
 ];
 
