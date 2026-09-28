@@ -60,8 +60,9 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    window.scrollTo({top:0,behavior:'auto'});
  };
 
- if(result)return <ResultScreenV3 vm={result} onEvent={emit} onLine={(ctx)=>{
+ if(result)return <ResultScreenV3 vm={result} onEvent={emit} onLine={async(ctx)=>{
    const payload={...ctx,anonymousUserId,diagnosisId};
+   await store?.saveLead?.({leadId:'lead_'+diagnosisId,anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',typeCode:result.type.code,annualIncomeBand:result.annualIncomeBand,needsReview:result.rows.filter((x:any)=>x.status==='battle'||x.status==='review').map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null});
    if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;
 
