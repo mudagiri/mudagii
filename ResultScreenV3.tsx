@@ -38,7 +38,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    <div className="rv3-kicker">今回見つかった改善余地</div>
    <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
    <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
-   <p className="rv3-note">現在の生活を大きく変えずに、見直せる可能性がある金額です。診断上の推定値で、実際の削減額を保証するものではありません。「要鑑定」は含みません。</p>
+   <p className="rv3-note">今回の診断で、具体的に不要・削減可能と確認できた金額だけを表示しています。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>
 
   {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ斬られた？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>

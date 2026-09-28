@@ -26,7 +26,11 @@ type AppraisalStatus = 'battle' | 'protect' | 'safe' | 'review' | 'na';
 type AppraisalAnswer = {
   satisfaction?: Satisfaction;
   rentPreference?: 'burdenHigh'|'burdenSome'|'reasonable'|'protect';
-  insuranceUnderstanding?: 'none'|'vague'|'mostly'|'clear';
+  insurancePurpose?: 'clear'|'mostly'|'unclear';
+  insuranceLastReview?: 'within1y'|'1to3y'|'over3y'|'never'|'unknown';
+  insuranceLifeChange?: 'none'|'reviewed'|'notReviewed'|'unknown';
+  insurancePublicBenefits?: 'considered'|'maybe'|'not'|'unknown';
+  insuranceDuplicate?: 'none'|'intentional'|'possible'|'unknown';
   educationPreference?: 'reviewHigh'|'reviewSome'|'necessary'|'protect';
   selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
   subUnusedAmount?: number;
@@ -37,7 +41,7 @@ type AppraisalQuestion = {
   category: EnemyAssetCategory;
   reason: string;
   question: string;
-  kind: 'satisfaction'|'rent'|'insurance'|'education'|'selfDevelopment'|'subUsage';
+  kind: 'satisfaction'|'rent'|'insurancePurpose'|'insuranceLastReview'|'insuranceLifeChange'|'insurancePublicBenefits'|'insuranceDuplicate'|'education'|'selfDevelopment'|'subUsage';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -262,9 +266,18 @@ export default function RpgBlock1({
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
-    const rent=actual('rent'),rc=comp('rent');
-    if(rent>0&&(rent/incomeNumber>.35||(rc!==null&&rent>rc*1.25)))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
-    if(actual('insurance')>0)qs.push({category:'insurance',kind:'insurance',reason:'保険は、保険料だけでは必要・不要を判断できません。',question:'今入っている保険、何のための保障か把握してる？'});
+    const rent=actual('rent');
+    if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    if(actual('insurance')>0){
+      const reason='保険料だけでは必要・不要を判断できません。保障の中身を5つだけ鑑定します。';
+      qs.push(
+        {category:'insurance',kind:'insurancePurpose',reason,question:'Q1. 何のための保障か説明できる？'},
+        {category:'insurance',kind:'insuranceLastReview',reason,question:'Q2. 最後に保障内容を見直したのは？'},
+        {category:'insurance',kind:'insuranceLifeChange',reason,question:'Q3. 家族や生活の変化後に見直した？'},
+        {category:'insurance',kind:'insurancePublicBenefits',reason,question:'Q4. 公的保障も踏まえて設計してる？'},
+        {category:'insurance',kind:'insuranceDuplicate',reason,question:'Q5. 似た保障の重複は確認できてる？'},
+      );
+    }
     if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
@@ -1274,11 +1287,35 @@ function AdditionalAppraisalScene({
       {label:'今の家なら妥当',sub:'金額には納得している',patch:{rentPreference:'reasonable'}},
       {label:'今の住環境を優先',sub:'高くてもここは守りたい',patch:{rentPreference:'protect'}},
     ],
-    insurance:[
-      {label:'ほとんど分からない',sub:'何に備えているか曖昧',patch:{insuranceUnderstanding:'none'}},
-      {label:'なんとなく分かる',sub:'ざっくりは把握',patch:{insuranceUnderstanding:'vague'}},
-      {label:'だいたい把握',sub:'主な保障は分かる',patch:{insuranceUnderstanding:'mostly'}},
-      {label:'目的まで把握',sub:'保障内容も説明できる',patch:{insuranceUnderstanding:'clear'}},
+    insurancePurpose:[
+      {label:'説明できる',sub:'目的と主な保障が明確',patch:{insurancePurpose:'clear'}},
+      {label:'だいたい分かる',sub:'主な目的は把握',patch:{insurancePurpose:'mostly'}},
+      {label:'よく分からない',sub:'何に備えているか曖昧',patch:{insurancePurpose:'unclear'}},
+    ],
+    insuranceLastReview:[
+      {label:'1年以内',sub:'最近見直した',patch:{insuranceLastReview:'within1y'}},
+      {label:'1〜3年以内',sub:'比較的新しい',patch:{insuranceLastReview:'1to3y'}},
+      {label:'3年以上前',sub:'今とズレている可能性',patch:{insuranceLastReview:'over3y'}},
+      {label:'したことない',sub:'契約時のまま',patch:{insuranceLastReview:'never'}},
+      {label:'分からない',sub:'いつ見直したか不明',patch:{insuranceLastReview:'unknown'}},
+    ],
+    insuranceLifeChange:[
+      {label:'大きな変化なし',sub:'前提は変わっていない',patch:{insuranceLifeChange:'none'}},
+      {label:'変化後に見直した',sub:'今の状況に合わせた',patch:{insuranceLifeChange:'reviewed'}},
+      {label:'変化したが未見直し',sub:'昔の前提のままかも',patch:{insuranceLifeChange:'notReviewed'}},
+      {label:'分からない',sub:'見直したか曖昧',patch:{insuranceLifeChange:'unknown'}},
+    ],
+    insurancePublicBenefits:[
+      {label:'踏まえている',sub:'公的保障も確認済み',patch:{insurancePublicBenefits:'considered'}},
+      {label:'たぶん',sub:'詳しくは説明できない',patch:{insurancePublicBenefits:'maybe'}},
+      {label:'踏まえていない',sub:'民間保険だけで考えた',patch:{insurancePublicBenefits:'not'}},
+      {label:'分からない',sub:'確認した記憶がない',patch:{insurancePublicBenefits:'unknown'}},
+    ],
+    insuranceDuplicate:[
+      {label:'重複なしを確認',sub:'似た保障は整理済み',patch:{insuranceDuplicate:'none'}},
+      {label:'意図した重複',sub:'理由があって重ねている',patch:{insuranceDuplicate:'intentional'}},
+      {label:'重複あるかも',sub:'似た保障が複数ありそう',patch:{insuranceDuplicate:'possible'}},
+      {label:'分からない',sub:'比較したことがない',patch:{insuranceDuplicate:'unknown'}},
     ],
     education:[
       {label:'かなり見直したい',sub:'負担が大きい',patch:{educationPreference:'reviewHigh'}},
@@ -1327,16 +1364,22 @@ function AdditionalAppraisalScene({
                     ? (o.patch.satisfaction === 'verySatisfied' ? 'protect' : 'battle')
                     : item.kind === 'rent'
                       ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'review')
-                      : item.kind === 'insurance'
-                        ? 'review'
+                      : item.kind.startsWith('insurance')
+                        ? (
+                            item.kind === 'insuranceDuplicate' &&
+                            o.patch.insuranceDuplicate !== 'possible' &&
+                            o.patch.insuranceDuplicate !== 'unknown'
+                              ? 'protect'
+                              : 'review'
+                          )
                         : item.kind === 'education'
                           ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'review')
                           : item.kind === 'selfDevelopment'
                             ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
                             : 'review'
                 );
-              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
-              const detail = inferredKind==='protect'?'ここは本人の価値を優先':inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
+              const label = o.feedback ?? (inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'鑑定完了':'守る支出'):inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
+              const detail = inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'5項目を踏まえて最終判定する':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
               return (
                 <button type="button" key={i} className="appraisal-option" onClick={()=>commit(o.patch,inferredKind,label,detail)}>
                   <strong>{o.label}</strong><span>{o.sub}</span>
