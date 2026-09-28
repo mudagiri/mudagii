@@ -589,16 +589,10 @@ export default function RpgBlock1({
                 setScene(battleTargets.length ? 'battle' : 'battleComplete');
               }}
             />
-          ) : scene === 'battle' && battleTargets[battleIndex] ? (
-            <PriorityBattleScene
-              key={`${battleTargets[battleIndex].category}-${battleIndex}`}
-              target={battleTargets[battleIndex]}
-              current={battleIndex + 1}
-              total={battleTargets.length}
-              onDone={() => {
-                if (battleIndex >= battleTargets.length - 1) setScene('battleComplete');
-                else setBattleIndex((i) => i + 1);
-              }}
+          ) : scene === 'battle' && battleTargets.length ? (
+            <ComboBattleScene
+              targets={battleTargets}
+              onDone={() => setScene('battleComplete')}
             />
           ) : (
             <BattleCompleteScene
@@ -1488,8 +1482,8 @@ function BattleIntroScene({
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
-        <div className="appraisal-kicker">{targets.length ? 'PRIORITY ANALYSIS' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? '今回、斬るべき敵は――' : '家計防衛成功！'}</h2>
+        <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
+        <h2>{targets.length ? '討伐対象を特定した！' : '家計防衛成功！'}</h2>
         {targets.length ? (
           <div className="battle-targets">
             {targets.map((t,i)=>{
@@ -1509,40 +1503,44 @@ function BattleIntroScene({
   );
 }
 
-function PriorityBattleScene({
-  target,current,total,onDone,
-}:{
-  target:FinalEnemyJudgement; current:number; total:number; onDone:()=>void;
-}) {
-  const enemy=ENEMY_ASSETS[target.category];
-  const [phase,setPhase]=useState<'ready'|'slash'|'defeated'>('ready');
+function ComboBattleScene({ targets,onDone }:{ targets:FinalEnemyJudgement[]; onDone:()=>void }) {
+  const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
+  const [hitIndex,setHitIndex]=useState(-1);
+  const timers=React.useRef<number[]>([]);
+  useEffect(()=>()=>timers.current.forEach(window.clearTimeout),[]);
   const attack=()=>{
-    setPhase('slash');
-    window.setTimeout(()=>setPhase('defeated'),420);
+    timers.current.forEach(window.clearTimeout); timers.current=[];
+    setPhase('action'); setHitIndex(0);
+    targets.forEach((_,i)=>timers.current.push(window.setTimeout(()=>setHitIndex(i),i*310)));
+    timers.current.push(window.setTimeout(()=>{setHitIndex(targets.length);setPhase('defeated')},Math.max(980,targets.length*310+360)));
   };
   return (
-    <div className={`scan-scene battle-scene battle-defeat battle-phase-${phase==='slash'?'action':'result'}`}>
+    <div className={`scan-scene combo-battle-scene combo-count-${targets.length} combo-phase-${phase}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
-      <header className="battle-hud"><span>BATTLE {current} / {total}</span><b>{enemy.name}</b></header>
-      <div className="battle-contact" aria-hidden="true" />
-      <img className="battle-enemy" src={phase==='defeated'?enemy.defeated:enemy.normal} alt={enemy.name} />
-      <img className="battle-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
-      {phase==='slash' && <>
-        <img className="battle-fx battle-fx-slash" src={`${BATTLE_ASSET}/FX-02_SLASH.png`} alt="" />
-        <img className="battle-fx battle-fx-hit" src={`${BATTLE_ASSET}/FX-03_HIT.png`} alt="" />
-        <div className="battle-white-flash" />
-      </>}
-      {phase==='defeated' && <img className="battle-fx battle-fx-particles" src={`${BATTLE_ASSET}/FX-04_DEFEAT_PARTICLES.png`} alt="" />}
-      <section className="battle-panel battle-panel-result">
-        <div className="battle-result-kicker">{phase==='ready'?'TARGET LOCK':'WEAK POINT'}</div>
-        <h2>{phase==='ready'?`${enemy.name}を討伐する！`:'改善余地を発見！'}</h2>
-        <p>{phase==='ready'?'金額だけでなく、改善余地と動かしやすさから優先された敵だ。':'正確な金額は冒険終了後のRESULTでまとめて確認するぞ。'}</p>
-        {phase==='ready'
-          ? <button type="button" className="pre-primary battle-next" onClick={attack}>ムダ斬り！ ▶</button>
-          : phase==='defeated'
-            ? <button type="button" className="pre-primary battle-next" onClick={onDone}>{current===total?'討伐結果へ ▶':'次の敵へ ▶'}</button>
-            : <div className="battle-loading"><span className="battle-loading-dot"/><span>SLASH!</span></div>}
+      <header className="combo-hud"><span>FINAL BATTLE</span><b>討伐対象 {targets.length}体</b></header>
+      <div className="combo-ground" aria-hidden="true" />
+      <div className="combo-enemies">
+        {targets.map((target,i)=>{
+          const enemy=ENEMY_ASSETS[target.category];
+          const defeated=phase==='defeated'||(phase==='action'&&i<hitIndex);
+          const hitting=phase==='action'&&i===hitIndex;
+          return <div key={target.category} className={`combo-enemy-slot slot-${i} ${hitting?'is-hit':''} ${defeated?'is-defeated':''}`}>
+            <img src={defeated?enemy.defeated:enemy.normal} alt={enemy.name}/>
+            {phase==='ready'&&<strong>{enemy.name}</strong>}
+            {hitting&&<><img className="combo-slash" src={`${BATTLE_ASSET}/FX-02_SLASH.png`} alt=""/><img className="combo-hit" src={`${BATTLE_ASSET}/FX-03_HIT.png`} alt=""/></>}
+          </div>
+        })}
+      </div>
+      <img className={`combo-mudagiri ${phase==='action'?'is-attacking':''}`} src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん"/>
+      {phase==='action'&&<div className="combo-white-flash"/>}
+      <section className="combo-panel">
+        <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
+        <h2>{phase==='ready'?'斬るべきムダは見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、まとめて討伐！`}</h2>
+        {phase==='ready'&&<p>理由と改善額は、討伐後のRESULTでまとめて開示する。</p>}
+        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめてムダ斬り！ ▶</button>
+          :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>討伐結果へ ▶</button>
+          :<div className="combo-slash-label">SLASH × {Math.min(hitIndex+1,targets.length)}</div>}
       </section>
     </div>
   );
@@ -3253,6 +3251,63 @@ const CSS = String.raw`
 @media(max-height:700px){
   .scan-start,.scan-next-search,.battle-next,.appraisal-next,.type-complete-cta,.appraisal-intro-cta{min-height:56px!important}
 }
+
+/* ===== V3.0 REAL-DEVICE UI + ACTION FIX ===== */
+.scan-panel{left:16px;right:16px;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));min-height:0;padding:14px 15px 13px;border-radius:16px}
+.scan-dialogue{width:73%;min-height:52px;margin:-2px 0 10px auto;padding:9px 11px;font-size:14px;line-height:1.35}
+.scan-number{font-size:12px}.scan-panel h2{margin-top:5px;font-size:clamp(20px,5.4vw,23px);line-height:1.2}
+.scan-panel p{margin-top:4px;font-size:12px;line-height:1.35}.scan-money{margin-top:10px;min-height:52px}.scan-money input{font-size:22px}
+.scan-start{margin-top:9px;min-height:56px}.scan-zero-hint{margin-top:5px;font-size:10px}
+.scan-mudagiri-input{left:1.5%;bottom:38.5%;width:min(30vw,128px)}
+
+.type-quiz-guide{bottom:52%;height:112px}.type-quiz-mudagiri{width:min(27vw,112px);max-height:18dvh}
+.type-quiz-dialogue{right:3%;bottom:13px;width:68%;min-height:48px;padding:8px 10px;font-size:13px;line-height:1.32}
+.type-quiz-card{left:12px;right:12px;bottom:max(8px,calc(env(safe-area-inset-bottom) + 4px));padding:11px 12px 9px;border-radius:15px}
+.type-quiz-number{font-size:11px}.type-quiz-card h2{margin-top:4px;font-size:clamp(18px,5vw,21px);line-height:1.17}
+.type-pair{grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.type-side{min-height:48px;padding:7px 7px 7px 34px;border-radius:9px}
+.type-side-badge{left:6px;width:23px;height:23px;font-size:12px;border-radius:6px}.type-side strong{font-size:11.5px;line-height:1.22}
+.type-pair-vs{left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px}
+.type-quiz-helper{margin-top:6px;font-size:10.5px;line-height:1.25}.type-quiz-helper strong{font-size:11px}
+.type-scale{grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;padding:0;background:transparent}
+.type-scale-option{min-height:52px;padding:6px 5px;border-radius:9px}.type-scale-option span{font-size:12px}.type-scale-option small{margin-top:2px;font-size:9px}
+.type-quiz-foot{margin-top:4px;font-size:10px}
+
+.appraisal-mudagiri{left:3%;top:auto;bottom:43%;width:min(30vw,126px);max-height:22dvh;object-position:left bottom}
+.appraisal-mudagiri.is-small{left:4%;top:auto;bottom:43%;width:min(26vw,108px)}
+.appraisal-enemy{right:4%;top:auto;bottom:43%;width:min(37vw,154px);max-height:24dvh;object-position:center bottom}
+.appraisal-card{left:14px;right:14px;bottom:max(10px,calc(env(safe-area-inset-bottom) + 6px));padding:12px 13px 11px;border-radius:15px}
+.appraisal-card h3{margin-top:6px;font-size:clamp(18px,4.9vw,21px);line-height:1.22}
+.appraisal-reason{margin-top:6px;padding:7px 9px;font-size:11.5px!important;line-height:1.35!important}
+.appraisal-options{gap:6px;margin-top:7px}.appraisal-option{min-height:56px!important;padding:7px 8px}
+.appraisal-option strong{font-size:13px!important;line-height:1.2!important}.appraisal-option span{margin-top:2px;font-size:10px!important;line-height:1.22!important}
+.appraisal-feedback{margin-top:7px;min-height:118px}.appraisal-feedback strong{font-size:21px}.appraisal-feedback span{font-size:11px}
+
+.combo-battle-scene{position:absolute;inset:0;overflow:hidden}.combo-hud{position:absolute;z-index:35;top:max(28px,calc(env(safe-area-inset-top) + 18px));left:18px;right:18px;display:flex;justify-content:space-between;color:#fff;font-weight:1000;text-shadow:0 2px 5px #000}
+.combo-hud span{color:#ffd62f;font-size:11px;letter-spacing:.12em}.combo-hud b{font-size:13px}
+.combo-ground{position:absolute;z-index:3;left:8%;right:7%;bottom:34%;height:8%;border-radius:50%;background:radial-gradient(ellipse,rgba(10,28,17,.28),transparent 70%);filter:blur(4px)}
+.combo-enemies{position:absolute;z-index:10;left:18%;right:3%;top:16%;height:43%}
+.combo-enemy-slot{position:absolute;bottom:0;width:38%;height:72%;display:flex;align-items:flex-end;justify-content:center;transform-origin:50% 90%;transition:transform .16s ease,filter .16s ease}
+.combo-enemy-slot img:first-child{width:100%;height:100%;object-fit:contain;object-position:center bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 12px rgba(0,0,0,.3))}
+.combo-enemy-slot strong{position:absolute;bottom:-20px;left:0;right:0;text-align:center;color:#fff;font-size:10px;font-weight:1000;text-shadow:0 2px 4px #000}
+.combo-count-1 .slot-0{left:34%;width:48%;height:88%}.combo-count-2 .slot-0{left:8%;width:42%;height:80%}.combo-count-2 .slot-1{right:4%;width:42%;height:80%}
+.combo-count-3 .slot-0{left:0;width:35%;height:68%}.combo-count-3 .slot-1{left:32%;width:40%;height:84%;z-index:2}.combo-count-3 .slot-2{right:-1%;width:35%;height:68%}
+.combo-enemy-slot.is-hit{animation:combo-hit-shake .28s ease both;filter:brightness(1.45)}.combo-enemy-slot.is-defeated{transform:translateY(5px) scale(.97)}
+.combo-slash,.combo-hit{position:absolute!important;z-index:20!important;left:50%!important;top:50%!important;width:185%!important;height:185%!important;object-fit:contain!important;transform:translate(-50%,-50%) rotate(-8deg)!important;filter:brightness(1.45) contrast(1.25) drop-shadow(0 0 14px rgba(255,245,170,.9))!important;opacity:1!important}
+.combo-hit{width:125%!important;height:125%!important;mix-blend-mode:screen}
+.combo-mudagiri{position:absolute;z-index:18;left:1%;bottom:34%;width:min(35vw,148px);max-height:27dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.35))}
+.combo-mudagiri.is-attacking{animation:combo-dash .32s cubic-bezier(.15,.8,.2,1) alternate 3}.combo-white-flash{position:absolute;z-index:40;inset:0;background:#fff;pointer-events:none;animation:combo-flash .16s ease-out 3;opacity:0}
+.combo-panel{position:absolute;z-index:30;left:14px;right:14px;bottom:max(10px,calc(env(safe-area-inset-bottom) + 6px));padding:12px 13px 11px;border:1.5px solid #f0c92f;border-radius:15px;background:rgba(5,20,34,.965);box-shadow:0 15px 34px rgba(0,0,0,.44);text-align:center}
+.combo-panel h2{margin:5px 0 0;font-size:clamp(21px,5.8vw,25px);line-height:1.18}.combo-panel p{margin:6px 0 0;font-size:11px;line-height:1.35;color:rgba(255,255,255,.76)}
+.combo-attack{margin-top:9px;min-height:56px!important;font-size:16px;font-weight:1000}.combo-slash-label{margin-top:9px;min-height:56px;display:grid;place-items:center;color:#ffd62f;font-size:18px;font-weight:1000;letter-spacing:.12em}
+@keyframes combo-dash{from{transform:translate3d(0,0,0) rotate(-2deg)}to{transform:translate3d(36px,-8px,0) rotate(-8deg)}}@keyframes combo-hit-shake{0%{transform:translateX(0)}25%{transform:translateX(10px) rotate(2deg)}55%{transform:translateX(-6px) rotate(-2deg)}100%{transform:translateX(5px)}}@keyframes combo-flash{0%,100%{opacity:0}35%{opacity:.32}}
+
+@media(max-height:700px){
+ .scan-panel{padding:11px 13px 10px}.scan-dialogue{width:75%;min-height:44px;margin-bottom:7px;padding:7px 9px;font-size:12.5px}.scan-mudagiri-input{width:min(27vw,112px);bottom:37%}
+ .type-quiz-guide{bottom:54%;height:88px}.type-quiz-mudagiri{width:min(23vw,96px)}.type-quiz-dialogue{min-height:39px;bottom:8px;padding:6px 8px;font-size:11.5px}.type-quiz-card{padding:8px 9px 6px}.type-quiz-card h2{font-size:17px}.type-side{min-height:42px}.type-side strong{font-size:10.5px}.type-scale-option{min-height:48px}
+ .appraisal-mudagiri{bottom:44%;width:min(26vw,108px)}.appraisal-mudagiri.is-small{bottom:44%;width:min(23vw,96px)}.appraisal-enemy{bottom:44%;width:min(32vw,132px);max-height:20dvh}.appraisal-card{padding:9px 10px 8px}.appraisal-card h3{font-size:17px}.appraisal-option{min-height:50px!important}
+ .combo-enemies{top:14%;height:40%}.combo-mudagiri{bottom:35%;width:min(29vw,120px)}.combo-panel{padding:9px 10px 8px}.combo-panel h2{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){.combo-mudagiri.is-attacking,.combo-enemy-slot.is-hit,.combo-white-flash{animation:none!important}}
 
 `;
 
