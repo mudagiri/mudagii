@@ -3266,5 +3266,32 @@ const CSS = String.raw`
 
 .mode-back{position:absolute;z-index:30;left:14px;top:max(16px,env(safe-area-inset-top));min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,20,30,.72);color:#fff;font-weight:900}.mode-card{position:absolute;z-index:20;left:16px;right:16px;top:50%;transform:translateY(-48%);padding:20px 16px;border:1.5px solid #f1c92f;border-radius:18px;background:rgba(0,27,35,.965);box-shadow:0 18px 38px rgba(0,0,0,.42);text-align:center}.mode-card h2{margin:6px 0;font-size:clamp(24px,6.8vw,30px)}.mode-card>p{margin:0 0 14px;color:rgba(255,255,255,.72);font-size:12px}.mode-list{display:grid;gap:9px}.mode-option{position:relative;min-height:76px;padding:12px;border:1px solid rgba(255,214,47,.42);border-radius:12px;background:rgba(15,48,66,.94);color:#fff;text-align:left;transition:.16s}.mode-option>small{position:absolute;right:9px;top:7px;color:#ffd42b;font-size:9px}.mode-option strong{display:block;font-size:16px}.mode-option span{display:block;margin-top:5px;color:rgba(255,255,255,.7);font-size:11px}.mode-option.is-picked{transform:scale(1.02);border-color:#ffd42b}.mode-option.is-dim{opacity:.35}.mode-reaction{margin-top:12px;padding:10px;border-radius:9px;background:rgba(20,53,73,.78);font-size:12px;font-weight:900}
 
+/* ===== MOBILE QA V1: real-device readability overrides ===== */
+@media(max-height:760px){
+  .type-quiz-card{left:14px;right:14px;padding:13px 13px 10px}
+  .type-quiz-card h2{font-size:clamp(21px,5.8vw,25px)}
+  .type-pair{grid-template-columns:1fr 1fr;gap:28px;margin-top:10px}
+  .type-side{min-height:68px;padding:9px 8px 9px 39px}
+  .type-side-badge{left:7px;width:27px;height:27px;font-size:14px}
+  .type-side strong{font-size:14px;line-height:1.28}
+  .type-pair-vs{font-size:10px;min-width:36px;padding:4px 5px}
+  .type-quiz-helper{margin-top:8px;font-size:12px}
+  .type-quiz-helper strong{font-size:13px}
+  .type-scale{gap:7px;margin-top:7px;padding:6px}
+  .type-scale-option{min-height:58px;padding:7px 6px}
+  .type-scale-option span{font-size:13px}
+  .type-scale-option small{font-size:10px}
+  .type-quiz-foot{font-size:11px}
+
+  .appraisal-card{left:14px;right:14px;padding:16px 15px 14px}
+  .appraisal-kicker{font-size:13px}
+  .appraisal-card h3{font-size:clamp(21px,5.8vw,25px)}
+  .appraisal-reason{font-size:14px;padding:9px 10px}
+  .appraisal-options{gap:8px;margin-top:11px}
+  .appraisal-option{min-height:70px!important;padding:9px 9px}
+  .appraisal-option strong{font-size:14px!important;line-height:1.3}
+  .appraisal-option span{font-size:11px!important;line-height:1.3}
+}
+
 `;
 
