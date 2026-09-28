@@ -1518,9 +1518,9 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
 
       <section className="combo-panel">
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
-        <h2>{phase==='ready'?'斬るべきムダは見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、まとめて討伐！`}</h2>
-        {phase==='ready'&&<p>理由と改善額は、討伐後のRESULTでまとめて開示する。</p>}
-        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめてムダ斬り！ ▶</button>
+        <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、見直しクエスト完了！`}</h2>
+        {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
+        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめて鑑定する！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>討伐結果へ ▶</button>
           :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
@@ -1536,7 +1536,7 @@ function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;revie
       <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">QUEST CLEAR</div>
-        <h2>{battleCount ? `${battleCount}体の討伐完了！` : '家計防衛成功！'}</h2>
+        <h2>{battleCount ? `${battleCount}件の見直しクエスト完了！` : '家計防衛成功！'}</h2>
         <p className="appraisal-reason">
           {reviewCount ? `まだ ${reviewCount} 体は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>次は、称号と家計の全結果を開示する。</strong>
