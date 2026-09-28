@@ -7,7 +7,7 @@ export type Applicability='applicable'|'na';
 export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
-export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insuranceUnderstanding?:'none'|'vague'|'mostly'|'clear'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown' }
+export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown' }
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number }
 
 export const ALL_CATEGORIES:Category[]=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
@@ -35,9 +35,13 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    return {status:'review',attentionFlag:ap?.subUsage==='unknown'||ap?.subUsage===undefined};
  }
  if(category==='insurance'){
-   // V2.1: premium amount or a single "understanding" answer cannot prove protection or waste.
-   // Until the full purpose/review/life-change/public-benefit/duplication audit is answered, keep REVIEW.
-   return {status:'review',attentionFlag:true};
+   const protectedInsurance =
+     ap?.insurancePurpose==='clear' &&
+     (ap.insuranceLastReview==='within1y'||ap.insuranceLastReview==='1to3y') &&
+     (ap.insuranceLifeChange==='none'||ap.insuranceLifeChange==='reviewed') &&
+     ap.insurancePublicBenefits==='considered' &&
+     (ap.insuranceDuplicate==='none'||ap.insuranceDuplicate==='intentional');
+   return protectedInsurance?{status:'protect',attentionFlag:false}:{status:'review',attentionFlag:true};
  }
  if(category==='rent'){
    if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview};
