@@ -47,7 +47,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    <p className="rv3-note">具体的に不要・削減可能と確認できた実額だけを改善額に含めます。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>
 
-  {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ斬られた？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
+  {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ見直しクエストになった？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
    <div className="rv3-row"><b>{x.enemyName}</b><b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`確定 ¥${yen(x.confirmedSaving)}/月`:'改善額 未確定'}</b></div>
    <div className="rv3-muted">{x.label} ¥{yen(x.amount)}/月</div>
    <div className="rv3-muted">{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}`:''}</div>
@@ -63,7 +63,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
       <div><b>比較：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>
       {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額ではありません</small></div>}
       <div><b>診断状況：</b>{x.diagnosisState==='CONFIRMED'?'改善額まで確認済み':x.diagnosisState==='AUDIT'?'内容確認が必要':x.diagnosisState==='DETAIL'?'追加条件を確認':x.diagnosisState==='CHECK'?'比較目安を要確認':x.diagnosisState==='NORMAL'?'問題なし':'—'}</div>
-      <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 討伐対象':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
+      <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 見直しクエスト':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
       <div><b>確定改善額：</b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`¥${yen(x.confirmedSaving)}/月`:'未確定'}</div>
       {x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div>
       <div><b>次に確認：</b>{x.nextCheck}</div>
@@ -71,14 +71,14 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    </div>)}</div>
   </section>
 
-  <section className="rv3-message"><h3>大切なものを守るために、ムダだけ斬る。</h3>
+  <section className="rv3-message"><h3>大切なものは守る。見直す支出は理由まで確認する。</h3>
    <p>高いからといって、全部をムダとは判定していません。</p>
    {vm.rows.filter((x:any)=>x.status==='protect').map((x:any)=><div className="rv3-explain" key={`p-${x.category}`}>🛡️ <b>{x.label}</b><span>{x.reason}</span></div>)}
    {vm.rows.filter((x:any)=>x.status==='review').map((x:any)=><div className="rv3-explain" key={`r-${x.category}`}>🔍 <b>{x.label}</b><span>{x.reason}</span></div>)}
-   <p>ムダを斬るのは、ゴールじゃない。浮いたお金を、大切なものに使おう。</p>
+   <p>見直しはゴールじゃない。実際に減らせたお金を、大切なものに使おう。</p>
   </section>
 
-  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>ムダは見つけただけじゃ減らない。</h3>
+  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>見直し候補は、確認して初めて改善につながる。</h3>
    {vm.firstQuest?<><p>あなたの最初のクエスト</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.enemyName}を確認</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p></>:<p>大きなムダは見つかりませんでした。今の家計を維持するためのチェックリストを用意します。</p>}
    <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
    <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
