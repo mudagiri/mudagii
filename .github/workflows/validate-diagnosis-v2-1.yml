@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - diagnosis-v2-1-frozen
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
