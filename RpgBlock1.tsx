@@ -455,6 +455,9 @@ export default function RpgBlock1({
     preload(SCAN_MUDAGIRI_GUIDE);
     preload(SCAN_MUDAGIRI_RUN);
     preload(SCAN_MUDAGIRI_BATTLE);
+    preload(MUDAGIRI_BATTLE_READY);
+    preload(MUDAGIRI_BATTLE_SWING);
+    preload(MUDAGIRI_BATTLE_FOLLOW);
 
     Object.values(ENEMY_ASSETS).forEach((enemy) => {
       preload(enemy.trace);
@@ -920,6 +923,9 @@ const BATTLE_ASSET = './assets/battle1';
 const SCAN_MUDAGIRI_GUIDE = `${ASSET}/MUDAGIRI_PROFILE_Q1.png`;
 const SCAN_MUDAGIRI_RUN = `${ASSET}/MUDAGIRI_PROFILE_Q2.png`;
 const SCAN_MUDAGIRI_BATTLE = `${BATTLE_ASSET}/MUDAGIRI_BATTLE.png`;
+const MUDAGIRI_BATTLE_READY = `${BATTLE_ASSET}/MUDAGIRI_BATTLE_READY.png`;
+const MUDAGIRI_BATTLE_SWING = `${BATTLE_ASSET}/MUDAGIRI_BATTLE_SWING.png`;
+const MUDAGIRI_BATTLE_FOLLOW = `${BATTLE_ASSET}/MUDAGIRI_BATTLE_FOLLOW.png`;
 
 function ScanScene({
   config,
@@ -1505,17 +1511,42 @@ function BattleIntroScene({
 
 function ComboBattleScene({ targets,onDone }:{ targets:FinalEnemyJudgement[]; onDone:()=>void }) {
   const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
+  const [pose,setPose]=useState<'ready'|'swing'|'follow'>('ready');
   const [hitIndex,setHitIndex]=useState(-1);
   const timers=React.useRef<number[]>([]);
   useEffect(()=>()=>timers.current.forEach(window.clearTimeout),[]);
+
+  const poseSrc =
+    pose==='swing' ? MUDAGIRI_BATTLE_SWING :
+    pose==='follow' ? MUDAGIRI_BATTLE_FOLLOW :
+    MUDAGIRI_BATTLE_READY;
+
   const attack=()=>{
     timers.current.forEach(window.clearTimeout); timers.current=[];
-    setPhase('action'); setHitIndex(0);
-    targets.forEach((_,i)=>timers.current.push(window.setTimeout(()=>setHitIndex(i),i*310)));
-    timers.current.push(window.setTimeout(()=>{setHitIndex(targets.length);setPhase('defeated')},Math.max(980,targets.length*310+360)));
+    setPhase('action'); setPose('ready'); setHitIndex(-1);
+
+    // One readable combo beat per enemy:
+    // wind-up/step -> SWING -> SLASH/HIT -> FOLLOW -> next target.
+    targets.forEach((_,i)=>{
+      const t=i*620;
+      timers.current.push(window.setTimeout(()=>setPose('swing'),t+120));
+      timers.current.push(window.setTimeout(()=>setHitIndex(i),t+205));
+      timers.current.push(window.setTimeout(()=>setPose('follow'),t+335));
+      if(i<targets.length-1){
+        timers.current.push(window.setTimeout(()=>setPose('ready'),t+500));
+      }
+    });
+
+    const finish=targets.length*620+120;
+    timers.current.push(window.setTimeout(()=>{
+      setHitIndex(targets.length);
+      setPose('follow');
+      setPhase('defeated');
+    },finish));
   };
+
   return (
-    <div className={`scan-scene combo-battle-scene combo-count-${targets.length} combo-phase-${phase}`}>
+    <div className={`scan-scene combo-battle-scene combo-count-${targets.length} combo-phase-${phase} combo-pose-${pose}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
       <header className="combo-hud"><span>FINAL BATTLE</span><b>討伐対象 {targets.length}体</b></header>
@@ -1532,15 +1563,21 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalEnemyJudgement[]; on
           </div>
         })}
       </div>
-      <img className={`combo-mudagiri ${phase==='action'?'is-attacking':''}`} src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん"/>
-      {phase==='action'&&<div className="combo-white-flash"/>}
+
+      <img
+        className={`combo-mudagiri ${phase==='action'?'is-attacking':''}`}
+        src={poseSrc}
+        alt="ムダギリくん"
+      />
+      {phase==='action'&&hitIndex>=0&&<div className="combo-white-flash" key={`flash-${hitIndex}`} />}
+
       <section className="combo-panel">
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
         <h2>{phase==='ready'?'斬るべきムダは見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、まとめて討伐！`}</h2>
         {phase==='ready'&&<p>理由と改善額は、討伐後のRESULTでまとめて開示する。</p>}
         {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめてムダ斬り！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>討伐結果へ ▶</button>
-          :<div className="combo-slash-label">SLASH × {Math.min(hitIndex+1,targets.length)}</div>}
+          :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
     </div>
   );
@@ -3295,7 +3332,7 @@ const CSS = String.raw`
 .combo-slash,.combo-hit{position:absolute!important;z-index:20!important;left:50%!important;top:50%!important;width:185%!important;height:185%!important;object-fit:contain!important;transform:translate(-50%,-50%) rotate(-8deg)!important;filter:brightness(1.45) contrast(1.25) drop-shadow(0 0 14px rgba(255,245,170,.9))!important;opacity:1!important}
 .combo-hit{width:125%!important;height:125%!important;mix-blend-mode:screen}
 .combo-mudagiri{position:absolute;z-index:18;left:1%;bottom:34%;width:min(35vw,148px);max-height:27dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.35))}
-.combo-mudagiri.is-attacking{animation:combo-dash .32s cubic-bezier(.15,.8,.2,1) alternate 3}.combo-white-flash{position:absolute;z-index:40;inset:0;background:#fff;pointer-events:none;animation:combo-flash .16s ease-out 3;opacity:0}
+.combo-mudagiri{transition:transform .11s cubic-bezier(.2,.8,.2,1)}.combo-pose-ready .combo-mudagiri{transform:translate3d(0,0,0)}.combo-pose-swing .combo-mudagiri{transform:translate3d(34px,-7px,0) scale(1.035) rotate(-3deg)}.combo-pose-follow .combo-mudagiri{transform:translate3d(46px,1px,0) scale(1.01) rotate(1deg)}.combo-white-flash{position:absolute;z-index:40;inset:0;background:#fff;pointer-events:none;animation:combo-flash .16s ease-out 3;opacity:0}
 .combo-panel{position:absolute;z-index:30;left:14px;right:14px;bottom:max(10px,calc(env(safe-area-inset-bottom) + 6px));padding:12px 13px 11px;border:1.5px solid #f0c92f;border-radius:15px;background:rgba(5,20,34,.965);box-shadow:0 15px 34px rgba(0,0,0,.44);text-align:center}
 .combo-panel h2{margin:5px 0 0;font-size:clamp(21px,5.8vw,25px);line-height:1.18}.combo-panel p{margin:6px 0 0;font-size:11px;line-height:1.35;color:rgba(255,255,255,.76)}
 .combo-attack{margin-top:9px;min-height:56px!important;font-size:16px;font-weight:1000}.combo-slash-label{margin-top:9px;min-height:56px;display:grid;place-items:center;color:#ffd62f;font-size:18px;font-weight:1000;letter-spacing:.12em}
