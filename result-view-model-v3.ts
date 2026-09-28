@@ -1,7 +1,7 @@
 import type { Category } from './mudagiri-diagnosis-v2';
 import type { AnnualIncomeBand, FinalCategoryV3, FinalStatus } from './mudagiri-integration-v3';
 
-export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.1' as const;
+export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.2' as const;
 export type ComparatorKind='optimization_rule'|'statistical_comparator'|'direct_benchmark'|'none';
 export interface ComparatorMetaV3 {kind:ComparatorKind;label:string;sourceKey:string|null}
 
@@ -10,7 +10,7 @@ const ENEMY:Record<Category,string>={mobile:'通信ザウルス',energy:'電気�
 
 export function comparatorMetaV3(c:Category, comparable:number|null):ComparatorMetaV3{
  if(c==='childEducation'&&comparable!==null)return {kind:'direct_benchmark',label:'参考ベンチマーク',sourceKey:'mext_education'};
- if(['energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
+ if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
 function reason(x:FinalCategoryV3):string{
@@ -25,7 +25,11 @@ function reason(x:FinalCategoryV3):string{
   if(x.category==='selfDevelopment')return '目的・利用状況・成果を含めて判断するため、要鑑定です。';
   return '追加情報が必要なため、まだムダとは断定していません。';
  }
- if(x.status==='battle')return '具体的に不要・削減可能と確認できた実額だけを改善余地に含めています。';
+ if(x.status==='battle'){
+  if(x.battleBasis==='confirmed')return '具体的に不要・削減可能と確認できたため、討伐対象です。確定した実額だけを改善額に含めています。';
+  if(x.battleBasis==='benchmark_plus_intent')return '比較目安より高めで、追加鑑定でも見直し余地があるため討伐対象です。平均との差は改善額には含めません。';
+  return '比較データ上で見直しシグナルが出たため、討伐クエストの対象です。削減額はまだ確定していません。';
+ }
  return '現在の診断条件では、優先して見直す支出には入りませんでした。';
 }
 function nextCheck(x:FinalCategoryV3):string{
@@ -43,8 +47,16 @@ function nextCheck(x:FinalCategoryV3):string{
 }
 export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string};toneMode:string;finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
  const counts=(['battle','protect','safe','review','na'] as FinalStatus[]).reduce((o,k)=>({...o,[k]:args.finalCategories.filter(x=>x.status===k).length}),{} as Record<FinalStatus,number>);
- const rows=args.finalCategories.map(x=>({category:x.category,label:LABEL[x.category],enemyName:ENEMY[x.category],status:x.status,attentionFlag:x.attentionFlag,amount:x.raw.amount,known:x.raw.known,applicability:x.raw.applicability,comparable:x.comparable,comparator:comparatorMetaV3(x.category,x.comparable),reducible:x.reducible,priority:x.priority,reason:reason(x),nextCheck:nextCheck(x)}));
- const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>b.priority-a.priority).slice(0,3);
+ const rows=args.finalCategories.map(x=>({
+  category:x.category,label:LABEL[x.category],enemyName:ENEMY[x.category],status:x.status,attentionFlag:x.attentionFlag,
+  amount:x.raw.amount,known:x.raw.known,applicability:x.raw.applicability,
+  comparable:x.comparable,comparisonDifference:x.comparisonDifference,
+  comparator:comparatorMetaV3(x.category,x.comparable),
+  diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
+  battleBasis:x.battleBasis,confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
+  appraisal:x.appraisal,reason:reason(x),nextCheck:nextCheck(x)
+ }));
+ const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const firstQuest=battle[0]??rows.find(x=>x.status==='review')??null;
  return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
 }
