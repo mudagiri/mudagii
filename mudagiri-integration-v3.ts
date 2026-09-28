@@ -33,7 +33,8 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
 
  if(category==='sub'){
    if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false,battleBasis:'none'};
-   return {status:'review',attentionFlag:ap?.subUsage==='unknown'||ap?.subUsage===undefined,battleBasis:'none'};
+   if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='insurance'){
    const protectedInsurance =
@@ -42,18 +43,24 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
      (ap.insuranceLifeChange==='none'||ap.insuranceLifeChange==='reviewed') &&
      ap.insurancePublicBenefits==='considered' &&
      (ap.insuranceDuplicate==='none'||ap.insuranceDuplicate==='intentional');
-   return protectedInsurance?{status:'protect',attentionFlag:false,battleBasis:'none'}:{status:'review',attentionFlag:true,battleBasis:'none'};
+   if(protectedInsurance)return {status:'protect',attentionFlag:false,battleBasis:'none'};
+   if(ap&&(ap.insuranceLastReview==='over3y'||ap.insuranceLastReview==='never'||ap.insurancePurpose==='unclear'||ap.insuranceDuplicate==='possible'))
+     return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
+   return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='rent'){
    if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
+   if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='childEducation'){
    if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
+   if(ap?.educationPreference==='reviewHigh'||ap?.educationPreference==='reviewSome')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='selfDevelopment'){
    if(ap?.selfDevelopmentValue==='purpose'||ap?.selfDevelopmentValue==='results')return {status:'protect',attentionFlag:false,battleBasis:'none'};
+   if(ap?.selfDevelopmentValue==='inertia'||ap?.selfDevelopmentValue==='unclear')return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if((category==='food'||category==='fun'||category==='beautyFashion')){
