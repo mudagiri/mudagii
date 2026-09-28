@@ -277,7 +277,7 @@ export default function RpgBlock1({
       const reason='保険料の高さだけではムダ判定しません。保障の把握・見直し状況をまとめて確認します。';
       qs.push({category:'insurance',kind:'insuranceSummary',reason,question:'今の保険、どれくらい把握・見直しできてる？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationStage',reason:'教育段階が分かると、文科省の対応する参考値と比較できます。',question:'お子さんの教育段階で一番近いのは？'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
+    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationStage',reason:'教育段階が分かると、文科省の対応する参考値と比較できます。複数のお子さんがいる場合は、支出の中心に一番近い段階を選んでください。',question:'教育費の中心に一番近い段階は？'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
   },[incomeNumber,normalizedRaw,comparable,flow.household]);
@@ -1409,18 +1409,18 @@ function AppraisalCompleteScene({
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
         <h2>鑑定完了。</h2>
         <p className="appraisal-reason">
-          高いからって、全部斬る必要はない。<br />
-          <strong>大切なものを守るために、ムダだけ斬るぞ。</strong>
+          高いからって、全部ムダとは限らない。<br />
+          <strong>守る支出と、見直す候補を分けたぞ。</strong>
         </p>
         <div className="judgement-grid">
-          <div><b>{counts.battle}</b><span>討伐候補</span></div>
+          <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
           <div><b>{counts.safe}</b><span>問題なし</span></div>
           <div><b>{counts.review}</b><span>要鑑定</span></div>
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          討伐優先度を解析する ▶
+          見直し優先度を解析する ▶
         </button>
       </section>
     </div>
@@ -1438,7 +1438,7 @@ function BattleIntroScene({
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? '討伐対象を特定した！' : '家計防衛成功！'}</h2>
+        <h2>{targets.length ? '見直しクエストを特定！' : '家計防衛成功！'}</h2>
         {targets.length ? (
           <div className="battle-targets">
             {targets.map((t,i)=>{
@@ -1451,7 +1451,7 @@ function BattleIntroScene({
         )}
         {reviewCount>0 && <div className="battle-review-note">🔍 金額だけでは断定できない敵が {reviewCount} 体残っています</div>}
         <button type="button" className="pre-primary appraisal-next" onClick={onStart}>
-          {targets.length ? `討伐を開始する ▶` : '結果へ進む ▶'}
+          {targets.length ? `クエストを開始する ▶` : '結果へ進む ▶'}
         </button>
       </section>
     </div>
@@ -1498,7 +1498,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
     <div className={`scan-scene combo-battle-scene combo-count-${targets.length} combo-phase-${phase} combo-pose-${pose}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
-      <header className="combo-hud"><span>FINAL BATTLE</span><b>討伐対象 {targets.length}体</b></header>
+      <header className="combo-hud"><span>FINAL QUEST</span><b>見直し対象 {targets.length}件</b></header>
       <div className="combo-ground" aria-hidden="true" />
       <div className="combo-enemies">
         {targets.map((target,i)=>{
@@ -1525,7 +1525,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
         <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、見直しクエスト完了！`}</h2>
         {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
         {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめて鑑定する！ ▶</button>
-          :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>討伐結果へ ▶</button>
+          :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
           :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
     </div>
@@ -1542,7 +1542,7 @@ function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;revie
         <div className="appraisal-kicker">QUEST CLEAR</div>
         <h2>{battleCount ? `${battleCount}件の見直しクエスト完了！` : '家計防衛成功！'}</h2>
         <p className="appraisal-reason">
-          {reviewCount ? `まだ ${reviewCount} 体は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
+          {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>次は、称号と家計の全結果を開示する。</strong>
         </p>
         <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
@@ -2909,12 +2909,13 @@ const CSS = String.raw`
 .type-pair{
   position:relative;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:28px;
+  grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);
+  gap:8px;
   margin-top:14px;
 }
 .type-side{
   position:relative;
+  min-width:0;
   min-height:78px;
   display:flex;
   align-items:center;
@@ -2923,6 +2924,7 @@ const CSS = String.raw`
   border-radius:12px;
   background:rgba(18,53,68,.72);
 }
+.type-side-a{grid-column:1}.type-side-b{grid-column:3}
 .type-side-badge{
   position:absolute;
   left:9px;
@@ -2945,11 +2947,12 @@ const CSS = String.raw`
   font-weight:950;
 }
 .type-pair-vs{
-  position:absolute;
+  position:relative;
   z-index:2;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
+  grid-column:2;
+  display:grid;
+  place-items:center;
+  align-self:center;
   min-width:38px;
   padding:5px 7px;
   border-radius:999px;
