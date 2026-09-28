@@ -1321,6 +1321,7 @@ function AdditionalAppraisalScene({
     ],
   };
 
+  const [amountText,setAmountText]=useState('');
   const options: {label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[] =
     item.kind === 'satisfaction'
       ? SAT_OPTIONS.map(x=>({label:x.label,sub:x.sub,patch:{satisfaction:x.value} as AppraisalAnswer}))
@@ -1344,6 +1345,12 @@ function AdditionalAppraisalScene({
           <div className={`appraisal-feedback is-${feedback.kind}`}>
             <strong>{feedback.label}</strong>
             <span>{feedback.detail}</span>
+          </div>
+        ) : item.kind==='subUnusedAmount' ? (
+          <div className="appraisal-options">
+            <label className="appraisal-amount-input"><span>月額</span><input inputMode="numeric" pattern="[0-9]*" value={amountText} onChange={e=>setAmountText(e.target.value.replace(/[^0-9]/g,''))} placeholder="例 1200" /><b>円</b></label>
+            <button type="button" className="appraisal-option" disabled={!amountText||Number(amountText)<=0} onClick={()=>commit({subUnusedAmount:Number(amountText)},'battle','改善額を確定',`月¥${Number(amountText).toLocaleString()}を確定改善額として記録`)}><strong>この金額で確定</strong><span>実際に使っていない月額だけを入力</span></button>
+            <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined},'review','金額は未確定','推測額は改善額に含めません')}><strong>金額は分からない</strong><span>あとで明細を確認する</span></button>
           </div>
         ) : (
           <div className="appraisal-options">
@@ -3159,6 +3166,7 @@ const CSS = String.raw`
 .appraisal-reason strong{color:#fff}
 .appraisal-money{margin-top:13px}
 .appraisal-next{margin-top:14px;min-height:54px}.appraisal-next:disabled{opacity:.45;cursor:not-allowed}
+.appraisal-amount-input{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.28);box-sizing:border-box}.appraisal-amount-input span,.appraisal-amount-input b{white-space:nowrap}.appraisal-amount-input input{min-width:0;flex:1;font:inherit;font-size:20px;font-weight:800;padding:10px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.94);color:#171717;text-align:right}.appraisal-option:disabled{opacity:.45;pointer-events:none}
 .appraisal-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
 .appraisal-option{min-height:82px;padding:13px 11px;border:1px solid rgba(255,214,47,.45);border-radius:11px;background:rgba(15,48,66,.92);color:#fff;text-align:left;cursor:pointer}
 .appraisal-option strong{display:block;font-size:16px;font-weight:1000;line-height:1.25}.appraisal-option span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:12px;font-weight:800;line-height:1.3}
