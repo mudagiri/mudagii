@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "qa:10k": "rm -rf .qa-10k && npx tsc qa-simulation-10000-v3.ts mudagiri-diagnosis-v2.ts mudagiri-integration-v3.ts comparable-resolver-v1.ts --outDir .qa-10k --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck && node .qa-10k/qa-simulation-10000-v3.js",
-    "qa:persona": "rm -rf .qa-dist && npx tsc qa-persona-regression-v3.ts mudagiri-diagnosis-v2.ts mudagiri-integration-v3.ts comparable-resolver-v1.ts --outDir .qa-dist --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck && node .qa-dist/qa-persona-regression-v3.js",
+    "qa:10k": "rm -rf .qa-10k && npx tsc qa-simulation-10000-v3.ts mudagiri-diagnosis-v2.ts mudagiri-integration-v3.ts comparable-resolver-v1.ts --outDir .qa-10k --module es2022 --moduleResolution bundler --target es2022 --skipLibCheck && node --experimental-specifier-resolution=node .qa-10k/qa-simulation-10000-v3.js",
+    "qa:persona": "rm -rf .qa-dist && npx tsc qa-persona-regression-v3.ts mudagiri-diagnosis-v2.ts mudagiri-integration-v3.ts comparable-resolver-v1.ts --outDir .qa-dist --module es2022 --moduleResolution bundler --target es2022 --skipLibCheck && node --experimental-specifier-resolution=node .qa-dist/qa-persona-regression-v3.js",
     "preview": "vite preview"
   },
   "dependencies": {
