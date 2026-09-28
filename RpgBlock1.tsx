@@ -1342,8 +1342,8 @@ function AdditionalAppraisalScene({
                             ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
                             : 'review'
                 );
-              const label = o.feedback ?? (inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'鑑定完了':'守る支出'):inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
-              const detail = inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'5項目を踏まえて最終判定する':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
+              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
+              const detail = inferredKind==='protect'?(item.kind==='insuranceSummary'?'保障の把握・見直し状況は良好':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
               return (
                 <button type="button" key={i} className="appraisal-option" onClick={()=>commit(o.patch,inferredKind,label,detail)}>
                   <strong>{o.label}</strong><span>{o.sub}</span>
