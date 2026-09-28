@@ -5,7 +5,7 @@ import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadB
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
-import { resolveComparableV1 } from './comparable-resolver-v1';
+import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -35,13 +35,16 @@ type AppraisalAnswer = {
   selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
   subUnusedAmount?: number;
   subUsage?: 'none'|'one'|'several'|'unknown';
+  educationStage?: EducationStage;
+  carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
 type AppraisalQuestion = {
   category: EnemyAssetCategory;
   reason: string;
   question: string;
-  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage';
+  maxAmount?: number;
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'educationStage'|'carNeed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -235,6 +238,7 @@ export default function RpgBlock1({
   const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>({});
   const [appraisalIndex, setAppraisalIndex] = useState(0);
+  const educationStage=appraisalAnswers.childEducation?.educationStage;
   const [battleIndex, setBattleIndex] = useState(0);
 
   const question = QUESTIONS[questionIndex];
@@ -249,8 +253,8 @@ export default function RpgBlock1({
   const incomeNumber = Number(flow.monthlyTakeHome || '0') || 0;
   const comparisonBundle = useMemo(()=>buildComparableV3({
     raw:normalizedRaw,household:flow.household==='single'?'single':'multi',
-    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand
-  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand]);
+    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand,educationStage
+  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand,educationStage]);
   const comparable=comparisonBundle.comparable;
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
@@ -258,7 +262,7 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
-    if(actual('sub')>0)qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
+    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'ここだけ金額が分かれば、推測ではなく改善額として確定できます。',question:'使っていない分は、月いくらくらい？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
       if(actual(category)>0&&c!==null&&actual(category)>c){
@@ -266,13 +270,14 @@ export default function RpgBlock1({
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
+    if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
     const rent=actual('rent');
     if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
     if(actual('insurance')>0){
       const reason='保険料の高さだけではムダ判定しません。保障の把握・見直し状況をまとめて確認します。';
       qs.push({category:'insurance',kind:'insuranceSummary',reason,question:'今の保険、どれくらい把握・見直しできてる？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
+    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationStage',reason:'教育段階が分かると、文科省の対応する参考値と比較できます。複数のお子さんがいる場合は、支出の中心に一番近い段階を選んでください。',question:'教育費の中心に一番近い段階は？'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
   },[incomeNumber,normalizedRaw,comparable,flow.household]);
@@ -1275,6 +1280,22 @@ function AdditionalAppraisalScene({
       {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
       {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
     ],
+    educationStage:[
+      {label:'幼稚園・保育相当（公立）',sub:'公立幼稚園の参考値で比較',patch:{educationStage:'publicKindergarten'}},
+      {label:'幼稚園・保育相当（私立）',sub:'私立幼稚園の参考値で比較',patch:{educationStage:'privateKindergarten'}},
+      {label:'小学校（公立）',sub:'公立小学校の参考値で比較',patch:{educationStage:'publicElementary'}},
+      {label:'小学校（私立）',sub:'私立小学校の参考値で比較',patch:{educationStage:'privateElementary'}},
+      {label:'中学校（公立）',sub:'公立中学校の参考値で比較',patch:{educationStage:'publicJuniorHigh'}},
+      {label:'中学校（私立）',sub:'私立中学校の参考値で比較',patch:{educationStage:'privateJuniorHigh'}},
+      {label:'高校（公立）',sub:'公立高校の参考値で比較',patch:{educationStage:'publicHigh'}},
+      {label:'高校（私立）',sub:'私立高校の参考値で比較',patch:{educationStage:'privateHigh'}},
+    ],
+    carNeed:[
+      {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
+      {label:'あるとかなり便利',sub:'利用頻度も高い',patch:{carNeed:'useful'},kind:'protect',feedback:'守る支出'},
+      {label:'負担が気になってる',sub:'維持費を軽くしたい',patch:{carNeed:'burden'},kind:'battle',feedback:'見直しクエスト'},
+      {label:'なくても困らないかも',sub:'手放す・減らす余地がある',patch:{carNeed:'notNeeded'},kind:'battle',feedback:'見直しクエスト'},
+    ],
     rent:[
       {label:'かなり負担を感じる',sub:'家計を圧迫している',patch:{rentPreference:'burdenHigh'}},
       {label:'少し負担を感じる',sub:'できれば軽くしたい',patch:{rentPreference:'burdenSome'}},
@@ -1284,7 +1305,7 @@ function AdditionalAppraisalScene({
     insuranceSummary:[
       {label:'かなり把握している',sub:'目的・公的保障・重複まで確認し、最近見直した',patch:{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'},kind:'protect',feedback:'守る支出'},
       {label:'だいたい把握している',sub:'目的は分かるが、細かい保障までは曖昧',patch:{insurancePurpose:'mostly',insuranceLastReview:'1to3y',insuranceLifeChange:'none',insurancePublicBenefits:'maybe',insuranceDuplicate:'unknown'},kind:'review',feedback:'要確認'},
-      {label:'しばらく見直してない',sub:'契約時から内容がほぼ同じ',patch:{insurancePurpose:'mostly',insuranceLastReview:'over3y',insuranceLifeChange:'notReviewed',insurancePublicBenefits:'maybe',insuranceDuplicate:'possible'},kind:'review',feedback:'見直し候補'},
+      {label:'しばらく見直してない',sub:'契約時から内容がほぼ同じ',patch:{insurancePurpose:'mostly',insuranceLastReview:'over3y',insuranceLifeChange:'notReviewed',insurancePublicBenefits:'maybe',insuranceDuplicate:'possible'},kind:'battle',feedback:'見直しクエスト'},
       {label:'よく分からない',sub:'何にいくら備えているか曖昧',patch:{insurancePurpose:'unclear',insuranceLastReview:'unknown',insuranceLifeChange:'unknown',insurancePublicBenefits:'unknown',insuranceDuplicate:'unknown'},kind:'review',feedback:'確認優先度 高'},
     ],
     education:[
@@ -1301,6 +1322,9 @@ function AdditionalAppraisalScene({
     ],
   };
 
+  const [amountText,setAmountText]=useState('');
+  const amountNumber=Number(amountText||0);
+  const amountTooHigh=item.kind==='subUnusedAmount'&&typeof item.maxAmount==='number'&&amountNumber>item.maxAmount;
   const options: {label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[] =
     item.kind === 'satisfaction'
       ? SAT_OPTIONS.map(x=>({label:x.label,sub:x.sub,patch:{satisfaction:x.value} as AppraisalAnswer}))
@@ -1325,25 +1349,32 @@ function AdditionalAppraisalScene({
             <strong>{feedback.label}</strong>
             <span>{feedback.detail}</span>
           </div>
+        ) : item.kind==='subUnusedAmount' ? (
+          <div className="appraisal-options">
+            <label className="appraisal-amount-input"><span>月額</span><input inputMode="numeric" pattern="[0-9]*" value={amountText} onChange={e=>setAmountText(e.target.value.replace(/[^0-9]/g,''))} placeholder="例 1200" /><b>円</b></label>
+            {typeof item.maxAmount==='number'&&<div className={`appraisal-amount-limit ${amountTooHigh?'is-error':''}`}>{amountTooHigh?`サブスク総額 ¥${item.maxAmount.toLocaleString()} を超えています`:`サブスク総額 ¥${item.maxAmount.toLocaleString()} 以下で入力`}</div>}
+            <button type="button" className="appraisal-option" disabled={!amountText||amountNumber<=0||amountTooHigh} onClick={()=>commit({subUnusedAmount:amountNumber},'battle','改善額を確定',`月¥${amountNumber.toLocaleString()}を確定改善額として記録`)}><strong>この金額で確定</strong><span>実際に使っていない月額だけを入力</span></button>
+            <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined},'review','金額は未確定','推測額は改善額に含めません')}><strong>金額は分からない</strong><span>あとで明細を確認する</span></button>
+          </div>
         ) : (
           <div className="appraisal-options">
             {options.map((o,i)=>{
               const inferredKind: AppraisalStatus =
                 o.kind ?? (
                   item.kind === 'satisfaction'
-                    ? (o.patch.satisfaction === 'verySatisfied' ? 'protect' : 'battle')
+                    ? (o.patch.satisfaction === 'verySatisfied' || o.patch.satisfaction === 'satisfied' ? 'protect' : 'battle')
                     : item.kind === 'rent'
-                      ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'review')
+                      ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'battle')
                       : item.kind === 'insuranceSummary'
                         ? (o.kind ?? 'review')
                         : item.kind === 'education'
-                          ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'review')
+                          ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'battle')
                           : item.kind === 'selfDevelopment'
-                            ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
+                            ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'battle')
                             : 'review'
                 );
-              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
-              const detail = inferredKind==='protect'?(item.kind==='insuranceSummary'?'保障の把握・見直し状況は良好':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
+              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'見直しクエスト':'要確認');
+              const detail = inferredKind==='protect'?(item.kind==='insuranceSummary'?'保障の把握・見直し状況は良好':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'見直し余地あり。改善額はまだ未確定':'金額だけでは断定しない';
               return (
                 <button type="button" key={i} className="appraisal-option" onClick={()=>commit(o.patch,inferredKind,label,detail)}>
                   <strong>{o.label}</strong><span>{o.sub}</span>
@@ -1378,18 +1409,18 @@ function AppraisalCompleteScene({
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
         <h2>鑑定完了。</h2>
         <p className="appraisal-reason">
-          高いからって、全部斬る必要はない。<br />
-          <strong>大切なものを守るために、ムダだけ斬るぞ。</strong>
+          高いからって、全部ムダとは限らない。<br />
+          <strong>守る支出と、見直す候補を分けたぞ。</strong>
         </p>
         <div className="judgement-grid">
-          <div><b>{counts.battle}</b><span>討伐候補</span></div>
+          <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
           <div><b>{counts.safe}</b><span>問題なし</span></div>
           <div><b>{counts.review}</b><span>要鑑定</span></div>
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          討伐優先度を解析する ▶
+          見直し優先度を解析する ▶
         </button>
       </section>
     </div>
@@ -1407,7 +1438,7 @@ function BattleIntroScene({
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? '討伐対象を特定した！' : '家計防衛成功！'}</h2>
+        <h2>{targets.length ? '見直しクエストを特定！' : '家計防衛成功！'}</h2>
         {targets.length ? (
           <div className="battle-targets">
             {targets.map((t,i)=>{
@@ -1420,7 +1451,7 @@ function BattleIntroScene({
         )}
         {reviewCount>0 && <div className="battle-review-note">🔍 金額だけでは断定できない敵が {reviewCount} 体残っています</div>}
         <button type="button" className="pre-primary appraisal-next" onClick={onStart}>
-          {targets.length ? `討伐を開始する ▶` : '結果へ進む ▶'}
+          {targets.length ? `クエストを開始する ▶` : '結果へ進む ▶'}
         </button>
       </section>
     </div>
@@ -1467,7 +1498,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
     <div className={`scan-scene combo-battle-scene combo-count-${targets.length} combo-phase-${phase} combo-pose-${pose}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
-      <header className="combo-hud"><span>FINAL BATTLE</span><b>討伐対象 {targets.length}体</b></header>
+      <header className="combo-hud"><span>FINAL QUEST</span><b>見直し対象 {targets.length}件</b></header>
       <div className="combo-ground" aria-hidden="true" />
       <div className="combo-enemies">
         {targets.map((target,i)=>{
@@ -1491,10 +1522,10 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
 
       <section className="combo-panel">
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
-        <h2>{phase==='ready'?'斬るべきムダは見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、まとめて討伐！`}</h2>
-        {phase==='ready'&&<p>理由と改善額は、討伐後のRESULTでまとめて開示する。</p>}
-        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめてムダ斬り！ ▶</button>
-          :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>討伐結果へ ▶</button>
+        <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、見直しクエスト完了！`}</h2>
+        {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
+        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめて鑑定する！ ▶</button>
+          :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
           :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
     </div>
@@ -1509,9 +1540,9 @@ function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;revie
       <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">QUEST CLEAR</div>
-        <h2>{battleCount ? `${battleCount}体の討伐完了！` : '家計防衛成功！'}</h2>
+        <h2>{battleCount ? `${battleCount}件の見直しクエスト完了！` : '家計防衛成功！'}</h2>
         <p className="appraisal-reason">
-          {reviewCount ? `まだ ${reviewCount} 体は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
+          {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>次は、称号と家計の全結果を開示する。</strong>
         </p>
         <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
@@ -2878,12 +2909,13 @@ const CSS = String.raw`
 .type-pair{
   position:relative;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:28px;
+  grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);
+  gap:8px;
   margin-top:14px;
 }
 .type-side{
   position:relative;
+  min-width:0;
   min-height:78px;
   display:flex;
   align-items:center;
@@ -2892,6 +2924,7 @@ const CSS = String.raw`
   border-radius:12px;
   background:rgba(18,53,68,.72);
 }
+.type-side-a{grid-column:1}.type-side-b{grid-column:3}
 .type-side-badge{
   position:absolute;
   left:9px;
@@ -2914,11 +2947,12 @@ const CSS = String.raw`
   font-weight:950;
 }
 .type-pair-vs{
-  position:absolute;
+  position:relative;
   z-index:2;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
+  grid-column:2;
+  display:grid;
+  place-items:center;
+  align-self:center;
   min-width:38px;
   padding:5px 7px;
   border-radius:999px;
@@ -3139,6 +3173,8 @@ const CSS = String.raw`
 .appraisal-reason strong{color:#fff}
 .appraisal-money{margin-top:13px}
 .appraisal-next{margin-top:14px;min-height:54px}.appraisal-next:disabled{opacity:.45;cursor:not-allowed}
+.appraisal-amount-limit{margin:-4px 0 4px;color:#aeb8c2;font-size:11px;text-align:left}.appraisal-amount-limit.is-error{color:#ffb0a8;font-weight:900}
+.appraisal-amount-input{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.28);box-sizing:border-box}.appraisal-amount-input span,.appraisal-amount-input b{white-space:nowrap}.appraisal-amount-input input{min-width:0;flex:1;font:inherit;font-size:20px;font-weight:800;padding:10px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.94);color:#171717;text-align:right}.appraisal-option:disabled{opacity:.45;pointer-events:none}
 .appraisal-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
 .appraisal-option{min-height:82px;padding:13px 11px;border:1px solid rgba(255,214,47,.45);border-radius:11px;background:rgba(15,48,66,.92);color:#fff;text-align:left;cursor:pointer}
 .appraisal-option strong{display:block;font-size:16px;font-weight:1000;line-height:1.25}.appraisal-option span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:12px;font-weight:800;line-height:1.3}

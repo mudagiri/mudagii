@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "qa:10k": "npx --yes tsx@4.20.6 qa-simulation-10000-v3.ts",
+    "qa:persona": "npx --yes tsx@4.20.6 qa-persona-regression-v3.ts",
     "preview": "vite preview"
   },
   "dependencies": {

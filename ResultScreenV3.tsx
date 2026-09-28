@@ -22,7 +22,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  return <>
  <style>{CSS}</style>
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'家計に潜むムダを討伐した！'}</h1><div className="rv3-count">⚔️ {vm.counts.battle}　🛡️ {vm.counts.protect}　🔍 {vm.counts.review}</div></section>
+  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'見直しクエスト発見！'}</h1><div className="rv3-count">⚔️ {vm.counts.battle}　🛡️ {vm.counts.protect}　🔍 {vm.counts.review}</div></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
@@ -35,23 +35,39 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   </section>
 
   <section className="rv3-reward">
-   <div className="rv3-kicker">今回見つかった改善余地</div>
-   <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
-   <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
-   <p className="rv3-note">今回の診断で、具体的に不要・削減可能と確認できた金額だけを表示しています。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
+   {vm.improvement.monthly>0?<>
+    <div className="rv3-kicker">今回確定できた改善額</div>
+    <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
+    <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
+   </>:<>
+    <div className="rv3-kicker">改善額はまだ未確定</div>
+    <h3>見直し候補はある。でも、推測で金額は出さない。</h3>
+    <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p>
+   </>}
+   <p className="rv3-note">具体的に不要・削減可能と確認できた実額だけを改善額に含めます。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>
 
   {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ斬られた？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
-   <div className="rv3-row"><b>{x.enemyName}</b><b>¥{yen(x.reducible)}/月</b></div>
+   <div className="rv3-row"><b>{x.enemyName}</b><b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`確定 ¥${yen(x.confirmedSaving)}/月`:'改善額 未確定'}</b></div>
    <div className="rv3-muted">{x.label} ¥{yen(x.amount)}/月</div>
    <div className="rv3-muted">{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}`:''}</div>
-   <p>{x.reason}</p>
+   {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div className="rv3-diff">比較目安より ¥{yen(x.comparisonDifference)} 高め <small>※この差額＝ムダ額ではありません</small></div>}
+   {x.appraisalSummary&&<div className="rv3-answer">あなたの回答：<b>{x.appraisalSummary}</b></div>}<p>{x.reason}</p>
   </article>)}</section>}
 
   <section className="rv3-section"><h3>📖 家計モンスター図鑑</h3><p className="rv3-muted">12項目すべての鑑定結果</p>
    <div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}>
     <button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.known?`¥${yen(x.amount)}`:x.status==='na'?'対象外':'金額未把握'}　⌄</span></button>
-    {open===x.category&&<div className="rv3-detail"><div>比較情報：{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}`:''}</div><div>判定理由：{x.reason}</div><div>次に確認すること：{x.nextCheck}</div></div>}
+    {open===x.category&&<div className="rv3-detail">
+      <div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>
+      <div><b>比較：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>
+      {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額ではありません</small></div>}
+      <div><b>診断状況：</b>{x.diagnosisState==='CONFIRMED'?'改善額まで確認済み':x.diagnosisState==='AUDIT'?'内容確認が必要':x.diagnosisState==='DETAIL'?'追加条件を確認':x.diagnosisState==='CHECK'?'比較目安を要確認':x.diagnosisState==='NORMAL'?'問題なし':'—'}</div>
+      <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 討伐対象':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
+      <div><b>確定改善額：</b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`¥${yen(x.confirmedSaving)}/月`:'未確定'}</div>
+      {x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div>
+      <div><b>次に確認：</b>{x.nextCheck}</div>
+    </div>}
    </div>)}</div>
   </section>
 
@@ -63,10 +79,10 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   </section>
 
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>ムダは見つけただけじゃ減らない。</h3>
-   {vm.firstQuest?<><p>あなたの最初のクエスト</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.enemyName}を調査せよ</div><p>最初に確認するのは―― <b>？？？</b></p></>:<p>大きなムダは見つかりませんでした。家計を維持するための確認クエストを用意します。</p>}
-   <p className="rv3-note">LINEで診断データを引き継ぐと、あなた専用のNEXT QUESTが始まります。</p>
-   <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ LINEでNEXT QUESTを受け取る</button>
-   <small>✓ 診断結果も保存　✓ 最初にやることを1つ案内　✓ 無料<br/>公式LINEの友だち追加が必要です</small>
+   {vm.firstQuest?<><p>あなたの最初のクエスト</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.enemyName}を確認</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p></>:<p>大きなムダは見つかりませんでした。今の家計を維持するためのチェックリストを用意します。</p>}
+   <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
+   <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
+   <small>✓ 診断結果を保存　✓ 未確定項目の確認手順　✓ 無料<br/>相談は任意です。公式LINEの友だち追加が必要です</small>
   </section>
   </div>
  </div></main></>
@@ -78,7 +94,7 @@ const CSS=`
 .rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
 .rv3-primary{width:100%;min-height:56px;margin-top:20px;border:1px solid #fff;border-radius:12px;background:#f5cc39;color:#07111b;font-weight:1000;font-size:15px;box-shadow:0 7px 0 #9d7e0e}.rv3-primary:active{transform:translateY(3px);box-shadow:0 4px 0 #9d7e0e}
 .rv3-reward{text-align:center}.rv3-money{margin-top:10px;font-size:46px;font-weight:1000;line-height:1}.rv3-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;padding:14px 0;border-block:1px solid #24303c}.rv3-grid>div+div{border-left:1px solid #24303c}.rv3-note{color:#87929d;font-size:11px;line-height:1.7}
-.rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
+.rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-diff{margin-top:8px;padding:8px 10px;border:1px solid #344454;border-radius:8px;background:#101c27;font-size:12px;font-weight:900}.rv3-diff small{margin-top:2px}.rv3-answer{margin-top:9px;padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;color:#dce4eb;font-size:12px;line-height:1.55}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
 .rv3-book{margin-top:14px;border-top:1px solid #293644}.rv3-book-row{border-bottom:1px solid #293644}.rv3-book-row>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:0;border:0;background:transparent;color:#fff;text-align:left}.rv3-detail{padding:0 0 15px;color:#aeb8c2;font-size:12px;line-height:1.7}
 .rv3-message{margin:8px 20px 28px;padding:18px!important;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-explain{margin-top:10px;padding:10px;border-radius:9px;background:#111e2b;font-size:12px}.rv3-explain b{margin-left:4px}.rv3-explain span{display:block;margin-top:4px;color:#9eabb7;line-height:1.5}.rv3-message p,.rv3-next p{color:#aeb8c2;font-size:13px;line-height:1.7}
 .rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}

@@ -5,6 +5,7 @@ on:
     branches:
       - diagnosis-v2-1-frozen
       - qa-mobile-ui-v1
+      - diagnosis-result-v3-2
   pull_request:
     branches:
       - main
@@ -24,3 +25,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run qa:persona
+      - run: npm run qa:10k
