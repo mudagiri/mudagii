@@ -32,6 +32,17 @@ function reason(x:FinalCategoryV3):string{
  }
  return '現在の診断条件では、優先して見直す支出には入りませんでした。';
 }
+function appraisalSummary(x:FinalCategoryV3):string|null{
+ const a=x.appraisal;if(!a)return null;
+ if(x.category==='sub'){if(a.subUsage==='none')return 'ほぼ全部使っている';if(a.subUnusedAmount&&a.subUnusedAmount>0)return `未使用分 月¥${a.subUnusedAmount.toLocaleString('ja-JP')}を確認`;if(a.subUsage==='one')return '使っていない契約が1つくらいありそう';if(a.subUsage==='several')return '使っていない契約が2〜3個ありそう';if(a.subUsage==='unknown')return '契約状況を把握できていない';}
+ if(x.category==='car')return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as any)[a.carNeed]??null;
+ if(x.category==='rent')return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as any)[a.rentPreference]??null;
+ if(x.category==='food'||x.category==='fun'||x.category==='beautyFashion')return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as any)[a.satisfaction]??null;
+ if(x.category==='insurance')return ({clear:'目的まで把握している',mostly:'目的はだいたい把握',unclear:'保障目的が曖昧'} as any)[a.insurancePurpose]??null;
+ if(x.category==='childEducation')return ({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as any)[a.educationPreference]??null;
+ if(x.category==='selfDevelopment')return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながっている'} as any)[a.selfDevelopmentValue]??null;
+ return null;
+}
 function nextCheck(x:FinalCategoryV3):string{
  if(x.status==='na')return '確認不要';
  if(!x.raw.known)return x.category==='insurance'?'保険料と保障内容が分かる資料を確認':'直近の明細・請求額を確認';
@@ -54,7 +65,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   comparator:comparatorMetaV3(x.category,x.comparable),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
-  appraisal:x.appraisal,reason:reason(x),nextCheck:nextCheck(x)
+  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const firstQuest=battle[0]??rows.find(x=>x.status==='review')??null;
