@@ -78,8 +78,8 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    <p>見直しはゴールじゃない。実際に減らせたお金を、大切なものに使おう。</p>
   </section>
 
-  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>見直し候補は、確認して初めて改善につながる。</h3>
-   {vm.firstQuest?<><p>あなたの最初のクエスト</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.enemyName}を確認</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p></>:<p>大きなムダは見つかりませんでした。今の家計を維持するためのチェックリストを用意します。</p>}
+  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?'まず1つだけ、ここを確認。':'今の家計を守るために。'}</h3>
+   {vm.firstQuest?<><p>{vm.firstQuest.status==='battle'?'優先して見直す項目':'まだ判断に情報が必要な項目'}</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.label}</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">あなたの回答「{vm.firstQuest.appraisalSummary}」をもとに選びました。</p>}</>:<p>優先して見直す項目は見つかりませんでした。今の状態を維持するためのチェックリストを用意します。</p>}
    <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
    <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
    <small>✓ 診断結果を保存　✓ 未確定項目の確認手順　✓ 無料<br/>相談は任意です。公式LINEの友だち追加が必要です</small>
@@ -97,7 +97,7 @@ const CSS=`
 .rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-diff{margin-top:8px;padding:8px 10px;border:1px solid #344454;border-radius:8px;background:#101c27;font-size:12px;font-weight:900}.rv3-diff small{margin-top:2px}.rv3-answer{margin-top:9px;padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;color:#dce4eb;font-size:12px;line-height:1.55}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
 .rv3-book{margin-top:14px;border-top:1px solid #293644}.rv3-book-row{border-bottom:1px solid #293644}.rv3-book-row>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:0;border:0;background:transparent;color:#fff;text-align:left}.rv3-detail{padding:0 0 15px;color:#aeb8c2;font-size:12px;line-height:1.7}
 .rv3-message{margin:8px 20px 28px;padding:18px!important;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-explain{margin-top:10px;padding:10px;border-radius:9px;background:#111e2b;font-size:12px}.rv3-explain b{margin-left:4px}.rv3-explain span{display:block;margin-top:4px;color:#9eabb7;line-height:1.5}.rv3-message p,.rv3-next p{color:#aeb8c2;font-size:13px;line-height:1.7}
-.rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}
+.rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}.rv3-next-answer{padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;font-size:12px!important}
 @media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}}
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
 `;
