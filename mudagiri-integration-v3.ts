@@ -25,10 +25,10 @@ export function runDiagnosisAdapterV3(a:{monthlyTakeHome:number;monthlySavingInv
 
 function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,ap?:AppraisalV3):{status:FinalStatus;attentionFlag:boolean;battleBasis:BattleBasis}{
  if(raw.applicability==='na')return {status:'na',attentionFlag:false,battleBasis:'none'};
- if(!raw.known||raw.amount===null)return {status:'review',attentionFlag:category==='insurance'||category==='sub',battleBasis:'none',battleBasis:'none'};
+ if(!raw.known||raw.amount===null)return {status:'review',attentionFlag:category==='insurance'||category==='sub',battleBasis:'none'};
  if(raw.amount===0)return {status:'safe',attentionFlag:false,battleBasis:'none'};
 
- // Only CONFIRMED may become a battle target. Benchmark gaps are review signals, not savings.
+ // CONFIRMED is the strongest battle basis. CHECK may also become an RPG review quest, but never a confirmed saving.
  if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false,battleBasis:'confirmed'};
 
  if(category==='sub'){
@@ -57,14 +57,14 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if((category==='food'||category==='fun'||category==='beautyFashion')){
-   if(ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none',battleBasis:'none'};
+   if(ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
    if(engine?.needsReview&&ap?.satisfaction)return {status:'battle',attentionFlag:false,battleBasis:'benchmark_plus_intent'};
  }
  // Objective benchmark screen categories may be fought as a review quest.
  // This never creates a confirmed saving amount.
  if((category==='mobile'||category==='energy'||category==='daily')&&engine?.state==='CHECK')
    return {status:'battle',attentionFlag:false,battleBasis:'benchmark_check'};
- if(engine?.needsReview)return {status:'review',attentionFlag:true,battleBasis:'none',battleBasis:'none'};
+ if(engine?.needsReview)return {status:'review',attentionFlag:true,battleBasis:'none'};
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
 }
 
