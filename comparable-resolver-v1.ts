@@ -109,10 +109,8 @@ export function resolveComparableV1({household,age,annualIncome,prefecture,expen
  const out:Partial<Record<Category,number|null>>={};
  (Object.keys(base) as Category[]).forEach(c=>out[c]=Math.round((base[c]||0)*frozenIncomeFactor(annualIncome,c,household)*regionFactor(prefecture,c,household)));
  (['rent','insurance','sub','car','childEducation','selfDevelopment'] as Category[]).forEach(c=>out[c]=null);
- // Sony Assurance 2025 nationwide car-life survey: monthly maintenance average JPY14,100.
- // Scope: insurance/fuel/parking/repairs etc.; excludes tax, loan repayment and tolls.
- // This is a private survey benchmark, not an official-statistics average.
- if((expenses?.car??0)>0) out.car=14100;
+ // V2.1 FROZEN: car stays null. Available current figures are context-only all-household values,
+ // not a defensible current owner-specific normal-spend benchmark for this product scope.
  // MEXT FY2023 Survey of Household Expenditure on Children's Education, corrected 2026-01-16.
  // Corrected totals: 184646 / 347338 / 366599 / 1741516 / 542450 / 1560359 / 596954 / 1179261.
  // Converted to monthly. Comparison only; V2 never auto-labels education as waste.
@@ -121,4 +119,4 @@ export function resolveComparableV1({household,age,annualIncome,prefecture,expen
 }
 
 // Exposed only for deterministic tests/audit.
-export const __frozenComparableAudit={multiIncomeCentersMan,multiIncomeOverall,multiIncomeValues,frozenFactors,REGION_FACTOR,PREFECTURE_REGION,EDUCATION_ANNUAL,CAR_MONTHLY_BENCHMARK:14100};
+export const __frozenComparableAudit={multiIncomeCentersMan,multiIncomeOverall,multiIncomeValues,frozenFactors,REGION_FACTOR,PREFECTURE_REGION,EDUCATION_ANNUAL,CAR_MONTHLY_CONTEXT_ONLY:14100};
