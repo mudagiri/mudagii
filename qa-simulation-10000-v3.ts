@@ -7,7 +7,7 @@ const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
 const pick=<T>(a:T[])=>a[Math.floor(rnd()*a.length)];
 const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 const money=(base:number,spread=.55)=>Math.round(clamp(base*(1+(rnd()*2-1)*spread),0,base*3)/100)*100;
-const satisfaction=():Satisfaction=>pick(['verySatisfied','mostlySatisfied','neutral','waste'] as Satisfaction[]);
+const satisfaction=():Satisfaction=>pick(['verySatisfied','satisfied','inertia','waste'] as Satisfaction[]);
 
 type Metrics={cases:number;battles:number;zeroBattle:number;over3Battle:number;protect:number;review:number;safe:number;confirmedCases:number;confirmedYen:number;violations:number};
 const m:Metrics={cases:0,battles:0,zeroBattle:0,over3Battle:0,protect:0,review:0,safe:0,confirmedCases:0,confirmedYen:0,violations:0};
@@ -37,6 +37,7 @@ for(let id=1;id<=10000;id++){
      const usage=pick(['none','one','several','unknown'] as const);
      appraisal[c]={subUsage:usage,subUnusedAmount:(usage==='one'||usage==='several')&&rnd()<.62?Math.round(amount*(.15+rnd()*.55)):undefined};
    }
+   if(c==='car'&&amount>0)appraisal[c]={carNeed:pick(['essential','useful','burden','notNeeded'] as const)};
    if(c==='rent'&&amount>0)appraisal[c]={rentPreference:pick(['burdenHigh','burdenSome','reasonable','protect'] as const)};
    if(c==='insurance'&&amount>0){
      const strong=rnd()<.35;
