@@ -42,16 +42,26 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   </section>
 
   {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ斬られた？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
-   <div className="rv3-row"><b>{x.enemyName}</b><b>¥{yen(x.reducible)}/月</b></div>
+   <div className="rv3-row"><b>{x.enemyName}</b><b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`確定 ¥${yen(x.confirmedSaving)}/月`:'改善額 未確定'}</b></div>
    <div className="rv3-muted">{x.label} ¥{yen(x.amount)}/月</div>
    <div className="rv3-muted">{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}`:''}</div>
+   {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div className="rv3-diff">比較目安より ¥{yen(x.comparisonDifference)} 高め <small>※この差額＝ムダ額ではありません</small></div>}
    <p>{x.reason}</p>
   </article>)}</section>}
 
   <section className="rv3-section"><h3>📖 家計モンスター図鑑</h3><p className="rv3-muted">12項目すべての鑑定結果</p>
    <div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}>
     <button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.known?`¥${yen(x.amount)}`:x.status==='na'?'対象外':'金額未把握'}　⌄</span></button>
-    {open===x.category&&<div className="rv3-detail"><div>比較情報：{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}`:''}</div><div>判定理由：{x.reason}</div><div>次に確認すること：{x.nextCheck}</div></div>}
+    {open===x.category&&<div className="rv3-detail">
+      <div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>
+      <div><b>比較：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>
+      {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額ではありません</small></div>}
+      <div><b>診断state：</b>{x.diagnosisState??'—'}</div>
+      <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 討伐対象':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
+      <div><b>確定改善額：</b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`¥${yen(x.confirmedSaving)}/月`:'未確定'}</div>
+      <div><b>判定理由：</b>{x.reason}</div>
+      <div><b>次に確認：</b>{x.nextCheck}</div>
+    </div>}
    </div>)}</div>
   </section>
 
@@ -78,7 +88,7 @@ const CSS=`
 .rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
 .rv3-primary{width:100%;min-height:56px;margin-top:20px;border:1px solid #fff;border-radius:12px;background:#f5cc39;color:#07111b;font-weight:1000;font-size:15px;box-shadow:0 7px 0 #9d7e0e}.rv3-primary:active{transform:translateY(3px);box-shadow:0 4px 0 #9d7e0e}
 .rv3-reward{text-align:center}.rv3-money{margin-top:10px;font-size:46px;font-weight:1000;line-height:1}.rv3-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;padding:14px 0;border-block:1px solid #24303c}.rv3-grid>div+div{border-left:1px solid #24303c}.rv3-note{color:#87929d;font-size:11px;line-height:1.7}
-.rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
+.rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-diff{margin-top:8px;padding:8px 10px;border:1px solid #344454;border-radius:8px;background:#101c27;font-size:12px;font-weight:900}.rv3-diff small{margin-top:2px}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
 .rv3-book{margin-top:14px;border-top:1px solid #293644}.rv3-book-row{border-bottom:1px solid #293644}.rv3-book-row>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:0;border:0;background:transparent;color:#fff;text-align:left}.rv3-detail{padding:0 0 15px;color:#aeb8c2;font-size:12px;line-height:1.7}
 .rv3-message{margin:8px 20px 28px;padding:18px!important;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-explain{margin-top:10px;padding:10px;border-radius:9px;background:#111e2b;font-size:12px}.rv3-explain b{margin-left:4px}.rv3-explain span{display:block;margin-top:4px;color:#9eabb7;line-height:1.5}.rv3-message p,.rv3-next p{color:#aeb8c2;font-size:13px;line-height:1.7}
 .rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}
