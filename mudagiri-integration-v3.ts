@@ -25,19 +25,35 @@ export function runDiagnosisAdapterV3(a:{monthlyTakeHome:number;monthlySavingInv
 function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,ap?:AppraisalV3):{status:FinalStatus;attentionFlag:boolean}{
  if(raw.applicability==='na')return {status:'na',attentionFlag:false};
  if(!raw.known||raw.amount===null)return {status:'review',attentionFlag:category==='insurance'||category==='sub'};
- if(category==='rent'){const attention=!!engine?.needsReview;if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:attention};return attention?{status:'review',attentionFlag:true}:{status:'safe',attentionFlag:false}}
+ if(raw.amount===0)return {status:'safe',attentionFlag:false};
+
+ // Only CONFIRMED may become a battle target. Benchmark gaps are review signals, not savings.
+ if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false};
+
  if(category==='sub'){
-   if(raw.amount===0)return {status:'safe',attentionFlag:false};
-   if(typeof ap?.subUnusedAmount==='number'&&ap.subUnusedAmount>0&&(engine?.reducible??0)>0)return {status:'battle',attentionFlag:false};
    if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false};
-   if(ap?.subUsage==='one'||ap?.subUsage==='several'||ap?.subUsage==='unknown')return {status:'review',attentionFlag:ap.subUsage==='unknown'};
+   return {status:'review',attentionFlag:ap?.subUsage==='unknown'||ap?.subUsage===undefined};
  }
- if(category==='insurance')return raw.amount>0?{status:'review',attentionFlag:ap?.insuranceUnderstanding!=='clear'}:{status:'safe',attentionFlag:false};
- if(category==='childEducation'){if(raw.amount===0)return {status:'safe',attentionFlag:false};if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:false};return {status:'review',attentionFlag:true}}
- if(category==='selfDevelopment'){if(raw.amount===0)return {status:'safe',attentionFlag:false};if(ap?.selfDevelopmentValue==='purpose'||ap?.selfDevelopmentValue==='results')return {status:'protect',attentionFlag:false};return {status:'review',attentionFlag:true}}
- if((engine?.reducible??0)>0)return {status:'battle',attentionFlag:false};
- if((category==='food'||category==='fun'||category==='beautyFashion')&&ap?.satisfaction==='verySatisfied'&&raw.amount>0)return {status:'protect',attentionFlag:false};
- if(engine?.needsReview)return {status:'review',attentionFlag:true};return {status:'safe',attentionFlag:false};
+ if(category==='insurance'){
+   // V2.1: premium amount or a single "understanding" answer cannot prove protection or waste.
+   // Until the full purpose/review/life-change/public-benefit/duplication audit is answered, keep REVIEW.
+   return {status:'review',attentionFlag:true};
+ }
+ if(category==='rent'){
+   if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview};
+   return {status:'review',attentionFlag:true};
+ }
+ if(category==='childEducation'){
+   if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:!!engine?.needsReview};
+   return {status:'review',attentionFlag:true};
+ }
+ if(category==='selfDevelopment'){
+   if(ap?.selfDevelopmentValue==='purpose'||ap?.selfDevelopmentValue==='results')return {status:'protect',attentionFlag:false};
+   return {status:'review',attentionFlag:true};
+ }
+ if((category==='food'||category==='fun'||category==='beautyFashion')&&ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview};
+ if(engine?.needsReview)return {status:'review',attentionFlag:true};
+ return {status:'safe',attentionFlag:false};
 }
 
-export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.reducible??0,priority:priority.get(category)??0}});return {categories,battleTargets:categories.filter(x=>x.status==='battle').sort((x,y)=>y.priority-x.priority).slice(0,3)}}
+export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0}});return {categories,battleTargets:categories.filter(x=>x.status==='battle').sort((x,y)=>y.priority-x.priority).slice(0,3)}}
