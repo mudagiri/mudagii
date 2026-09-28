@@ -7,8 +7,14 @@ const raw=(amounts:Case['amounts']):RawExpenses=>{const r=emptyRawExpenses();for
 const cases:Case[]=[
  {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'safe',energy:'safe',food:'safe',rent:'protect'},confirmedMonthly:0},
  {name:'通信だけ高い単身',income:300000,amounts:{mobile:14000},comparable:{mobile:6000},expect:{mobile:'review'},confirmedMonthly:0},
+ {name:'光熱費だけ高い単身',income:300000,amounts:{energy:22000},comparable:{energy:11000},expect:{energy:'review'},confirmedMonthly:0},
+ {name:'日用品だけ高い単身',income:300000,amounts:{daily:18000},comparable:{daily:9000},expect:{daily:'review'},confirmedMonthly:0},
  {name:'食費高めだが守りたい',income:350000,amounts:{food:80000},comparable:{food:50000},appraisal:{food:{satisfaction:'verySatisfied'}},expect:{food:'protect'},confirmedMonthly:0},
  {name:'食費高めで見直し意思あり',income:350000,amounts:{food:80000},comparable:{food:50000},appraisal:{food:{satisfaction:'waste'}},expect:{food:'battle'},confirmedMonthly:0},
+ {name:'娯楽高めだが満足',income:350000,amounts:{fun:50000},comparable:{fun:20000},appraisal:{fun:{satisfaction:'satisfied'}},expect:{fun:'protect'},confirmedMonthly:0},
+ {name:'娯楽高めで惰性',income:350000,amounts:{fun:50000},comparable:{fun:20000},appraisal:{fun:{satisfaction:'inertia'}},expect:{fun:'battle'},confirmedMonthly:0},
+ {name:'美容服飾高めだが満足',income:350000,amounts:{beautyFashion:40000},comparable:{beautyFashion:10000},appraisal:{beautyFashion:{satisfaction:'verySatisfied'}},expect:{beautyFashion:'protect'},confirmedMonthly:0},
+ {name:'美容服飾高めで見直し意思',income:350000,amounts:{beautyFashion:40000},comparable:{beautyFashion:10000},appraisal:{beautyFashion:{satisfaction:'waste'}},expect:{beautyFashion:'battle'},confirmedMonthly:0},
  {name:'未使用サブスク額まで確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:3500}},expect:{sub:'battle'},confirmedMonthly:3500},
  {name:'サブスク疑いだけで金額未確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several'}},expect:{sub:'battle'},confirmedMonthly:0},
  {name:'保険を把握し最近見直し済み',income:400000,amounts:{insurance:25000},appraisal:{insurance:{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'}},expect:{insurance:'protect'},confirmedMonthly:0},
@@ -24,7 +30,8 @@ const cases:Case[]=[
  {name:'車の負担を本人も見直したい',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'burden'}},expect:{car:'battle'},confirmedMonthly:0},
  {name:'境界値:比較目安と同額',income:300000,amounts:{mobile:6000,energy:11000,daily:9000},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'safe',energy:'safe',daily:'safe'},confirmedMonthly:0},
  {name:'境界値:比較目安を1円超過',income:300000,amounts:{mobile:6001,energy:11001,daily:9001},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'review',daily:'review'},confirmedMonthly:0},
- {name:'ゼロ支出',income:300000,amounts:{mobile:0,sub:0,insurance:0},expect:{mobile:'safe',sub:'safe',insurance:'safe'},confirmedMonthly:0}
+ {name:'ゼロ支出',income:300000,amounts:{mobile:0,sub:0,insurance:0},expect:{mobile:'safe',sub:'safe',insurance:'safe'},confirmedMonthly:0},
+ {name:'比較目安がなくても金額だけでムダにしない',income:300000,amounts:{mobile:12000,energy:20000,daily:18000},expect:{mobile:'safe',energy:'safe',daily:'safe'},confirmedMonthly:0}
 ];
 
 let failed=0;
