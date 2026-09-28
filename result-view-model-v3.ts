@@ -27,7 +27,7 @@ function reason(x:FinalCategoryV3):string{
  }
  if(x.status==='battle'){
   if(x.battleBasis==='confirmed')return '具体的に不要・削減可能と確認できたため、討伐対象です。確定した実額だけを改善額に含めています。';
-  if(x.battleBasis==='benchmark_plus_intent')return '比較目安より高めで、追加鑑定でも見直し余地があるため討伐対象です。平均との差は改善額には含めません。';
+  if(x.battleBasis==='appraisal_review')return x.comparable!==null&&((x.comparisonDifference??0)>0)?'比較目安に加え、あなた自身も見直し意向を示したため優先クエストです。平均との差は改善額には含めません。':'追加鑑定で、あなた自身が見直し余地を示したため優先クエストです。改善額はまだ確定していません。';
   return '比較データ上で見直しシグナルが出たため、討伐クエストの対象です。削減額はまだ確定していません。';
  }
  return '現在の診断条件では、優先して見直す支出には入りませんでした。';
