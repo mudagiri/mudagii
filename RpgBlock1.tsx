@@ -262,8 +262,8 @@ export default function RpgBlock1({
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
-    const rent=actual('rent'),rc=comp('rent');
-    if(rent>0&&(rent/incomeNumber>.35||(rc!==null&&rent>rc*1.25)))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    const rent=actual('rent');
+    if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
     if(actual('insurance')>0)qs.push({category:'insurance',kind:'insurance',reason:'保険は、保険料だけでは必要・不要を判断できません。',question:'今入っている保険、何のための保障か把握してる？'});
     if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
