@@ -1,37 +1,37 @@
 export type ToneMode = 'gentle'|'serious'|'hell';
 
 export const TONE_MODES = {
-  gentle:{icon:'🌱',name:'やさしめ斬り',tagline:'現実は見る。でも傷は浅め。',choice:'現実は知りたい。でも優しくして。'},
-  serious:{icon:'⚔️',name:'本気斬り',tagline:'言い訳ごと、ちゃんと斬る。',choice:'遠慮なく言って。',recommended:true},
-  hell:{icon:'🔥',name:'地獄斬り',tagline:'ムダへの容赦なし。メンタル防具推奨。',choice:'ボコボコにしてください。'},
+  gentle:{icon:'😇',name:'甘やかしムダギリ',tagline:'やさしく言って。傷つきたくない。',choice:'やさしく言って。傷つきたくない。'},
+  serious:{icon:'⚔️',name:'正論ムダギリ',tagline:'数字でハッキリ言ってほしい。',choice:'数字でハッキリ言ってほしい。',recommended:true},
+  hell:{icon:'💀',name:'地獄ムダギリ',tagline:'遠慮はいらない。全部言って。',choice:'遠慮はいらない。全部言って。'},
 } as const;
 
 export const MODE_COPY:Record<ToneMode,{start:string;defeat:string;spared:string;review:string;lineTitle:string;lineBody:string;lineCta:string}> = {
  gentle:{
-  start:'了解。無理に削らず、見直せるところだけ一緒に探そう。',
-  defeat:'ここは見直し候補。満足度を落とさず軽くできそうです。',
-  spared:'これはちゃんと価値を感じている支出。今回は守ります。',
-  review:'金額だけでは判断できません。中身を確認してから決めよう。',
-  lineTitle:'判断が難しいところだけ、もう一段深く確認',
-  lineBody:'自分でできる改善はそのまま実行。契約内容や目的まで見ないと判断できない項目だけ、無料レポートで整理します。',
-  lineCta:'LINEで次の一手を確認する',
+  start:'大丈夫。一緒にムダだけ探そう！',
+  defeat:'ここは少し見直せそう。一緒に確認してみよう！',
+  spared:'これは大切にしている支出。無理に削らなくて大丈夫。',
+  review:'まだムダとは決められないよ。中身を確認してから考えよう。',
+  lineTitle:'次に確認することを1つだけ見よう',
+  lineBody:'診断結果から、最初に確認したいポイントを1つ選びました。',
+  lineCta:'LINEでNEXT QUESTを受け取る',
  },
  serious:{
-  start:'了解。遠慮はしない。ただし、好きで使ってる金まで斬る気はない。',
-  defeat:'これは満足のための支出じゃない。惰性なら、ちゃんと斬ろう。',
-  spared:'高い。でもちゃんと価値がある。高いだけで斬るほど雑じゃない。',
-  review:'ここは平均だけじゃ斬れない。中身を見て白黒つける。',
-  lineTitle:'自分で斬れるところは出した。残りを仕分ける。',
-  lineBody:'ここから先は平均値だけでは判断できない項目があります。自分で直せるものと、契約・目的まで確認すべきものを分けます。',
-  lineCta:'残った敵の正体を確認する',
+  start:'良いものは守る。ムダだけ斬るぞ。',
+  defeat:'改善余地あり。ここは数字で見直せる。',
+  spared:'高くても価値があるなら守る。ムダとは別物だ。',
+  review:'金額だけでは断定できない。中身を確認して判断する。',
+  lineTitle:'診断は終わり。次は1つだけ動く。',
+  lineBody:'最初に確認すべきポイントを、診断結果から1つに絞りました。',
+  lineCta:'LINEでNEXT QUESTを受け取る',
  },
  hell:{
-  start:'了解。後悔しても知らん。ただし幸せな支出は無罪だ。ムダだけ処刑する。',
-  defeat:'使ってない・後悔してる・惰性。それで払い続ける理由ある？ 処刑対象。',
-  spared:'……高ぇ。だが幸せなら斬れねぇ。無罪。好きに使え。',
-  review:'勢いで斬るな。中身も見ずに切るのは地獄じゃなく雑魚診断だ。要鑑定。',
-  lineTitle:'☠️ まだ終わってません。',
-  lineBody:'小さいムダを斬って満足するな。金額だけでは判断できない敵が残っています。契約内容・目的まで見て、斬るか残すか決めます。',
-  lineCta:'逃げずに残りも確認する',
+  start:'選んだな？ 後悔しても知らんぞ。',
+  defeat:'ここは斬れる。惰性でエサ代を払い続けるな。',
+  spared:'高くても大事なら無罪だ。幸せな支出まで斬るほど雑じゃない。',
+  review:'中身も見ずに処刑するのは雑魚診断だ。まず正体を確認する。',
+  lineTitle:'☠️ 見つけただけで満足するな。',
+  lineBody:'最初に潰すポイントを1つ選んだ。次は実際に確認するぞ。',
+  lineCta:'LINEでNEXT QUESTを受け取る',
  }
 };

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ToneMode } from './tone-mode-v3';
+import { TONE_MODES, type ToneMode } from './tone-mode-v3';
+import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
+import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadBattle } from './asset-loading-v2';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
@@ -12,9 +14,11 @@ type Props = {
   toneMode: ToneMode;
   onBegin: (mode: ToneMode) => void;
   onFamilySelect: (profile: FamilyProfile) => void;
+  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
+  onEvent?: (name:string,data?:Record<string,unknown>)=>void;
 };
 
-type Scene = 'opening' | 'profile' | 'complete' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
+type Scene = 'opening' | 'mode' | 'profile' | 'complete' | 'incomeCalibration' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
 
 type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 
@@ -212,12 +216,17 @@ export default function RpgBlock1({
   toneMode,
   onBegin,
   onFamilySelect,
+  onCompleteV3,
+  onEvent,
 }: Props) {
   const [scene, setScene] = useState<Scene>(() => (step === 'profile' ? 'profile' : 'opening'));
+  const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>(toneMode);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
   const [scanIndex, setScanIndex] = useState(0);
-  const [scanValues, setScanValues] = useState<Partial<Record<EnemyAssetCategory, string>>>({});
+  const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>emptyRawExpenses());
+  const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>({});
+  const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>('unknown');
   const [typeIndex, setTypeIndex] = useState(0);
   const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>({});
@@ -230,182 +239,45 @@ export default function RpgBlock1({
     [flow.household],
   );
   const currentScan = applicableScanCategories[scanIndex];
-  const discoveredCount = applicableScanCategories
-    .filter((item) => Number(scanValues[item.category] ?? '0') > 0).length;
+  const normalizedRaw=useMemo(()=>normalizeApplicability(rawExpenses,flow.household),[rawExpenses,flow.household]);
+  const discoveredCount = applicableScanCategories.filter((item)=>{const r=normalizedRaw[item.category];return r?.applicability==='applicable'&&r.known&&Number(r.amount)>0}).length;
   const currentTypeQuestion = TYPE_QUESTIONS_V31[typeIndex];
-  const numericExpenses = useMemo(() => {
-    const out = {} as Record<Category, number>;
-    SCAN_CATEGORIES.forEach(({ category }) => {
-      out[category as Category] = Number(scanValues[category] ?? '0') || 0;
-    });
-    if (flow.household !== 'children') out.childEducation = 0;
-    return out;
-  }, [scanValues, flow.household]);
-
   const incomeNumber = Number(flow.monthlyTakeHome || '0') || 0;
-  const householdForComparable = flow.household === 'single' ? 'single' : 'multi';
+  const comparisonBundle = useMemo(()=>buildComparableV3({
+    raw:normalizedRaw,household:flow.household==='single'?'single':'multi',
+    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand
+  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand]);
+  const comparable=comparisonBundle.comparable;
 
-  const comparable = useMemo(() => {
-    if (incomeNumber <= 0) return {} as Partial<Record<Category, number | null>>;
-    return resolveComparableV1({
-      household: householdForComparable,
-      age: Math.max(18, Number(flow.age || '30') || 30),
-      annualIncome: incomeNumber * 12,
-      prefecture: flow.prefecture,
-      expenses: numericExpenses,
-    });
-  }, [householdForComparable, flow.age, flow.prefecture, incomeNumber, numericExpenses]);
-
-  const appraisalQuestions = useMemo<AppraisalQuestion[]>(() => {
-    if (incomeNumber <= 0) return [];
-    const qs: AppraisalQuestion[] = [];
-    const actual = (c: EnemyAssetCategory) => numericExpenses[c as Category] || 0;
-    const comp = (c: EnemyAssetCategory) => comparable[c as Category] ?? null;
-
-    if (actual('sub') > 0) {
-      qs.push({
-        category: 'sub',
-        kind: 'subUsage',
-        reason: '使っていない契約ほど、金額まで覚えていないことがあります。',
-        question: '使ってない・ほぼ使ってないサブスク、ありそう？',
-      });
-    }
-    (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach((category) => {
-      const c = comp(category);
-      if (actual(category) > 0 && c !== null && actual(category) > c) {
-        const copy = category === 'food'
-          ? ['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']
-          : category === 'fun'
-            ? ['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']
-            : ['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
-        qs.push({ category, kind:'satisfaction', reason:copy[0], question:copy[1] });
+  const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
+  const comp=(c:EnemyAssetCategory)=>comparable[c as Category]??null;
+  const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
+    if(incomeNumber<=0)return [];
+    const qs:AppraisalQuestion[]=[];
+    if(actual('sub')>0)qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
+    (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
+      const c=comp(category);
+      if(actual(category)>0&&c!==null&&actual(category)>c){
+        const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
+        qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
-    const rent = actual('rent');
-    const rentComparable = comp('rent');
-    if (rent > 0 && (rent / incomeNumber > .35 || (rentComparable !== null && rent > rentComparable * 1.25))) {
-      qs.push({
-        category:'rent',
-        kind:'rent',
-        reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',
-        question:'今の住居費について、一番近いのは？',
-      });
-    }
-    if (actual('insurance') > 0) {
-      qs.push({
-        category:'insurance',
-        kind:'insurance',
-        reason:'保険は、保険料だけでは必要・不要を判断できません。',
-        question:'今入っている保険、何のための保障か把握してる？',
-      });
-    }
-    if (flow.household === 'children' && actual('childEducation') > 0) {
-      qs.push({
-        category:'childEducation',
-        kind:'education',
-        reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',
-        question:'今の教育費について、一番近いのは？',
-      });
-    }
-    if (actual('selfDevelopment') > 0) {
-      qs.push({
-        category:'selfDevelopment',
-        kind:'selfDevelopment',
-        reason:'自己投資は、金額より「何につながっているか」が重要です。',
-        question:'その自己投資、目的や成果は見えてる？',
-      });
-    }
+    const rent=actual('rent'),rc=comp('rent');
+    if(rent>0&&(rent/incomeNumber>.35||(rc!==null&&rent>rc*1.25)))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    if(actual('insurance')>0)qs.push({category:'insurance',kind:'insurance',reason:'保険は、保険料だけでは必要・不要を判断できません。',question:'今入っている保険、何のための保障か把握してる？'});
+    if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
+    if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
-  }, [incomeNumber, numericExpenses, comparable, flow.household]);
+  },[incomeNumber,normalizedRaw,comparable,flow.household]);
 
-  const diagnosis = useMemo(() => {
-    if (incomeNumber <= 0) return null;
-    const categories = SCAN_CATEGORIES
-      .filter(({ category }) => category !== 'childEducation' || flow.household === 'children')
-      .map(({ category }) => {
-        const answer = appraisalAnswers[category];
-        return {
-          category: category as Category,
-          actual: numericExpenses[category as Category] || 0,
-          comparable: comparable[category as Category] ?? null,
-          satisfaction: answer?.satisfaction,
-          unusedAmount: category === 'sub' ? answer?.subUnusedAmount : undefined,
-        };
-      });
-    const totalExpenses = categories.reduce((sum, c) => sum + c.actual, 0);
-    // V2.9 does not publish Battle Score yet. Saving/emergency inputs belong to RESULT V3.0.
-    // These neutral placeholders do not affect category reducible amounts or enemy priority.
-    return runDiagnosisV2({
-      monthlyTakeHomeIncome: incomeNumber,
-      monthlySavingInvestment: 0,
-      freeCashFlow: incomeNumber - totalExpenses,
-      emergencyMonths: 3,
-      categories,
-    });
-  }, [incomeNumber, numericExpenses, comparable, appraisalAnswers, flow.household]);
-
-  const finalJudgements = useMemo<FinalEnemyJudgement[]>(() => {
-    if (!diagnosis) return [];
-    const enemyPriority = new Map(diagnosis.enemies.map((e) => [e.category, e.priority]));
-    const results: FinalEnemyJudgement[] = diagnosis.categories.map((r) => {
-      const category = r.category as EnemyAssetCategory;
-      const answer = appraisalAnswers[category];
-      let status: AppraisalStatus = r.reducible > 0 ? 'battle' : r.needsReview ? 'review' : 'safe';
-      let attentionFlag = false;
-      let reviewPriority: 'high'|'medium'|'low'|undefined;
-
-      if (category === 'rent') {
-        const rentComparable = r.comparable ?? comparable.rent ?? null;
-        const burdenHigh =
-          r.actual > 0 &&
-          (
-            r.actual / incomeNumber > .35 ||
-            (rentComparable !== null && rentComparable !== undefined && r.actual > rentComparable * 1.25)
-          );
-        attentionFlag = burdenHigh;
-        if (burdenHigh && !(answer?.rentPreference === 'protect' || answer?.rentPreference === 'reasonable')) status = 'review';
-        else if (answer?.rentPreference === 'protect' || answer?.rentPreference === 'reasonable') status = 'protect';
-      }
-      if (category === 'sub' && r.actual > 0) {
-        if (answer?.subUsage === 'none') status = 'safe';
-        else if (answer?.subUsage) { status = 'review'; reviewPriority = answer.subUsage === 'unknown' ? 'high' : 'medium'; }
-      }
-      if (category === 'insurance' && r.actual > 0) {
-        status = 'review';
-        reviewPriority =
-          answer?.insuranceUnderstanding === 'none' ? 'high' :
-          answer?.insuranceUnderstanding === 'vague' ? 'medium' : 'low';
-      }
-      if (category === 'childEducation' && r.actual > 0) {
-        status = answer?.educationPreference === 'necessary' || answer?.educationPreference === 'protect' ? 'protect' : 'review';
-        if (status === 'review') reviewPriority = answer?.educationPreference === 'reviewHigh' ? 'high' : 'medium';
-      }
-      if (category === 'selfDevelopment' && r.actual > 0) {
-        status = answer?.selfDevelopmentValue === 'purpose' || answer?.selfDevelopmentValue === 'results' ? 'protect' : 'review';
-        if (status === 'review') reviewPriority = answer?.selfDevelopmentValue === 'inertia' ? 'high' : 'medium';
-      }
-      if (category === 'car' && r.actual === 0) status = 'na';
-
-      return {
-        category,
-        status,
-        attentionFlag,
-        reducible: r.reducible,
-        priority: enemyPriority.get(r.category) ?? 0,
-        actual: r.actual,
-        reviewPriority,
-      };
-    });
-    if (flow.household !== 'children') {
-      results.push({ category:'childEducation', status:'na', attentionFlag:false, reducible:0, priority:0, actual:0 });
-    }
-    return results;
-  }, [diagnosis, appraisalAnswers, incomeNumber, flow.household]);
-
-  const battleTargets = useMemo(
-    () => finalJudgements.filter((x) => x.status === 'battle').sort((a,b) => b.priority - a.priority).slice(0,3),
-    [finalJudgements],
-  );
+  const diagnosisBundle=useMemo(()=>incomeNumber>0?runDiagnosisAdapterV3({
+    raw:normalizedRaw,comparable,monthlyTakeHome:incomeNumber,appraisal:appraisalAnswers
+  }):null,[normalizedRaw,comparable,incomeNumber,appraisalAnswers]);
+  const finalBundle=useMemo(()=>diagnosisBundle?buildFinalJudgementsV3({
+    raw:normalizedRaw,diagnosis:diagnosisBundle.diagnosis,comparable,appraisal:appraisalAnswers
+  }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,appraisalAnswers]);
+  const finalJudgements=finalBundle.categories;
+  const battleTargets=finalBundle.battleTargets;
 
 
   useEffect(() => {
@@ -432,45 +304,18 @@ export default function RpgBlock1({
     }
   }, [step, scene]);
 
-  useEffect(() => {
-    const preload = (src: string) => {
-      const img = new Image();
-      img.src = src;
-    };
+  useEffect(()=>{preloadOpening()},[]);
+  useEffect(()=>{if(scene==='profile')preloadProfile(question?.sprite,QUESTIONS[questionIndex+1]?.sprite)},[scene,questionIndex,question]);
+  useEffect(()=>{if(scene==='scan')preloadScan(currentScan?.category,applicableScanCategories[scanIndex+1]?.category)},[scene,scanIndex,currentScan,applicableScanCategories]);
+  useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.map(x=>x.category))},[scene,appraisalQuestions]);
+  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(battleTargets.map(x=>x.category))},[scene,battleTargets]);
 
-    preload(`${ASSET}/BG-001_OP_FIXED.png`);
-    preload(`${ASSET}/BG-002_PROFILE_FIXED.png`);
-    preload(`${ASSET}/MONSTER_HORDE_OP_MASTER.png`);
-    QUESTIONS.forEach((item) => preload(item.sprite));
-    [
-      'BG-003_SCAN_BATTLE.png',
-      'MUDAGIRI_BATTLE.png',
-      'FX-01_REVEAL.png',
-      'FX-02_SLASH.png',
-      'FX-03_HIT.png',
-      'FX-04_DEFEAT_PARTICLES.png',
-      'FX-05_ESCAPE_DUST.png',
-      'FX-06_UNKNOWN.png',
-    ].forEach((name) => preload(`./assets/battle1/${name}`));
-    preload(SCAN_MUDAGIRI_GUIDE);
-    preload(SCAN_MUDAGIRI_RUN);
-    preload(SCAN_MUDAGIRI_BATTLE);
-    preload(MUDAGIRI_BATTLE_READY);
-    preload(MUDAGIRI_BATTLE_SWING);
-    preload(MUDAGIRI_BATTLE_FOLLOW);
-
-    Object.values(ENEMY_ASSETS).forEach((enemy) => {
-      preload(enemy.trace);
-      preload(enemy.normal);
-      preload(enemy.defeated);
-      preload(enemy.escape);
-    });
-  }, []);
-
-  const beginAdventure = () => {
+  const beginAdventure = () => setScene('mode');
+  const chooseMode = (mode:ToneMode) => {
+    setSelectedToneMode(mode);
     setQuestionIndex(0);
-    setScene('profile');
-    onBegin(toneMode);
+    onBegin(mode);
+    window.setTimeout(()=>setScene('profile'),600);
   };
 
   const nextQuestion = () => {
@@ -480,6 +325,7 @@ export default function RpgBlock1({
     }
 
     onFamilySelect(flow.household);
+    onEvent?.('profile_completed',{household:flow.household});
     setScene('complete');
   };
 
@@ -488,6 +334,15 @@ export default function RpgBlock1({
     setQuestionIndex((value) => value - 1);
   };
 
+  useEffect(()=>{
+    if(scene!=='battleComplete'||!onCompleteV3)return;
+    onEvent?.('battle_completed',{count:battleTargets.length});
+    onCompleteV3({
+      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
+      annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'COMPARABLE_RESOLVER_V1'
+    });
+  },[scene]);
   return (
     <>
       <style>{CSS}</style>
@@ -496,6 +351,8 @@ export default function RpgBlock1({
         <section className={`pre-stage pre-scene-${scene}`}>
           {scene === 'opening' ? (
             <OpeningScene onStart={beginAdventure} />
+          ) : scene === 'mode' ? (
+            <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>setScene('opening')} />
           ) : scene === 'profile' ? (
             <ProfileScene
               question={question}
@@ -506,7 +363,9 @@ export default function RpgBlock1({
               onBack={previousQuestion}
             />
           ) : scene === 'complete' ? (
-            <CompleteScene onStartScan={() => { setScanIndex(0); setScene('scan'); }} />
+            <CompleteScene onStartScan={() => setScene('incomeCalibration')} />
+          ) : scene === 'incomeCalibration' ? (
+            <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onEvent?.('income_calibration_completed',{band});setScanIndex(0);setScene('scan')}} />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
@@ -515,11 +374,16 @@ export default function RpgBlock1({
               total={applicableScanCategories.length}
               discoveredBefore={applicableScanCategories
                 .slice(0, scanIndex)
-                .filter((item) => Number(scanValues[item.category] ?? '0') > 0).length}
-              value={scanValues[currentScan.category] ?? ''}
-              onChange={(value) => setScanValues((prev) => ({ ...prev, [currentScan.category]: value }))}
+                .filter((item) => {const r=normalizedRaw[item.category];return r?.known&&Number(r.amount)>0}).length}
+              value={rawExpenses[currentScan.category]?.known&&rawExpenses[currentScan.category]?.amount!==null?String(rawExpenses[currentScan.category].amount):''}
+              unknown={!!scanTouched[currentScan.category]&&rawExpenses[currentScan.category]?.applicability==='applicable'&&!rawExpenses[currentScan.category]?.known}
+              onChange={(value) => {setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:Number(value||0),known:true,applicability:'applicable'}}))}}
+              onUnknown={()=>{setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:null,known:false,applicability:'applicable'}}))}}
+              onNA={currentScan.category==='car'?()=>{setScanTouched(prev=>({...prev,car:true}));setRawExpenses(prev=>({...prev,car:{amount:null,known:false,applicability:'na'}}))}:undefined}
               onDone={() => {
                 if (scanIndex >= applicableScanCategories.length - 1) {
+                  if(flow.household!=='children')setRawExpenses(prev=>({...prev,childEducation:{amount:null,known:false,applicability:'na'}}));
+                  onEvent?.('scan_completed',{scanned:applicableScanCategories.length});
                   setScene('scanComplete');
                   return;
                 }
@@ -545,6 +409,7 @@ export default function RpgBlock1({
               onAnswer={(answer) => {
                 setTypeAnswers((prev) => ({ ...prev, [currentTypeQuestion.id]: answer }));
                 if (typeIndex >= TYPE_QUESTIONS_V31.length - 1) {
+                  onEvent?.('type_completed',{answers:TYPE_QUESTIONS_V31.length});
                   setScene('typeComplete');
                   return;
                 }
@@ -557,6 +422,7 @@ export default function RpgBlock1({
               onContinue={() => {
                 setAppraisalIndex(0);
                 setAppraisalAnswers({});
+                if(!appraisalQuestions.length)onEvent?.('appraisal_completed',{count:0});
                 setScene(appraisalQuestions.length ? 'appraisal' : 'appraisalComplete');
               }}
             />
@@ -574,7 +440,7 @@ export default function RpgBlock1({
                     ...answer,
                   },
                 }));
-                if (appraisalIndex >= appraisalQuestions.length - 1) setScene('appraisalComplete');
+                if (appraisalIndex >= appraisalQuestions.length - 1) {onEvent?.('appraisal_completed',{count:appraisalQuestions.length});setScene('appraisalComplete');}
                 else setAppraisalIndex((i) => i + 1);
               }}
             />
@@ -589,6 +455,7 @@ export default function RpgBlock1({
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
               onStart={() => {
                 setBattleIndex(0);
+                onEvent?.('battle_started',{count:battleTargets.length});
                 setScene(battleTargets.length ? 'battle' : 'battleComplete');
               }}
             />
@@ -659,6 +526,27 @@ function OpeningScene({ onStart }: { onStart: () => void }) {
       </div>
     </div>
   );
+}
+
+
+function ModeSelectScene({value,onChange,onBack}:{value:ToneMode;onChange:(v:ToneMode)=>void;onBack:()=>void}){
+  const [picked,setPicked]=useState<ToneMode|null>(null);
+  const choose=(m:ToneMode)=>{if(picked)return;setPicked(m);onChange(m)};
+  const entries=(Object.keys(TONE_MODES) as ToneMode[]);
+  return <div className="pre-profile mode-select-scene">
+    <img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/>
+    <div className="pre-profile-overlay"/>
+    <button type="button" className="mode-back" onClick={onBack}>← 戻る</button>
+    <section className="mode-card">
+      <div className="pre-question-no">PARTNER SELECT</div>
+      <h2>どのムダギリに斬られる？</h2>
+      <p>診断結果は同じ。言い方だけが変わります。</p>
+      <div className="mode-list">{entries.map(m=>{const x=TONE_MODES[m];return <button key={m} type="button" className={`mode-option ${m==='serious'?'is-recommended':''} ${picked===m?'is-picked':''} ${picked&&picked!==m?'is-dim':''}`} onClick={()=>choose(m)}>
+        {m==='serious'&&<small>おすすめ</small>}<strong>{x.icon} {x.name}</strong><span>{x.choice}</span>
+      </button>})}</div>
+      {picked&&<div className="mode-reaction">{picked==='gentle'?'大丈夫。一緒にムダだけ探そう！':picked==='serious'?'良いものは守る。ムダだけ斬るぞ。':'選んだな？ 後悔しても知らんぞ。'}</div>}
+    </section>
+  </div>
 }
 
 function ProfileScene({
@@ -919,6 +807,15 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
   );
 }
 
+function IncomeCalibrationScene({value,onPick}:{value:AnnualIncomeBand;onPick:(v:AnnualIncomeBand)=>void}){
+ const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
+ return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/><section className="pre-panel pre-complete-panel" style={{paddingTop:22}}>
+  <div className="pre-complete-label">COMPARISON CALIBRATION</div><h2 className="pre-complete-title">より近い家計と比べるために<br/>だいたいの年収を教えて！</h2>
+  <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収。月の手取りとは別に、比較条件の調整だけに使います。</p>
+  <div style={{display:'grid',gap:8,marginTop:14}}>{opts.map(([v,l])=><button key={v} type="button" className={`pre-choice ${value===v?'is-selected':''}`} style={{minHeight:48}} onClick={()=>onPick(v)}>{l}</button>)}</div>
+ </section></div>
+}
+
 const BATTLE_ASSET = './assets/battle1';
 const SCAN_MUDAGIRI_GUIDE = `${ASSET}/MUDAGIRI_PROFILE_Q1.png`;
 const SCAN_MUDAGIRI_RUN = `${ASSET}/MUDAGIRI_PROFILE_Q2.png`;
@@ -933,7 +830,10 @@ function ScanScene({
   total,
   discoveredBefore,
   value,
+  unknown,
   onChange,
+  onUnknown,
+  onNA,
   onDone,
 }: {
   config: ScanCategoryConfig;
@@ -941,7 +841,10 @@ function ScanScene({
   total: number;
   discoveredBefore: number;
   value: string;
+  unknown: boolean;
   onChange: (value: string) => void;
+  onUnknown: () => void;
+  onNA?: () => void;
   onDone: () => void;
 }) {
   const enemy = ENEMY_ASSETS[config.category];
@@ -960,7 +863,7 @@ function ScanScene({
 
   const digits = value.replace(/\D/g, '').slice(0, 7);
   const display = value === '' ? '' : Number(digits || '0').toLocaleString('ja-JP');
-  const canStart = value !== '';
+  const canStart = value !== '' || unknown;
   const amount = Number(digits || '0');
 
   const startScan = () => {
@@ -968,6 +871,10 @@ function ScanScene({
     timers.current.forEach(window.clearTimeout);
     timers.current = [];
 
+    if (unknown) {
+      setPhase('noSpend');
+      return;
+    }
     if (amount === 0) {
       setPhase('noSpend');
       return;
@@ -1002,7 +909,7 @@ function ScanScene({
   const remainingAreas = Math.max(total - completedAreas, 0);
   const discoveredNow = discoveredBefore + (isDetected && amount > 0 ? 1 : 0);
   const progressPercent = Math.round((completedAreas / total) * 100);
-  const hudMode = isTrace ? '気配を追跡' : isReveal ? '反応あり' : isDetected ? '敵影発見' : isNoSpend ? '気配なし' : '探索中';
+  const hudMode = isTrace ? '気配を追跡' : isReveal ? '反応あり' : isDetected ? '敵影発見' : isNoSpend ? (unknown ? '要鑑定' : '気配なし') : '探索中';
   const mudagiriSprite = isInput || isNoSpend
     ? SCAN_MUDAGIRI_GUIDE
     : isTrace
@@ -1094,7 +1001,11 @@ function ScanScene({
           <button type="button" className="pre-primary scan-start" disabled={!canStart} onClick={startScan}>
             気配を探る ▶
           </button>
-          <div className="scan-zero-hint">ない場合は 0 円でOK</div>
+          <div className="scan-input-actions">
+            <button type="button" className="scan-sub-action" onClick={onUnknown}>{unknown?'✓ 金額未把握':'金額が分からない'}</button>
+            {onNA&&<button type="button" className="scan-sub-action" onClick={()=>{onNA();setPhase('noSpend')}}>車は持ってない</button>}
+          </div>
+          <div className="scan-zero-hint">実際に0円の月だけ 0 円を入力</div>
         </section>
       ) : (
         <section className="battle-panel scan-result-panel">
@@ -1102,11 +1013,11 @@ function ScanScene({
             {isTrace && '……気配を捕捉した。'}
             {isReveal && '来るぞ……！'}
             {isDetected && '見つけた。こいつはあとで判定するぞ。'}
-            {isNoSpend && 'ここには敵の気配なし。次を探すぞ！'}
+            {isNoSpend && (unknown ? '金額未把握。ムダとは決めず、要鑑定に回すぞ。' : 'ここには敵の気配なし。次を探すぞ！')}
           </div>
           <div className="battle-status">
             <span>{config.question.replace('毎月の', '').replace('はいくら？', '')}</span>
-            <strong>¥{amount.toLocaleString('ja-JP')} / 月</strong>
+            <strong>{unknown?'金額未把握':`¥${amount.toLocaleString('ja-JP')} / 月`}</strong>
           </div>
           {(isTrace || isReveal) && (
             <div className="battle-loading">
@@ -1442,7 +1353,7 @@ function AdditionalAppraisalScene({
 function AppraisalCompleteScene({
   judgements,onContinue,
 }:{
-  judgements:FinalEnemyJudgement[]; onContinue:()=>void;
+  judgements:FinalCategoryV3[]; onContinue:()=>void;
 }) {
   const counts = {
     battle:judgements.filter(x=>x.status==='battle').length,
@@ -1481,7 +1392,7 @@ function AppraisalCompleteScene({
 function BattleIntroScene({
   targets,reviewCount,onStart,
 }:{
-  targets:FinalEnemyJudgement[]; reviewCount:number; onStart:()=>void;
+  targets:FinalCategoryV3[]; reviewCount:number; onStart:()=>void;
 }) {
   return (
     <div className="scan-scene battle-intro-scene">
@@ -1509,7 +1420,7 @@ function BattleIntroScene({
   );
 }
 
-function ComboBattleScene({ targets,onDone }:{ targets:FinalEnemyJudgement[]; onDone:()=>void }) {
+function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone:()=>void }) {
   const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
   const [pose,setPose]=useState<'ready'|'swing'|'follow'>('ready');
   const [hitIndex,setHitIndex]=useState(-1);
@@ -3345,6 +3256,8 @@ const CSS = String.raw`
  .combo-enemies{top:14%;height:40%}.combo-mudagiri{bottom:35%;width:min(29vw,120px)}.combo-panel{padding:9px 10px 8px}.combo-panel h2{font-size:19px}
 }
 @media(prefers-reduced-motion:reduce){.combo-mudagiri.is-attacking,.combo-enemy-slot.is-hit,.combo-white-flash{animation:none!important}}
+
+.mode-back{position:absolute;z-index:30;left:14px;top:max(16px,env(safe-area-inset-top));min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,20,30,.72);color:#fff;font-weight:900}.mode-card{position:absolute;z-index:20;left:16px;right:16px;top:50%;transform:translateY(-48%);padding:20px 16px;border:1.5px solid #f1c92f;border-radius:18px;background:rgba(0,27,35,.965);box-shadow:0 18px 38px rgba(0,0,0,.42);text-align:center}.mode-card h2{margin:6px 0;font-size:clamp(24px,6.8vw,30px)}.mode-card>p{margin:0 0 14px;color:rgba(255,255,255,.72);font-size:12px}.mode-list{display:grid;gap:9px}.mode-option{position:relative;min-height:76px;padding:12px;border:1px solid rgba(255,214,47,.42);border-radius:12px;background:rgba(15,48,66,.94);color:#fff;text-align:left;transition:.16s}.mode-option>small{position:absolute;right:9px;top:7px;color:#ffd42b;font-size:9px}.mode-option strong{display:block;font-size:16px}.mode-option span{display:block;margin-top:5px;color:rgba(255,255,255,.7);font-size:11px}.mode-option.is-picked{transform:scale(1.02);border-color:#ffd42b}.mode-option.is-dim{opacity:.35}.mode-reaction{margin-top:12px;padding:10px;border-radius:9px;background:rgba(20,53,73,.78);font-size:12px;font-weight:900}
 
 `;
 
