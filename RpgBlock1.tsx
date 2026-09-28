@@ -35,13 +35,14 @@ type AppraisalAnswer = {
   selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
   subUnusedAmount?: number;
   subUsage?: 'none'|'one'|'several'|'unknown';
+  carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
 type AppraisalQuestion = {
   category: EnemyAssetCategory;
   reason: string;
   question: string;
-  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage';
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'carNeed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -266,6 +267,7 @@ export default function RpgBlock1({
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
+    if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
     const rent=actual('rent');
     if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
     if(actual('insurance')>0){
@@ -1274,6 +1276,12 @@ function AdditionalAppraisalScene({
       {label:'1つくらいありそう',sub:'使ってない契約があるかも',patch:{subUsage:'one'},kind:'review',feedback:'要確認'},
       {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
       {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
+    ],
+    carNeed:[
+      {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
+      {label:'あるとかなり便利',sub:'利用頻度も高い',patch:{carNeed:'useful'},kind:'protect',feedback:'守る支出'},
+      {label:'負担が気になってる',sub:'維持費を軽くしたい',patch:{carNeed:'burden'},kind:'review',feedback:'見直し候補'},
+      {label:'なくても困らないかも',sub:'手放す・減らす余地がある',patch:{carNeed:'notNeeded'},kind:'review',feedback:'見直し候補'},
     ],
     rent:[
       {label:'かなり負担を感じる',sub:'家計を圧迫している',patch:{rentPreference:'burdenHigh'}},
