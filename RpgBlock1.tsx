@@ -5,7 +5,7 @@ import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadB
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
-import { resolveComparableV1 } from './comparable-resolver-v1';
+import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -35,6 +35,7 @@ type AppraisalAnswer = {
   selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
   subUnusedAmount?: number;
   subUsage?: 'none'|'one'|'several'|'unknown';
+  educationStage?: EducationStage;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
@@ -42,7 +43,7 @@ type AppraisalQuestion = {
   category: EnemyAssetCategory;
   reason: string;
   question: string;
-  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'carNeed';
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'educationStage'|'carNeed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -236,6 +237,7 @@ export default function RpgBlock1({
   const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>({});
   const [appraisalIndex, setAppraisalIndex] = useState(0);
+  const educationStage=appraisalAnswers.childEducation?.educationStage;
   const [battleIndex, setBattleIndex] = useState(0);
 
   const question = QUESTIONS[questionIndex];
@@ -250,8 +252,8 @@ export default function RpgBlock1({
   const incomeNumber = Number(flow.monthlyTakeHome || '0') || 0;
   const comparisonBundle = useMemo(()=>buildComparableV3({
     raw:normalizedRaw,household:flow.household==='single'?'single':'multi',
-    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand
-  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand]);
+    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand,educationStage
+  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand,educationStage]);
   const comparable=comparisonBundle.comparable;
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
@@ -259,7 +261,7 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
-    if(actual('sub')>0)qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
+    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',reason:'ここだけ金額が分かれば、推測ではなく改善額として確定できます。',question:'使っていない分は、月いくらくらい？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
       if(actual(category)>0&&c!==null&&actual(category)>c){
@@ -274,7 +276,7 @@ export default function RpgBlock1({
       const reason='保険料の高さだけではムダ判定しません。保障の把握・見直し状況をまとめて確認します。';
       qs.push({category:'insurance',kind:'insuranceSummary',reason,question:'今の保険、どれくらい把握・見直しできてる？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
+    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationStage',reason:'教育段階が分かると、文科省の対応する参考値と比較できます。',question:'お子さんの教育段階で一番近いのは？'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
   },[incomeNumber,normalizedRaw,comparable,flow.household]);
@@ -1276,6 +1278,16 @@ function AdditionalAppraisalScene({
       {label:'1つくらいありそう',sub:'使ってない契約があるかも',patch:{subUsage:'one'},kind:'review',feedback:'要確認'},
       {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
       {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
+    ],
+    educationStage:[
+      {label:'幼稚園・保育相当（公立）',sub:'公立幼稚園の参考値で比較',patch:{educationStage:'publicKindergarten'}},
+      {label:'幼稚園・保育相当（私立）',sub:'私立幼稚園の参考値で比較',patch:{educationStage:'privateKindergarten'}},
+      {label:'小学校（公立）',sub:'公立小学校の参考値で比較',patch:{educationStage:'publicElementary'}},
+      {label:'小学校（私立）',sub:'私立小学校の参考値で比較',patch:{educationStage:'privateElementary'}},
+      {label:'中学校（公立）',sub:'公立中学校の参考値で比較',patch:{educationStage:'publicJuniorHigh'}},
+      {label:'中学校（私立）',sub:'私立中学校の参考値で比較',patch:{educationStage:'privateJuniorHigh'}},
+      {label:'高校（公立）',sub:'公立高校の参考値で比較',patch:{educationStage:'publicHigh'}},
+      {label:'高校（私立）',sub:'私立高校の参考値で比較',patch:{educationStage:'privateHigh'}},
     ],
     carNeed:[
       {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
