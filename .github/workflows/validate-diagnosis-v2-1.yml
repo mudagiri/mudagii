@@ -5,6 +5,7 @@ on:
     branches:
       - diagnosis-v2-1-frozen
       - qa-mobile-ui-v1
+      - diagnosis-result-v3-2
   pull_request:
     branches:
       - main
