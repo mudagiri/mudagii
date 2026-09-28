@@ -41,7 +41,7 @@ type AppraisalQuestion = {
   category: EnemyAssetCategory;
   reason: string;
   question: string;
-  kind: 'satisfaction'|'rent'|'insurancePurpose'|'insuranceLastReview'|'insuranceLifeChange'|'insurancePublicBenefits'|'insuranceDuplicate'|'education'|'selfDevelopment'|'subUsage';
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -269,14 +269,8 @@ export default function RpgBlock1({
     const rent=actual('rent');
     if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
     if(actual('insurance')>0){
-      const reason='保険料だけでは必要・不要を判断できません。保障の中身を5つだけ鑑定します。';
-      qs.push(
-        {category:'insurance',kind:'insurancePurpose',reason,question:'Q1. 何のための保障か説明できる？'},
-        {category:'insurance',kind:'insuranceLastReview',reason,question:'Q2. 最後に保障内容を見直したのは？'},
-        {category:'insurance',kind:'insuranceLifeChange',reason,question:'Q3. 家族や生活の変化後に見直した？'},
-        {category:'insurance',kind:'insurancePublicBenefits',reason,question:'Q4. 公的保障も踏まえて設計してる？'},
-        {category:'insurance',kind:'insuranceDuplicate',reason,question:'Q5. 似た保障の重複は確認できてる？'},
-      );
+      const reason='保険料の高さだけではムダ判定しません。保障の把握・見直し状況をまとめて確認します。';
+      qs.push({category:'insurance',kind:'insuranceSummary',reason,question:'今の保険、どれくらい把握・見直しできてる？'});
     }
     if(flow.household==='children'&&actual('childEducation')>0)qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
@@ -1287,35 +1281,11 @@ function AdditionalAppraisalScene({
       {label:'今の家なら妥当',sub:'金額には納得している',patch:{rentPreference:'reasonable'}},
       {label:'今の住環境を優先',sub:'高くてもここは守りたい',patch:{rentPreference:'protect'}},
     ],
-    insurancePurpose:[
-      {label:'説明できる',sub:'目的と主な保障が明確',patch:{insurancePurpose:'clear'}},
-      {label:'だいたい分かる',sub:'主な目的は把握',patch:{insurancePurpose:'mostly'}},
-      {label:'よく分からない',sub:'何に備えているか曖昧',patch:{insurancePurpose:'unclear'}},
-    ],
-    insuranceLastReview:[
-      {label:'1年以内',sub:'最近見直した',patch:{insuranceLastReview:'within1y'}},
-      {label:'1〜3年以内',sub:'比較的新しい',patch:{insuranceLastReview:'1to3y'}},
-      {label:'3年以上前',sub:'今とズレている可能性',patch:{insuranceLastReview:'over3y'}},
-      {label:'したことない',sub:'契約時のまま',patch:{insuranceLastReview:'never'}},
-      {label:'分からない',sub:'いつ見直したか不明',patch:{insuranceLastReview:'unknown'}},
-    ],
-    insuranceLifeChange:[
-      {label:'大きな変化なし',sub:'前提は変わっていない',patch:{insuranceLifeChange:'none'}},
-      {label:'変化後に見直した',sub:'今の状況に合わせた',patch:{insuranceLifeChange:'reviewed'}},
-      {label:'変化したが未見直し',sub:'昔の前提のままかも',patch:{insuranceLifeChange:'notReviewed'}},
-      {label:'分からない',sub:'見直したか曖昧',patch:{insuranceLifeChange:'unknown'}},
-    ],
-    insurancePublicBenefits:[
-      {label:'踏まえている',sub:'公的保障も確認済み',patch:{insurancePublicBenefits:'considered'}},
-      {label:'たぶん',sub:'詳しくは説明できない',patch:{insurancePublicBenefits:'maybe'}},
-      {label:'踏まえていない',sub:'民間保険だけで考えた',patch:{insurancePublicBenefits:'not'}},
-      {label:'分からない',sub:'確認した記憶がない',patch:{insurancePublicBenefits:'unknown'}},
-    ],
-    insuranceDuplicate:[
-      {label:'重複なしを確認',sub:'似た保障は整理済み',patch:{insuranceDuplicate:'none'}},
-      {label:'意図した重複',sub:'理由があって重ねている',patch:{insuranceDuplicate:'intentional'}},
-      {label:'重複あるかも',sub:'似た保障が複数ありそう',patch:{insuranceDuplicate:'possible'}},
-      {label:'分からない',sub:'比較したことがない',patch:{insuranceDuplicate:'unknown'}},
+    insuranceSummary:[
+      {label:'かなり把握している',sub:'目的・公的保障・重複まで確認し、最近見直した',patch:{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'},kind:'protect',feedback:'守る支出'},
+      {label:'だいたい把握している',sub:'目的は分かるが、細かい保障までは曖昧',patch:{insurancePurpose:'mostly',insuranceLastReview:'1to3y',insuranceLifeChange:'none',insurancePublicBenefits:'maybe',insuranceDuplicate:'unknown'},kind:'review',feedback:'要確認'},
+      {label:'しばらく見直してない',sub:'契約時から内容がほぼ同じ',patch:{insurancePurpose:'mostly',insuranceLastReview:'over3y',insuranceLifeChange:'notReviewed',insurancePublicBenefits:'maybe',insuranceDuplicate:'possible'},kind:'review',feedback:'見直し候補'},
+      {label:'よく分からない',sub:'何にいくら備えているか曖昧',patch:{insurancePurpose:'unclear',insuranceLastReview:'unknown',insuranceLifeChange:'unknown',insurancePublicBenefits:'unknown',insuranceDuplicate:'unknown'},kind:'review',feedback:'確認優先度 高'},
     ],
     education:[
       {label:'かなり見直したい',sub:'負担が大きい',patch:{educationPreference:'reviewHigh'}},
@@ -1342,7 +1312,7 @@ function AdditionalAppraisalScene({
       <div className="scan-shade" aria-hidden="true" />
       <header className="appraisal-hud">
         <span>追加鑑定</span>
-        <b>未鑑定 {remaining}体</b>
+        <b>{current} / {total}</b>
       </header>
       <img className="appraisal-enemy" src={enemy.normal} alt={enemy.name} />
       <img className="appraisal-mudagiri is-small" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
@@ -1364,22 +1334,16 @@ function AdditionalAppraisalScene({
                     ? (o.patch.satisfaction === 'verySatisfied' ? 'protect' : 'battle')
                     : item.kind === 'rent'
                       ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'review')
-                      : item.kind.startsWith('insurance')
-                        ? (
-                            item.kind === 'insuranceDuplicate' &&
-                            o.patch.insuranceDuplicate !== 'possible' &&
-                            o.patch.insuranceDuplicate !== 'unknown'
-                              ? 'protect'
-                              : 'review'
-                          )
+                      : item.kind === 'insuranceSummary'
+                        ? (o.kind ?? 'review')
                         : item.kind === 'education'
                           ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'review')
                           : item.kind === 'selfDevelopment'
                             ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
                             : 'review'
                 );
-              const label = o.feedback ?? (inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'鑑定完了':'守る支出'):inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
-              const detail = inferredKind==='protect'?(item.kind==='insuranceDuplicate'?'5項目を踏まえて最終判定する':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
+              const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'討伐候補':'要確認');
+              const detail = inferredKind==='protect'?(item.kind==='insuranceSummary'?'保障の把握・見直し状況は良好':'ここは本人の価値を優先'):inferredKind==='safe'?'無理に斬る必要なし':inferredKind==='battle'?'改善余地をチェック':'金額だけでは断定しない';
               return (
                 <button type="button" key={i} className="appraisal-option" onClick={()=>commit(o.patch,inferredKind,label,detail)}>
                   <strong>{o.label}</strong><span>{o.sub}</span>
@@ -1828,8 +1792,8 @@ const CSS = String.raw`
   position: absolute;
   z-index: 24;
   left: 5px;
-  bottom: 35.8%;
-  width: min(41vw, 180px);
+  bottom: 41.5%;
+  width: min(36vw, 158px);
   max-height: 29dvh;
   object-fit: contain;
   object-position: left bottom;
@@ -1839,11 +1803,11 @@ const CSS = String.raw`
   transform-origin: 50% 100%;
 }
 
-.pre-q1 .pre-profile-mudagiri { width: min(39vw, 170px); left: 7px; bottom: 34.9%; }
-.pre-q2 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; transform: rotate(-2deg); }
-.pre-q3 .pre-profile-mudagiri { width: min(40vw, 174px); left: 5px; bottom: 35.9%; }
-.pre-q4 .pre-profile-mudagiri { width: min(42vw, 182px); left: 0; bottom: 36.0%; }
-.pre-q5 .pre-profile-mudagiri { width: min(43vw, 186px); left: 4px; bottom: 36.2%; }
+.pre-q1 .pre-profile-mudagiri { width: min(35vw, 154px); left: 7px; bottom: 40.8%; }
+.pre-q2 .pre-profile-mudagiri { width: min(35vw, 154px); left: 5px; bottom: 41.2%; transform: rotate(-2deg); }
+.pre-q3 .pre-profile-mudagiri { width: min(35vw, 154px); left: 5px; bottom: 41.2%; }
+.pre-q4 .pre-profile-mudagiri { width: min(37vw, 162px); left: 0; bottom: 41.2%; }
+.pre-q5 .pre-profile-mudagiri { width: min(38vw, 166px); left: 4px; bottom: 41.4%; }
 
 .pre-panel {
   position: absolute;
@@ -2914,26 +2878,26 @@ const CSS = String.raw`
 .type-pair{
   position:relative;
   display:grid;
-  grid-template-columns:1fr;
-  gap:7px;
-  margin-top:12px;
+  grid-template-columns:1fr 1fr;
+  gap:28px;
+  margin-top:14px;
 }
 .type-side{
   position:relative;
-  min-height:58px;
+  min-height:78px;
   display:flex;
   align-items:center;
-  padding:10px 12px 10px 48px;
+  padding:12px 10px 12px 43px;
   border:1px solid rgba(255,255,255,.12);
   border-radius:12px;
   background:rgba(18,53,68,.72);
 }
 .type-side-badge{
   position:absolute;
-  left:11px;
+  left:9px;
   top:50%;
-  width:27px;
-  height:27px;
+  width:29px;
+  height:29px;
   display:grid;
   place-items:center;
   transform:translateY(-50%);
@@ -2945,8 +2909,8 @@ const CSS = String.raw`
 }
 .type-side strong{
   color:#fff;
-  font-size:16px;
-  line-height:1.38;
+  font-size:17px;
+  line-height:1.32;
   font-weight:950;
 }
 .type-pair-vs{
@@ -2955,12 +2919,12 @@ const CSS = String.raw`
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  min-width:34px;
-  padding:3px 6px;
+  min-width:38px;
+  padding:5px 7px;
   border-radius:999px;
   background:#071d28;
   color:rgba(255,255,255,.55);
-  font-size:10px;
+  font-size:12px;
   font-weight:1000;
   text-align:center;
   letter-spacing:.08em;
@@ -2989,8 +2953,8 @@ const CSS = String.raw`
   background:rgba(5,25,35,.66);
 }
 .type-scale-option{
-  min-height:54px;
-  padding:8px 7px;
+  min-height:66px;
+  padding:10px 8px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:10px;
   background:rgba(18,53,68,.78);
@@ -3001,8 +2965,8 @@ const CSS = String.raw`
 }
 .type-scale-option span{
   display:block;
-  font-size:14px;
-  line-height:1.15;
+  font-size:15px;
+  line-height:1.2;
   font-weight:1000;
 }
 .type-scale-option small{
@@ -3168,16 +3132,16 @@ const CSS = String.raw`
 .appraisal-mudagiri.is-small{width:min(32vw,136px);top:18%}
 .appraisal-card,.battle-intro-card{position:absolute;z-index:25;left:18px;right:18px;bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));padding:20px 18px 18px;border:1.5px solid #f0c92f;border-radius:18px;background:rgba(5,20,34,.965);box-shadow:0 15px 34px rgba(0,0,0,.44)}
 .appraisal-question-card{padding-top:17px}
-.appraisal-kicker{color:#ffd42b;font-size:12px;font-weight:1000;letter-spacing:.08em}
+.appraisal-kicker{color:#ffd42b;font-size:14px;font-weight:1000;letter-spacing:.08em}
 .appraisal-card h2,.battle-intro-card h2{margin:8px 0 0;color:#fff;font-size:clamp(25px,7vw,31px);line-height:1.18;font-weight:1000;letter-spacing:-.035em}
-.appraisal-card h3{margin:12px 0 0;color:#fff;font-size:clamp(20px,5.5vw,24px);line-height:1.32;font-weight:1000}
-.appraisal-reason{margin:10px 0 0;padding:11px 12px;border-radius:11px;background:rgba(20,53,73,.78);color:rgba(255,255,255,.83);font-size:14px;font-weight:800;line-height:1.5}
+.appraisal-card h3{margin:12px 0 0;color:#fff;font-size:clamp(23px,6.2vw,28px);line-height:1.32;font-weight:1000}
+.appraisal-reason{margin:10px 0 0;padding:11px 12px;border-radius:11px;background:rgba(20,53,73,.78);color:rgba(255,255,255,.83);font-size:15px;font-weight:800;line-height:1.5}
 .appraisal-reason strong{color:#fff}
 .appraisal-money{margin-top:13px}
 .appraisal-next{margin-top:14px;min-height:54px}.appraisal-next:disabled{opacity:.45;cursor:not-allowed}
 .appraisal-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
-.appraisal-option{min-height:67px;padding:10px 9px;border:1px solid rgba(255,214,47,.45);border-radius:11px;background:rgba(15,48,66,.92);color:#fff;text-align:left;cursor:pointer}
-.appraisal-option strong{display:block;font-size:14px;font-weight:1000;line-height:1.25}.appraisal-option span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:10px;font-weight:800;line-height:1.25}
+.appraisal-option{min-height:82px;padding:13px 11px;border:1px solid rgba(255,214,47,.45);border-radius:11px;background:rgba(15,48,66,.92);color:#fff;text-align:left;cursor:pointer}
+.appraisal-option strong{display:block;font-size:16px;font-weight:1000;line-height:1.25}.appraisal-option span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:12px;font-weight:800;line-height:1.3}
 .appraisal-option:active{transform:translateY(1px);background:rgba(28,70,89,.98)}
 .judgement-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .judgement-grid div{display:flex;align-items:baseline;justify-content:space-between;padding:10px 11px;border-radius:10px;background:rgba(20,53,73,.78)}
@@ -3301,6 +3265,33 @@ const CSS = String.raw`
 @media(prefers-reduced-motion:reduce){.combo-mudagiri.is-attacking,.combo-enemy-slot.is-hit,.combo-white-flash{animation:none!important}}
 
 .mode-back{position:absolute;z-index:30;left:14px;top:max(16px,env(safe-area-inset-top));min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,20,30,.72);color:#fff;font-weight:900}.mode-card{position:absolute;z-index:20;left:16px;right:16px;top:50%;transform:translateY(-48%);padding:20px 16px;border:1.5px solid #f1c92f;border-radius:18px;background:rgba(0,27,35,.965);box-shadow:0 18px 38px rgba(0,0,0,.42);text-align:center}.mode-card h2{margin:6px 0;font-size:clamp(24px,6.8vw,30px)}.mode-card>p{margin:0 0 14px;color:rgba(255,255,255,.72);font-size:12px}.mode-list{display:grid;gap:9px}.mode-option{position:relative;min-height:76px;padding:12px;border:1px solid rgba(255,214,47,.42);border-radius:12px;background:rgba(15,48,66,.94);color:#fff;text-align:left;transition:.16s}.mode-option>small{position:absolute;right:9px;top:7px;color:#ffd42b;font-size:9px}.mode-option strong{display:block;font-size:16px}.mode-option span{display:block;margin-top:5px;color:rgba(255,255,255,.7);font-size:11px}.mode-option.is-picked{transform:scale(1.02);border-color:#ffd42b}.mode-option.is-dim{opacity:.35}.mode-reaction{margin-top:12px;padding:10px;border-radius:9px;background:rgba(20,53,73,.78);font-size:12px;font-weight:900}
+
+/* ===== MOBILE QA V1: real-device readability overrides ===== */
+@media(max-height:760px){
+  .type-quiz-card{left:14px;right:14px;padding:13px 13px 10px}
+  .type-quiz-card h2{font-size:clamp(21px,5.8vw,25px)}
+  .type-pair{grid-template-columns:1fr 1fr;gap:28px;margin-top:10px}
+  .type-side{min-height:68px;padding:9px 8px 9px 39px}
+  .type-side-badge{left:7px;width:27px;height:27px;font-size:14px}
+  .type-side strong{font-size:14px;line-height:1.28}
+  .type-pair-vs{font-size:10px;min-width:36px;padding:4px 5px}
+  .type-quiz-helper{margin-top:8px;font-size:12px}
+  .type-quiz-helper strong{font-size:13px}
+  .type-scale{gap:7px;margin-top:7px;padding:6px}
+  .type-scale-option{min-height:58px;padding:7px 6px}
+  .type-scale-option span{font-size:13px}
+  .type-scale-option small{font-size:10px}
+  .type-quiz-foot{font-size:11px}
+
+  .appraisal-card{left:14px;right:14px;padding:16px 15px 14px}
+  .appraisal-kicker{font-size:13px}
+  .appraisal-card h3{font-size:clamp(21px,5.8vw,25px)}
+  .appraisal-reason{font-size:14px;padding:9px 10px}
+  .appraisal-options{gap:8px;margin-top:11px}
+  .appraisal-option{min-height:70px!important;padding:9px 9px}
+  .appraisal-option strong{font-size:14px!important;line-height:1.3}
+  .appraisal-option span{font-size:11px!important;line-height:1.3}
+}
 
 `;
 
