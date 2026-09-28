@@ -13,7 +13,7 @@ type Metrics={cases:number;battles:number;zeroBattle:number;over3Battle:number;p
 const m:Metrics={cases:0,battles:0,zeroBattle:0,over3Battle:0,protect:0,review:0,safe:0,confirmedCases:0,confirmedYen:0,violations:0};
 const failures:string[]=[];
 const byCategory=Object.fromEntries(CATS.map(c=>[c,{battle:0,protect:0,review:0,safe:0,confirmed:0}])) as Record<Category,{battle:number;protect:number;review:number;safe:number;confirmed:number}>;
-const byBasis:Record<string,number>={confirmed:0,benchmark_plus_intent:0,benchmark_check:0,none:0};
+const byBasis:Record<string,number>={confirmed:0,appraisal_review:0,benchmark_check:0,none:0};
 const battleHistogram=Array.from({length:13},()=>0);
 
 for(let id=1;id<=10000;id++){
