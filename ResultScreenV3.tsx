@@ -55,6 +55,20 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    {x.appraisalSummary&&<div className="rv3-answer">あなたの回答：<b>{x.appraisalSummary}</b></div>}<p>{x.reason}</p>
   </article>)}</section>}
 
+  <section className="rv3-message"><h3>大切なものは守る。見直す支出は理由まで確認する。</h3>
+   <p>高いからといって、全部をムダとは判定していません。</p>
+   {vm.rows.filter((x:any)=>x.status==='protect').map((x:any)=><div className="rv3-explain" key={`p-${x.category}`}>🛡️ <b>{x.label}</b><span>{x.reason}</span></div>)}
+   {vm.rows.filter((x:any)=>x.status==='review').map((x:any)=><div className="rv3-explain" key={`r-${x.category}`}>🔍 <b>{x.label}</b><span>{x.reason}</span></div>)}
+   <p>見直しはゴールじゃない。実際に減らせたお金を、大切なものに使おう。</p>
+  </section>
+
+  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?'まず1つだけ、ここを確認。':'今の家計を守るために。'}</h3>
+   {vm.firstQuest?<><p>{vm.firstQuest.status==='battle'?'優先して見直す項目':'まだ判断に情報が必要な項目'}</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.label}</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">あなたの回答「{vm.firstQuest.appraisalSummary}」をもとに選びました。</p>}</>:<p>優先して見直す項目は見つかりませんでした。今の状態を維持するためのチェックリストを用意します。</p>}
+   <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
+   <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
+   <small>✓ 診断結果を保存　✓ 未確定項目の確認手順　✓ 無料<br/>相談は任意です。公式LINEの友だち追加が必要です</small>
+  </section>
+
   <section className="rv3-section"><h3>📖 家計モンスター図鑑</h3><p className="rv3-muted">12項目すべての鑑定結果</p>
    <div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}>
     <button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.known?`¥${yen(x.amount)}`:x.status==='na'?'対象外':'金額未把握'}　⌄</span></button>
@@ -69,20 +83,6 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
       <div><b>次に確認：</b>{x.nextCheck}</div>
     </div>}
    </div>)}</div>
-  </section>
-
-  <section className="rv3-message"><h3>大切なものは守る。見直す支出は理由まで確認する。</h3>
-   <p>高いからといって、全部をムダとは判定していません。</p>
-   {vm.rows.filter((x:any)=>x.status==='protect').map((x:any)=><div className="rv3-explain" key={`p-${x.category}`}>🛡️ <b>{x.label}</b><span>{x.reason}</span></div>)}
-   {vm.rows.filter((x:any)=>x.status==='review').map((x:any)=><div className="rv3-explain" key={`r-${x.category}`}>🔍 <b>{x.label}</b><span>{x.reason}</span></div>)}
-   <p>見直しはゴールじゃない。実際に減らせたお金を、大切なものに使おう。</p>
-  </section>
-
-  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?'まず1つだけ、ここを確認。':'今の家計を守るために。'}</h3>
-   {vm.firstQuest?<><p>{vm.firstQuest.status==='battle'?'優先して見直す項目':'まだ判断に情報が必要な項目'}</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.label}</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">あなたの回答「{vm.firstQuest.appraisalSummary}」をもとに選びました。</p>}</>:<p>優先して見直す項目は見つかりませんでした。今の状態を維持するためのチェックリストを用意します。</p>}
-   <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
-   <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
-   <small>✓ 診断結果を保存　✓ 未確定項目の確認手順　✓ 無料<br/>相談は任意です。公式LINEの友だち追加が必要です</small>
   </section>
   </div>
  </div></main></>
