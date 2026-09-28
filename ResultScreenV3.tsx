@@ -22,7 +22,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  return <>
  <style>{CSS}</style>
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'家計に潜むムダを討伐した！'}</h1><div className="rv3-count">⚔️ {vm.counts.battle}　🛡️ {vm.counts.protect}　🔍 {vm.counts.review}</div></section>
+  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'見直しクエスト発見！'}</h1><div className="rv3-count">⚔️ {vm.counts.battle}　🛡️ {vm.counts.protect}　🔍 {vm.counts.review}</div></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
@@ -35,10 +35,16 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   </section>
 
   <section className="rv3-reward">
-   <div className="rv3-kicker">今回見つかった改善余地</div>
-   <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
-   <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
-   <p className="rv3-note">今回の診断で、具体的に不要・削減可能と確認できた金額だけを表示しています。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
+   {vm.improvement.monthly>0?<>
+    <div className="rv3-kicker">今回確定できた改善額</div>
+    <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
+    <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
+   </>:<>
+    <div className="rv3-kicker">改善額はまだ未確定</div>
+    <h3>見直し候補はある。でも、推測で金額は出さない。</h3>
+    <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p>
+   </>}
+   <p className="rv3-note">具体的に不要・削減可能と確認できた実額だけを改善額に含めます。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>
 
   {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ なぜ斬られた？</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
@@ -56,7 +62,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
       <div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>
       <div><b>比較：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>
       {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額ではありません</small></div>}
-      <div><b>診断state：</b>{x.diagnosisState??'—'}</div>
+      <div><b>診断状況：</b>{x.diagnosisState==='CONFIRMED'?'改善額まで確認済み':x.diagnosisState==='AUDIT'?'内容確認が必要':x.diagnosisState==='DETAIL'?'追加条件を確認':x.diagnosisState==='CHECK'?'比較目安を要確認':x.diagnosisState==='NORMAL'?'問題なし':'—'}</div>
       <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 討伐対象':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
       <div><b>確定改善額：</b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`¥${yen(x.confirmedSaving)}/月`:'未確定'}</div>
       <div><b>判定理由：</b>{x.reason}</div>
