@@ -32,6 +32,7 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false,battleBasis:'confirmed'};
 
  if(category==='sub'){
+   if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false,battleBasis:'confirmed'};
    if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false,battleBasis:'none'};
    if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
