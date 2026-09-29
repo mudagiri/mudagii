@@ -79,6 +79,39 @@ Opening/公開metadataで伝えるのは **家計診断 / RPGとして楽しめ�
 
 ---
 
+## 0.7 RELEASE FROZEN BOUNDARY — 2026-09-30
+
+現行診断プロダクトは以下をFROZEN境界とします。UX改善・軽量化・コピー調整でも、明示的な再設計判断なしに変更しません。
+
+### FROZEN（勝手に変更しない）
+- 12カテゴリと各カテゴリの正本benchmark / AUDIT方針
+- benchmark gap ≠ ムダ / 改善額、confirmed reducibleのみ改善額へ算入する原則
+- PROFILE V4の質問構成・属性用途
+- 初期12カテゴリScanは金額のみ、追加質問はAppraisalで条件分岐
+- MONEY TYPE V3.1: 8問 / 3軸 / 8タイプ、scoring・tie-break・type code
+- ResultでTypeをidentity/share rewardとして先に見せ、LINEを後段optional utilityにする順序
+- Shareに収入・支出金額・地域を含めないprivacy原則
+- 48 canonical enemy PNGs = 12カテゴリ × trace / normal / defeated / escape
+
+### 改善可能（FROZEN原則を壊さない範囲）
+- CSS・レスポンシブ・safe area・tap target
+- preload / lazy loading / asset圧縮など表示速度改善
+- accessibility / reduced-motion
+- 計測イベントの追加（既存意味を変更しない）
+- 誤解を減らすコピー微修正
+
+### Release gate
+同一HEADで以下をすべて通過してからrelease/FROZEN扱いにする。
+1. `npm run build`
+2. `npm run qa:persona`
+3. `npm run qa:type`
+4. `npm run qa:10k`
+5. GitHub Pages Deploy success
+
+現行Type UIはA｜VS｜Bの3列構造で中央重なりを防止する。旧2列+absolute VSへ戻さない。
+
+---
+
 ## Historical deployment notes
 以下は既存の公開・GAS手順を保全したものです。CURRENT SOTと衝突するV1/V2表現はCURRENT SOTを優先してください。
 
