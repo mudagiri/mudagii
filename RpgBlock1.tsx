@@ -2578,42 +2578,6 @@ const CSS = String.raw`
   .battle-trace,.battle-enemy,.battle-mudagiri,.battle-fx,.battle-white-flash,.battle-loading-dot,.battle-phase-action.battle-defeat,.scan-mudagiri,.scan-encounter-pop{animation:none!important;transition:none!important}
 }
 
-/* === PROFILE CTA TAP-ANCHOR PATCH 2026-09-25 === */
-.pre-profile .pre-panel,
-.pre-complete .pre-panel {
-  --profile-cta-bottom: max(14px, calc(env(safe-area-inset-bottom) + 8px));
-  padding-bottom: 82px !important;
-}
-
-.pre-profile .pre-fixed-profile-cta,
-.pre-complete .pre-fixed-profile-cta {
-  position: absolute !important;
-  left: 16px !important;
-  right: 16px !important;
-  bottom: var(--profile-cta-bottom) !important;
-  width: auto !important;
-  min-height: 56px !important;
-  margin: 0 !important;
-}
-
-.pre-profile .pre-input-wrap {
-  margin-bottom: 0 !important;
-}
-
-@media (max-height: 720px) {
-  .pre-profile .pre-panel,
-  .pre-complete .pre-panel {
-    padding-bottom: 76px !important;
-  }
-
-  .pre-profile .pre-fixed-profile-cta,
-  .pre-complete .pre-fixed-profile-cta {
-    min-height: 56px !important;
-    bottom: max(10px, calc(env(safe-area-inset-bottom) + 6px)) !important;
-  }
-}
-
-
 /* ===== SCAN V2.1 COMMON : 全12敵 =====
    NORMAL画像を黒シルエット化してTRACEを生成。
    TRACE→NORMALで輪郭・位置・サイズを固定。
