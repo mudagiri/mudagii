@@ -90,7 +90,10 @@ function reason(x:FinalCategoryV3):string{
    if(x.appraisal?.dailyPersistence==='persistent')return '比較目安を上回る日用品費が2〜3か月続いているため、明細確認の対象です。差額は改善額には含めていません。';
    return '単月の金額だけではムダと断定せず、継続性を追加確認します。';
   }
-  if(x.category==='beautyFashion'&&x.comparable===null)return '複数世帯向けの根拠十分な比較値を置かず、あなた自身の価値判断で確認しています。改善額はまだ確定していません。';
+  if(x.category==='beautyFashion'&&x.comparable===null){
+   const intent=appraisalIntent(x);
+   return intent?`${intent}、複数世帯向けの根拠十分な比較値は置かず、あなた自身の価値判断で確認しています。改善額はまだ確定していません。`:'複数世帯向けの根拠十分な比較値を置かず、あなた自身の価値判断で確認しています。改善額はまだ確定していません。';
+  }
   if(x.category==='sub'){
    if((x.appraisal?.subUnusedAmount??0)>0&&x.appraisal?.subCancellationConfirmed!==true)return '未使用額は確認できていますが、解約・停止できる確認が取れていないため改善額には含めていません。';
    return '使っていない可能性はありますが、未使用額が確定していないため改善額には含めていません。';
