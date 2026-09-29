@@ -243,3 +243,43 @@ console.log('COMMUNICATION_BAND_QA_PASS',communicationBandCases.length+1);
  console.log('CAR_NA_QA_PASS');
 }
 
+const educationUnitCases:[string,string,number][]=[
+ ['公立幼稚園','publicKindergarten',15387],
+ ['私立幼稚園','privateKindergarten',28945],
+ ['公立小学校','publicElementary',30550],
+ ['私立小学校','privateElementary',145126],
+ ['公立中学校','publicJuniorHigh',45204],
+ ['私立中学校','privateJuniorHigh',130030],
+ ['公立高校','publicHigh',49746],
+ ['私立高校','privateHigh',98272]
+];
+for(const [name,stage,expected] of educationUnitCases){
+ const resolved=resolveComparableV2({household:'multi',householdSize:3,age:40,prefecture:'東京都',month:9,educationChildren:[{stage:stage as any}]});
+ const edu=resolved.childEducation;
+ if(edu?.value!==expected)throw new Error(`EDU_UNIT_FAIL:${name}:${edu?.value}!=${expected}`);
+ if(edu?.confidence!=='DIRECT'||edu?.sourceVersion!=='CHILD_EDUCATION_V1.1_CORRECTED')throw new Error(`EDU_META_FAIL:${name}`);
+}
+const edu2=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'東京都',month:9,educationChildren:[{stage:'publicElementary'},{stage:'privateJuniorHigh'}]}).childEducation;
+if(edu2?.value!==160580)throw new Error(`EDU_SUM2_FAIL:${edu2?.value}`);
+const edu3=resolveComparableV2({household:'multi',householdSize:5,age:40,prefecture:'東京都',month:9,educationChildren:[{stage:'publicKindergarten'},{stage:'publicElementary'},{stage:'privateHigh'}]}).childEducation;
+if(edu3?.value!==144209)throw new Error(`EDU_SUM3_FAIL:${edu3?.value}`);
+console.log('EDUCATION_BENCHMARK_QA_PASS',educationUnitCases.length+2);
+
+{
+ const r=raw({childEducation:180000});
+ const comparable=160580;
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable:{childEducation:comparable},appraisal:{childEducation:{educationChildren:[{stage:'publicElementary'},{stage:'privateJuniorHigh'}],educationPreference:'reviewSome'}}});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{childEducation:comparable},diagnosis:d.diagnosis,appraisal:{childEducation:{educationChildren:[{stage:'publicElementary'},{stage:'privateJuniorHigh'}],educationPreference:'reviewSome'}}});
+ const row=fin.categories.find(x=>x.category==='childEducation');
+ if(row?.status!=='review'||(row?.reducible??0)!==0)throw new Error(`EDU_GAP_NOT_SAVING_FAIL:${row?.status}:${row?.reducible}`);
+}
+{
+ const r=raw({});
+ r.childEducation={amount:null,known:false,applicability:'na'};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable:{childEducation:null},appraisal:{}});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{childEducation:null},diagnosis:d.diagnosis,appraisal:{}});
+ const row=fin.categories.find(x=>x.category==='childEducation');
+ if(row?.status!=='na'||(row?.reducible??0)!==0)throw new Error(`EDU_NA_FAIL:${row?.status}:${row?.reducible}`);
+}
+console.log('EDUCATION_SEMANTIC_QA_PASS',2);
+
