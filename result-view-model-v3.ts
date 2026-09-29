@@ -13,6 +13,39 @@ export function comparatorMetaV3(c:Category, comparable:number|null):ComparatorM
  if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
+function appraisalIntent(x:FinalCategoryV3):string|null{
+ const a=x.appraisal;if(!a)return null;
+ if(x.category==='sub'){
+  if((a.subUnusedAmount??0)>0)return '使っていない月額を具体的に確認できたため';
+  if(a.subUsage==='one'||a.subUsage==='several')return '使っていない契約がありそうという回答だったため';
+ }
+ if(x.category==='car'){
+  if(a.carNeed==='burden')return '維持費の負担が気になるという回答だったため';
+  if(a.carNeed==='notNeeded')return 'なくても困らないかもしれないという回答だったため';
+ }
+ if(x.category==='rent'){
+  if(a.rentPreference==='burdenHigh')return '住居費をかなり負担に感じているという回答だったため';
+  if(a.rentPreference==='burdenSome')return '住居費を少し負担に感じているという回答だったため';
+ }
+ if(x.category==='insurance'){
+  if(a.insuranceLastReview==='over3y'||a.insuranceLastReview==='never')return '保険をしばらく見直していないという回答だったため';
+  if(a.insurancePurpose==='unclear')return '保障目的がよく分からないという回答だったため';
+  if(a.insuranceDuplicate==='possible')return '保障が重複している可能性があるため';
+ }
+ if(x.category==='childEducation'){
+  if(a.educationPreference==='reviewHigh')return '教育費をかなり見直したいという回答だったため';
+  if(a.educationPreference==='reviewSome')return '教育費の負担を少し感じているという回答だったため';
+ }
+ if(x.category==='selfDevelopment'){
+  if(a.selfDevelopmentValue==='inertia')return '自己投資が惰性になっているという回答だったため';
+  if(a.selfDevelopmentValue==='unclear')return '自己投資の効果がよく分からないという回答だったため';
+ }
+ if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')){
+  if(a.satisfaction==='waste')return 'かなり見直したいという回答だったため';
+  if(a.satisfaction==='inertia')return '少し見直したいという回答だったため';
+ }
+ return null;
+}
 function reason(x:FinalCategoryV3):string{
  if(x.status==='na')return 'この診断では対象外です。';
  if(!x.raw.known)return '金額を把握していないため、ムダとは断定していません。まず金額や契約内容を確認します。';
@@ -27,7 +60,13 @@ function reason(x:FinalCategoryV3):string{
  }
  if(x.status==='battle'){
   if(x.battleBasis==='confirmed')return '具体的に不要・削減可能と確認できたため、討伐対象です。確定した実額だけを改善額に含めています。';
-  if(x.battleBasis==='appraisal_review')return x.comparable!==null&&((x.comparisonDifference??0)>0)?'比較目安に加え、あなた自身も見直し意向を示したため優先クエストです。平均との差は改善額には含めません。':'追加鑑定で、あなた自身が見直し余地を示したため優先クエストです。改善額はまだ確定していません。';
+  if(x.battleBasis==='appraisal_review'){
+   const intent=appraisalIntent(x);
+   const basis=intent?`${intent}、優先クエストです。`:'追加鑑定で確認が必要と分かったため、優先クエストです。';
+   return x.comparable!==null&&((x.comparisonDifference??0)>0)
+    ?`${basis} 比較目安との差額は改善額には含めません。`
+    :`${basis} 改善額はまだ確定していません。`;
+  }
   return '比較データ上で見直しシグナルが出たため、討伐クエストの対象です。削減額はまだ確定していません。';
  }
  return '現在の診断条件では、優先して見直す支出には入りませんでした。';
@@ -38,7 +77,12 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
- if(x.category==='insurance'&&a.insurancePurpose)return ({clear:'目的まで把握している',mostly:'目的はだいたい把握',unclear:'保障目的が曖昧'} as Record<string,string>)[a.insurancePurpose]??null;
+ if(x.category==='insurance'&&a.insurancePurpose){
+  if(a.insurancePurpose==='clear')return 'かなり把握している';
+  if(a.insuranceLastReview==='over3y'||a.insuranceLastReview==='never')return 'しばらく見直していない';
+  if(a.insurancePurpose==='unclear')return 'よく分からない';
+  return 'だいたい把握している';
+ }
  if(x.category==='childEducation'&&a.educationPreference)return ({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as Record<string,string>)[a.educationPreference]??null;
  if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながっている'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
