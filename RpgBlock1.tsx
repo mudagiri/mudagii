@@ -364,8 +364,9 @@ export default function RpgBlock1({
     window.setTimeout(()=>setScene('profile'),600);
   };
 
-  const nextQuestion = () => {
-    if(question?.no===3 && flow.household!=='single' && !householdSizePending){
+  const nextQuestion = (householdOverride?:FamilyProfile) => {
+    const effectiveHousehold=householdOverride??flow.household;
+    if(question?.no===3 && effectiveHousehold!=='single' && !householdSizePending){
       setHouseholdSizePending(true);
       return;
     }
@@ -620,7 +621,7 @@ function ProfileScene({
   householdSizePending: boolean;
   flow: ProfileFlow;
   setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
-  onNext: () => void;
+  onNext: (householdOverride?:FamilyProfile) => void;
   onBack: () => void;
 }) {
   const progress = householdSizePending ? (3 / 7) * 100 : (question.no / 7) * 100;
@@ -713,7 +714,7 @@ function ProfileInput({
   no: 1 | 2 | 3 | 4 | 5 | 6;
   flow: ProfileFlow;
   setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
-  onChoiceNext: () => void;
+  onChoiceNext: (householdOverride?:FamilyProfile) => void;
 }) {
   const selectClass = 'pre-select';
 
@@ -757,7 +758,7 @@ function ProfileInput({
   }
 
   if (no === 3) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}));window.setTimeout(onChoiceNext,140)}}>{item.label}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}));window.setTimeout(()=>onChoiceNext(item.value),140)}}>{item.label}</button>)}</div>;
   }
 
   if (no === 4) {
