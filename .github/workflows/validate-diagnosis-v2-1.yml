@@ -3,6 +3,7 @@ name: Validate Diagnosis V2.1
 on:
   push:
     branches:
+      - main
       - diagnosis-v2-1-frozen
       - qa-mobile-ui-v1
       - diagnosis-result-v3-2
