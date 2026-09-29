@@ -1575,9 +1575,10 @@ function BattleCompleteScene({battleCount,reviewCount,onResult}:{battleCount:num
 
 
 const CSS = String.raw`
-/* PROFILE V4 interaction anchor: one canonical CTA rule, isolated from legacy tap-anchor patches. */
+/* PROFILE V4 interaction anchor: canonical CTA + compact one-tap choices. */
 .pre-panel .profile-primary-cta{position:absolute;z-index:40;left:16px;right:16px;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));width:auto;min-height:56px;margin:0;touch-action:manipulation}
 .pre-panel .pre-input-wrap,.pre-panel .pre-select,.pre-panel .pre-age-input{position:relative;z-index:41;pointer-events:auto}
+.profile-choice-grid{position:relative;z-index:41;display:grid;gap:8px;margin-top:12px}.profile-choice-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-choice-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-choice{min-height:48px;padding:8px 7px;border:1px solid rgba(255,255,255,.24);border-radius:11px;background:rgba(3,25,39,.84);color:#fff;font:inherit;font-size:13px;font-weight:900;line-height:1.18;touch-action:manipulation}.profile-choice.is-selected{border-color:#ffd62f;box-shadow:0 0 0 1px rgba(255,214,47,.34) inset;background:rgba(48,55,25,.92)}
 
 :root { color-scheme: dark; }
 
