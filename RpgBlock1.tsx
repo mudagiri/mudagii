@@ -1306,7 +1306,7 @@ function AdditionalAppraisalScene({
       {label:'かなり把握している',sub:'目的・公的保障・重複まで確認し、最近見直した',patch:{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'},kind:'protect',feedback:'守る支出'},
       {label:'だいたい把握している',sub:'目的は分かるが、細かい保障までは曖昧',patch:{insurancePurpose:'mostly',insuranceLastReview:'1to3y',insuranceLifeChange:'none',insurancePublicBenefits:'maybe',insuranceDuplicate:'unknown'},kind:'review',feedback:'要確認'},
       {label:'しばらく見直してない',sub:'契約時から内容がほぼ同じ',patch:{insurancePurpose:'mostly',insuranceLastReview:'over3y',insuranceLifeChange:'notReviewed',insurancePublicBenefits:'maybe',insuranceDuplicate:'possible'},kind:'battle',feedback:'見直しクエスト'},
-      {label:'よく分からない',sub:'何にいくら備えているか曖昧',patch:{insurancePurpose:'unclear',insuranceLastReview:'unknown',insuranceLifeChange:'unknown',insurancePublicBenefits:'unknown',insuranceDuplicate:'unknown'},kind:'review',feedback:'確認優先度 高'},
+      {label:'よく分からない',sub:'何にいくら備えているか曖昧',patch:{insurancePurpose:'unclear',insuranceLastReview:'unknown',insuranceLifeChange:'unknown',insurancePublicBenefits:'unknown',insuranceDuplicate:'unknown'},kind:'battle',feedback:'見直しクエスト'},
     ],
     education:[
       {label:'かなり見直したい',sub:'負担が大きい',patch:{educationPreference:'reviewHigh'}},
