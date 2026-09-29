@@ -1,4 +1,4 @@
-import {emptyRawExpenses,buildFinalJudgementsV3,runDiagnosisAdapterV3,housingScreenV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
+import {emptyRawExpenses,buildFinalJudgementsV3,runDiagnosisAdapterV3,housingScreenV3,communicationScreenV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
 import {resolveComparableV2} from './comparable-resolver-v2';
 import type {Category} from './mudagiri-diagnosis-v2';
 
@@ -202,4 +202,26 @@ for(const [name,age,beautySex,expected,source] of beautySexBenchCases){
  if(name.includes('60以上女性')&&x?.meta?.fallbackReason!=='FEMALE_60PLUS_CROSS_UNAVAILABLE')throw new Error('BEAUTY_FEMALE_60_FALLBACK_REASON_FAIL');
 }
 console.log('BEAUTY_SEX_BENCH_QA_PASS',beautySexBenchCases.length);
+
+const communicationBandCases:[string,number,'major'|'mvno',ReturnType<typeof communicationScreenV3>['band']][]=[
+ ['通信-major-P50上限',4999,'major','standard'],
+ ['通信-major-P75開始',6000,'major','check'],
+ ['通信-major-P90開始',10000,'major','detail'],
+ ['通信-mvno-P50上限',2999,'mvno','standard'],
+ ['通信-mvno-P75開始',3000,'mvno','check'],
+ ['通信-mvno-P90開始',5000,'mvno','detail']
+];
+for(const [name,amount,carrier,expectedBand] of communicationBandCases){
+ const s=communicationScreenV3(amount,carrier);
+ if(s.band!==expectedBand)throw new Error(`COMM_BAND_FAIL:${name}:${s.band}!=${expectedBand}`);
+ const r=raw({mobile:amount});
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:300000,raw:r,comparable:{mobile:null},appraisal:{mobile:{mobileCarrier:carrier}}});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{mobile:null},diagnosis:d.diagnosis,appraisal:{mobile:{mobileCarrier:carrier}}});
+ const row=fin.categories.find(x=>x.category==='mobile');
+ if(row?.status!=='review')throw new Error(`COMM_STATUS_FAIL:${name}:${row?.status}`);
+ if((row?.reducible??0)!==0)throw new Error(`COMM_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+const unknownComm=communicationScreenV3(12000,'unknown');
+if(unknownComm.band!=='unknown')throw new Error('COMM_UNKNOWN_MUST_STAY_UNKNOWN');
+console.log('COMMUNICATION_BAND_QA_PASS',communicationBandCases.length+1);
 
