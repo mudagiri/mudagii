@@ -89,3 +89,20 @@ for(const [name,amount,appraisal,expected] of housingFinalCases){
 }
 console.log('HOUSING_FINAL_QA_PASS',housingFinalCases.length);
 
+const utilityCases:[string,number,number,AppraisalV3['energy']|undefined,Status][]=[
+ ['光熱費-基準以下',12000,13333,undefined,'safe'],
+ ['光熱費-超過継続',18000,13333,{energyPersistence:'persistent'},'review'],
+ ['光熱費-超過単月',18000,13333,{energyPersistence:'temporary'},'safe'],
+ ['光熱費-超過不明',18000,13333,{energyPersistence:'unknown'},'review']
+];
+for(const [name,amount,benchmark,appraisal,expected] of utilityCases){
+ const r=raw({energy:amount});
+ const comparable={energy:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{energy:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal:appraisal?{energy:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='energy');
+ if(row?.status!==expected)throw new Error(`UTILITY_FINAL_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`UTILITY_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+console.log('UTILITY_PERSISTENCE_QA_PASS',utilityCases.length);
+
