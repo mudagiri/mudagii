@@ -60,6 +60,7 @@ function reason(x:FinalCategoryV3):string{
    if(x.appraisal?.dailyPersistence==='persistent')return '比較目安を上回る日用品費が2〜3か月続いているため、明細確認の対象です。差額は改善額には含めていません。';
    return '単月の金額だけではムダと断定せず、継続性を追加確認します。';
   }
+  if(x.category==='beautyFashion'&&x.comparable===null)return '複数世帯向けの根拠十分な比較値を置かず、あなた自身の価値判断で確認しています。改善額はまだ確定していません。';
   if(x.category==='sub')return '使っていない可能性はありますが、未使用額が分からないため改善額には含めていません。';
   if(x.category==='insurance')return '保障内容や目的まで確認しないと、金額だけではムダ判定できません。';
   if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
