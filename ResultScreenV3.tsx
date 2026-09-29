@@ -24,7 +24,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  return <>
  <style>{CSS}</style>
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'見直しクエスト発見！'}</h1><p>{vm.counts.battle>0?`削減可能額まで確認できた項目が ${vm.counts.battle} 件あります。`:'優先して見直す支出は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 削減確定 <b>{vm.counts.battle}</b></span><span>🛡️ 守る <b>{vm.counts.protect}</b></span><span>🔍 要確認 <b>{vm.counts.review}</b></span></div></section>
+  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle>0?'削減クエスト発見！':vm.counts.review>0?'確認クエスト発見！':'家計防衛成功！'}</h1><p>{vm.counts.battle>0?`削減可能額まで確認できた項目が ${vm.counts.battle} 件あります。`:vm.counts.review>0?`まだ判断に確認が必要な項目が ${vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 削減確定 <b>{vm.counts.battle}</b></span><span>🛡️ 守る <b>{vm.counts.protect}</b></span><span>🔍 要確認 <b>{vm.counts.review}</b></span></div></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
