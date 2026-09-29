@@ -17,7 +17,8 @@ export function comparatorMetaV3(c:Category, comparable:number|null, benchmarkMe
   const label=sex==='male'?'男性×年齢の比較目安':sex==='female'?'女性×年齢の比較目安':fallback==='all'?'男女計×年齢の比較目安':'美容・服飾費の比較目安';
   return {kind:'statistical_comparator',label,sourceKey:benchmarkMeta?.sourceVersion??'beauty_fashion_v1'};
  }
- if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
+ if(c==='mobile')return {kind:'audit_signal',label:'回線タイプ別の携帯料金帯（参考）',sourceKey:benchmarkMeta?.sourceVersion??'communication_v1'};
+ if(['energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:benchmarkMeta?.sourceVersion??'comparable_v2'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
 function appraisalIntent(x:FinalCategoryV3):string|null{
@@ -105,14 +106,7 @@ function reason(x:FinalCategoryV3):string{
  }
  if(x.status==='battle'){
   if(x.battleBasis==='confirmed')return '具体的に不要・削減可能と確認できたため、討伐対象です。確定した実額だけを改善額に含めています。';
-  if(x.battleBasis==='appraisal_review'){
-   const intent=appraisalIntent(x);
-   const basis=intent?`${intent}、優先クエストです。`:'追加鑑定で確認が必要と分かったため、優先クエストです。';
-   return x.comparable!==null&&((x.comparisonDifference??0)>0)
-    ?`${basis} 比較目安との差額は改善額には含めません。`
-    :`${basis} 改善額はまだ確定していません。`;
-  }
-  return '比較データ上で見直しシグナルが出たため、討伐クエストの対象です。削減額はまだ確定していません。';
+  return '削減額まで確認できた項目だけを討伐対象として表示します。';
  }
  return '現在の診断条件では、優先して見直す支出には入りませんでした。';
 }
@@ -148,7 +142,7 @@ function nextCheck(x:FinalCategoryV3):string{
  if(x.category==='sub')return '契約中サービスと実際の利用状況を確認';
  if(x.category==='car')return 'ローン・駐車場・保険・燃料費を分けて確認';
  if(x.category==='rent')return '手取りに対する住居費負担と住環境の優先度を確認';
- if(x.category==='insurance')return '保障目的・保障額・期間・重複を確認';
+ if(x.category==='insurance')return '保障目的と、最後に見直した時期を確認';
  if(x.category==='childEducation')return '教育段階と今後必要な教育費を確認';
  if(x.category==='selfDevelopment')return '目的・利用状況・成果を確認';
  return '直近1〜3か月の明細を確認';
