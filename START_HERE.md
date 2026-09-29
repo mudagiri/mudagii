@@ -100,6 +100,14 @@ Opening/公開metadataで伝えるのは **家計診断 / RPGとして楽しめ�
 - 計測イベントの追加（既存意味を変更しない）
 - 誤解を減らすコピー微修正
 
+### RPG encounter V3.1 — 2026-09-30 approved revision
+- `battleTargets` remains CONFIRMED-only. Only verified reducible amounts contribute to improvement yen.
+- `encounterTargets` is a separate presentation layer for evidence-backed strong review signals; maximum 3.
+- No filler: 0 or 1 encounter is valid. Medium review signals never fill empty encounter slots merely to reach 2–3 enemies.
+- Strong signals require user appraisal and/or category-specific objective evidence; benchmark gap alone is never waste or confirmed saving.
+- `secondaryReviewTargets` retains medium evidence for non-battle follow-up/result context.
+- This revision changes RPG presentation eligibility only. It does not change the 12 benchmark sources, Type V3.1, PROFILE V4, or confirmed-saving contract.
+
 ### Release gate
 同一HEADで以下をすべて通過してからrelease/FROZEN扱いにする。
 1. `npm run build`
