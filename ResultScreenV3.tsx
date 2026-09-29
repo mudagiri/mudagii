@@ -37,7 +37,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  useEffect(()=>{
    onEvent?.('result_viewed',{version:vm.version,typeCode:vm.type.code});
    const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-   const id=window.setTimeout(()=>setRevealed(true),reduced?120:1200);
+   const id=window.setTimeout(()=>setRevealed(true),reduced?80:500);
    return()=>window.clearTimeout(id);
  },[]);
  async function share(){
