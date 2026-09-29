@@ -41,6 +41,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
     <div className="rv3-kicker">今回確定できた改善額</div>
     <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
     <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
+    {comparisonImpact>0&&<div className="rv3-reference"><b>🔍 別途、要確認の比較差 ¥{yen(comparisonImpact)}/月</b><p>これは確定改善額には含めていません。比較目安との差であり、ムダ額・削減可能額ではありません。</p></div>}
    </>:<>
     {comparisonImpact>0?<><div className="rv3-kicker">比較目安との差（参考）</div>
     <div className="rv3-money">¥{yen(comparisonImpact)}</div><small>/ 月・{comparisonRows.length}項目の合計</small>
