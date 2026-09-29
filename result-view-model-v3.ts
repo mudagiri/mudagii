@@ -17,7 +17,7 @@ export function comparatorMetaV3(c:Category, comparable:number|null, benchmarkMe
   const label=sex==='male'?'男性×年齢の比較目安':sex==='female'?'女性×年齢の比較目安':fallback==='all'?'男女計×年齢の比較目安':'美容・服飾費の比較目安';
   return {kind:'statistical_comparator',label,sourceKey:benchmarkMeta?.sourceVersion??'beauty_fashion_v1'};
  }
- if(c==='mobile')return {kind:'audit_signal',label:'回線タイプ別の携帯料金帯（参考）',sourceKey:benchmarkMeta?.sourceVersion??'communication_v1'};
+ if(c==='mobile')return {kind:'statistical_comparator',label:'回線タイプ別の携帯料金帯（参考）',sourceKey:benchmarkMeta?.sourceVersion??'communication_v1'};
  if(['energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:benchmarkMeta?.sourceVersion??'comparable_v2'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
