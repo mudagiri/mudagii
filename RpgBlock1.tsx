@@ -2910,7 +2910,7 @@ const CSS = String.raw`
   position:relative;
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:10px;
+  gap:22px;
   margin-top:14px;
 }
 .type-side{
@@ -2954,8 +2954,8 @@ const CSS = String.raw`
   display:grid;
   place-items:center;
   transform:translate(-50%,-50%);
-  min-width:38px;
-  padding:5px 7px;
+  min-width:34px;
+  padding:4px 5px;
   border-radius:999px;
   background:#071d28;
   color:rgba(255,255,255,.55);
@@ -3277,7 +3277,7 @@ const CSS = String.raw`
 .combo-battle-scene{position:absolute;inset:0;overflow:hidden}.combo-hud{position:absolute;z-index:35;top:max(28px,calc(env(safe-area-inset-top) + 18px));left:18px;right:18px;display:flex;justify-content:space-between;color:#fff;font-weight:1000;text-shadow:0 2px 5px #000}
 .combo-hud span{color:#ffd62f;font-size:11px;letter-spacing:.12em}.combo-hud b{font-size:13px}
 .combo-ground{position:absolute;z-index:3;left:8%;right:7%;bottom:34%;height:8%;border-radius:50%;background:radial-gradient(ellipse,rgba(10,28,17,.28),transparent 70%);filter:blur(4px)}
-.combo-enemies{position:absolute;z-index:10;left:18%;right:3%;top:16%;height:43%}
+.combo-enemies{position:absolute;z-index:10;left:22%;right:2%;top:16%;height:43%}
 .combo-enemy-slot{position:absolute;bottom:0;width:38%;height:72%;display:flex;align-items:flex-end;justify-content:center;transform-origin:50% 90%;transition:transform .16s ease,filter .16s ease}
 .combo-enemy-slot img:first-child{width:100%;height:100%;object-fit:contain;object-position:center bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 12px rgba(0,0,0,.3))}
 .combo-enemy-slot strong{position:absolute;bottom:-20px;left:0;right:0;text-align:center;color:#fff;font-size:10px;font-weight:1000;text-shadow:0 2px 4px #000}
@@ -3286,7 +3286,7 @@ const CSS = String.raw`
 .combo-enemy-slot.is-hit{animation:combo-hit-shake .28s ease both;filter:brightness(1.45)}.combo-enemy-slot.is-defeated{transform:translateY(5px) scale(.97)}
 .combo-slash,.combo-hit{position:absolute!important;z-index:20!important;left:50%!important;top:50%!important;width:185%!important;height:185%!important;object-fit:contain!important;transform:translate(-50%,-50%) rotate(-8deg)!important;filter:brightness(1.45) contrast(1.25) drop-shadow(0 0 14px rgba(255,245,170,.9))!important;opacity:1!important}
 .combo-hit{width:125%!important;height:125%!important;mix-blend-mode:screen}
-.combo-mudagiri{position:absolute;z-index:18;left:1%;bottom:34%;width:min(35vw,148px);max-height:27dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.35))}
+.combo-mudagiri{position:absolute;z-index:18;left:-7%;bottom:31%;width:min(31vw,132px);max-height:27dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 13px rgba(0,0,0,.35))}
 .combo-mudagiri{transition:transform .11s cubic-bezier(.2,.8,.2,1)}.combo-pose-ready .combo-mudagiri{transform:translate3d(0,0,0)}.combo-pose-swing .combo-mudagiri{transform:translate3d(34px,-7px,0) scale(1.035) rotate(-3deg)}.combo-pose-follow .combo-mudagiri{transform:translate3d(46px,1px,0) scale(1.01) rotate(1deg)}.combo-white-flash{position:absolute;z-index:40;inset:0;background:#fff;pointer-events:none;animation:combo-flash .16s ease-out 3;opacity:0}
 .combo-panel{position:absolute;z-index:30;left:14px;right:14px;bottom:max(10px,calc(env(safe-area-inset-bottom) + 6px));padding:12px 13px 11px;border:1.5px solid #f0c92f;border-radius:15px;background:rgba(5,20,34,.965);box-shadow:0 15px 34px rgba(0,0,0,.44);text-align:center}
 .combo-panel h2{margin:5px 0 0;font-size:clamp(21px,5.8vw,25px);line-height:1.18}.combo-panel p{margin:6px 0 0;font-size:11px;line-height:1.35;color:rgba(255,255,255,.76)}
