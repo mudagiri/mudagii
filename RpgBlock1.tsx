@@ -1326,8 +1326,8 @@ function AdditionalAppraisalScene({
     carNeed:[
       {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
       {label:'あるとかなり便利',sub:'利用頻度も高い',patch:{carNeed:'useful'},kind:'protect',feedback:'守る支出'},
-      {label:'負担が気になってる',sub:'維持費を軽くしたい',patch:{carNeed:'burden'},kind:'battle',feedback:'見直しクエスト'},
-      {label:'なくても困らないかも',sub:'手放す・減らす余地がある',patch:{carNeed:'notNeeded'},kind:'battle',feedback:'見直しクエスト'},
+      {label:'負担が気になってる',sub:'維持費を軽くしたい',patch:{carNeed:'burden'},kind:'review',feedback:'要確認'},
+      {label:'なくても困らないかも',sub:'手放す・減らす余地がある',patch:{carNeed:'notNeeded'},kind:'review',feedback:'要確認'},
     ],
     rent:[
       {label:'かなり負担を感じる',sub:'家計を圧迫している',patch:{rentPreference:'burdenHigh'}},
@@ -1430,15 +1430,15 @@ function AdditionalAppraisalScene({
               const inferredKind: AppraisalStatus =
                 o.kind ?? (
                   item.kind === 'satisfaction'
-                    ? (o.patch.satisfaction === 'verySatisfied' || o.patch.satisfaction === 'satisfied' ? 'protect' : 'battle')
+                    ? (o.patch.satisfaction === 'verySatisfied' || o.patch.satisfaction === 'satisfied' ? 'protect' : 'review')
                     : item.kind === 'rent'
-                      ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'battle')
+                      ? (o.patch.rentPreference === 'protect' || o.patch.rentPreference === 'reasonable' ? 'protect' : 'review')
                       : (item.kind === 'insuranceOverview' || item.kind === 'insuranceReview')
                         ? (o.kind ?? 'review')
                         : item.kind === 'education'
-                          ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'battle')
+                          ? (o.patch.educationPreference === 'necessary' || o.patch.educationPreference === 'protect' ? 'protect' : 'review')
                           : item.kind === 'selfDevelopment'
-                            ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'battle')
+                            ? (o.patch.selfDevelopmentValue === 'purpose' || o.patch.selfDevelopmentValue === 'results' ? 'protect' : 'review')
                             : 'review'
                 );
               const label = o.feedback ?? (inferredKind==='protect'?'守る支出':inferredKind==='safe'?'問題なし':inferredKind==='battle'?'見直しクエスト':'要確認');
