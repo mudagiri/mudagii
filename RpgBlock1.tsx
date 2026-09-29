@@ -799,7 +799,7 @@ function IncomeCalibrationScene({value,onPick}:{value:AnnualIncomeBand;onPick:(v
   <section className="pre-panel pre-complete-panel" style={{paddingTop:22}}>
   <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
   <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収でOK。家計全体のバランスや、あなたに近い条件で結果を見るために使うぞ。</p>
-  <div style={{display:'grid',gap:8,marginTop:14}}>{opts.map(([v,l])=><button key={v} type="button" className={`pre-choice ${value===v?'is-selected':''}`} style={{minHeight:48}} onClick={()=>onPick(v)}>{l}</button>)}</div>
+  <div className="profile-choice-grid profile-choice-grid-2 income-band-grid">{opts.map(([v,l],i)=><button key={v} type="button" className={`profile-choice ${value===v?'is-selected':''} ${i===opts.length-1?'income-band-last':''}`} onClick={()=>onPick(v)}>{l}</button>)}</div>
  </section></div>
 }
 
@@ -1563,7 +1563,7 @@ const CSS = String.raw`
 /* PROFILE V4 interaction anchor: canonical CTA + compact one-tap choices. */
 .pre-panel .profile-primary-cta{position:absolute;z-index:40;left:16px;right:16px;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));width:auto;min-height:56px;margin:0;touch-action:manipulation}
 .pre-panel .pre-input-wrap,.pre-panel .pre-select,.pre-panel .pre-age-input{position:relative;z-index:41;pointer-events:auto}
-.profile-choice-grid{position:relative;z-index:41;display:grid;gap:8px;margin-top:12px}.profile-choice-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-choice-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-choice{min-height:48px;padding:8px 7px;border:1px solid rgba(255,255,255,.24);border-radius:11px;background:rgba(3,25,39,.84);color:#fff;font:inherit;font-size:13px;font-weight:900;line-height:1.18;touch-action:manipulation}.profile-choice.is-selected{border-color:#ffd62f;box-shadow:0 0 0 1px rgba(255,214,47,.34) inset;background:rgba(48,55,25,.92)}
+.profile-choice-grid{position:relative;z-index:41;display:grid;gap:8px;margin-top:12px}.profile-choice-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-choice-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-choice{min-height:48px;padding:8px 7px;border:1px solid rgba(255,255,255,.24);border-radius:11px;background:rgba(3,25,39,.84);color:#fff;font:inherit;font-size:13px;font-weight:900;line-height:1.18;touch-action:manipulation}.profile-choice.is-selected{border-color:#ffd62f;box-shadow:0 0 0 1px rgba(255,214,47,.34) inset;background:rgba(48,55,25,.92)}.income-band-grid{margin-top:14px}.income-band-last{grid-column:1/-1}
 
 :root { color-scheme: dark; }
 
