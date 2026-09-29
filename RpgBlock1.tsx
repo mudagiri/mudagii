@@ -677,7 +677,7 @@ function ProfileScene({
         <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
         <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,householdSize:n}));window.setTimeout(onNext,140)}}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
+        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,householdSize:n}));window.setTimeout(()=>onNext(),140)}}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
@@ -762,11 +762,11 @@ function ProfileInput({
   }
 
   if (no === 4) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,workStyle}));window.setTimeout(onChoiceNext,140)}}>{workStyle}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,workStyle}));window.setTimeout(()=>onChoiceNext(),140)}}>{workStyle}</button>)}</div>;
   }
 
   if (no === 5) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,housingType}));window.setTimeout(onChoiceNext,140)}}>{housingType}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,housingType}));window.setTimeout(()=>onChoiceNext(),140)}}>{housingType}</button>)}</div>;
   }
 
   return (
