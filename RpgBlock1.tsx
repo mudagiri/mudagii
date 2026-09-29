@@ -464,13 +464,15 @@ export default function RpgBlock1({
               current={appraisalIndex + 1}
               total={appraisalQuestions.length}
               onAnswer={(answer) => {
+                const currentItem=appraisalQuestions[appraisalIndex];
                 setAppraisalAnswers((prev) => ({
                   ...prev,
-                  [appraisalQuestions[appraisalIndex].category]: {
-                    ...prev[appraisalQuestions[appraisalIndex].category],
+                  [currentItem.category]: {
+                    ...prev[currentItem.category],
                     ...answer,
                   },
                 }));
+                if(currentItem.kind==='educationChildCount'){return;}
                 if (appraisalIndex >= appraisalQuestions.length - 1) {onEvent?.('appraisal_completed',{count:appraisalQuestions.length});setScene('appraisalComplete');}
                 else setAppraisalIndex((i) => i + 1);
               }}
