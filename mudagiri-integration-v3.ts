@@ -9,6 +9,13 @@ export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
 export interface HousingScreenV3 { p50Upper:number|null; p75Lower:number|null; p90Lower:number|null; band:'standard'|'higher'|'check'|'detail'|'audit' }
+export interface CommunicationScreenV3 { carrier:'major'|'mvno'|'unknown'; band:'standard'|'higher'|'check'|'detail'|'unknown'; p50Upper:number|null; p75Lower:number|null; p90Lower:number|null }
+export function communicationScreenV3(actual:number,carrier:'major'|'mvno'|'unknown'):CommunicationScreenV3{
+ if(carrier==='unknown')return {carrier,band:'unknown',p50Upper:null,p75Lower:null,p90Lower:null};
+ const bands=carrier==='major'?{p50Upper:4999,p75Lower:6000,p90Lower:10000}:{p50Upper:2999,p75Lower:3000,p90Lower:5000};
+ const band=actual>=bands.p90Lower?'detail':actual>=bands.p75Lower?'check':actual>bands.p50Upper?'higher':'standard';
+ return {carrier,band,...bands};
+}
 export interface AppraisalV3 { satisfaction?:Satisfaction; beautySex?:'male'|'female'|'preferNot'; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown'; energyPersistence?:'persistent'|'temporary'|'unknown'; dailyPersistence?:'persistent'|'temporary'|'unknown' }
 export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null; benchmarkMeta:ComparableV2|null }
