@@ -19,10 +19,11 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed');return}}catch{}
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{fallback:'clipboard'})}catch{}
  }
+ const comparisonImpact=vm.battleTargets.reduce((sum:number,x:any)=>sum+(x.comparisonDifference!==null&&x.comparisonDifference>0?x.comparisonDifference:0),0);
  return <>
  <style>{CSS}</style>
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'見直しクエスト発見！'}</h1><p>{vm.counts.battle>0?`優先して見直す項目が ${vm.counts.battle} 件見つかりました。`:'優先して斬る支出は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 見直し <b>{vm.counts.battle}</b></span><span>🛡️ 守る <b>{vm.counts.protect}</b></span><span>🔍 要確認 <b>{vm.counts.review}</b></span></div></section>
+  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle===0?'家計防衛成功！':'見直しクエスト発見！'}</h1><p>{vm.counts.battle>0?`優先して見直す項目が ${vm.counts.battle} 件見つかりました。`:'優先して見直す支出は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 見直し <b>{vm.counts.battle}</b></span><span>🛡️ 守る <b>{vm.counts.protect}</b></span><span>🔍 要確認 <b>{vm.counts.review}</b></span></div></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
@@ -40,9 +41,13 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
     <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
     <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
    </>:<>
+    {comparisonImpact>0?<><div className="rv3-kicker">見直しインパクト</div>
+    <div className="rv3-money">¥{yen(comparisonImpact)}</div><small>/ 月</small>
+    <h3>比較目安との差が出ている支出です。</h3>
+    <p>この全額がムダ・削減可能という意味ではありません。実際に減らせる金額は確認して確定します。</p></>:<>
     <div className="rv3-kicker">改善額はまだ未確定</div>
     <h3>見直し候補はある。でも、推測で金額は出さない。</h3>
-    <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p>
+    <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p></>}
    </>}
    <p className="rv3-note">具体的に不要・削減可能と確認できた実額だけを改善額に含めます。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>

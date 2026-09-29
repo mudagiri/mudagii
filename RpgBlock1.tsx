@@ -2466,7 +2466,7 @@ const CSS = String.raw`
 .battle-defeat.battle-phase-action .battle-enemy,.battle-defeat.battle-phase-result .battle-enemy{width:62%;right:-3%;bottom:30.8%}
 .battle-spare.battle-phase-action .battle-enemy,.battle-spare.battle-phase-result .battle-enemy{animation:battle-escape 1.05s ease-in forwards}
 .battle-unknown.battle-phase-action .battle-enemy,.battle-unknown.battle-phase-result .battle-enemy{filter:brightness(.58) saturate(.7) drop-shadow(0 11px 14px rgba(0,0,0,.28));opacity:.72;transform:scale(.96)}
-.battle-mudagiri{position:absolute;z-index:15;left:-2%;bottom:29.5%;width:43%;max-height:31dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 14px rgba(0,0,0,.3));pointer-events:none}
+.battle-mudagiri{position:absolute;z-index:15;left:-8%;bottom:27.5%;width:41%;max-height:31dvh;object-fit:contain;object-position:left bottom;image-rendering:pixelated;filter:drop-shadow(0 10px 14px rgba(0,0,0,.3));pointer-events:none}
 .battle-phase-action.battle-defeat .battle-mudagiri{animation:battle-lunge .34s ease-out both}
 .battle-fx{position:absolute;z-index:18;object-fit:contain;image-rendering:pixelated;pointer-events:none}
 .battle-fx-reveal{right:7%;bottom:31%;width:61%;animation:battle-reveal .82s ease-out both}
@@ -2909,8 +2909,8 @@ const CSS = String.raw`
 .type-pair{
   position:relative;
   display:grid;
-  grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);
-  gap:8px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
   margin-top:14px;
 }
 .type-side{
@@ -2924,7 +2924,7 @@ const CSS = String.raw`
   border-radius:12px;
   background:rgba(18,53,68,.72);
 }
-.type-side-a{grid-column:1}.type-side-b{grid-column:3}
+.type-side-a{grid-column:1}.type-side-b{grid-column:2}
 .type-side-badge{
   position:absolute;
   left:9px;
@@ -2947,12 +2947,13 @@ const CSS = String.raw`
   font-weight:950;
 }
 .type-pair-vs{
-  position:relative;
-  z-index:2;
-  grid-column:2;
+  position:absolute;
+  z-index:3;
+  left:50%;
+  top:50%;
   display:grid;
   place-items:center;
-  align-self:center;
+  transform:translate(-50%,-50%);
   min-width:38px;
   padding:5px 7px;
   border-radius:999px;
