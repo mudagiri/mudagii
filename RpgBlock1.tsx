@@ -686,7 +686,7 @@ function ProfileScene({
 
         <button
           type="button"
-          className="pre-primary pre-next pre-fixed-profile-cta"
+          className="pre-primary pre-next profile-primary-cta"
           onClick={onNext}
           disabled={(!householdSizePending && question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (!householdSizePending && question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
@@ -860,7 +860,7 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
         <div className="pre-complete-label">冒険者データ 100%</div>
         <h2 className="pre-complete-title">準備完了！<br />ムダの正体を暴くぞ！</h2>
 
-        <button type="button" className="pre-primary pre-next pre-fixed-profile-cta" onClick={onStartScan}>
+        <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onStartScan}>
           家計スキャンを開始 ▶
         </button>
       </section>
@@ -1636,6 +1636,10 @@ function BattleCompleteScene({battleCount,reviewCount,onResult}:{battleCount:num
 
 
 const CSS = String.raw`
+/* PROFILE V4 interaction anchor: one canonical CTA rule, isolated from legacy tap-anchor patches. */
+.pre-panel .profile-primary-cta{position:absolute;z-index:40;left:16px;right:16px;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));width:auto;min-height:56px;margin:0;touch-action:manipulation}
+.pre-panel .pre-input-wrap,.pre-panel .pre-select,.pre-panel .pre-age-input{position:relative;z-index:41;pointer-events:auto}
+
 :root { color-scheme: dark; }
 
 .pre-root,
