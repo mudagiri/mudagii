@@ -39,14 +39,12 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='insurance'){
-   const protectedInsurance =
-     ap?.insurancePurpose==='clear' &&
-     (ap.insuranceLastReview==='within1y'||ap.insuranceLastReview==='1to3y') &&
-     (ap.insuranceLifeChange==='none'||ap.insuranceLifeChange==='reviewed') &&
-     ap.insurancePublicBenefits==='considered' &&
-     (ap.insuranceDuplicate==='none'||ap.insuranceDuplicate==='intentional');
-   if(protectedInsurance)return {status:'protect',attentionFlag:false,battleBasis:'none'};
-   if(ap&&(ap.insuranceLastReview==='over3y'||ap.insuranceLastReview==='never'||ap.insurancePurpose==='unclear'||ap.insuranceDuplicate==='possible'))
+   // Lightweight audit: the main diagnosis asks at most two questions.
+   // Missing public-benefit / duplicate / life-event evidence is never inferred.
+   // Insurance can be protected as a user-understood expense, or flagged for review,
+   // but it never creates confirmed savings in this lightweight flow.
+   if(ap?.insurancePurpose==='clear')return {status:'protect',attentionFlag:false,battleBasis:'none'};
+   if(ap?.insurancePurpose==='unclear'||ap?.insuranceLastReview==='over3y'||ap?.insuranceLastReview==='never'||ap?.insuranceLastReview==='unknown')
      return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
