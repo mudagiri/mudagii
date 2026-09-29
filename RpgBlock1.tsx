@@ -14,7 +14,7 @@ type Props = {
   toneMode: ToneMode;
   onBegin: (mode: ToneMode) => void;
   onFamilySelect: (profile: FamilyProfile) => void;
-  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
+  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
 };
 
@@ -349,7 +349,7 @@ export default function RpgBlock1({
     }
 
     onFamilySelect(flow.household);
-    onEvent?.('profile_completed',{household:flow.household});
+    onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2)});
     setScene('complete');
   };
 
@@ -364,7 +364,7 @@ export default function RpgBlock1({
     if(scene!=='battleComplete'||!onCompleteV3)return;
     onEvent?.('battle_completed',{count:battleTargets.length});
     onCompleteV3({
-      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
+      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
       methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'COMPARABLE_RESOLVER_V1'
     });
