@@ -19,6 +19,8 @@ const battleHistogram=Array.from({length:13},()=>0);
 const reviewHistogram=Array.from({length:13},()=>0);
 const actionableHistogram=Array.from({length:13},()=>0);
 const priorityReviewHistogram=Array.from({length:13},()=>0);
+const strongPriorityHistogram=Array.from({length:13},()=>0);
+const mainEnemyHistogram=Array.from({length:4},()=>0);
 
 for(let id=1;id<=10000;id++){
  const household=pick(['single','multi'] as const);
@@ -74,6 +76,25 @@ for(let id=1;id<=10000;id++){
      if(x.category==='mobile'&&x.raw.amount!==null){const carrier=appraisal.mobile?.mobileCarrier??'unknown';const band=communicationScreenV3(x.raw.amount,carrier).band;return band==='check'||band==='detail';}
      return false;
    });
+   const strongPriority=priorityReview.filter(x=>{
+     if(x.status==='battle'&&x.battleBasis==='confirmed')return true;
+     const ap=appraisal[x.category];
+     if(x.category==='mobile'&&x.raw.amount!==null)return communicationScreenV3(x.raw.amount,ap?.mobileCarrier??'unknown').band==='detail';
+     if(x.category==='energy')return x.battleBasis==='benchmark_check'&&ap?.energyPersistence==='persistent';
+     if(x.category==='daily')return x.battleBasis==='benchmark_check'&&ap?.dailyPersistence==='persistent';
+     if(x.category==='sub')return false;
+     if(x.category==='car')return ap?.carNeed==='notNeeded';
+     if(x.category==='rent')return ap?.rentPreference==='burdenHigh';
+     if(x.category==='insurance')return ap?.insurancePurpose==='unclear'&&(ap?.insuranceLastReview==='over3y'||ap?.insuranceLastReview==='never');
+     if(x.category==='childEducation')return ap?.educationPreference==='reviewHigh';
+     if(x.category==='selfDevelopment')return ap?.selfDevelopmentValue==='inertia';
+     if(x.category==='food'||x.category==='fun'||x.category==='beautyFashion')return ap?.satisfaction==='waste';
+     return false;
+   });
+   // Presentation audit only: show every strong signal first, then fill from medium evidence up to 3.
+   const mainEnemyCount=Math.min(3,strongPriority.length+Math.max(0,Math.min(priorityReview.length-strongPriority.length,3-strongPriority.length)));
+   strongPriorityHistogram[Math.min(12,strongPriority.length)]++;
+   mainEnemyHistogram[mainEnemyCount]++;
    reviewHistogram[Math.min(12,review.length)]++;
    actionableHistogram[Math.min(12,actionable.length)]++;
    priorityReviewHistogram[Math.min(12,priorityReview.length)]++;
@@ -88,6 +109,6 @@ for(let id=1;id<=10000;id++){
    }
  }catch(e){m.violations++;failures.push(`#${id}: ${e instanceof Error?e.message:String(e)}`)}
 }
-console.log(JSON.stringify({...m,byBasis,battleHistogram,reviewHistogram,actionableHistogram,priorityReviewHistogram,zeroPriorityReviewRate:priorityReviewHistogram[0]/m.cases,avgPriorityReviews:priorityReviewHistogram.reduce((s,n,i)=>s+n*i,0)/m.cases,zeroReviewRate:reviewHistogram[0]/m.cases,zeroActionableRate:actionableHistogram[0]/m.cases,avgReviews:m.review/m.cases,byCategory,avgBattles:m.battles/m.cases,zeroBattleRate:m.zeroBattle/m.cases,over3BattleRate:m.over3Battle/m.cases,confirmedCaseRate:m.confirmedCases/m.cases,avgConfirmedWhenPositive:m.confirmedCases?Math.round(m.confirmedYen/m.confirmedCases):0},null,2));
+console.log(JSON.stringify({...m,byBasis,battleHistogram,reviewHistogram,actionableHistogram,priorityReviewHistogram,strongPriorityHistogram,mainEnemyHistogram,zeroStrongPriorityRate:strongPriorityHistogram[0]/m.cases,avgStrongPriorities:strongPriorityHistogram.reduce((s,n,i)=>s+n*i,0)/m.cases,zeroPriorityReviewRate:priorityReviewHistogram[0]/m.cases,avgPriorityReviews:priorityReviewHistogram.reduce((s,n,i)=>s+n*i,0)/m.cases,zeroReviewRate:reviewHistogram[0]/m.cases,zeroActionableRate:actionableHistogram[0]/m.cases,avgReviews:m.review/m.cases,byCategory,avgBattles:m.battles/m.cases,zeroBattleRate:m.zeroBattle/m.cases,over3BattleRate:m.over3Battle/m.cases,confirmedCaseRate:m.confirmedCases/m.cases,avgConfirmedWhenPositive:m.confirmedCases?Math.round(m.confirmedYen/m.confirmedCases):0},null,2));
 if(failures.length){console.error(failures.slice(0,30).join('\n'));throw new Error(`10k simulation violations: ${failures.length}`)}
 console.log('10,000-case deterministic simulation: PASS');
