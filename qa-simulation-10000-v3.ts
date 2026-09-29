@@ -46,8 +46,8 @@ for(let id=1;id<=10000;id++){
    if(c==='rent'&&amount>0)appraisal[c]={rentPreference:pick(['burdenHigh','burdenSome','reasonable','protect'] as const)};
    if(c==='insurance'&&amount>0){
      const strong=rnd()<.35;
-     appraisal[c]=strong?{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'}:
-       {insurancePurpose:pick(['mostly','unclear'] as const),insuranceLastReview:pick(['1to3y','over3y','never','unknown'] as const),insuranceLifeChange:pick(['none','notReviewed','unknown'] as const),insurancePublicBenefits:pick(['maybe','not','unknown'] as const),insuranceDuplicate:pick(['none','possible','unknown'] as const)};
+     appraisal[c]=strong?{insurancePurpose:'clear',insuranceLastReview:'within1y'}:
+       {insurancePurpose:pick(['mostly','unclear'] as const),insuranceLastReview:pick(['1to3y','over3y','never','unknown'] as const)};
    }
    if(c==='childEducation'&&amount>0){const stages:EducationStageV2[]=['publicKindergarten','privateKindergarten','publicElementary','privateElementary','publicJuniorHigh','privateJuniorHigh','publicHigh','privateHigh'];const count=Math.max(1,Math.min(6,householdSize));appraisal[c]={educationPreference:pick(['reviewHigh','reviewSome','necessary','protect'] as const),educationChildCount:count,educationChildren:Array.from({length:count},()=>({stage:pick(stages)}))};}
    if(c==='selfDevelopment'&&amount>0)appraisal[c]={selfDevelopmentValue:pick(['inertia','unclear','purpose','results'] as const)};
