@@ -6,6 +6,7 @@ import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
+import type { EducationStageV2 } from './comparable-resolver-v2';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -36,6 +37,8 @@ type AppraisalAnswer = {
   subUnusedAmount?: number;
   subUsage?: 'none'|'one'|'several'|'unknown';
   educationStage?: EducationStage;
+  educationChildren?: {stage:EducationStageV2}[];
+  educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
@@ -44,7 +47,8 @@ type AppraisalQuestion = {
   reason: string;
   question: string;
   maxAmount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'educationStage'|'carNeed';
+  educationCount?: number;
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'educationChildCount'|'educationChildren'|'carNeed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
