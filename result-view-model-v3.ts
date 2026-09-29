@@ -1,5 +1,5 @@
 import type { Category } from './mudagiri-diagnosis-v2';
-import type { AnnualIncomeBand, FinalCategoryV3, FinalStatus } from './mudagiri-integration-v3';
+import { communicationScreenV3, type AnnualIncomeBand, type FinalCategoryV3, type FinalStatus } from './mudagiri-integration-v3';
 
 export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.2' as const;
 export type ComparatorKind='optimization_rule'|'statistical_comparator'|'direct_benchmark'|'none';
@@ -22,6 +22,12 @@ export function comparatorMetaV3(c:Category, comparable:number|null, benchmarkMe
 }
 function appraisalIntent(x:FinalCategoryV3):string|null{
  const a=x.appraisal;if(!a)return null;
+ if(x.category==='mobile'&&a.mobileCarrier){
+  const label=({major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'} as Record<string,string>)[a.mobileCarrier]??'回線タイプ不明';
+  const s=communicationScreenV3(x.raw.amount??0,a.mobileCarrier);
+  const band=({standard:'P50帯以内',higher:'P50超〜P75未満',check:'P75帯以上',detail:'P90帯以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
+  return `${label} / ${band}`;
+ }
  if(x.category==='sub'){
   if((a.subUnusedAmount??0)>0)return '使っていない月額を具体的に確認できたため';
   if(a.subUsage==='one'||a.subUsage==='several')return '使っていない契約がありそうという回答だったため';
@@ -58,6 +64,13 @@ function reason(x:FinalCategoryV3):string{
  if(!x.raw.known)return '金額を把握していないため、ムダとは断定していません。まず金額や契約内容を確認します。';
  if(x.status==='protect')return '金額だけで斬らず、あなたが価値を感じている支出として守ります。';
  if(x.status==='review'){
+  if(x.category==='mobile'){
+   const carrier=x.appraisal?.mobileCarrier??'unknown';
+   const s=communicationScreenV3(x.raw.amount??0,carrier);
+   const carrierLabel=carrier==='major'?'大手キャリア':carrier==='mvno'?'格安SIM':'回線タイプ不明';
+   const bandLabel=({standard:'P50帯以内',higher:'P50超〜P75未満',check:'P75帯以上',detail:'P90帯以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
+   return `${carrierLabel}の調査価格帯では${bandLabel}です。ただし入力額はスマホ＋自宅インターネット合計のため、携帯料金帯との差だけでムダ・削減額とは判定していません。`;
+  }
   if(x.category==='energy'){
    if(x.appraisal?.energyPersistence==='persistent')return '比較目安を上回る状態が2〜3か月続いているため、明細確認の対象です。差額は改善額には含めていません。';
    return '単月の金額だけではムダと断定せず、継続性や請求周期を追加確認します。';
