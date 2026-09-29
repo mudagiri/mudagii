@@ -36,7 +36,7 @@ export function housingScreenV3(actual:number,meta?:ComparableV2):HousingScreenV
 
 export function runDiagnosisAdapterV3(a:{monthlyTakeHome:number;monthlySavingInvestment?:number;emergencyMonths?:number;raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;appraisal?:Partial<Record<Category,AppraisalV3>>}){if(!(a.monthlyTakeHome>0))throw new Error('INVALID_MONTHLY_TAKE_HOME');const categories:DiagnosisInput['categories']=[];for(const category of ALL_CATEGORIES){const raw=a.raw[category];assertRawExpense(raw);if(raw.applicability!=='applicable'||!raw.known||raw.amount===null)continue;const ap=a.appraisal?.[category];categories.push({category,actual:raw.amount,comparable:a.comparable[category]??null,satisfaction:ap?.satisfaction,unusedAmount:category==='sub'&&typeof ap?.subUnusedAmount==='number'?Math.max(0,Math.min(raw.amount,ap.subUnusedAmount)):undefined,cancellationConfirmed:category==='sub'?ap?.subCancellationConfirmed:undefined})}const saving=Math.max(0,a.monthlySavingInvestment??0);const knownSpend=categories.reduce((s,x)=>s+x.actual,0);const input:DiagnosisInput={monthlyTakeHomeIncome:a.monthlyTakeHome,monthlySavingInvestment:saving,freeCashFlow:a.monthlyTakeHome-knownSpend-saving,emergencyMonths:Math.max(0,a.emergencyMonths??0),categories};return {input,diagnosis:runDiagnosisV2(input)}}
 
-function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,ap?:AppraisalV3):{status:FinalStatus;attentionFlag:boolean;battleBasis:BattleBasis}{
+function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,ap?:AppraisalV3,benchmark?:ComparableV2):{status:FinalStatus;attentionFlag:boolean;battleBasis:BattleBasis}{
  if(raw.applicability==='na')return {status:'na',attentionFlag:false,battleBasis:'none'};
  if(!raw.known||raw.amount===null)return {status:'review',attentionFlag:category==='insurance'||category==='sub',battleBasis:'none'};
  if(raw.amount===0)return {status:'safe',attentionFlag:false,battleBasis:'none'};
@@ -73,9 +73,12 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='rent'){
-   if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
+   const screen=housingScreenV3(raw.amount,benchmark);
+   if(screen.band==='audit')return {status:'review',attentionFlag:true,battleBasis:'none'};
+   if(screen.band==='standard'||screen.band==='higher')return {status:'safe',attentionFlag:false,battleBasis:'none'};
+   if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:true,battleBasis:'none'};
    if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
-   return {status:'review',attentionFlag:true,battleBasis:'none'};
+   return {status:'review',attentionFlag:true,battleBasis:'benchmark_check'};
  }
  if(category==='childEducation'){
    if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
@@ -99,4 +102,4 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
 }
 
-export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null}});return {categories,battleTargets:categories.filter(x=>x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0).sort((x,y)=>(y.battleBasis==='confirmed'?2:1)-(x.battleBasis==='confirmed'?2:1)||(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3)}}
+export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;benchmarkMeta?:Partial<Record<Category,ComparableV2>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category],a.benchmarkMeta?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null}});return {categories,battleTargets:categories.filter(x=>x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0).sort((x,y)=>(y.battleBasis==='confirmed'?2:1)-(x.battleBasis==='confirmed'?2:1)||(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3)}}
