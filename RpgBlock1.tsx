@@ -627,6 +627,8 @@ function ProfileScene({
   const progress = householdSizePending ? (3 / 7) * 100 : (question.no / 7) * 100;
   const isWarning = question.no === 4;
   const isEncounter = question.no >= 5;
+  const [partyChoiceLocked,setPartyChoiceLocked]=useState(false);
+  const choosePartySize=(n:string)=>{if(partyChoiceLocked)return;setPartyChoiceLocked(true);setFlow(v=>({...v,householdSize:n}));window.setTimeout(()=>onNext(),140)};
 
   return (
     <div className={`pre-profile pre-q${question.no}`}>
@@ -677,7 +679,7 @@ function ProfileScene({
         <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
         <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,householdSize:n}));window.setTimeout(()=>onNext(),140)}}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
+        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} disabled={partyChoiceLocked} onClick={()=>choosePartySize(n)}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
