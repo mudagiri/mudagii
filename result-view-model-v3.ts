@@ -10,6 +10,7 @@ const ENEMY:Record<Category,string>={mobile:'通信ザウルス',energy:'電気�
 
 export function comparatorMetaV3(c:Category, comparable:number|null):ComparatorMetaV3{
  if(c==='childEducation'&&comparable!==null)return {kind:'direct_benchmark',label:'参考ベンチマーク',sourceKey:'mext_education'};
+ if(c==='rent'&&comparable!==null)return {kind:'statistical_comparator',label:'都道府県の民営賃貸参考値',sourceKey:'housing_v2_private_rent'};
  if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
