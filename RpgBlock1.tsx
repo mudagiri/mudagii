@@ -3330,9 +3330,6 @@ const CSS = String.raw`
   .appraisal-option span{font-size:11px!important;line-height:1.3}
 }
 
-`;
-
-
 /* ===== V3.3 MOBILE COLLISION HOTFIX ===== */
 @media(max-width:520px){
   .type-pair{gap:38px!important}
@@ -3343,3 +3340,5 @@ const CSS = String.raw`
   .type-pair{gap:34px!important}
   .type-pair-vs{min-width:22px!important}
 }
+
+`;
