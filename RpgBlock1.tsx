@@ -26,6 +26,7 @@ type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 type AppraisalStatus = 'battle' | 'protect' | 'safe' | 'review' | 'na';
 type AppraisalAnswer = {
   satisfaction?: Satisfaction;
+  beautySex?: 'male'|'female'|'preferNot';
   rentPreference?: 'burdenHigh'|'burdenSome'|'reasonable'|'protect';
   insurancePurpose?: 'clear'|'mostly'|'unclear';
   insuranceLastReview?: 'within1y'|'1to3y'|'over3y'|'never'|'unknown';
@@ -53,7 +54,7 @@ type AppraisalQuestion = {
   maxAmount?: number;
   educationCount?: number;
   educationMaxCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'energyPersistence'|'dailyPersistence';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -268,8 +269,9 @@ export default function RpgBlock1({
     householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),
     age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand,
     month:new Date().getMonth()+1,housingType:flow.housingType,
-    educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren
-  }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren]);
+    educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren,
+    beautySex:appraisalAnswers.beautyFashion?.beautySex
+  }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
   const comparable=comparisonBundle.comparable;
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
@@ -290,6 +292,11 @@ export default function RpgBlock1({
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
       const isBeautyAudit=category==='beautyFashion'&&comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT';
+      const beautyNeedsSex=category==='beautyFashion'&&flow.household==='single'&&actual(category)>0&&c!==null&&actual(category)>c&&!appraisalAnswers.beautyFashion?.beautySex;
+      if(beautyNeedsSex){
+        qs.push({category:'beautyFashion',kind:'beautySex',reason:'美容・服飾費は男女差が大きいため、基準を超えた人だけ、より近い比較値に補正します。',question:'より近い基準で見るために教えてね'});
+        return;
+      }
       if(actual(category)>0&&((c!==null&&actual(category)>c)||isBeautyAudit)){
         const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:isBeautyAudit?['複数世帯の美容・服飾費は、根拠のない平均値を作らず価値判断で確認します。','今の美容・服飾費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
@@ -1323,6 +1330,11 @@ function AdditionalAppraisalScene({
       {label:'1つくらいありそう',sub:'使ってない契約があるかも',patch:{subUsage:'one'},kind:'review',feedback:'要確認'},
       {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
       {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
+    ],
+    beautySex:[
+      {label:'男性',sub:'男性×年齢の基準がある場合に使用',patch:{beautySex:'male'},kind:'review',feedback:'基準を更新'},
+      {label:'女性',sub:'女性×年齢の基準がある場合に使用',patch:{beautySex:'female'},kind:'review',feedback:'基準を更新'},
+      {label:'回答しない',sub:'男女計×年齢の基準で続ける',patch:{beautySex:'preferNot'},kind:'review',feedback:'男女計で診断'},
     ],
     carNeed:[
       {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
