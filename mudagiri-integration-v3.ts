@@ -1,13 +1,14 @@
 import type { Category, Satisfaction, DiagnosisInput, CategoryResult } from './mudagiri-diagnosis-v2';
 import { runDiagnosisV2 } from './mudagiri-diagnosis-v2';
 import type { EducationStage } from './comparable-resolver-v1';
-import { resolveComparableV2, type EducationStageV2 } from './comparable-resolver-v2';
+import { resolveComparableV2, type EducationStageV2, type ComparableV2 } from './comparable-resolver-v2';
 
 export type AnnualIncomeBand='under500'|'500_599'|'600_699'|'700_799'|'800_999'|'1000plus'|'unknown';
 export type Applicability='applicable'|'na';
 export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
+export interface HousingScreenV3 { p50Upper:number|null; p75Lower:number|null; p90Lower:number|null; band:'standard'|'higher'|'check'|'detail'|'audit' }
 export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown' }
 export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null }
@@ -21,6 +22,17 @@ export function assertRawExpense(x:RawExpense){if(x.applicability==='na'&&(x.amo
 function knownAmounts(raw:RawExpenses){const out:Partial<Record<Category,number>>={};for(const c of ALL_CATEGORIES){const x=raw[c];assertRawExpense(x);if(x.applicability==='applicable'&&x.known&&x.amount!==null)out[c]=x.amount}return out}
 
 export function buildComparableV3(a:{household:'single'|'multi';householdSize?:number;age:number;annualIncomeBand:AnnualIncomeBand;prefecture:string;month?:number;housingType?:string;raw:RawExpenses;educationStage?:EducationStage;educationChildren?:{stage:EducationStageV2}[]}){const annual=resolverAnnualIncome(a.annualIncomeBand);const resolved=resolveComparableV2({household:a.household,householdSize:a.householdSize,age:a.age,prefecture:a.prefecture,month:a.month??new Date().getMonth()+1,housingType:a.housingType,educationChildren:a.educationChildren});const comparable=Object.fromEntries(Object.entries(resolved).map(([k,v])=>[k,v?.value??null])) as Partial<Record<Category,number|null>>;return {comparable,benchmarkMeta:resolved,annualIncomeResolverInput:annual,incomeCorrectionApplied:false}}
+
+const bandLower=(s:unknown)=>{const m=String(s??'').replace(/,/g,'').match(/(\d+)～/);return m?Number(m[1]):null};
+const bandUpper=(s:unknown)=>{const m=String(s??'').replace(/,/g,'').match(/～(\d+)円未満/);return m?Number(m[1]):null};
+export function housingScreenV3(actual:number,meta?:ComparableV2):HousingScreenV3{
+ const p50Upper=bandUpper(meta?.meta?.p50Band),p75Lower=bandLower(meta?.meta?.p75Band),p90Lower=bandLower(meta?.meta?.p90Band);
+ if(meta?.meta?.reason!=='PRIVATE_RENT_DISTRIBUTION'||p50Upper===null||p75Lower===null||p90Lower===null)return {p50Upper,p75Lower,p90Lower,band:'audit'};
+ if(actual>=p90Lower)return {p50Upper,p75Lower,p90Lower,band:'detail'};
+ if(actual>=p75Lower)return {p50Upper,p75Lower,p90Lower,band:'check'};
+ if(actual<p50Upper)return {p50Upper,p75Lower,p90Lower,band:'standard'};
+ return {p50Upper,p75Lower,p90Lower,band:'higher'};
+}
 
 export function runDiagnosisAdapterV3(a:{monthlyTakeHome:number;monthlySavingInvestment?:number;emergencyMonths?:number;raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;appraisal?:Partial<Record<Category,AppraisalV3>>}){if(!(a.monthlyTakeHome>0))throw new Error('INVALID_MONTHLY_TAKE_HOME');const categories:DiagnosisInput['categories']=[];for(const category of ALL_CATEGORIES){const raw=a.raw[category];assertRawExpense(raw);if(raw.applicability!=='applicable'||!raw.known||raw.amount===null)continue;const ap=a.appraisal?.[category];categories.push({category,actual:raw.amount,comparable:a.comparable[category]??null,satisfaction:ap?.satisfaction,unusedAmount:category==='sub'&&typeof ap?.subUnusedAmount==='number'?Math.max(0,Math.min(raw.amount,ap.subUnusedAmount)):undefined,cancellationConfirmed:category==='sub'?ap?.subCancellationConfirmed:undefined})}const saving=Math.max(0,a.monthlySavingInvestment??0);const knownSpend=categories.reduce((s,x)=>s+x.actual,0);const input:DiagnosisInput={monthlyTakeHomeIncome:a.monthlyTakeHome,monthlySavingInvestment:saving,freeCashFlow:a.monthlyTakeHome-knownSpend-saving,emergencyMonths:Math.max(0,a.emergencyMonths??0),categories};return {input,diagnosis:runDiagnosisV2(input)}}
 
