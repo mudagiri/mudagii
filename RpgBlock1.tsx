@@ -421,7 +421,7 @@ export default function RpgBlock1({
               onBack={previousQuestion}
             />
           ) : scene === 'complete' ? (
-            <CompleteScene onStartScan={() => { setAnnualIncomeBand('unknown'); onEvent?.('income_calibration_skipped',{reason:'not_used_by_resolver_v2'}); setScene('scan'); }} />
+            <CompleteScene onStartScan={() => setScene('incomeCalibration')} />
           ) : scene === 'incomeCalibration' ? (
             <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onEvent?.('income_calibration_completed',{band});setScanIndex(0);setScene('scan')}} />
           ) : scene === 'scan' && currentScan ? (
