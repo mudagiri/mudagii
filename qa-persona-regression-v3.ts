@@ -5,7 +5,7 @@ type Status='battle'|'protect'|'safe'|'review'|'na';
 type Case={name:string;income:number;amounts:Partial<Record<Category,number>>;comparable?:Partial<Record<Category,number|null>>;appraisal?:Partial<Record<Category,AppraisalV3>>;expect:Partial<Record<Category,Status>>;confirmedMonthly?:number};
 const raw=(amounts:Case['amounts']):RawExpenses=>{const r=emptyRawExpenses();for(const [k,v] of Object.entries(amounts) as [Category,number][])r[k]={amount:v,known:true,applicability:'applicable'};return r};
 const cases:Case[]=[
- {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'safe',energy:'safe',food:'safe',rent:'protect'},confirmedMonthly:0},
+ {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'review',energy:'safe',food:'safe',rent:'protect'},confirmedMonthly:0},
  {name:'通信だけ高い単身',income:300000,amounts:{mobile:14000},comparable:{mobile:6000},expect:{mobile:'review'},confirmedMonthly:0},
  {name:'光熱費だけ高い単身',income:300000,amounts:{energy:22000},comparable:{energy:11000},expect:{energy:'review'},confirmedMonthly:0},
  {name:'日用品だけ高い単身',income:300000,amounts:{daily:18000},comparable:{daily:9000},expect:{daily:'review'},confirmedMonthly:0},
@@ -36,10 +36,11 @@ const cases:Case[]=[
  {name:'車費は高くても必要性未鑑定',income:500000,amounts:{car:80000},expect:{car:'review'},confirmedMonthly:0},
  {name:'車は生活仕事に必須',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'essential'}},expect:{car:'protect'},confirmedMonthly:0},
  {name:'車の負担を本人も見直したい',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'burden'}},expect:{car:'battle'},confirmedMonthly:0},
- {name:'境界値:比較目安と同額',income:300000,amounts:{mobile:6000,energy:11000,daily:9000},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'safe',energy:'safe',daily:'safe'},confirmedMonthly:0},
+ {name:'境界値:比較目安と同額',income:300000,amounts:{mobile:6000,energy:11000,daily:9000},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'safe',daily:'safe'},confirmedMonthly:0},
  {name:'境界値:比較目安を1円超過',income:300000,amounts:{mobile:6001,energy:11001,daily:9001},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'review',daily:'review'},confirmedMonthly:0},
  {name:'ゼロ支出',income:300000,amounts:{mobile:0,sub:0,insurance:0},expect:{mobile:'safe',sub:'safe',insurance:'safe'},confirmedMonthly:0},
- {name:'比較目安がなくても金額だけでムダにしない',income:300000,amounts:{mobile:12000,energy:20000,daily:18000},expect:{mobile:'safe',energy:'safe',daily:'safe'},confirmedMonthly:0}
+ {name:'比較目安がなくても金額だけでムダにしない',income:300000,amounts:{mobile:12000,energy:20000,daily:18000},expect:{mobile:'review',energy:'safe',daily:'safe'},confirmedMonthly:0},
+ {name:'通信回線種別を回答しても削減額は未確定',income:300000,amounts:{mobile:12000},appraisal:{mobile:{mobileCarrier:'major'}},expect:{mobile:'review'},confirmedMonthly:0}
 ];
 
 let failed=0;
