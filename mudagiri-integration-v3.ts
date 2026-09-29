@@ -18,6 +18,7 @@ export function communicationScreenV3(actual:number,carrier:'major'|'mvno'|'unkn
 }
 export interface AppraisalV3 { satisfaction?:Satisfaction; beautySex?:'male'|'female'|'preferNot'; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown'; energyPersistence?:'persistent'|'temporary'|'unknown'; dailyPersistence?:'persistent'|'temporary'|'unknown' }
 export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
+export type EncounterStrength='strong'|'medium'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null; benchmarkMeta:ComparableV2|null }
 
 export const ALL_CATEGORIES:Category[]=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
@@ -124,4 +125,33 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
 }
 
-export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;benchmarkMeta?:Partial<Record<Category,ComparableV2>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category],a.benchmarkMeta?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null,benchmarkMeta:a.benchmarkMeta?.[category]??null}});return {categories,battleTargets:categories.filter(x=>x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0).sort((x,y)=>(y.battleBasis==='confirmed'?2:1)-(x.battleBasis==='confirmed'?2:1)||(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3)}}
+export function encounterStrengthV31(x:FinalCategoryV3):EncounterStrength{
+ if(x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0)return 'strong';
+ if(x.status!=='review')return 'none';
+ const ap=x.appraisal;
+ if(x.category==='mobile'&&x.raw.amount!==null){const band=communicationScreenV3(x.raw.amount,ap?.mobileCarrier??'unknown').band;return band==='detail'?'strong':band==='check'?'medium':'none';}
+ if(x.category==='energy')return x.battleBasis==='benchmark_check'&&ap?.energyPersistence==='persistent'?'strong':'none';
+ if(x.category==='daily')return x.battleBasis==='benchmark_check'&&ap?.dailyPersistence==='persistent'?'strong':'none';
+ if(x.category==='sub')return x.battleBasis==='appraisal_review'?'medium':'none';
+ if(x.category==='car')return ap?.carNeed==='notNeeded'?'strong':ap?.carNeed==='burden'?'medium':'none';
+ if(x.category==='rent')return ap?.rentPreference==='burdenHigh'?'strong':ap?.rentPreference==='burdenSome'?'medium':x.battleBasis==='benchmark_check'?'medium':'none';
+ if(x.category==='insurance'){
+   if(ap?.insurancePurpose==='unclear'&&(ap?.insuranceLastReview==='over3y'||ap?.insuranceLastReview==='never'))return 'strong';
+   return x.battleBasis==='appraisal_review'?'medium':'none';
+ }
+ if(x.category==='childEducation')return ap?.educationPreference==='reviewHigh'?'strong':ap?.educationPreference==='reviewSome'?'medium':'none';
+ if(x.category==='selfDevelopment')return ap?.selfDevelopmentValue==='inertia'?'strong':ap?.selfDevelopmentValue==='unclear'?'medium':'none';
+ if(x.category==='food'||x.category==='fun'||x.category==='beautyFashion')return ap?.satisfaction==='waste'?'strong':ap?.satisfaction==='inertia'?'medium':'none';
+ return 'none';
+}
+
+function encounterPriorityV31(x:FinalCategoryV3){
+ const strength=encounterStrengthV31(x);
+ if(strength==='none')return -1;
+ const confirmed=x.status==='battle'&&x.battleBasis==='confirmed'?1:0;
+ const burden=x.raw.amount!==null&&x.raw.amount>0&&x.comparable!==null&&x.comparable>0?Math.max(0,x.raw.amount/x.comparable-1):0;
+ const share=x.raw.amount!==null&&x.raw.amount>0?Math.min(1,x.raw.amount/100000):0;
+ return confirmed*10000+(strength==='strong'?1000:100)+Math.min(500,burden*100)+share;
+}
+
+export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;benchmarkMeta?:Partial<Record<Category,ComparableV2>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category],a.benchmarkMeta?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null,benchmarkMeta:a.benchmarkMeta?.[category]??null}});const battleTargets=categories.filter(x=>x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0).sort((x,y)=>(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3);const encounterTargets=categories.filter(x=>encounterStrengthV31(x)==='strong').sort((x,y)=>encounterPriorityV31(y)-encounterPriorityV31(x)).slice(0,3);const secondaryReviewTargets=categories.filter(x=>encounterStrengthV31(x)==='medium').sort((x,y)=>encounterPriorityV31(y)-encounterPriorityV31(x));return {categories,battleTargets,encounterTargets,secondaryReviewTargets}}
