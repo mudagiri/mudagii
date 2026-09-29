@@ -284,7 +284,7 @@ export default function RpgBlock1({
       const reason='保険料の高さだけではムダ判定しません。保障の把握・見直し状況をまとめて確認します。';
       qs.push({category:'insurance',kind:'insuranceSummary',reason,question:'今の保険、どれくらい把握・見直しできてる？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationStage',reason:'教育段階が分かると、文科省の対応する参考値と比較できます。複数のお子さんがいる場合は、支出の中心に一番近い段階を選んでください。',question:'教育費の中心に一番近い段階は？'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
+    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
   },[incomeNumber,normalizedRaw,comparable,flow.household]);
