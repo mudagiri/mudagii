@@ -19,7 +19,7 @@ type Props = {
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
 };
 
-type Scene = 'opening' | 'mode' | 'profile' | 'complete' | 'incomeCalibration' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
+type Scene = 'opening' | 'mode' | 'profile' | 'incomeCalibration' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
 
 type ScanPhase = 'input' | 'trace' | 'reveal' | 'detected' | 'noSpend';
 
@@ -418,8 +418,6 @@ export default function RpgBlock1({
               onNext={nextQuestion}
               onBack={previousQuestion}
             />
-          ) : scene === 'complete' ? (
-            <CompleteScene onStartScan={() => setScene('incomeCalibration')} />
           ) : scene === 'incomeCalibration' ? (
             <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
           ) : scene === 'scan' && currentScan ? (
@@ -826,45 +824,6 @@ function ProfileInput({
         <span>/ 月</span>
       </div>
     </label>
-  );
-}
-
-function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
-  return (
-    <div className="pre-profile pre-complete">
-      <img
-        className="pre-bg pre-bg-profile"
-        src={`${ASSET}/BG-002_PROFILE_FIXED.png`}
-        alt=""
-        aria-hidden="true"
-      />
-      <div className="pre-profile-overlay pre-complete-overlay" aria-hidden="true" />
-
-      <header className="pre-profile-hud">
-        <div className="pre-profile-hud-row">
-          <span>冒険準備</span>
-          <b>6 / 6</b>
-        </div>
-        <div className="pre-progress-track" aria-hidden="true">
-          <span style={{ width: '100%' }} />
-        </div>
-      </header>
-
-      <img
-        className="pre-profile-mudagiri pre-complete-mudagiri"
-        src={`${ASSET}/MUDAGIRI_PROFILE_Q5.png`}
-        alt="戦闘準備を整えたムダギリくん"
-      />
-
-      <section className="pre-panel pre-complete-panel">
-        <div className="pre-complete-label">冒険者データ 100%</div>
-        <h2 className="pre-complete-title">準備完了！<br />ムダの正体を暴くぞ！</h2>
-
-        <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onStartScan}>
-          家計スキャンを開始 ▶
-        </button>
-      </section>
-    </div>
   );
 }
 
