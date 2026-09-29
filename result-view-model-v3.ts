@@ -89,7 +89,11 @@ function reason(x:FinalCategoryV3):string{
    if(x.appraisal?.carNeed==='notNeeded')return 'なくても困らない可能性があるため、保有コストの内訳を確認する対象です。削減額はまだ確定していません。';
    return '車は金額だけでムダ判定せず、生活・仕事上の必要性と保有コストの内訳を確認します。';
   }
-  if(x.category==='insurance')return '保障内容や目的まで確認しないと、金額だけではムダ判定できません。';
+  if(x.category==='insurance'){
+   if(x.appraisal?.insurancePurpose==='unclear')return '保障目的がよく分からないため、契約内容を確認する対象です。保険料の金額だけでムダ・削減額とは判定していません。';
+   if(x.appraisal?.insuranceLastReview==='over3y'||x.appraisal?.insuranceLastReview==='never'||x.appraisal?.insuranceLastReview==='unknown')return '保障目的は一部把握していますが、見直しから時間が経っている・時期が不明なため契約内容を確認します。削減額はまだ確定していません。';
+   return '保障内容や目的の追加確認が必要です。保険料の金額だけではムダ・削減額とは判定していません。';
+  }
   if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
   if(x.category==='childEducation')return '子どもの年齢・進路・必要性を含めて判断するため、要鑑定です。';
   if(x.category==='selfDevelopment')return '目的・利用状況・成果を含めて判断するため、要鑑定です。';
