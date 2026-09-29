@@ -19,7 +19,8 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    return()=>window.clearTimeout(id);
  },[]);
  async function share(){
-  const text=`ムダギリ診断\n私のお金タイプは――\n${vm.type.name}\n${vm.type.catchphrase??vm.type.description??''}\nあなたは何タイプ？`;
+  const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
+  const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n#ムダギリ診断`;
   onEvent?.('share_clicked',{typeCode:vm.type.code});
   try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed');return}}catch{}
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{fallback:'clipboard'})}catch{}
