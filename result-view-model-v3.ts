@@ -80,7 +80,10 @@ function reason(x:FinalCategoryV3):string{
    return '単月の金額だけではムダと断定せず、継続性を追加確認します。';
   }
   if(x.category==='beautyFashion'&&x.comparable===null)return '複数世帯向けの根拠十分な比較値を置かず、あなた自身の価値判断で確認しています。改善額はまだ確定していません。';
-  if(x.category==='sub')return '使っていない可能性はありますが、未使用額が分からないため改善額には含めていません。';
+  if(x.category==='sub'){
+   if((x.appraisal?.subUnusedAmount??0)>0&&x.appraisal?.subCancellationConfirmed!==true)return '未使用額は確認できていますが、解約・停止できる確認が取れていないため改善額には含めていません。';
+   return '使っていない可能性はありますが、未使用額が確定していないため改善額には含めていません。';
+  }
   if(x.category==='insurance')return '保障内容や目的まで確認しないと、金額だけではムダ判定できません。';
   if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
   if(x.category==='childEducation')return '子どもの年齢・進路・必要性を含めて判断するため、要鑑定です。';
