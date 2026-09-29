@@ -52,6 +52,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
      result:{typeCode:scored.code,typeName:content.name,counts:vm.counts,improvement:vm.improvement,
        finalStatuses:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}])),
+       finalDetails:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis}])),
        battleTargets:vm.battleTargets.map((x:any)=>x.category)}
    };
    await store?.saveDiagnosis(snapshot);
