@@ -1,4 +1,5 @@
-import {emptyRawExpenses,runDiagnosisAdapterV3,buildFinalJudgementsV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
+import {emptyRawExpenses,runDiagnosisAdapterV3,buildFinalJudgementsV3,buildComparableV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
+import type {EducationStageV2} from './comparable-resolver-v2';
 import type {Category,Satisfaction} from './mudagiri-diagnosis-v2';
 
 const CATS:Category[]=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
@@ -18,10 +19,15 @@ const battleHistogram=Array.from({length:13},()=>0);
 
 for(let id=1;id<=10000;id++){
  const household=pick(['single','multi'] as const);
+ const householdSize=household==='single'?1:pick([2,3,4,5,6]);
+ const prefecture=pick(['北海道','宮城県','東京都','神奈川県','新潟県','愛知県','大阪府','広島県','福岡県','沖縄県']);
+ const age=pick([25,32,41,55,67]);
+ const month=pick([1,2,4,7,10,12]);
+ const housingType=pick(['賃貸','持ち家（ローンあり）','持ち家（ローンなし）'] as const);
  const income=money(household==='single'?340000:520000,.65)||180000;
  const bases:Record<Category,number>={mobile:household==='single'?6000:9500,energy:household==='single'?12000:23000,sub:5000,car:35000,food:household==='single'?52000:90000,daily:household==='single'?8000:13000,fun:household==='single'?18000:26000,beautyFashion:household==='single'?12000:18000,rent:household==='single'?95000:145000,insurance:household==='single'?12000:28000,childEducation:45000,selfDevelopment:18000};
  const raw=emptyRawExpenses();
- const comparable:Partial<Record<Category,number|null>>={};
+ let comparable:Partial<Record<Category,number|null>>={};
  const appraisal:Partial<Record<Category,AppraisalV3>>={};
  for(const c of CATS){
    const applicable=c!=='childEducation'||(household==='multi'&&rnd()<.55);
@@ -30,8 +36,6 @@ for(let id=1;id<=10000;id++){
    const zero=rnd()<.08;
    const amount=zero?0:money(bases[c],.8);
    raw[c]={amount,known:true,applicability:'applicable'};
-   if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c))comparable[c]=Math.round(bases[c]*(.9+rnd()*.2));
-   if(c==='childEducation')comparable[c]=Math.round(bases[c]*(.8+rnd()*.4));
    if(c==='food'||c==='fun'||c==='beautyFashion')appraisal[c]={satisfaction:satisfaction()};
    if(c==='sub'&&amount>0){
      const usage=pick(['none','one','several','unknown'] as const);
@@ -44,10 +48,12 @@ for(let id=1;id<=10000;id++){
      appraisal[c]=strong?{insurancePurpose:'clear',insuranceLastReview:'within1y',insuranceLifeChange:'reviewed',insurancePublicBenefits:'considered',insuranceDuplicate:'none'}:
        {insurancePurpose:pick(['mostly','unclear'] as const),insuranceLastReview:pick(['1to3y','over3y','never','unknown'] as const),insuranceLifeChange:pick(['none','notReviewed','unknown'] as const),insurancePublicBenefits:pick(['maybe','not','unknown'] as const),insuranceDuplicate:pick(['none','possible','unknown'] as const)};
    }
-   if(c==='childEducation'&&amount>0)appraisal[c]={educationPreference:pick(['reviewHigh','reviewSome','necessary','protect'] as const)};
+   if(c==='childEducation'&&amount>0){const stages:EducationStageV2[]=['publicKindergarten','privateKindergarten','publicElementary','privateElementary','publicJuniorHigh','privateJuniorHigh','publicHigh','privateHigh'];const count=Math.max(1,Math.min(4,householdSize-1));appraisal[c]={educationPreference:pick(['reviewHigh','reviewSome','necessary','protect'] as const),educationChildCount:count,educationChildren:Array.from({length:count},()=>({stage:pick(stages)}))};}
    if(c==='selfDevelopment'&&amount>0)appraisal[c]={selfDevelopmentValue:pick(['inertia','unclear','purpose','results'] as const)};
  }
  try{
+   const bundle=buildComparableV3({household,householdSize,age,annualIncomeBand:'unknown',prefecture,month,housingType,raw,educationChildren:appraisal.childEducation?.educationChildren});
+   comparable=bundle.comparable;
    const d=runDiagnosisAdapterV3({monthlyTakeHome:Math.max(120000,income),raw,comparable,appraisal});
    const f=buildFinalJudgementsV3({raw,comparable,diagnosis:d.diagnosis,appraisal});
    const battle=f.categories.filter(x=>x.status==='battle');
