@@ -420,7 +420,7 @@ export default function RpgBlock1({
               onBack={previousQuestion}
             />
           ) : scene === 'incomeCalibration' ? (
-            <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
+            <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(QUESTIONS.length-1);setScene('profile')}} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
@@ -792,7 +792,7 @@ function ProfileInput({
   );
 }
 
-function IncomeCalibrationScene({value,onPick}:{value:AnnualIncomeBand;onPick:(v:AnnualIncomeBand)=>void}){
+function IncomeCalibrationScene({value,onPick,onBack}:{value:AnnualIncomeBand;onPick:(v:AnnualIncomeBand)=>void;onBack:()=>void}){
  const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
  return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/>
   <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>冒険準備</span><b>7 / 7</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
@@ -800,6 +800,7 @@ function IncomeCalibrationScene({value,onPick}:{value:AnnualIncomeBand;onPick:(v
   <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
   <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収でOK。家計全体のバランスや、あなたに近い条件で結果を見るために使うぞ。</p>
   <div className="profile-choice-grid profile-choice-grid-2 income-band-grid">{opts.map(([v,l],i)=><button key={v} type="button" className={`profile-choice ${value===v?'is-selected':''} ${i===opts.length-1?'income-band-last':''}`} onClick={()=>onPick(v)}>{l}</button>)}</div>
+  <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
  </section></div>
 }
 
