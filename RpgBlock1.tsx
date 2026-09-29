@@ -289,8 +289,9 @@ export default function RpgBlock1({
     if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
-      if(actual(category)>0&&c!==null&&actual(category)>c){
-        const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
+      const isBeautyAudit=category==='beautyFashion'&&comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT';
+      if(actual(category)>0&&((c!==null&&actual(category)>c)||isBeautyAudit)){
+        const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:isBeautyAudit?['複数世帯の美容・服飾費は、根拠のない平均値を作らず価値判断で確認します。','今の美容・服飾費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
