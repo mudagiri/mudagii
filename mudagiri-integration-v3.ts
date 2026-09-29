@@ -9,7 +9,7 @@ export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
 export interface HousingScreenV3 { p50Upper:number|null; p75Lower:number|null; p90Lower:number|null; band:'standard'|'higher'|'check'|'detail'|'audit' }
-export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown'; energyPersistence?:'persistent'|'temporary'|'unknown' }
+export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown'; energyPersistence?:'persistent'|'temporary'|'unknown'; dailyPersistence?:'persistent'|'temporary'|'unknown' }
 export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null }
 
@@ -55,6 +55,14 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    if(engine?.comparisonDifference!==null&&(engine?.comparisonDifference??0)>0){
      if(ap?.energyPersistence==='persistent')return {status:'review',attentionFlag:true,battleBasis:'benchmark_check'};
      if(ap?.energyPersistence==='temporary')return {status:'safe',attentionFlag:false,battleBasis:'none'};
+     return {status:'review',attentionFlag:true,battleBasis:'none'};
+   }
+   return {status:'safe',attentionFlag:false,battleBasis:'none'};
+ }
+ if(category==='daily'){
+   if(engine?.comparisonDifference!==null&&(engine?.comparisonDifference??0)>0){
+     if(ap?.dailyPersistence==='persistent')return {status:'review',attentionFlag:true,battleBasis:'benchmark_check'};
+     if(ap?.dailyPersistence==='temporary')return {status:'safe',attentionFlag:false,battleBasis:'none'};
      return {status:'review',attentionFlag:true,battleBasis:'none'};
    }
    return {status:'safe',attentionFlag:false,battleBasis:'none'};
