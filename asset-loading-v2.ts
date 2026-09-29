@@ -19,8 +19,8 @@ export function preloadOpening(){
 export function preloadProfile(questionSprite?:string,nextSprite?:string){
  preloadList([`${PRE}/BG-002_PROFILE_FIXED.png`,questionSprite,nextSprite]);
 }
-export function preloadScan(current?:EnemyAssetCategory,next?:EnemyAssetCategory){
- const cats=[current,next].filter(Boolean) as EnemyAssetCategory[];
+export function preloadScan(current?:EnemyAssetCategory){
+ const cats=[current].filter(Boolean) as EnemyAssetCategory[];
  preloadList([
   `${BATTLE}/BG-003_SCAN_BATTLE.png`,
   `${PRE}/MUDAGIRI_PROFILE_Q1.png`,
