@@ -42,7 +42,6 @@ type AppraisalAnswer = {
   educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
   mobileCarrier?: 'major'|'mvno'|'unknown';
-  mobileDeviceMixed?: boolean|'unknown';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
 type AppraisalQuestion = {
@@ -51,7 +50,7 @@ type AppraisalQuestion = {
   question: string;
   maxAmount?: number;
   educationCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'mobileDeviceMixed';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -1346,11 +1345,6 @@ function AdditionalAppraisalScene({
       {label:'大手キャリア系',sub:'docomo・au・SoftBankなど',patch:{mobileCarrier:'major'},kind:'review',feedback:'価格帯を照合'},
       {label:'格安SIM系',sub:'MVNOなど',patch:{mobileCarrier:'mvno'},kind:'review',feedback:'価格帯を照合'},
       {label:'分からない',sub:'無理に推測しない',patch:{mobileCarrier:'unknown'},kind:'review',feedback:'要確認'},
-    ],
-    mobileDeviceMixed:[
-      {label:'端末代も入ってる',sub:'通信サービス料だけではない',patch:{mobileDeviceMixed:true},kind:'review',feedback:'端末代を分けて確認'},
-      {label:'入ってない',sub:'通信サービス料として見られる',patch:{mobileDeviceMixed:false},kind:'review',feedback:'価格帯と照合'},
-      {label:'分からない',sub:'請求明細を確認',patch:{mobileDeviceMixed:'unknown'},kind:'review',feedback:'要確認'},
     ],
     subCancellation:[
       {label:'解約・停止できる',sub:'次回以降の支払いを止められる',patch:{subCancellationConfirmed:true},kind:'battle',feedback:'ここで初めて改善額として確定します'},
