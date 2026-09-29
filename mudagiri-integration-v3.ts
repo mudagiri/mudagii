@@ -108,8 +108,9 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  }
  if((category==='food'||category==='fun'||category==='beautyFashion')){
    if(ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(engine?.needsReview&&(ap?.satisfaction==='waste'||ap?.satisfaction==='inertia'))return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
+   if((ap?.satisfaction==='waste'||ap?.satisfaction==='inertia')&&(engine?.needsReview||category==='beautyFashion'&&benchmark?.confidence==='AUDIT'))return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    if(ap?.satisfaction==='satisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
+   if(category==='beautyFashion'&&benchmark?.confidence==='AUDIT'&&raw.known&&raw.amount!==null&&raw.amount>0)return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  // Benchmark-only CHECK is information, not an enemy. Averages never create an RPG battle by themselves.
  if(engine?.needsReview)return {status:'review',attentionFlag:true,battleBasis:'none'};
