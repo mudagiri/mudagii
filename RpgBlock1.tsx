@@ -42,6 +42,7 @@ type AppraisalAnswer = {
   educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
   mobileCarrier?: 'major'|'mvno'|'unknown';
+  energyPersistence?: 'persistent'|'temporary'|'unknown';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
 type AppraisalQuestion = {
@@ -51,7 +52,7 @@ type AppraisalQuestion = {
   maxAmount?: number;
   educationCount?: number;
   educationMaxCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'energyPersistence';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -277,6 +278,9 @@ export default function RpgBlock1({
     const qs:AppraisalQuestion[]=[];
     if(actual('mobile')>0){
       qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、大手キャリアと格安SIMで基準帯が違います。平均額には変換せず、まず回線タイプだけ確認します。',question:'スマホ回線はどのタイプ？'});
+    }
+    if(actual('energy')>0&&comp('energy')!==null&&actual('energy')>(comp('energy')??0)){
+      qs.push({category:'energy',kind:'energyPersistence',reason:'光熱費は季節や水道の隔月請求で一時的に上がるため、1か月だけでは見直し判定しません。',question:'この金額、最近2〜3か月くらい続いてる？'});
     }
     if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
@@ -1343,6 +1347,11 @@ function AdditionalAppraisalScene({
       {label:'少し負担を感じる',sub:'家計とのバランスが気になる',patch:{educationPreference:'reviewSome'}},
       {label:'必要な教育費',sub:'今の内容は維持したい',patch:{educationPreference:'necessary'}},
       {label:'優先して守りたい',sub:'他を削ってでも大切',patch:{educationPreference:'protect'}},
+    ],
+    energyPersistence:[
+      {label:'2〜3か月くらい続いてる',sub:'一時的ではなく高めの状態が続いている',patch:{energyPersistence:'persistent'},kind:'review',feedback:'継続しているため要確認'},
+      {label:'今月だけ高い',sub:'季節要因・水道の隔月請求など',patch:{energyPersistence:'temporary'},kind:'safe',feedback:'単月だけではムダ判定しません'},
+      {label:'分からない',sub:'無理に推測しない',patch:{energyPersistence:'unknown'},kind:'review',feedback:'まだ判定保留'},
     ],
     mobileCarrier:[
       {label:'大手キャリア系',sub:'docomo・au・SoftBankなど',patch:{mobileCarrier:'major'},kind:'review',feedback:'価格帯を照合'},
