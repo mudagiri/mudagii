@@ -353,7 +353,7 @@ export default function RpgBlock1({
   useEffect(()=>{preloadOpening()},[]);
   useEffect(()=>{if(scene==='profile')preloadProfile(question?.sprite,QUESTIONS[questionIndex+1]?.sprite)},[scene,questionIndex,question]);
   useEffect(()=>{if(scene==='scan')preloadScan(currentScan?.category)},[scene,scanIndex,currentScan,applicableScanCategories]);
-  useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.map(x=>x.category))},[scene,appraisalQuestions]);
+  useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.slice(appraisalIndex,appraisalIndex+2).map(x=>x.category))},[scene,appraisalQuestions,appraisalIndex]);
   useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(battleTargets.map(x=>x.category))},[scene,battleTargets]);
 
   const beginAdventure = () => setScene('mode');
