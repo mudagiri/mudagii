@@ -10,7 +10,7 @@ import {buildResultViewModelV3} from './result-view-model-v3';
 import type {AnnualIncomeBand,RawExpenses,FinalCategoryV3,AppraisalV3} from './mudagiri-integration-v3';
 
 export type CompletedV3={
- profile:{prefecture:string;age:number;household:FamilyProfile;workStyle:string;housingType:string;monthlyTakeHome:number};
+ profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
  annualIncomeBand:AnnualIncomeBand;
  annualIncomeResolverInput:number|null;
  rawExpenses:RawExpenses;
