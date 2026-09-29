@@ -36,6 +36,7 @@ type AppraisalAnswer = {
   selfDevelopmentValue?: 'inertia'|'unclear'|'purpose'|'results';
   subUnusedAmount?: number;
   subUsage?: 'none'|'one'|'several'|'unknown';
+  subCancellationConfirmed?: boolean;
   educationStage?: EducationStage;
   educationChildren?: {stage:EducationStageV2}[];
   educationChildCount?: number;
@@ -48,7 +49,7 @@ type AppraisalQuestion = {
   question: string;
   maxAmount?: number;
   educationCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'educationChildCount'|'educationChildren'|'carNeed';
+  kind: 'satisfaction'|'rent'|'insuranceSummary'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -272,7 +273,7 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
-    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'ここだけ金額が分かれば、推測ではなく改善額として確定できます。',question:'使っていない分は、月いくらくらい？'});}
+    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'ここだけ金額が分かれば、推測ではなく改善額として確定できます。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
       if(actual(category)>0&&c!==null&&actual(category)>c){
@@ -1330,6 +1331,10 @@ function AdditionalAppraisalScene({
       {label:'必要な教育費',sub:'今の内容は維持したい',patch:{educationPreference:'necessary'}},
       {label:'優先して守りたい',sub:'他を削ってでも大切',patch:{educationPreference:'protect'}},
     ],
+    subCancellation:[
+      {label:'解約・停止できる',sub:'次回以降の支払いを止められる',patch:{subCancellationConfirmed:true},kind:'battle',feedback:'ここで初めて改善額として確定します'},
+      {label:'まだ確認できていない',sub:'契約条件を確認してから判断',patch:{subCancellationConfirmed:false},kind:'review',feedback:'未確定なので改善額には含めません'},
+    ],
     selfDevelopment:[
       {label:'惰性になってる',sub:'続ける理由が弱い',patch:{selfDevelopmentValue:'inertia'}},
       {label:'効果がよく分からない',sub:'成果とのつながりが曖昧',patch:{selfDevelopmentValue:'unclear'}},
@@ -1380,7 +1385,7 @@ function AdditionalAppraisalScene({
           <div className="appraisal-options">
             <label className="appraisal-amount-input"><span>月額</span><input inputMode="numeric" pattern="[0-9]*" value={amountText} onChange={e=>setAmountText(e.target.value.replace(/[^0-9]/g,''))} placeholder="例 1200" /><b>円</b></label>
             {typeof item.maxAmount==='number'&&<div className={`appraisal-amount-limit ${amountTooHigh?'is-error':''}`}>{amountTooHigh?`サブスク総額 ¥${item.maxAmount.toLocaleString()} を超えています`:`サブスク総額 ¥${item.maxAmount.toLocaleString()} 以下で入力`}</div>}
-            <button type="button" className="appraisal-option" disabled={!amountText||amountNumber<=0||amountTooHigh} onClick={()=>commit({subUnusedAmount:amountNumber},'battle','改善額を確定',`月¥${amountNumber.toLocaleString()}を確定改善額として記録`)}><strong>この金額で確定</strong><span>実際に使っていない月額だけを入力</span></button>
+            <button type="button" className="appraisal-option" disabled={!amountText||amountNumber<=0||amountTooHigh} onClick={()=>commit({subUnusedAmount:amountNumber,subCancellationConfirmed:undefined},'review','未使用額を確認',`月¥${amountNumber.toLocaleString()}。停止可否を確認してから改善額を確定します`)}><strong>この金額で次へ</strong><span>次に解約・停止できるか確認</span></button>
             <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined},'review','金額は未確定','推測額は改善額に含めません')}><strong>金額は分からない</strong><span>あとで明細を確認する</span></button>
           </div>
         ) : (
