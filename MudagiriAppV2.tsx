@@ -1,4 +1,4 @@
-import React,{useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import RpgBlock1,{type FamilyProfile} from './RpgBlock1';
 import ResultScreenV3 from './ResultScreenV3';
 import type {ToneMode} from './tone-mode-v3';
@@ -32,6 +32,14 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    onEvent?.(name,data);
    store?.appendEvent(eventV3(anonymousUserId,diagnosisId,name,data));
  };
+
+ useEffect(()=>{
+   if(typeof window==='undefined')return;
+   const q=new URLSearchParams(window.location.search);
+   if(q.get('ref')!=='share')return;
+   const typeCode=q.get('type')??undefined;
+   emit('share_referral_landed',{source:'type_share',...(typeCode?{typeCode}:{})});
+ },[]);
 
  const complete=async(v:CompletedV3)=>{
    const scored=scoreTypeAnswersV31(v.typeAnswers);
