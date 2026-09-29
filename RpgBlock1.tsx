@@ -1018,7 +1018,7 @@ function ScanScene({
           <div className="scan-enemy-stage" style={enemyStageStyle}>
             <img
               className={`scan-v21-enemy ${isTrace ? 'scan-v21-trace' : 'scan-v21-normal'}`}
-              src={enemy.normal}
+              src={isTrace ? enemy.trace : enemy.normal}
               alt={isTrace ? '' : enemy.name}
               aria-hidden={isTrace ? 'true' : undefined}
             />
@@ -1606,7 +1606,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
         <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、見直しクエスト完了！`}</h2>
         {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
-        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>まとめて鑑定する！ ▶</button>
+        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>ムダギリ発動！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
           :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
