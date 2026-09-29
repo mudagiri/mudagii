@@ -14,7 +14,6 @@ export function preloadOpening(){
  preloadList([
   `${PRE}/BG-001_OP_FIXED.png`,
   `${PRE}/MONSTER_HORDE_OP_MASTER.png`,
-  `${PRE}/MUDAGIRI_PROFILE_Q5.png`,
  ]);
 }
 export function preloadProfile(questionSprite?:string,nextSprite?:string){
