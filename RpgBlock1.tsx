@@ -260,8 +260,11 @@ export default function RpgBlock1({
   const incomeNumber = Number(flow.monthlyTakeHome || '0') || 0;
   const comparisonBundle = useMemo(()=>buildComparableV3({
     raw:normalizedRaw,household:flow.household==='single'?'single':'multi',
-    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand,educationStage
-  }),[normalizedRaw,flow.household,flow.age,flow.prefecture,annualIncomeBand,educationStage]);
+    householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),
+    age:Math.max(18,Number(flow.age||'30')||30),prefecture:flow.prefecture,annualIncomeBand,
+    month:new Date().getMonth()+1,housingType:flow.housingType,
+    educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren
+  }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren]);
   const comparable=comparisonBundle.comparable;
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
@@ -370,7 +373,7 @@ export default function RpgBlock1({
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
-      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'COMPARABLE_RESOLVER_V1'
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0'
     });
   },[scene]);
   return (
