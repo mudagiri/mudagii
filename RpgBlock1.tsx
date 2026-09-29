@@ -1359,7 +1359,7 @@ function AdditionalAppraisalScene({
   };
 
   const [amountText,setAmountText]=useState('');
-  const educationCount=Math.max(1,Math.min(4,item.educationCount??1));
+  const educationCount=Math.max(1,Math.min(6,item.educationCount??1));
   const [educationChildren,setEducationChildren]=useState<{stage:EducationStageV2}[]>(()=>Array.from({length:educationCount},()=>({stage:'publicElementary' as EducationStageV2})));
   const amountNumber=Number(amountText||0);
   const amountTooHigh=item.kind==='subUnusedAmount'&&typeof item.maxAmount==='number'&&amountNumber>item.maxAmount;
@@ -1389,7 +1389,7 @@ function AdditionalAppraisalScene({
           </div>
         ) : item.kind==='educationChildCount' ? (
           <div className="appraisal-options">
-            {[1,2,3,4].map(n=><button key={n} type="button" className="appraisal-option" onClick={()=>commit({educationChildCount:n},'review','人数を確認',n===4?'4人分まで個別に確認します':`${n}人分の基準を合わせます`)}><strong>{n===4?'4人以上':`${n}人`}</strong><span>教育費がかかっている子</span></button>)}
+            {Array.from({length:Math.max(1,Math.min(6,Number(flow.householdSize)||2))},(_,i)=>i+1).map(n=><button key={n} type="button" className="appraisal-option" onClick={()=>commit({educationChildCount:n},'review','人数を確認',`${n}人分の基準を合わせます`)}><strong>{n===6?'6人':`${n}人`}</strong><span>教育費がかかっている子</span></button>)}
           </div>
         ) : item.kind==='educationChildren' ? (
           <div className="appraisal-options">
