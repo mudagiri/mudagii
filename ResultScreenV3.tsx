@@ -32,6 +32,7 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?475:420,860,42,2);
  const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
  rows.forEach((r,i)=>{const y=565+i*125;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
+ const badges=[axisTendency(vm,'fv'),axisTendency(vm,'pi'),axisTendency(vm,'au')];x.textAlign='center';x.font='900 21px system-ui,sans-serif';badges.forEach((b,i)=>{const bx=210+i*270;x.fillStyle='#172330';x.fillRect(bx,920,240,54);x.fillStyle='#f5cc39';x.fillText(b,bx+120,955,210)});
  x.textAlign='center';x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1050);x.fillStyle='#f5cc39';x.font='900 30px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1110);
  x.fillStyle='#87929d';x.font='700 21px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1220);
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
