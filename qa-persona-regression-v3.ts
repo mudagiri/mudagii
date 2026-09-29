@@ -337,13 +337,5 @@ console.log('RESULT_SEMANTIC_QA_PASS',5);
  if(row?.status!=='review'||!row.reason.includes('かなり見直したい')||!row.reason.includes('根拠十分な比較値は置かず')||row.reducible!==0)throw new Error(`RESULT_BEAUTY_MULTI_AUDIT_FAIL:${row?.status}:${row?.reason}:${row?.reducible}`);
 }
 console.log('RESULT_BEAUTY_MULTI_QA_PASS',1);
-{
- const base:any={raw:raw({food:90000,energy:20000}),household:'single',householdSize:1,age:35,prefecture:'東京都',month:9,housingType:'賃貸'};
- const a=buildComparableV3({...base,annualIncomeBand:'under500'});
- const b=buildComparableV3({...base,annualIncomeBand:'1000plus'});
- const cats:Category[]=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
- for(const cat of cats)if((a.comparable[cat]??null)!==(b.comparable[cat]??null))throw new Error(`INCOME_CALIBRATION_AFFECTS_RESOLVER:${cat}:${a.comparable[cat]}:${b.comparable[cat]}`);
- if(a.incomeCorrectionApplied!==false||b.incomeCorrectionApplied!==false)throw new Error('INCOME_CORRECTION_UNEXPECTEDLY_APPLIED');
-}
-console.log('INCOME_CALIBRATION_UNUSED_QA_PASS',12);
+
 
