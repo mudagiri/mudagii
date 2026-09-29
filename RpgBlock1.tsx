@@ -769,22 +769,6 @@ function ProfileInput({
   }
 
   return (
-      <label className="pre-input-wrap">
-        <span className="pre-sr-only">住まい</span>
-        <select
-          className={selectClass}
-          value={flow.housingType}
-          onChange={(e) => setFlow((v) => ({ ...v, housingType: e.target.value }))}
-        >
-          {HOUSING_TYPES.map((housingType) => (
-            <option key={housingType} value={housingType}>{housingType}</option>
-          ))}
-        </select>
-      </label>
-    );
-  }
-
-  return (
     <label className="pre-input-wrap pre-income-wrap">
       <span className="pre-sr-only">毎月の手取り</span>
       <div className="pre-age-input pre-income-input">
