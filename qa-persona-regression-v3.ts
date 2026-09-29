@@ -157,3 +157,32 @@ for(const [name,amount,benchmark,appraisal,expected] of funCases){
 }
 console.log('FUN_VALUE_QA_PASS',funCases.length);
 
+const beautyDirectCases:[string,number,number,AppraisalV3['beautyFashion']|undefined,Status][]=[
+ ['美容単身-基準以下',8000,9842,undefined,'safe'],
+ ['美容単身-超過守る',20000,9842,{satisfaction:'verySatisfied'},'protect'],
+ ['美容単身-超過見直す',20000,9842,{satisfaction:'waste'},'review'],
+ ['美容単身-超過未回答',20000,9842,undefined,'review']
+];
+for(const [name,amount,benchmark,appraisal,expected] of beautyDirectCases){
+ const r=raw({beautyFashion:amount}); const comparable={beautyFashion:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{beautyFashion:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,benchmarkMeta:{beautyFashion:{value:benchmark,confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025'}},diagnosis:d.diagnosis,appraisal:appraisal?{beautyFashion:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='beautyFashion');
+ if(row?.status!==expected)throw new Error(`BEAUTY_DIRECT_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`BEAUTY_DIRECT_SAVING_MUST_BE_ZERO:${name}`);
+}
+const beautyAuditCases:[string,AppraisalV3['beautyFashion']|undefined,Status][]=[
+ ['美容複数AUDIT-未回答',undefined,'review'],
+ ['美容複数AUDIT-守る',{satisfaction:'satisfied'},'protect'],
+ ['美容複数AUDIT-見直す',{satisfaction:'inertia'},'review']
+];
+for(const [name,appraisal,expected] of beautyAuditCases){
+ const r=raw({beautyFashion:20000}); const comparable={beautyFashion:null};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable,appraisal:appraisal?{beautyFashion:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,benchmarkMeta:{beautyFashion:{value:null,confidence:'AUDIT',sourceVersion:'BEAUTY_FASHION_V1.0_NO_FABRICATED_MULTI_CROSS'}},diagnosis:d.diagnosis,appraisal:appraisal?{beautyFashion:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='beautyFashion');
+ if(row?.status!==expected)throw new Error(`BEAUTY_AUDIT_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`BEAUTY_AUDIT_SAVING_MUST_BE_ZERO:${name}`);
+}
+console.log('BEAUTY_DIRECT_AUDIT_QA_PASS',beautyDirectCases.length+beautyAuditCases.length);
+
