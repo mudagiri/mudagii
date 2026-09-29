@@ -116,6 +116,14 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
- const firstQuest=battle[0]??rows.find(x=>x.status==='review')??null;
+ const reviewPriority=(x:(typeof rows)[number])=>{
+  // Review items are not confirmed savings. Rank only the order of what to verify first.
+  // Explicit user/audit signals outrank benchmark-only gaps; larger positive gaps are a tie-breaker.
+  const explicit=x.battleBasis==='appraisal_review'?3:x.attentionFlag?2:1;
+  const gap=x.comparisonDifference!==null&&x.comparisonDifference>0?x.comparisonDifference:0;
+  return explicit*1_000_000+gap;
+ };
+ const review=rows.filter(x=>x.status==='review').sort((a,b)=>reviewPriority(b)-reviewPriority(a));
+ const firstQuest=battle[0]??review[0]??null;
  return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
 }
