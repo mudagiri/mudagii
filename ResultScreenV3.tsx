@@ -4,6 +4,11 @@ const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').f
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
 const modeName:Record<string,string>={gentle:'😇 甘やかしムダギリ',serious:'⚔️ 正論ムダギリ',hell:'💀 地獄ムダギリ'};
 
+function TypeAxis({label,value,positive,left,right,middle}:{label:string;value:number;positive:boolean;left:string;right:string;middle?:boolean}){
+ const pct=middle?50:positive?50+Math.min(50,value/2):50-Math.min(50,value/2);
+ return <div className="rv3-axis"><div><span>{left}</span><b>{label}</b><span>{right}</span></div><div className="rv3-axis-track"><i style={{left:`${pct}%`}}/></div></div>
+}
+
 export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void}){
  const [open,setOpen]=useState<string|null>(null);
  const [revealed,setRevealed]=useState(false);
@@ -14,7 +19,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    return()=>window.clearTimeout(id);
  },[]);
  async function share(){
-  const text=`ムダギリ診断\n私の家計タイプは――\n${vm.type.name}（${vm.type.code}）\nあなたはどのタイプ？`;
+  const text=`ムダギリ診断\n私のお金タイプは――\n${vm.type.name}\n${vm.type.catchphrase??vm.type.description??''}\nあなたは何タイプ？`;
   onEvent?.('share_clicked',{typeCode:vm.type.code});
   try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed');return}}catch{}
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{fallback:'clipboard'})}catch{}
@@ -28,11 +33,19 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
-   <div className="rv3-muted">あなたの家計タイプは――</div><h2>{vm.type.name}</h2><b>{vm.type.code}</b>
-   <div className="rv3-mode">{modeName[vm.toneMode]??vm.toneMode}で診断</div>
+   <div className="rv3-kicker">MONEY TYPE UNLOCKED</div>
+   <div className="rv3-muted">あなたのお金タイプは――</div><h2>{vm.type.name}</h2>
+   {vm.type.catchphrase&&<h3 className="rv3-catch">{vm.type.catchphrase}</h3>}
    {vm.type.description&&<p>{vm.type.description}</p>}
-   <small>8問の回答から、お金との付き合い方をタイプ判定</small>
-   <button className="rv3-primary" onClick={share}>結果をシェアする</button>
+   {vm.type.axisStrength&&<div className="rv3-axes" aria-label="お金タイプ3軸">
+    <TypeAxis label="未来 ↔ 今" value={vm.type.axisStrength.fv} positive={(vm.type.axes?.fv??0)>=0} left="今" right="未来" middle={vm.type.nearMiddle?.fv}/>
+    <TypeAxis label="計画 ↔ 直感" value={vm.type.axisStrength.pi} positive={(vm.type.axes?.pi??0)>=0} left="直感" right="計画" middle={vm.type.nearMiddle?.pi}/>
+    <TypeAxis label="把握 ↔ 必要時" value={vm.type.axisStrength.au} positive={(vm.type.axes?.au??0)>=0} left="必要時" right="把握" middle={vm.type.nearMiddle?.au}/>
+   </div>}
+   <div className="rv3-type-notes">{vm.type.strengthLabel&&<div><small>強み</small><b>{vm.type.strengthLabel}</b></div>}{vm.type.blindSpot&&<div><small>死角</small><b>{vm.type.blindSpot}</b></div>}</div>
+   <div className="rv3-mode">{modeName[vm.toneMode]??vm.toneMode}で診断</div>
+   <small>8問の回答から、お金との付き合い方の傾向を判定</small>
+   <button className="rv3-primary" onClick={share}>この称号をシェアする</button>
    <small>収入・支出金額はシェア内容に含まれません</small>
   </section>
 
@@ -98,7 +111,7 @@ const CSS=`
 .rv3{min-height:100dvh;background:#070d14;color:#fff;overflow-x:hidden;font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif}.rv3 *{box-sizing:border-box}.rv3-inner{width:min(100%,430px);margin:0 auto;padding-bottom:max(72px,env(safe-area-inset-bottom))}
 .rv3 section{padding:28px 20px}.rv3-clear{min-height:220px;display:grid;align-content:center;text-align:center}.rv3-clear h1{margin:18px 0 0;font-size:28px;line-height:1.25}.rv3-clear p{margin:10px 0 0;color:#aeb8c2;font-size:13px;line-height:1.6}.rv3-kicker{color:#f5cc39;font-size:12px;font-weight:1000;letter-spacing:.15em}.rv3-count{display:flex;justify-content:center;gap:8px;margin-top:18px;font-size:11px}.rv3-count span{padding:7px 9px;border:1px solid #293644;border-radius:999px;background:#0d1721}.rv3-count b{font-size:13px}
 .rv3-reveal{opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .35s ease,transform .35s ease}.rv3-reveal.is-visible{opacity:1;transform:none;pointer-events:auto}
-.rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
+.rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3-catch{margin:8px 0 0;font-size:15px}.rv3-axes{display:grid;gap:10px;margin:20px 0 12px;padding:14px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-axis>div:first-child{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;font-size:10px;color:#87929d}.rv3-axis b{color:#dce4eb;font-size:11px}.rv3-axis-track{position:relative;height:6px;margin-top:6px;border-radius:999px;background:#24303c}.rv3-axis-track i{position:absolute;top:50%;width:12px;height:12px;border:2px solid #07111b;border-radius:50%;background:#f5cc39;transform:translate(-50%,-50%)}.rv3-type-notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}.rv3-type-notes>div{padding:10px;border:1px solid #293644;border-radius:9px;background:#0d1721}.rv3-type-notes small{margin:0}.rv3-type-notes b{display:block;margin-top:3px;font-size:11px;line-height:1.45}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
 .rv3-primary{width:100%;min-height:56px;margin-top:20px;border:1px solid #fff;border-radius:12px;background:#f5cc39;color:#07111b;font-weight:1000;font-size:15px;box-shadow:0 7px 0 #9d7e0e}.rv3-primary:active{transform:translateY(3px);box-shadow:0 4px 0 #9d7e0e}
 .rv3-reward{text-align:center}.rv3-money{margin-top:10px;font-size:46px;font-weight:1000;line-height:1}.rv3-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;padding:14px 0;border-block:1px solid #24303c}.rv3-grid>div+div{border-left:1px solid #24303c}.rv3-note{color:#87929d;font-size:11px;line-height:1.7}
 .rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-diff{margin-top:8px;padding:8px 10px;border:1px solid #344454;border-radius:8px;background:#101c27;font-size:12px;font-weight:900}.rv3-diff small{margin-top:2px}.rv3-answer{margin-top:9px;padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;color:#dce4eb;font-size:12px;line-height:1.55}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
