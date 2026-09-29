@@ -18,6 +18,7 @@ const cases:Case[]=[
  {name:'美容服飾高めで見直し意思',income:350000,amounts:{beautyFashion:40000},comparable:{beautyFashion:10000},appraisal:{beautyFashion:{satisfaction:'waste'}},expect:{beautyFashion:'review'},confirmedMonthly:0},
  {name:'未使用サブスク額のみでは未確定',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:3500}},expect:{sub:'review'},confirmedMonthly:0},
  {name:'未使用サブスクを停止可能まで確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:3500,subCancellationConfirmed:true}},expect:{sub:'battle'},confirmedMonthly:3500},
+ {name:'未使用サブスク額ありだが停止未確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:3500,subCancellationConfirmed:false}},expect:{sub:'review'},confirmedMonthly:0},
  {name:'サブスク疑いだけで金額未確認',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several'}},expect:{sub:'review'},confirmedMonthly:0},
  {name:'サブスク全部利用中',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'none'}},expect:{sub:'safe'},confirmedMonthly:0},
  {name:'サブスク未使用額が総額超過',income:300000,amounts:{sub:9000},appraisal:{sub:{subUsage:'several',subUnusedAmount:12000,subCancellationConfirmed:true}},expect:{sub:'battle'},confirmedMonthly:9000},
