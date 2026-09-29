@@ -37,6 +37,8 @@ const cases:Case[]=[
  {name:'自己投資は金額だけでは未確定',income:450000,amounts:{selfDevelopment:100000},expect:{selfDevelopment:'review'},confirmedMonthly:0},
  {name:'車費は高くても必要性未鑑定',income:500000,amounts:{car:80000},expect:{car:'review'},confirmedMonthly:0},
  {name:'車は生活仕事に必須',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'essential'}},expect:{car:'protect'},confirmedMonthly:0},
+ {name:'車はあるとかなり便利',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'useful'}},expect:{car:'protect'},confirmedMonthly:0},
+ {name:'車はなくても困らないかも',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'notNeeded'}},expect:{car:'review'},confirmedMonthly:0},
  {name:'車の負担を本人も見直したい',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'burden'}},expect:{car:'review'},confirmedMonthly:0},
  {name:'境界値:比較目安と同額',income:300000,amounts:{mobile:6000,energy:11000,daily:9000},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'safe',daily:'safe'},confirmedMonthly:0},
  {name:'境界値:比較目安を1円超過',income:300000,amounts:{mobile:6001,energy:11001,daily:9001},comparable:{mobile:6000,energy:11000,daily:9000},expect:{mobile:'review',energy:'review',daily:'review'},confirmedMonthly:0},
@@ -225,4 +227,15 @@ for(const [name,amount,carrier,expectedBand] of communicationBandCases){
 const unknownComm=communicationScreenV3(12000,'unknown');
 if(unknownComm.band!=='unknown')throw new Error('COMM_UNKNOWN_MUST_STAY_UNKNOWN');
 console.log('COMMUNICATION_BAND_QA_PASS',communicationBandCases.length+1);
+
+{
+ const r=raw({});
+ r.car={amount:null,known:false,applicability:'na'};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable:{},appraisal:{}});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{},diagnosis:d.diagnosis,appraisal:{}});
+ const row=fin.categories.find(x=>x.category==='car');
+ if(row?.status!=='na')throw new Error(`CAR_NA_FAIL:${row?.status}`);
+ if((row?.reducible??0)!==0)throw new Error(`CAR_NA_SAVING_MUST_BE_ZERO:${row?.reducible}`);
+ console.log('CAR_NA_QA_PASS');
+}
 
