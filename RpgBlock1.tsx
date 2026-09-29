@@ -451,31 +451,6 @@ export default function RpgBlock1({
               scanned={applicableScanCategories.length}
               discovered={discoveredCount}
               onStartAppraisal={() => {
-                setTypeIndex(0);
-                setTypeAnswers({});
-                setScene('typeQuiz');
-              }}
-            />
-          ) : scene === 'typeQuiz' && currentTypeQuestion ? (
-            <TypeQuizScene
-              key={currentTypeQuestion.id}
-              question={currentTypeQuestion}
-              current={typeIndex + 1}
-              total={TYPE_QUESTIONS_V31.length}
-              onAnswer={(answer) => {
-                setTypeAnswers((prev) => ({ ...prev, [currentTypeQuestion.id]: answer }));
-                if (typeIndex >= TYPE_QUESTIONS_V31.length - 1) {
-                  onEvent?.('type_completed',{answers:TYPE_QUESTIONS_V31.length});
-                  setScene('typeComplete');
-                  return;
-                }
-                setTypeIndex((index) => index + 1);
-              }}
-            />
-          ) : scene === 'typeComplete' ? (
-            <TypeCompleteScene
-              answers={typeAnswers}
-              onContinue={() => {
                 setAppraisalIndex(0);
                 setAppraisalAnswers({});
                 if(!appraisalQuestions.length)onEvent?.('appraisal_completed',{count:0});
@@ -505,6 +480,31 @@ export default function RpgBlock1({
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
               judgements={finalJudgements}
+              onContinue={() => {
+                setTypeIndex(0);
+                setTypeAnswers({});
+                setScene('typeQuiz');
+              }}
+            />
+          ) : scene === 'typeQuiz' && currentTypeQuestion ? (
+            <TypeQuizScene
+              key={currentTypeQuestion.id}
+              question={currentTypeQuestion}
+              current={typeIndex + 1}
+              total={TYPE_QUESTIONS_V31.length}
+              onAnswer={(answer) => {
+                setTypeAnswers((prev) => ({ ...prev, [currentTypeQuestion.id]: answer }));
+                if (typeIndex >= TYPE_QUESTIONS_V31.length - 1) {
+                  onEvent?.('type_completed',{answers:TYPE_QUESTIONS_V31.length});
+                  setScene('typeComplete');
+                  return;
+                }
+                setTypeIndex((index) => index + 1);
+              }}
+            />
+          ) : scene === 'typeComplete' ? (
+            <TypeCompleteScene
+              answers={typeAnswers}
               onContinue={() => setScene('battleIntro')}
             />
           ) : scene === 'battleIntro' ? (
@@ -1142,7 +1142,7 @@ function ScanCompleteScene({
           <b>本当に倒すべき敵を選別する</b>
         </div>
         <div className="appraisal-intro-note">
-          まず8つの質問で、お金の使い方のクセを見抜くぞ。
+          見つかった敵だけ、必要な分だけ正体を見極めるぞ。
         </div>
         <button type="button" className="pre-primary appraisal-intro-cta" onClick={onStartAppraisal}>
           ムダ鑑定を始める ▶
@@ -1213,7 +1213,7 @@ function TypeQuizScene({
 
       <header className="type-quiz-hud">
         <div className="type-quiz-hud-row">
-          <span>ムダ鑑定</span>
+          <span>MONEY STYLE ANALYSIS</span>
           <b>{current} / {total}</b>
         </div>
         <div className="type-quiz-progress" aria-hidden="true">
@@ -1227,7 +1227,7 @@ function TypeQuizScene({
       </div>
 
       <section className="type-quiz-card">
-        <div className="type-quiz-number">鑑定 {String(current).padStart(2, '0')}</div>
+        <div className="type-quiz-number">解析 {String(current).padStart(2, '0')}</div>
         <h2>{question.prompt}</h2>
 
         <div className="type-pair" aria-label="比較する2つの考え方">
@@ -1281,21 +1281,21 @@ function TypeCompleteScene({ answers, onContinue }: { answers: TypeAnswersV31; o
       <img className="type-complete-mudagiri" src={SCAN_MUDAGIRI_GUIDE} alt="ムダギリくん" />
 
       <section className="type-complete-card">
-        <div className="type-complete-kicker">ムダ鑑定 {answered} / 8</div>
+        <div className="type-complete-kicker">TYPE ANALYSIS COMPLETE ・ {answered} / 8</div>
         <h2>行動パターン<br />解析完了。</h2>
         <p>
           お前の「お金の使い方のクセ」は見えた。<br />
-          <strong>次は、金額だけでは決められない敵だけ見極める。</strong>
+          <strong>称号はまだ秘密だ。最後のクエストへ進むぞ。</strong>
         </p>
         <div className="type-complete-next-label">
-          NEXT：必要な敵だけ追加鑑定
+          NEXT：FINAL QUEST
         </div>
         <button
           type="button"
           className="pre-primary type-complete-cta"
           onClick={onContinue}
         >
-          最終鑑定へ ▶
+          最後のクエストへ ▶
         </button>
       </section>
     </div>
@@ -1492,7 +1492,7 @@ function AppraisalCompleteScene({
         <h2>鑑定完了。</h2>
         <p className="appraisal-reason">
           高いからって、全部ムダとは限らない。<br />
-          <strong>守る支出と、見直す候補を分けたぞ。</strong>
+          <strong>守る支出と、見直す候補を分けた。次は君自身のお金のクセを解析するぞ。</strong>
         </p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
@@ -1502,7 +1502,7 @@ function AppraisalCompleteScene({
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          見直し優先度を解析する ▶
+          お金タイプを解析する ▶
         </button>
       </section>
     </div>
