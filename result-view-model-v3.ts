@@ -170,7 +170,7 @@ function nextCheck(x:FinalCategoryV3):string{
  if(x.category==='selfDevelopment')return '目的・利用状況・成果を確認';
  return '直近1〜3か月の明細を確認';
 }
-export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string;catchphrase?:string;strengthLabel?:string;blindSpot?:string;shareHook?:string;axes?:{fv:number;pi:number;au:number};axisStrength?:{fv:number;pi:number;au:number};nearMiddle?:{fv:boolean;pi:boolean;au:boolean}};toneMode:string;finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
+export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string;catchphrase?:string;strengthLabel?:string;blindSpot?:string;shareHook?:string;axes?:{fv:number;pi:number;au:number};axisStrength?:{fv:number;pi:number;au:number};nearMiddle?:{fv:boolean;pi:boolean;au:boolean}};toneMode:string;profile?:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
  const counts=(['battle','protect','safe','review','na'] as FinalStatus[]).reduce((o,k)=>({...o,[k]:args.finalCategories.filter(x=>x.status===k).length}),{} as Record<FinalStatus,number>);
  const rows=args.finalCategories.map(x=>({
   category:x.category,label:LABEL[x.category],enemyName:ENEMY[x.category],status:x.status,attentionFlag:x.attentionFlag,
@@ -191,5 +191,5 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
  };
  const review=rows.filter(x=>x.status==='review').sort((a,b)=>reviewPriority(b)-reviewPriority(a));
  const firstQuest=battle[0]??review[0]??null;
- return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
+ return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,profile:args.profile??null,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
 }
