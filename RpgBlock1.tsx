@@ -3293,7 +3293,8 @@ const CSS = String.raw`
 @media(max-height:760px){
   .type-quiz-card{left:14px;right:14px;padding:13px 13px 10px}
   .type-quiz-card h2{font-size:clamp(21px,5.8vw,25px)}
-  .type-pair{grid-template-columns:1fr 1fr;gap:28px;margin-top:10px}
+  .type-pair{grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);gap:5px;margin-top:10px}
+  .type-side-a{grid-column:1}.type-side-b{grid-column:3}
   .type-side{min-height:68px;padding:9px 8px 9px 39px}
   .type-side-badge{left:7px;width:27px;height:27px;font-size:14px}
   .type-side strong{font-size:14px;line-height:1.28}
