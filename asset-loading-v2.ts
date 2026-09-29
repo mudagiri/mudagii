@@ -31,7 +31,7 @@ export function preloadScan(current?:EnemyAssetCategory){
  ]);
 }
 export function preloadAppraisal(categories:EnemyAssetCategory[]){
- preloadList(categories.map(c=>ENEMY_ASSETS[c].normal));
+ preloadList(categories.slice(0,2).map(c=>ENEMY_ASSETS[c].normal));
 }
 export function preloadBattle(targets:EnemyAssetCategory[]){
  preloadList([
