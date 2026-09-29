@@ -717,6 +717,8 @@ function ProfileInput({
   onChoiceNext: (householdOverride?:FamilyProfile) => void;
 }) {
   const selectClass = 'pre-select';
+  const [choiceLocked,setChoiceLocked]=useState(false);
+  const chooseOnce=(apply:()=>void,next:()=>void)=>{if(choiceLocked)return;setChoiceLocked(true);apply();window.setTimeout(next,140)};
 
   if (no === 1) {
     return (
@@ -758,15 +760,15 @@ function ProfileInput({
   }
 
   if (no === 3) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}));window.setTimeout(()=>onChoiceNext(item.value),140)}}>{item.label}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)})),()=>onChoiceNext(item.value))}>{item.label}</button>)}</div>;
   }
 
   if (no === 4) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,workStyle}));window.setTimeout(()=>onChoiceNext(),140)}}>{workStyle}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,workStyle})),()=>onChoiceNext())}>{workStyle}</button>)}</div>;
   }
 
   if (no === 5) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,housingType}));window.setTimeout(()=>onChoiceNext(),140)}}>{housingType}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,housingType})),()=>onChoiceNext())}>{housingType}</button>)}</div>;
   }
 
   return (
