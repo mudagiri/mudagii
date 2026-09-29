@@ -1,6 +1,7 @@
 import {emptyRawExpenses,buildFinalJudgementsV3,runDiagnosisAdapterV3,housingScreenV3,communicationScreenV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
 import {resolveComparableV2} from './comparable-resolver-v2';
 import type {Category} from './mudagiri-diagnosis-v2';
+import {buildResultViewModelV3} from './result-view-model-v3';
 
 type Status='battle'|'protect'|'safe'|'review'|'na';
 type Case={name:string;income:number;amounts:Partial<Record<Category,number>>;comparable?:Partial<Record<Category,number|null>>;appraisal?:Partial<Record<Category,AppraisalV3>>;expect:Partial<Record<Category,Status>>;confirmedMonthly?:number};
@@ -284,4 +285,22 @@ console.log('EDUCATION_BENCHMARK_QA_PASS',educationUnitCases.length+2);
  if(row?.status!=='na'||(row?.reducible??0)!==0)throw new Error(`EDU_NA_FAIL:${row?.status}:${row?.reducible}`);
 }
 console.log('EDUCATION_SEMANTIC_QA_PASS',2);
+
+{
+ const r=raw({sub:9000,selfDevelopment:50000,food:90000});
+ const appraisal:any={sub:{subUsage:'one',subUnusedAmount:3000,subCancellationConfirmed:true},selfDevelopment:{selfDevelopmentValue:'inertia'},food:{}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:450000,raw:r,comparable:{sub:null,selfDevelopment:null,food:47405},appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{sub:null,selfDevelopment:null,food:47405},diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-firstquest-confirmed',type:{code:'FPA',name:'QA'},toneMode:'gentle',finalCategories:fin.categories,monthlyImprovement:fin.categories.reduce((s,x)=>s+x.reducible,0),annualIncomeBand:'500_599'});
+ if(vm.firstQuest?.category!=='sub'||vm.firstQuest?.status!=='battle')throw new Error(`FIRST_QUEST_CONFIRMED_FAIL:${vm.firstQuest?.category}:${vm.firstQuest?.status}`);
+}
+{
+ const r=raw({selfDevelopment:50000,food:90000});
+ const appraisal:any={selfDevelopment:{selfDevelopmentValue:'inertia'},food:{}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:450000,raw:r,comparable:{selfDevelopment:null,food:47405},appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{selfDevelopment:null,food:47405},diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-firstquest-appraisal',type:{code:'FPA',name:'QA'},toneMode:'gentle',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'500_599'});
+ if(vm.firstQuest?.category!=='selfDevelopment'||vm.firstQuest?.status!=='review')throw new Error(`FIRST_QUEST_APPRAISAL_FAIL:${vm.firstQuest?.category}:${vm.firstQuest?.status}`);
+}
+console.log('FIRST_QUEST_PRIORITY_QA_PASS',2);
 
