@@ -84,6 +84,11 @@ function reason(x:FinalCategoryV3):string{
    if((x.appraisal?.subUnusedAmount??0)>0&&x.appraisal?.subCancellationConfirmed!==true)return '未使用額は確認できていますが、解約・停止できる確認が取れていないため改善額には含めていません。';
    return '使っていない可能性はありますが、未使用額が確定していないため改善額には含めていません。';
   }
+  if(x.category==='car'){
+   if(x.appraisal?.carNeed==='burden')return '維持費の負担を感じているため、内訳を確認する対象です。手放す・削減できる金額はまだ確定していません。';
+   if(x.appraisal?.carNeed==='notNeeded')return 'なくても困らない可能性があるため、保有コストの内訳を確認する対象です。削減額はまだ確定していません。';
+   return '車は金額だけでムダ判定せず、生活・仕事上の必要性と保有コストの内訳を確認します。';
+  }
   if(x.category==='insurance')return '保障内容や目的まで確認しないと、金額だけではムダ判定できません。';
   if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
   if(x.category==='childEducation')return '子どもの年齢・進路・必要性を含めて判断するため、要鑑定です。';
