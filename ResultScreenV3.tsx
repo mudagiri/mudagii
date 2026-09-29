@@ -17,13 +17,19 @@ function axisTendency(vm:any,axis:'fv'|'pi'|'au'){
  if(axis==='pi')return positive?'計画寄り':'直感寄り';
  return positive?'普段から把握':'必要時に確認';
 }
+function drawCenteredWrapped(x:CanvasRenderingContext2D,text:string,cx:number,y:number,maxWidth:number,lineHeight:number,maxLines=2){
+ const chars=[...text];let line='',lines:string[]=[];
+ for(const ch of chars){const next=line+ch;if(x.measureText(next).width>maxWidth&&line){lines.push(line);line=ch}else line=next}
+ if(line)lines.push(line);if(lines.length>maxLines){lines=lines.slice(0,maxLines);let last=lines[maxLines-1];while(last&&x.measureText(last+'…').width>maxWidth)last=last.slice(0,-1);lines[maxLines-1]=last+'…'}
+ lines.forEach((v,i)=>x.fillText(v,cx,y+i*lineHeight));return lines.length;
+}
 async function makeTypeShareFile(vm:any){
  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const x=canvas.getContext('2d');if(!x)return null;
  x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
  x.textAlign='center';x.fillStyle='#f5cc39';x.font='900 34px system-ui,sans-serif';x.fillText('ムダギリ診断',540,150);
  x.fillStyle='#87929d';x.font='800 26px system-ui,sans-serif';x.fillText('MY MONEY TYPE',540,225);
- x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';x.fillText(vm.type.name,540,350,900);
- x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';x.fillText(vm.type.catchphrase??'',540,420,900);
+ x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';const nameLines=drawCenteredWrapped(x,vm.type.name,540,330,900,72,2);
+ x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?475:420,860,42,2);
  const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
  rows.forEach((r,i)=>{const y=565+i*125;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
  x.textAlign='center';x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1050);x.fillStyle='#f5cc39';x.font='900 30px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1110);
