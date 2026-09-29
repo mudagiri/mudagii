@@ -55,7 +55,9 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    const file=await makeTypeShareFile(vm);
    if(file&&navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'ムダギリ診断',text,files:[file]});onEvent?.('share_completed',{typeCode:vm.type.code,format:'image'});return}
    if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed',{typeCode:vm.type.code,format:'text'});return}
-  }catch{}
+  }catch(err){
+   if(err instanceof DOMException&&err.name==='AbortError')return;
+  }
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{typeCode:vm.type.code,fallback:'clipboard'})}catch{}
  }
  const comparisonRows=vm.rows.filter((x:any)=>x.status==='review'&&x.comparisonDifference!==null&&x.comparisonDifference>0);
