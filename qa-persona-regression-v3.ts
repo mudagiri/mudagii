@@ -1,4 +1,5 @@
-import {emptyRawExpenses,buildFinalJudgementsV3,runDiagnosisAdapterV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
+import {emptyRawExpenses,buildFinalJudgementsV3,runDiagnosisAdapterV3,housingScreenV3,type AppraisalV3,type RawExpenses} from './mudagiri-integration-v3';
+import {resolveComparableV2} from './comparable-resolver-v2';
 import type {Category} from './mudagiri-diagnosis-v2';
 
 type Status='battle'|'protect'|'safe'|'review'|'na';
@@ -59,3 +60,12 @@ for(const tc of cases){
 }
 if(failed)throw new Error(`Persona regression failed: ${failed}`);
 console.log(`Persona regression passed: ${cases.length} cases`);
+
+const tokyoHousing=resolveComparableV2({household:'single',age:30,prefecture:'東京都',month:9,housingType:'賃貸'}).rent;
+const saitamaHousing=resolveComparableV2({household:'single',age:30,prefecture:'埼玉県',month:9,housingType:'賃貸'}).rent;
+const housingCases:[string,ReturnType<typeof housingScreenV3>['band'],ReturnType<typeof housingScreenV3>['band']][]=[
+ ['東京80k',housingScreenV3(80000,tokyoHousing).band,'standard'],['東京100k',housingScreenV3(100000,tokyoHousing).band,'higher'],['東京110k',housingScreenV3(110000,tokyoHousing).band,'check'],['東京150k',housingScreenV3(150000,tokyoHousing).band,'detail'],
+ ['埼玉60k',housingScreenV3(60000,saitamaHousing).band,'standard'],['埼玉70k',housingScreenV3(70000,saitamaHousing).band,'check'],['埼玉90k',housingScreenV3(90000,saitamaHousing).band,'detail']
+];
+for(const [name,got,want] of housingCases){if(got!==want)throw new Error(`HOUSING_BAND_FAIL:${name}:${got}!=${want}`)}
+console.log('HOUSING_PERCENTILE_QA_PASS',housingCases.length);
