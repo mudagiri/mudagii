@@ -27,4 +27,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run qa:persona
+      - run: npm run qa:type
       - run: npm run qa:10k
