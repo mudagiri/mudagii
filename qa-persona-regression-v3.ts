@@ -325,4 +325,16 @@ console.log('FIRST_QUEST_PRIORITY_QA_PASS',2);
  if(row?.comparator.label!=='回線タイプ別の携帯料金帯（参考）')throw new Error(`RESULT_MOBILE_COMPARATOR_FAIL:${row?.comparator.label}`);
 }
 console.log('RESULT_SEMANTIC_QA_PASS',5);
+{
+ const r=raw({beautyFashion:30000});
+ const appraisal:any={beautyFashion:{satisfaction:'waste'}};
+ const comparable:any={beautyFashion:null};
+ const benchmarkMeta:any={beautyFashion:{value:null,confidence:'AUDIT',sourceVersion:'BEAUTY_FASHION_V1.0_NO_FABRICATED_MULTI_CROSS'}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:450000,raw:r,comparable,appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,benchmarkMeta,diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-result-beauty-multi',type:{code:'FPA',name:'QA'},toneMode:'gentle',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'500_599'});
+ const row=vm.rows.find(x=>x.category==='beautyFashion');
+ if(row?.status!=='review'||!row.reason.includes('かなり見直したい')||!row.reason.includes('根拠十分な比較値は置かず')||row.reducible!==0)throw new Error(`RESULT_BEAUTY_MULTI_AUDIT_FAIL:${row?.status}:${row?.reason}:${row?.reducible}`);
+}
+console.log('RESULT_BEAUTY_MULTI_QA_PASS',1);
 
