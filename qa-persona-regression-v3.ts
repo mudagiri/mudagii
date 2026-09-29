@@ -186,3 +186,20 @@ for(const [name,appraisal,expected] of beautyAuditCases){
 }
 console.log('BEAUTY_DIRECT_AUDIT_QA_PASS',beautyDirectCases.length+beautyAuditCases.length);
 
+const beautySexBenchCases:[string,number,'male'|'female'|'preferNot'|undefined,number,string][]=[
+ ['美容性別-34以下男性',30,'male',5971,'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'],
+ ['美容性別-34以下女性',30,'female',19313,'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'],
+ ['美容性別-35to59男性',45,'male',6925,'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'],
+ ['美容性別-35to59女性',45,'female',14216,'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'],
+ ['美容性別-60以上男性',65,'male',2953,'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'],
+ ['美容性別-60以上女性fallback',65,'female',7858,'BEAUTY_FASHION_V1.0_SINGLE_2025'],
+ ['美容性別-回答しないfallback',30,'preferNot',11747,'BEAUTY_FASHION_V1.0_SINGLE_2025']
+];
+for(const [name,age,beautySex,expected,source] of beautySexBenchCases){
+ const x=resolveComparableV2({household:'single',householdSize:1,age,prefecture:'東京都',month:9,beautySex}).beautyFashion;
+ if(x?.value!==expected)throw new Error(`BEAUTY_SEX_BENCH_FAIL:${name}:${x?.value}!=${expected}`);
+ if(x?.sourceVersion!==source)throw new Error(`BEAUTY_SEX_SOURCE_FAIL:${name}:${x?.sourceVersion}!=${source}`);
+ if(name.includes('60以上女性')&&x?.meta?.fallbackReason!=='FEMALE_60PLUS_CROSS_UNAVAILABLE')throw new Error('BEAUTY_FEMALE_60_FALLBACK_REASON_FAIL');
+}
+console.log('BEAUTY_SEX_BENCH_QA_PASS',beautySexBenchCases.length);
+
