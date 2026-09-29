@@ -38,6 +38,8 @@ const cases:Case[]=[
  {name:'教育費は比較超過だけでは未確定',income:500000,amounts:{childEducation:80000},comparable:{childEducation:50000},expect:{childEducation:'review'},confirmedMonthly:0},
  {name:'自己投資は成果あり',income:450000,amounts:{selfDevelopment:50000},appraisal:{selfDevelopment:{selfDevelopmentValue:'results'}},expect:{selfDevelopment:'protect'},confirmedMonthly:0},
  {name:'惰性の自己投資',income:450000,amounts:{selfDevelopment:50000},appraisal:{selfDevelopment:{selfDevelopmentValue:'inertia'}},expect:{selfDevelopment:'review'},confirmedMonthly:0},
+ {name:'効果不明の自己投資',income:450000,amounts:{selfDevelopment:50000},appraisal:{selfDevelopment:{selfDevelopmentValue:'unclear'}},expect:{selfDevelopment:'review'},confirmedMonthly:0},
+ {name:'目的明確な自己投資',income:450000,amounts:{selfDevelopment:50000},appraisal:{selfDevelopment:{selfDevelopmentValue:'purpose'}},expect:{selfDevelopment:'protect'},confirmedMonthly:0},
  {name:'自己投資は金額だけでは未確定',income:450000,amounts:{selfDevelopment:100000},expect:{selfDevelopment:'review'},confirmedMonthly:0},
  {name:'車費は高くても必要性未鑑定',income:500000,amounts:{car:80000},expect:{car:'review'},confirmedMonthly:0},
  {name:'車は生活仕事に必須',income:500000,amounts:{car:80000},appraisal:{car:{carNeed:'essential'}},expect:{car:'protect'},confirmedMonthly:0},
