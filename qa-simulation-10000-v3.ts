@@ -76,7 +76,7 @@ for(let id=1;id<=10000;id++){
      if(x.category==='mobile'&&x.raw.amount!==null){const carrier=appraisal.mobile?.mobileCarrier??'unknown';const band=communicationScreenV3(x.raw.amount,carrier).band;return band==='check'||band==='detail';}
      return false;
    });
-   const strongPriority=priorityReview.filter(x=>{
+   const modeledStrongPriority=priorityReview.filter(x=>{
      if(x.status==='battle'&&x.battleBasis==='confirmed')return true;
      const ap=appraisal[x.category];
      if(x.category==='mobile'&&x.raw.amount!==null)return communicationScreenV3(x.raw.amount,ap?.mobileCarrier??'unknown').band==='detail';
@@ -92,9 +92,11 @@ for(let id=1;id<=10000;id++){
      return false;
    });
    // Presentation audit only: show every strong signal first, then fill from medium evidence up to 3.
-   const mainEnemyCount=Math.min(3,strongPriority.length+Math.max(0,Math.min(priorityReview.length-strongPriority.length,3-strongPriority.length)));
-   strongPriorityHistogram[Math.min(12,strongPriority.length)]++;
-   mainEnemyHistogram[mainEnemyCount]++;
+   const mainEnemyCount=Math.min(3,modeledStrongPriority.length+Math.max(0,Math.min(priorityReview.length-modeledStrongPriority.length,3-modeledStrongPriority.length)));
+   strongPriorityHistogram[Math.min(12,f.encounterTargets.length)]++;
+   mainEnemyHistogram[f.encounterTargets.length]++;
+   if(f.encounterTargets.length>3){m.violations++;failures.push(`#${id}: encounter target cap exceeded`)}
+   if(f.encounterTargets.some(x=>x.status!=='battle'&&x.status!=='review')){m.violations++;failures.push(`#${id}: invalid encounter status`)}
    reviewHistogram[Math.min(12,review.length)]++;
    actionableHistogram[Math.min(12,actionable.length)]++;
    priorityReviewHistogram[Math.min(12,priorityReview.length)]++;
