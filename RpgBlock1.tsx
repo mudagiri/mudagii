@@ -628,6 +628,7 @@ function ProfileScene({
   const isWarning = question.no === 4;
   const isEncounter = question.no >= 5;
   const [partyChoiceLocked,setPartyChoiceLocked]=useState(false);
+  useEffect(()=>{if(householdSizePending)setPartyChoiceLocked(false)},[householdSizePending]);
   const choosePartySize=(n:string)=>{if(partyChoiceLocked)return;setPartyChoiceLocked(true);setFlow(v=>({...v,householdSize:n}));window.setTimeout(()=>onNext(),140)};
 
   return (
@@ -1987,8 +1988,8 @@ const CSS = String.raw`
   transform: translateX(-50%);
   display: block;
   margin: 0;
-  min-height: 30px;
-  padding: 3px 12px;
+  min-height: 44px;
+  padding: 10px 12px;
   border: 0;
   background: transparent;
   color: rgba(255,255,255,.72);
