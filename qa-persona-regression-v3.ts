@@ -106,3 +106,20 @@ for(const [name,amount,benchmark,appraisal,expected] of utilityCases){
 }
 console.log('UTILITY_PERSISTENCE_QA_PASS',utilityCases.length);
 
+const dailyCases:[string,number,number,AppraisalV3['daily']|undefined,Status][]=[
+ ['日用品-基準以下',3000,3409,undefined,'safe'],
+ ['日用品-超過継続',6000,3409,{dailyPersistence:'persistent'},'review'],
+ ['日用品-超過単月',6000,3409,{dailyPersistence:'temporary'},'safe'],
+ ['日用品-超過不明',6000,3409,{dailyPersistence:'unknown'},'review']
+];
+for(const [name,amount,benchmark,appraisal,expected] of dailyCases){
+ const r=raw({daily:amount});
+ const comparable={daily:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{daily:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal:appraisal?{daily:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='daily');
+ if(row?.status!==expected)throw new Error(`DAILY_FINAL_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`DAILY_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+console.log('DAILY_PERSISTENCE_QA_PASS',dailyCases.length);
+
