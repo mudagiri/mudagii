@@ -82,7 +82,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
       <div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>
       <div><b>比較：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>
       {x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額ではありません</small></div>}
-      <div><b>診断状況：</b>{x.diagnosisState==='CONFIRMED'?'改善額まで確認済み':x.diagnosisState==='AUDIT'?'内容確認が必要':x.diagnosisState==='DETAIL'?'追加条件を確認':x.diagnosisState==='CHECK'?'比較目安を要確認':x.diagnosisState==='NORMAL'?'問題なし':'—'}</div>
+      <div><b>診断状況：</b>{x.status==='battle'?'改善額まで確認済み':x.status==='review'?'追加確認が必要':x.status==='protect'?'価値を確認済み':x.status==='safe'?'現時点で優先確認なし':x.status==='na'?'対象外':'—'}</div>
       <div><b>最終判定：</b>{x.status==='battle'?'⚔️ 削減確定':x.status==='protect'?'🛡️ 守る支出':x.status==='review'?'🔍 要確認':x.status==='safe'?'✓ 問題なし':'対象外'}</div>
       <div><b>確定改善額：</b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`¥${yen(x.confirmedSaving)}/月`:'未確定'}</div>
       {x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div>
