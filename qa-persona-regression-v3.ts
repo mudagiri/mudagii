@@ -69,3 +69,22 @@ const housingCases:[string,ReturnType<typeof housingScreenV3>['band'],ReturnType
 ];
 for(const [name,got,want] of housingCases){if(got!==want)throw new Error(`HOUSING_BAND_FAIL:${name}:${got}!=${want}`)}
 console.log('HOUSING_PERCENTILE_QA_PASS',housingCases.length);
+const housingFinalCases:[string,number,AppraisalV3['rent']|undefined,Status][]=[
+ ['東京80k-final',80000,undefined,'safe'],
+ ['東京100k-final',100000,undefined,'safe'],
+ ['東京110k-final',110000,undefined,'review'],
+ ['東京150k-final',150000,undefined,'review'],
+ ['東京150k-protect',150000,{rentPreference:'protect'},'protect'],
+ ['東京150k-burden',150000,{rentPreference:'burdenHigh'},'review']
+];
+for(const [name,amount,appraisal,expected] of housingFinalCases){
+ const r=raw({rent:amount});
+ const comparable={rent:tokyoHousing?.value??null};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{rent:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,benchmarkMeta:{rent:tokyoHousing!},diagnosis:d.diagnosis,appraisal:appraisal?{rent:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='rent');
+ if(row?.status!==expected)throw new Error(`HOUSING_FINAL_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`HOUSING_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+console.log('HOUSING_FINAL_QA_PASS',housingFinalCases.length);
+
