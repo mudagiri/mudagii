@@ -3155,17 +3155,6 @@ const CSS = String.raw`
   .type-quiz-mudagiri{transition:none!important;animation:none!important}
 }
 
-/* keep PROFILE primary actions on the approved thumb anchor */
-.pre-profile .pre-fixed-profile-cta,
-.pre-complete .pre-fixed-profile-cta {
-  position:absolute!important;
-  left:16px!important;
-  right:16px!important;
-  bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px))!important;
-  width:auto!important;
-  min-height:56px!important;
-  margin:0!important;
-}
 
 
 /* ===== V2.9 ADDITIONAL APPRAISAL / PRIORITY BATTLE ===== */
