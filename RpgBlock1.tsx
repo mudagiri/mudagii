@@ -374,15 +374,15 @@ export default function RpgBlock1({
     setQuestionIndex((value) => value - 1);
   };
 
-  useEffect(()=>{
-    if(scene!=='battleComplete'||!onCompleteV3)return;
+  const finishDiagnosis=()=>{
+    if(!onCompleteV3)return;
     onEvent?.('battle_completed',{count:battleTargets.length});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
       methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0'
     });
-  },[scene]);
+  };
   return (
     <>
       <style>{CSS}</style>
@@ -511,6 +511,7 @@ export default function RpgBlock1({
             <BattleCompleteScene
               battleCount={battleTargets.length}
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              onResult={finishDiagnosis}
             />
           )}
         </section>
@@ -1580,7 +1581,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
   );
 }
 
-function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;reviewCount:number}) {
+function BattleCompleteScene({battleCount,reviewCount,onResult}:{battleCount:number;reviewCount:number;onResult:()=>void}) {
   return (
     <div className="scan-scene battle-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
@@ -1594,6 +1595,7 @@ function BattleCompleteScene({battleCount,reviewCount}:{battleCount:number;revie
           <br /><strong>次は、称号と家計の全結果を開示する。</strong>
         </p>
         <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
+        <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
       </section>
     </div>
   );
