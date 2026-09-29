@@ -273,7 +273,7 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
-    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'ここだけ金額が分かれば、推測ではなく改善額として確定できます。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
+    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
       if(actual(category)>0&&c!==null&&actual(category)>c){
