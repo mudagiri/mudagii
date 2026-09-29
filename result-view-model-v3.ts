@@ -8,9 +8,15 @@ export interface ComparatorMetaV3 {kind:ComparatorKind;label:string;sourceKey:st
 const LABEL:Record<Category,string>={mobile:'通信費',energy:'光熱費',sub:'サブスク',car:'車関連費',food:'食費',daily:'日用品',fun:'娯楽・交際費',beautyFashion:'美容・服飾費',rent:'住居費',insurance:'保険料',childEducation:'子どもの教育費',selfDevelopment:'自己投資'};
 const ENEMY:Record<Category,string>={mobile:'通信ザウルス',energy:'電気ウナギ魔人',sub:'サブスクサキュバス',car:'ムダカー',food:'クイダオーレ',daily:'チリツモコビト',fun:'アソビスギー',beautyFashion:'ミエハリーヌ',rent:'ヤチンダー',insurance:'ホケンミエナイダー',childEducation:'マナビンボー',selfDevelopment:'ジコトウシン'};
 
-export function comparatorMetaV3(c:Category, comparable:number|null):ComparatorMetaV3{
+export function comparatorMetaV3(c:Category, comparable:number|null, benchmarkMeta?:FinalCategoryV3['benchmarkMeta']):ComparatorMetaV3{
  if(c==='childEducation'&&comparable!==null)return {kind:'direct_benchmark',label:'参考ベンチマーク',sourceKey:'mext_education'};
  if(c==='rent'&&comparable!==null)return {kind:'statistical_comparator',label:'都道府県の民営賃貸参考値',sourceKey:'housing_v2_private_rent'};
+ if(c==='beautyFashion'&&comparable!==null){
+  const sex=benchmarkMeta?.meta?.sex;
+  const fallback=benchmarkMeta?.meta?.sexFallback;
+  const label=sex==='male'?'男性×年齢の比較目安':sex==='female'?'女性×年齢の比較目安':fallback==='all'?'男女計×年齢の比較目安':'美容・服飾費の比較目安';
+  return {kind:'statistical_comparator',label,sourceKey:benchmarkMeta?.sourceVersion??'beauty_fashion_v1'};
+ }
  if(['mobile','energy','food','daily','fun','beautyFashion'].includes(c)&&comparable!==null)return {kind:'statistical_comparator',label:'あなたに近い世帯の比較目安',sourceKey:'comparable_v1'};
  return {kind:'none',label:'比較情報なし',sourceKey:null};
 }
@@ -122,7 +128,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   category:x.category,label:LABEL[x.category],enemyName:ENEMY[x.category],status:x.status,attentionFlag:x.attentionFlag,
   amount:x.raw.amount,known:x.raw.known,applicability:x.raw.applicability,
   comparable:x.comparable,comparisonDifference:x.comparisonDifference,
-  comparator:comparatorMetaV3(x.category,x.comparable),
+  comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
   appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x)
