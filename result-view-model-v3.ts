@@ -127,9 +127,11 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
   return 'だいたい把握している';
  }
  if(x.category==='childEducation'){
-  const stage=a.educationStage?({publicKindergarten:'幼稚園・保育相当（公立）',privateKindergarten:'幼稚園・保育相当（私立）',publicElementary:'小学校（公立）',privateElementary:'小学校（私立）',publicJuniorHigh:'中学校（公立）',privateJuniorHigh:'中学校（私立）',publicHigh:'高校（公立）',privateHigh:'高校（私立）'} as Record<string,string>)[a.educationStage]:null;
+  const stageLabels={publicKindergarten:'幼稚園・保育相当（公立）',privateKindergarten:'幼稚園・保育相当（私立）',publicElementary:'小学校（公立）',privateElementary:'小学校（私立）',publicJuniorHigh:'中学校（公立）',privateJuniorHigh:'中学校（私立）',publicHigh:'高校（公立）',privateHigh:'高校（私立）'} as Record<string,string>;
+  const children=a.educationChildren?.length?a.educationChildren.map((child,i)=>`${i+1}人目:${stageLabels[child.stage]??child.stage}`).join(' / '):null;
+  const stage=!children&&a.educationStage?stageLabels[a.educationStage]:null;
   const pref=a.educationPreference?({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as Record<string,string>)[a.educationPreference]:null;
-  return [stage,pref].filter(Boolean).join(' / ')||null;
+  return [children??stage,pref].filter(Boolean).join(' / ')||null;
  }
  if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になってる',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながってる'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
