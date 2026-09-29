@@ -3,7 +3,7 @@ export type Satisfaction = 'waste'|'inertia'|'satisfied'|'verySatisfied';
 export type Policy = 'optimization'|'reference_guardrail'|'lifestyle'|'needs_review';
 export type DiagnosticState = 'NORMAL'|'CHECK'|'DETAIL'|'AUDIT'|'CONFIRMED';
 
-export interface CategoryInput { category: Category; actual: number; comparable: number|null; satisfaction?: Satisfaction; unusedAmount?: number; }
+export interface CategoryInput { category: Category; actual: number; comparable: number|null; satisfaction?: Satisfaction; unusedAmount?: number; cancellationConfirmed?: boolean; }
 export interface DiagnosisInput { monthlyTakeHomeIncome:number; monthlySavingInvestment:number; freeCashFlow:number; emergencyMonths:number; categories:CategoryInput[]; }
 export interface CategoryResult { category:Category; policy:Policy; state:DiagnosticState; actual:number; comparable:number|null; comparisonDifference:number|null; reducible:number; confirmedSaving:number|null; needsReview:boolean; actionability:number; risk:number; reasonCodes:string[]; }
 
@@ -16,7 +16,7 @@ const money=(x:number)=>Math.max(0,Math.round(Number.isFinite(x)?x:0));
  * V2.1 evidence contract:
  * - benchmark gap is a screening signal, never "waste"
  * - only a concrete, verified avoidable amount becomes confirmedSaving/reducible
- * - the current lightweight flow can confirm subscription unused amount; other categories remain review/audit until detail evidence exists
+ * - subscription saving is confirmed only when the unused amount is known AND cancellation/stoppability is confirmed; other categories remain review/audit until detail evidence exists
  */
 export function categoryDiagnosis(c:CategoryInput):CategoryResult{
   if(!Number.isFinite(c.actual)||c.actual<0) throw new Error(`INVALID_ACTUAL:${c.category}`);
@@ -28,10 +28,10 @@ export function categoryDiagnosis(c:CategoryInput):CategoryResult{
 
   if(c.actual===0){
     state='NORMAL';
-  } else if(c.category==='sub' && typeof c.unusedAmount==='number' && c.unusedAmount>0){
+  } else if(c.category==='sub' && typeof c.unusedAmount==='number' && c.unusedAmount>0 && c.cancellationConfirmed===true){
     confirmedSaving=money(Math.min(c.actual,Math.max(0,c.unusedAmount)));
     state=confirmedSaving>0?'CONFIRMED':'NORMAL';
-    if(confirmedSaving>0) reasonCodes.push('CONFIRMED_UNUSED_AMOUNT');
+    if(confirmedSaving>0) reasonCodes.push('CONFIRMED_UNUSED_AND_CANCELLABLE');
     actionability=95;
   } else if(c.category==='insurance'||c.category==='car'||c.category==='selfDevelopment'){
     state='AUDIT';
