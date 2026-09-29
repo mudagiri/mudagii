@@ -1,11 +1,11 @@
 import type {TypeCodeV31} from './type-questionnaire-v3.1';
 export const TYPE_CONTENT_V31:Record<TypeCodeV31,{name:string;catchphrase:string;summary:string;strength:string;blindSpot:string;shareHook:string}>={
-FPA:{name:'鉄壁マネー要塞',catchphrase:'未来も家計も、守備力高め。',summary:'先を見て、決めて、把握する。守りが強いマネー属性。',strength:'計画・把握・将来準備',blindSpot:'守ること自体が目的になりやすい',shareHook:'ちゃんと貯めてる。でも「何のため」まで決まってる？'},
-FPU:{name:'穴あき家計の番人',catchphrase:'未来は見る。でも足元からちょっと漏れる。',summary:'将来意識は高め。ただし小さな固定費や契約の放置が残りやすい。',strength:'将来意識・計画性',blindSpot:'小さな固定費・契約放置',shareHook:'未来は守る。小さな穴だけ、ふさぐ。'},
-FIA:{name:'心配性ストッカー',catchphrase:'未来が心配。だから安心には払う。',summary:'備える力は強い一方、不安が意思決定を押すことがある。',strength:'備える意識・危機感知',blindSpot:'安心のための契約を重ねやすい',shareHook:'安心は大事。でも安心料、重なってない？'},
-FIU:{name:'安心契約ゾンビ',catchphrase:'不安で入る。そして忘れる。',summary:'リスクには敏感。でも契約後の見直しが止まりやすい。',strength:'リスクへの感度',blindSpot:'契約後の放置',shareHook:'入った理由、今も覚えてる？'},
-VPA:{name:'メリハリ消費の賢者',catchphrase:'好きなものには使う。でもムダにはシビア。',summary:'今の満足を大切にしつつ、支出を把握して選べるタイプ。',strength:'価値ある支出を選ぶ力',blindSpot:'満足支出の合計が膨らむことはある',shareHook:'好きなものは斬らない。ムダだけ斬る。'},
-VPU:{name:'ご褒美予算ブレイカー',catchphrase:'楽しむ予算はある。細かい漏れは見逃しがち。',summary:'QOLを大切にする計画派。ただし小さな契約の漏れが残りやすい。',strength:'楽しみと予算の両立',blindSpot:'固定費・小額課金の見落とし',shareHook:'ご褒美は守る。使ってない課金だけ斬る。'},
-VIA:{name:'浪費自覚エンターテイナー',catchphrase:'使ってる。知ってる。でも楽しい。',summary:'自分の使い方を理解しながら、今の体験や満足を優先しやすい。',strength:'自分の価値観が明確',blindSpot:'勢いのある支出が積み上がりやすい',shareHook:'使ってる。でも満足してるなら、それは即ムダじゃない。'},
-VIU:{name:'感情課金バーサーカー',catchphrase:'気づいたら買ってた。請求を見て思い出す。',summary:'直感と今の満足が強いタイプ。小さな惰性支出を見つける余地が大きい。',strength:'行動力・体験への投資',blindSpot:'衝動と放置が重なりやすい',shareHook:'楽しいは正義。忘れてた課金は敵。'}};
+FPA:{name:'鉄壁マネー要塞',catchphrase:'未来も家計も、守備力高め。',summary:'先を見て、計画して、普段からお金の流れもつかみやすいタイプ。',strength:'将来を見据えた計画と把握',blindSpot:'計画を守ることを優先しすぎることも',shareHook:'ちゃんと備える派。でも「何のため」まで決まってる？'},
+FPU:{name:'穴あき家計の番人',catchphrase:'未来は見る。でも足元は必要なときに確認。',summary:'先を見て計画する一方、お金の流れは必要なときに確認するタイプ。',strength:'将来を見据えて計画する力',blindSpot:'日々の小さな変化は後から気づくことも',shareHook:'未来は守る。足元は必要なときにチェック。'},
+FIA:{name:'心配性ストッカー',catchphrase:'未来は大事。でも決めるときは直感も大事。',summary:'先のことを意識しながら、使う場面では自分の感覚も大切にするタイプ。',strength:'将来を意識しつつ動けること',blindSpot:'将来優先と今の直感がぶつかることも',shareHook:'未来も大事。今の「これだ」も捨てられない。'},
+FIU:{name:'安心契約ゾンビ',catchphrase:'未来は見る。決めるのは直感。確認は必要なとき。',summary:'先のことは意識する一方、選択は直感寄りで、お金の確認は必要なときにするタイプ。',strength:'先を意識しながら素早く選べること',blindSpot:'決めた後の振り返りが後回しになることも',shareHook:'先は見る。でも決める瞬間はフィーリング派。'},
+VPA:{name:'メリハリ消費の賢者',catchphrase:'今を楽しむ。でも使い方はちゃんと見る。',summary:'今の満足を大切にしながら、計画してお金の流れも把握しやすいタイプ。',strength:'今を楽しむ計画性と把握力',blindSpot:'納得できる支出が重なると合計が膨らむことも',shareHook:'好きなものは斬らない。使い方はちゃんと見る。'},
+VPU:{name:'ご褒美予算ブレイカー',catchphrase:'今を楽しむ。予算は決める。確認は必要なとき。',summary:'今の満足を大切にしつつ、使う範囲は計画する。お金の確認は必要なときにするタイプ。',strength:'楽しみと予算を両立する力',blindSpot:'細かな変化の確認は後回しになることも',shareHook:'ご褒美は守る。予算も守る。細かい確認はあとで。'},
+VIA:{name:'浪費自覚エンターテイナー',catchphrase:'今を楽しむ。直感で動く。でも流れは見えてる。',summary:'今の体験や満足を優先し、直感で選びながら、お金の流れは普段からつかみやすいタイプ。',strength:'行動の速さとお金の把握',blindSpot:'分かっていても勢いで使う場面は増えやすい',shareHook:'使うときは使う。でも何に使ったかは見えてる。'},
+VIU:{name:'感情課金バーサーカー',catchphrase:'今を楽しむ。直感で動く。確認は必要なとき。',summary:'今の満足と直感を大切にし、お金の流れは必要なときに確認するタイプ。',strength:'迷いすぎず体験へ動けること',blindSpot:'勢いのある支出を後から確認することも',shareHook:'楽しいは正義。使ったあとはちゃんと確認。'}};
 export const getTypeContentV31=(code:TypeCodeV31)=>TYPE_CONTENT_V31[code];
