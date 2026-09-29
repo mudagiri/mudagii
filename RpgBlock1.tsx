@@ -277,7 +277,6 @@ export default function RpgBlock1({
     const qs:AppraisalQuestion[]=[];
     if(actual('mobile')>0){
       qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、大手キャリアと格安SIMで基準帯が違います。平均額には変換せず、まず回線タイプだけ確認します。',question:'スマホ回線はどのタイプ？'});
-      if(appraisalAnswers.mobile?.mobileCarrier==='major'||appraisalAnswers.mobile?.mobileCarrier==='mvno')qs.push({category:'mobile',kind:'mobileDeviceMixed',reason:'端末代が混ざると通信サービス料金と直接比較できないため、ここだけ確認します。',question:'その通信費、スマホ端末代も入ってる？'});
     }
     if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
