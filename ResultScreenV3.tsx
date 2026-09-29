@@ -42,14 +42,15 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  },[]);
  async function share(){
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
-  const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n#ムダギリ診断`;
+  const shareUrl=new URL(window.location.origin+window.location.pathname);shareUrl.searchParams.set('ref','share');shareUrl.searchParams.set('type',vm.type.code);
+  const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n${shareUrl.toString()}\n#ムダギリ診断`;
   onEvent?.('share_clicked',{typeCode:vm.type.code});
   try{
    const file=await makeTypeShareFile(vm);
-   if(file&&navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'ムダギリ診断',text,files:[file]});onEvent?.('share_completed',{format:'image'});return}
-   if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed',{format:'text'});return}
+   if(file&&navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'ムダギリ診断',text,files:[file]});onEvent?.('share_completed',{typeCode:vm.type.code,format:'image'});return}
+   if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed',{typeCode:vm.type.code,format:'text'});return}
   }catch{}
-  try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{fallback:'clipboard'})}catch{}
+  try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{typeCode:vm.type.code,fallback:'clipboard'})}catch{}
  }
  const comparisonRows=vm.rows.filter((x:any)=>x.status==='review'&&x.comparisonDifference!==null&&x.comparisonDifference>0);
  const comparisonImpact=comparisonRows.reduce((sum:number,x:any)=>sum+x.comparisonDifference,0);
