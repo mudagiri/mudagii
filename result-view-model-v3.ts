@@ -63,7 +63,17 @@ function appraisalIntent(x:FinalCategoryV3):string|null{
 function reason(x:FinalCategoryV3):string{
  if(x.status==='na')return 'この診断では対象外です。';
  if(!x.raw.known)return '金額を把握していないため、ムダとは断定していません。まず金額や契約内容を確認します。';
- if(x.status==='protect')return '金額だけで斬らず、あなたが価値を感じている支出として守ります。';
+ if(x.status==='protect'){
+  if(x.category==='insurance'&&x.appraisal?.insurancePurpose==='clear')return '保障目的をかなり把握しているという回答のため、保険料の金額だけでは見直し対象にしません。';
+  if(x.category==='car'&&x.appraisal?.carNeed==='essential')return '生活・仕事に必須という回答のため、金額だけでは見直し対象にしません。';
+  if(x.category==='car'&&x.appraisal?.carNeed==='useful')return 'あるとかなり便利という回答のため、必要性を優先して守ります。';
+  if(x.category==='rent'&&(x.appraisal?.rentPreference==='protect'||x.appraisal?.rentPreference==='reasonable'))return '住環境を優先・現在の家賃を妥当とする回答を踏まえ、比較差だけでは見直し対象にしません。';
+  if(x.category==='childEducation'&&(x.appraisal?.educationPreference==='necessary'||x.appraisal?.educationPreference==='protect'))return '必要・優先して守りたい教育費という回答を踏まえ、参考値との差だけでは見直し対象にしません。';
+  if(x.category==='selfDevelopment'&&x.appraisal?.selfDevelopmentValue==='purpose')return '目的が明確という回答のため、金額だけでは見直し対象にしません。';
+  if(x.category==='selfDevelopment'&&x.appraisal?.selfDevelopmentValue==='results')return '成果につながっているという回答のため、価値のある自己投資として守ります。';
+  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&x.appraisal?.satisfaction)return '満足度・価値判断を踏まえ、比較目安を上回っていても金額だけでは見直し対象にしません。';
+  return '金額だけで斬らず、確認できた必要性・価値を踏まえて守ります。';
+ }
  if(x.status==='review'){
   if(x.category==='mobile'){
    const carrier=x.appraisal?.mobileCarrier??'unknown';
