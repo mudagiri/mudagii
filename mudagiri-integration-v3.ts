@@ -42,7 +42,7 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  if(category==='sub'){
    if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false,battleBasis:'confirmed'};
    if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false,battleBasis:'none'};
-   if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.subUsage==='one'||ap?.subUsage==='several')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='insurance'){
@@ -52,32 +52,32 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    // but it never creates confirmed savings in this lightweight flow.
    if(ap?.insurancePurpose==='clear')return {status:'protect',attentionFlag:false,battleBasis:'none'};
    if(ap?.insurancePurpose==='unclear'||ap?.insuranceLastReview==='over3y'||ap?.insuranceLastReview==='never'||ap?.insuranceLastReview==='unknown')
-     return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+     return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='car'){
    if(ap?.carNeed==='essential'||ap?.carNeed==='useful')return {status:'protect',attentionFlag:false,battleBasis:'none'};
-   if(ap?.carNeed==='burden'||ap?.carNeed==='notNeeded')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.carNeed==='burden'||ap?.carNeed==='notNeeded')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='rent'){
    if(ap?.rentPreference==='protect'||ap?.rentPreference==='reasonable')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.rentPreference==='burdenHigh'||ap?.rentPreference==='burdenSome')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='childEducation'){
    if(ap?.educationPreference==='necessary'||ap?.educationPreference==='protect')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(ap?.educationPreference==='reviewHigh'||ap?.educationPreference==='reviewSome')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.educationPreference==='reviewHigh'||ap?.educationPreference==='reviewSome')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if(category==='selfDevelopment'){
    if(ap?.selfDevelopmentValue==='purpose'||ap?.selfDevelopmentValue==='results')return {status:'protect',attentionFlag:false,battleBasis:'none'};
-   if(ap?.selfDevelopmentValue==='inertia'||ap?.selfDevelopmentValue==='unclear')return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(ap?.selfDevelopmentValue==='inertia'||ap?.selfDevelopmentValue==='unclear')return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  }
  if((category==='food'||category==='fun'||category==='beautyFashion')){
    if(ap?.satisfaction==='verySatisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
-   if(engine?.needsReview&&(ap?.satisfaction==='waste'||ap?.satisfaction==='inertia'))return {status:'battle',attentionFlag:false,battleBasis:'appraisal_review'};
+   if(engine?.needsReview&&(ap?.satisfaction==='waste'||ap?.satisfaction==='inertia'))return {status:'review',attentionFlag:true,battleBasis:'appraisal_review'};
    if(ap?.satisfaction==='satisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
  }
  // Benchmark-only CHECK is information, not an enemy. Averages never create an RPG battle by themselves.
@@ -87,4 +87,4 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
 }
 
-export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null}});return {categories,battleTargets:categories.filter(x=>x.status==='battle').sort((x,y)=>(y.battleBasis==='confirmed'?2:1)-(x.battleBasis==='confirmed'?2:1)||(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3)}}
+export function buildFinalJudgementsV3(a:{raw:RawExpenses;comparable:Partial<Record<Category,number|null>>;diagnosis:ReturnType<typeof runDiagnosisV2>;appraisal?:Partial<Record<Category,AppraisalV3>>}){const byEngine=new Map(a.diagnosis.categories.map(x=>[x.category,x]));const priority=new Map(a.diagnosis.enemies.map(x=>[x.category,x.priority]));const categories:FinalCategoryV3[]=ALL_CATEGORIES.map(category=>{const engine=byEngine.get(category)??null;const s=statusFor(category,a.raw[category],engine,a.appraisal?.[category]);return {category,raw:a.raw[category],engine,comparable:a.comparable[category]??null,status:s.status,attentionFlag:s.attentionFlag,reducible:engine?.confirmedSaving??0,priority:priority.get(category)??0,battleBasis:s.battleBasis,comparisonDifference:engine?.comparisonDifference??null,appraisal:a.appraisal?.[category]??null}});return {categories,battleTargets:categories.filter(x=>x.status==='battle'&&x.battleBasis==='confirmed'&&x.reducible>0).sort((x,y)=>(y.battleBasis==='confirmed'?2:1)-(x.battleBasis==='confirmed'?2:1)||(y.comparisonDifference??0)-(x.comparisonDifference??0)).slice(0,3)}}
