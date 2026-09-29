@@ -3242,9 +3242,9 @@ const CSS = String.raw`
 .type-quiz-dialogue{right:3%;bottom:13px;width:68%;min-height:48px;padding:8px 10px;font-size:13px;line-height:1.32}
 .type-quiz-card{left:12px;right:12px;bottom:max(8px,calc(env(safe-area-inset-bottom) + 4px));padding:11px 12px 9px;border-radius:15px}
 .type-quiz-number{font-size:11px}.type-quiz-card h2{margin-top:4px;font-size:clamp(18px,5vw,21px);line-height:1.17}
-.type-pair{grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.type-side{min-height:48px;padding:7px 7px 7px 34px;border-radius:9px}
-.type-side-badge{left:6px;width:23px;height:23px;font-size:12px;border-radius:6px}.type-side strong{font-size:11.5px;line-height:1.22}
-.type-pair-vs{left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px}
+.type-pair{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:4px;margin-top:7px}.type-side{min-height:48px;padding:7px 7px 7px 34px;border-radius:9px}
+.type-side-a{grid-column:1}.type-side-b{grid-column:3}.type-side-badge{left:6px;width:23px;height:23px;font-size:12px;border-radius:6px}.type-side strong{font-size:11.5px;line-height:1.22}
+.type-pair-vs{position:static;grid-column:2;grid-row:1;align-self:center;min-width:0;padding:4px 3px;transform:none;font-size:9px}
 .type-quiz-helper{margin-top:6px;font-size:10.5px;line-height:1.25}.type-quiz-helper strong{font-size:11px}
 .type-scale{grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;padding:0;background:transparent}
 .type-scale-option{min-height:52px;padding:6px 5px;border-radius:9px}.type-scale-option span{font-size:12px}.type-scale-option small{margin-top:2px;font-size:9px}
