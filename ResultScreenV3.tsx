@@ -10,6 +10,27 @@ function TypeAxis({label,value,positive,positiveText,negativeText,middle}:{label
  return <div className="rv3-axis"><div><span>{label}</span><b>{tendency}</b></div><div className="rv3-axis-track"><i style={{left:`${pct}%`}}/></div></div>
 }
 
+function axisTendency(vm:any,axis:'fv'|'pi'|'au'){
+ const middle=vm.type.nearMiddle?.[axis]; if(middle)return 'バランス型';
+ const positive=(vm.type.axes?.[axis]??0)>=0;
+ if(axis==='fv')return positive?'未来寄り':'今寄り';
+ if(axis==='pi')return positive?'計画寄り':'直感寄り';
+ return positive?'普段から把握':'必要時に確認';
+}
+async function makeTypeShareFile(vm:any){
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const x=canvas.getContext('2d');if(!x)return null;
+ x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
+ x.textAlign='center';x.fillStyle='#f5cc39';x.font='900 34px system-ui,sans-serif';x.fillText('ムダギリ診断',540,150);
+ x.fillStyle='#87929d';x.font='800 26px system-ui,sans-serif';x.fillText('MY MONEY TYPE',540,225);
+ x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';x.fillText(vm.type.name,540,350,900);
+ x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';x.fillText(vm.type.catchphrase??'',540,420,900);
+ const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
+ rows.forEach((r,i)=>{const y=565+i*125;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
+ x.textAlign='center';x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1050);x.fillStyle='#f5cc39';x.font='900 30px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1110);
+ x.fillStyle='#87929d';x.font='700 21px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1220);
+ const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
+}
+
 export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void}){
  const [open,setOpen]=useState<string|null>(null);
  const [revealed,setRevealed]=useState(false);
@@ -23,7 +44,11 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
   const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n#ムダギリ診断`;
   onEvent?.('share_clicked',{typeCode:vm.type.code});
-  try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed');return}}catch{}
+  try{
+   const file=await makeTypeShareFile(vm);
+   if(file&&navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'ムダギリ診断',text,files:[file]});onEvent?.('share_completed',{format:'image'});return}
+   if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed',{format:'text'});return}
+  }catch{}
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{fallback:'clipboard'})}catch{}
  }
  const comparisonRows=vm.rows.filter((x:any)=>x.status==='review'&&x.comparisonDifference!==null&&x.comparisonDifference>0);
