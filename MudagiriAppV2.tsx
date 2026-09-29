@@ -37,7 +37,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    const scored=scoreTypeAnswersV31(v.typeAnswers);
    const content=TYPE_CONTENT_V31[scored.code];
    const vm=buildResultViewModelV3({
-     diagnosisId,toneMode,
+     diagnosisId,toneMode,profile:v.profile,
      type:{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle},
      finalCategories:v.finalJudgements,
      monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),
@@ -63,7 +63,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
 
  if(result)return <ResultScreenV3 vm={result} onEvent={emit} onLine={async(ctx)=>{
    const payload={...ctx,anonymousUserId,diagnosisId};
-   await store?.saveLead?.({leadId:'lead_'+diagnosisId,anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',typeCode:result.type.code,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null});
+   await store?.saveLead?.({leadId:'lead_'+diagnosisId,anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null});
    if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;
 
