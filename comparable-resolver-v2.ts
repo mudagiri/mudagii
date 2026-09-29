@@ -118,7 +118,8 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
  const edu=educationBenchmarkV2(a.educationChildren);
  out.childEducation={value:edu,confidence:edu===null?'AUDIT':'DIRECT',sourceVersion:'CHILD_EDUCATION_V1.1_CORRECTED'};
  const housing=H[a.prefecture]??HOUSING_FALLBACK;
- out.rent={value:housing.meanPaid||null,confidence:housing.meanPaid?'DIRECT':'AUDIT',sourceVersion:'HOUSING_V2.0_PRIVATE_RENT_2023',meta:{p50Band:housing.p50,p75Band:housing.p75,p90Band:housing.p90,housingType:a.housingType}};
+ const isPrivateRent=a.housingType==='賃貸';
+ out.rent={value:isPrivateRent&&housing.meanPaid?housing.meanPaid:null,confidence:isPrivateRent&&housing.meanPaid?'DIRECT':'AUDIT',sourceVersion:'HOUSING_V2.0_PRIVATE_RENT_2023',meta:{p50Band:isPrivateRent?housing.p50:'',p75Band:isPrivateRent?housing.p75:'',p90Band:isPrivateRent?housing.p90:'',housingType:a.housingType,reason:isPrivateRent?'PRIVATE_RENT_DISTRIBUTION':'NON_RENT_AUDIT_ONLY'}};
  out.mobile={value:null,confidence:'AUDIT',sourceVersion:'COMMUNICATION_V1.0_DIRECT_BANDS',meta:{majorP50:'4,000-4,999',majorP75:'6,000-7,999',majorP90:'10,000+',mvnoP50:'2,000-2,999',mvnoP75:'3,000-3,999',mvnoP90:'5,000-5,999'}};
  for(const c of ['insurance','sub','car','selfDevelopment'] as Category[]) out[c]={value:null,confidence:'AUDIT',sourceVersion:'AUDIT_ONLY_V2.1'};
  return out;
