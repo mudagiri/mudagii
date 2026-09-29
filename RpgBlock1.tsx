@@ -61,6 +61,7 @@ type ProfileFlow = {
   prefecture: string;
   age: string;
   household: FamilyProfile;
+  householdSize: string;
   workStyle: string;
   housingType: string;
   monthlyTakeHome: string;
@@ -213,6 +214,7 @@ const INITIAL_FLOW: ProfileFlow = {
   prefecture: '東京都',
   age: '30',
   household: 'single',
+  householdSize: '1',
   workStyle: '会社員',
   housingType: '賃貸',
   monthlyTakeHome: '',
@@ -230,6 +232,7 @@ export default function RpgBlock1({
   const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>(toneMode);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
+  const [householdSizePending,setHouseholdSizePending]=useState(false);
   const [scanIndex, setScanIndex] = useState(0);
   const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>emptyRawExpenses());
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>({});
@@ -331,6 +334,15 @@ export default function RpgBlock1({
   };
 
   const nextQuestion = () => {
+    if(question?.no===3 && flow.household!=='single' && !householdSizePending){
+      setHouseholdSizePending(true);
+      return;
+    }
+    if(householdSizePending){
+      setHouseholdSizePending(false);
+      setQuestionIndex((value)=>value+1);
+      return;
+    }
     if (questionIndex < QUESTIONS.length - 1) {
       setQuestionIndex((value) => value + 1);
       return;
@@ -342,7 +354,9 @@ export default function RpgBlock1({
   };
 
   const previousQuestion = () => {
+    if(householdSizePending){setHouseholdSizePending(false);return;}
     if (questionIndex === 0) return;
+    if(question?.no===4 && flow.household!=='single'){setQuestionIndex((value)=>value-1);setHouseholdSizePending(true);return;}
     setQuestionIndex((value) => value - 1);
   };
 
@@ -369,6 +383,7 @@ export default function RpgBlock1({
             <ProfileScene
               question={question}
               index={questionIndex}
+              householdSizePending={householdSizePending}
               flow={flow}
               setFlow={setFlow}
               onNext={nextQuestion}
@@ -564,6 +579,7 @@ function ModeSelectScene({value,onChange,onBack}:{value:ToneMode;onChange:(v:Ton
 function ProfileScene({
   question,
   index,
+  householdSizePending,
   flow,
   setFlow,
   onNext,
@@ -571,12 +587,13 @@ function ProfileScene({
 }: {
   question: QuestionConfig;
   index: number;
+  householdSizePending: boolean;
   flow: ProfileFlow;
   setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const progress = (question.no / 6) * 100;
+  const progress = householdSizePending ? 58 : (question.no / 6) * 100;
   const isWarning = question.no === 4;
   const isEncounter = question.no >= 5;
 
@@ -601,7 +618,7 @@ function ProfileScene({
       <header className="pre-profile-hud">
         <div className="pre-profile-hud-row">
           <span>冒険準備</span>
-          <b>{question.no} / 6</b>
+          <b>{householdSizePending?'3+ / 6':`${question.no} / 6`}</b>
         </div>
         <div className="pre-progress-track" aria-hidden="true">
           <span style={{ width: `${progress}%` }} />
@@ -625,23 +642,23 @@ function ProfileScene({
       <section className="pre-panel">
         <div className="pre-dialogue">{question.dialogue}</div>
 
-        <div className="pre-question-no">Q{question.no}</div>
-        <h2>{question.question}</h2>
-        <p className="pre-helper">{question.helper}</p>
+        <div className="pre-question-no">{householdSizePending?'CHECK':`Q${question.no}`}</div>
+        <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
+        <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        <ProfileInput
+        {householdSizePending ? <label className="pre-input-wrap"><span className="pre-sr-only">世帯人数</span><select className="pre-select" value={flow.householdSize} onChange={(e)=>setFlow(v=>({...v,householdSize:e.target.value}))}>{['2','3','4','5','6'].map(n=><option key={n} value={n}>{n==='6'?'6人以上':`${n}人`}</option>)}</select></label> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
-        />
+        />}
 
         <button
           type="button"
           className="pre-primary pre-next pre-fixed-profile-cta"
           onClick={onNext}
-          disabled={(question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
+          disabled={(!householdSizePending && question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (!householdSizePending && question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
-          {question.no === 6 ? '準備完了 ▶' : '次へ ▶'}
+          {!householdSizePending && question.no === 6 ? '準備完了 ▶' : '次へ ▶'}
         </button>
 
         {index > 0 && (
@@ -713,7 +730,7 @@ function ProfileInput({
         <select
           className={selectClass}
           value={flow.household}
-          onChange={(e) => setFlow((v) => ({ ...v, household: e.target.value as FamilyProfile }))}
+          onChange={(e) => {const household=e.target.value as FamilyProfile;setFlow((v) => ({ ...v, household, householdSize:household==='single'?'1':(v.householdSize==='1'?'2':v.householdSize) }))}}
         >
           {HOUSEHOLDS.map((item) => (
             <option key={item.value} value={item.value}>{item.label}</option>
