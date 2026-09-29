@@ -676,20 +676,21 @@ function ProfileScene({
         <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
         <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        {householdSizePending ? <label className="pre-input-wrap"><span className="pre-sr-only">世帯人数</span><select className="pre-select" value={flow.householdSize} onChange={(e)=>setFlow(v=>({...v,householdSize:e.target.value}))}>{['2','3','4','5','6'].map(n=><option key={n} value={n}>{n==='6'?'6人以上':`${n}人`}</option>)}</select></label> : <ProfileInput
+        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,householdSize:n}));window.setTimeout(onNext,140)}}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
+          onChoiceNext={onNext}
         />}
 
-        <button
+        {!householdSizePending && [1,2,6].includes(question.no) && <button
           type="button"
           className="pre-primary pre-next profile-primary-cta"
           onClick={onNext}
-          disabled={(!householdSizePending && question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (!householdSizePending && question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
+          disabled={(question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
           次へ ▶
-        </button>
+        </button>}
 
         {index > 0 && (
           <button type="button" className="pre-back" onClick={onBack}>
@@ -707,10 +708,12 @@ function ProfileInput({
   no,
   flow,
   setFlow,
+  onChoiceNext,
 }: {
   no: 1 | 2 | 3 | 4 | 5 | 6;
   flow: ProfileFlow;
   setFlow: React.Dispatch<React.SetStateAction<ProfileFlow>>;
+  onChoiceNext: () => void;
 }) {
   const selectClass = 'pre-select';
 
@@ -754,41 +757,18 @@ function ProfileInput({
   }
 
   if (no === 3) {
-    return (
-      <label className="pre-input-wrap">
-        <span className="pre-sr-only">世帯</span>
-        <select
-          className={selectClass}
-          value={flow.household}
-          onChange={(e) => {const household=e.target.value as FamilyProfile;setFlow((v) => ({ ...v, household, householdSize:household==='single'?'1':(v.householdSize==='1'?'2':v.householdSize) }))}}
-        >
-          {HOUSEHOLDS.map((item) => (
-            <option key={item.value} value={item.value}>{item.label}</option>
-          ))}
-        </select>
-      </label>
-    );
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}));window.setTimeout(onChoiceNext,140)}}>{item.label}</button>)}</div>;
   }
 
   if (no === 4) {
-    return (
-      <label className="pre-input-wrap">
-        <span className="pre-sr-only">働き方</span>
-        <select
-          className={selectClass}
-          value={flow.workStyle}
-          onChange={(e) => setFlow((v) => ({ ...v, workStyle: e.target.value }))}
-        >
-          {WORK_STYLES.map((workStyle) => (
-            <option key={workStyle} value={workStyle}>{workStyle}</option>
-          ))}
-        </select>
-      </label>
-    );
+    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,workStyle}));window.setTimeout(onChoiceNext,140)}}>{workStyle}</button>)}</div>;
   }
 
   if (no === 5) {
-    return (
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>{setFlow(v=>({...v,housingType}));window.setTimeout(onChoiceNext,140)}}>{housingType}</button>)}</div>;
+  }
+
+  return (
       <label className="pre-input-wrap">
         <span className="pre-sr-only">住まい</span>
         <select
