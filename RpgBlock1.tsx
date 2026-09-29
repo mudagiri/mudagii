@@ -321,9 +321,10 @@ export default function RpgBlock1({
   }):null,[normalizedRaw,comparable,incomeNumber,appraisalAnswers]);
   const finalBundle=useMemo(()=>diagnosisBundle?buildFinalJudgementsV3({
     raw:normalizedRaw,diagnosis:diagnosisBundle.diagnosis,comparable,benchmarkMeta:comparisonBundle.benchmarkMeta,appraisal:appraisalAnswers
-  }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,comparisonBundle.benchmarkMeta,appraisalAnswers]);
+  }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[],encounterTargets:[] as FinalCategoryV3[],secondaryReviewTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,comparisonBundle.benchmarkMeta,appraisalAnswers]);
   const finalJudgements=finalBundle.categories;
   const battleTargets=finalBundle.battleTargets;
+  const encounterTargets=finalBundle.encounterTargets;
 
 
   useEffect(() => {
@@ -354,7 +355,7 @@ export default function RpgBlock1({
   useEffect(()=>{if(scene==='profile')preloadProfile(question?.sprite,QUESTIONS[questionIndex+1]?.sprite)},[scene,questionIndex,question]);
   useEffect(()=>{if(scene==='scan')preloadScan(currentScan?.category)},[scene,scanIndex,currentScan,applicableScanCategories]);
   useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.slice(appraisalIndex,appraisalIndex+2).map(x=>x.category))},[scene,appraisalQuestions,appraisalIndex]);
-  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(battleTargets.map(x=>x.category))},[scene,battleTargets]);
+  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(encounterTargets.map(x=>x.category))},[scene,encounterTargets]);
 
   // Funnel observability only: no answers, amounts, or profile values are emitted here.
   useEffect(()=>{
@@ -435,7 +436,7 @@ export default function RpgBlock1({
 
   const finishDiagnosis=()=>{
     if(!onCompleteV3)return;
-    onEvent?.('battle_completed',{count:battleTargets.length});
+    onEvent?.('battle_completed',{count:encounterTargets.length,confirmedCount:battleTargets.length});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
@@ -551,22 +552,22 @@ export default function RpgBlock1({
             />
           ) : scene === 'battleIntro' ? (
             <BattleIntroScene
-              targets={battleTargets}
+              targets={encounterTargets}
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
               onStart={() => {
                 setBattleIndex(0);
-                onEvent?.('battle_started',{count:battleTargets.length});
-                setScene(battleTargets.length ? 'battle' : 'battleComplete');
+                onEvent?.('battle_started',{count:encounterTargets.length,confirmedCount:battleTargets.length});
+                setScene(encounterTargets.length ? 'battle' : 'battleComplete');
               }}
             />
-          ) : scene === 'battle' && battleTargets.length ? (
+          ) : scene === 'battle' && encounterTargets.length ? (
             <ComboBattleScene
               targets={battleTargets}
               onDone={() => setScene('battleComplete')}
             />
           ) : (
             <BattleCompleteScene
-              battleCount={battleTargets.length}
+              battleCount={encounterTargets.length}
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
               onResult={finishDiagnosis}
             />
