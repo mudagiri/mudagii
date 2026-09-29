@@ -1357,6 +1357,7 @@ function AdditionalAppraisalScene({
       {label:'1年以内',sub:'最近見直している',patch:{insuranceLastReview:'within1y'},kind:'review',feedback:'簡易診断では要確認'},
       {label:'1〜3年前',sub:'少し時間が経っている',patch:{insuranceLastReview:'1to3y'},kind:'review',feedback:'要確認'},
       {label:'3年以上前',sub:'保障と現状がズレている可能性',patch:{insuranceLastReview:'over3y'},kind:'review',feedback:'見直し候補'},
+      {label:'一度も見直してない',sub:'加入時のまま',patch:{insuranceLastReview:'never'},kind:'review',feedback:'見直し候補'},
       {label:'覚えてない',sub:'契約内容から確認がおすすめ',patch:{insuranceLastReview:'unknown'},kind:'review',feedback:'見直し候補'},
     ],
     education:[
