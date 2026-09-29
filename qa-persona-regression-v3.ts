@@ -140,3 +140,20 @@ for(const [name,amount,benchmark,appraisal,expected] of foodCases){
 }
 console.log('FOOD_VALUE_QA_PASS',foodCases.length);
 
+const funCases:[string,number,number,AppraisalV3['fun']|undefined,Status][]=[
+ ['娯楽-基準以下',15000,20000,undefined,'safe'],
+ ['娯楽-超過守る',50000,20000,{satisfaction:'verySatisfied'},'protect'],
+ ['娯楽-超過見直す',50000,20000,{satisfaction:'inertia'},'review'],
+ ['娯楽-超過未回答',50000,20000,undefined,'review']
+];
+for(const [name,amount,benchmark,appraisal,expected] of funCases){
+ const r=raw({fun:amount});
+ const comparable={fun:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{fun:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal:appraisal?{fun:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='fun');
+ if(row?.status!==expected)throw new Error(`FUN_FINAL_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`FUN_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+console.log('FUN_VALUE_QA_PASS',funCases.length);
+
