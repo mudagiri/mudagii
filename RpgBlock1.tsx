@@ -1301,16 +1301,6 @@ function AdditionalAppraisalScene({
       {label:'2〜3個ありそう',sub:'整理すると見つかりそう',patch:{subUsage:'several'},kind:'review',feedback:'要確認'},
       {label:'把握できてない',sub:'何に払ってるか曖昧',patch:{subUsage:'unknown'},kind:'review',feedback:'確認優先度 高'},
     ],
-    educationStage:[
-      {label:'幼稚園・保育相当（公立）',sub:'公立幼稚園の参考値で比較',patch:{educationStage:'publicKindergarten'}},
-      {label:'幼稚園・保育相当（私立）',sub:'私立幼稚園の参考値で比較',patch:{educationStage:'privateKindergarten'}},
-      {label:'小学校（公立）',sub:'公立小学校の参考値で比較',patch:{educationStage:'publicElementary'}},
-      {label:'小学校（私立）',sub:'私立小学校の参考値で比較',patch:{educationStage:'privateElementary'}},
-      {label:'中学校（公立）',sub:'公立中学校の参考値で比較',patch:{educationStage:'publicJuniorHigh'}},
-      {label:'中学校（私立）',sub:'私立中学校の参考値で比較',patch:{educationStage:'privateJuniorHigh'}},
-      {label:'高校（公立）',sub:'公立高校の参考値で比較',patch:{educationStage:'publicHigh'}},
-      {label:'高校（私立）',sub:'私立高校の参考値で比較',patch:{educationStage:'privateHigh'}},
-    ],
     carNeed:[
       {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
       {label:'あるとかなり便利',sub:'利用頻度も高い',patch:{carNeed:'useful'},kind:'protect',feedback:'守る支出'},
@@ -1344,6 +1334,8 @@ function AdditionalAppraisalScene({
   };
 
   const [amountText,setAmountText]=useState('');
+  const educationCount=Math.max(1,Math.min(4,item.educationCount??1));
+  const [educationChildren,setEducationChildren]=useState<{stage:EducationStageV2}[]>(()=>Array.from({length:educationCount},()=>({stage:'publicElementary' as EducationStageV2})));
   const amountNumber=Number(amountText||0);
   const amountTooHigh=item.kind==='subUnusedAmount'&&typeof item.maxAmount==='number'&&amountNumber>item.maxAmount;
   const options: {label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[] =
@@ -1369,6 +1361,15 @@ function AdditionalAppraisalScene({
           <div className={`appraisal-feedback is-${feedback.kind}`}>
             <strong>{feedback.label}</strong>
             <span>{feedback.detail}</span>
+          </div>
+        ) : item.kind==='educationChildCount' ? (
+          <div className="appraisal-options">
+            {[1,2,3,4].map(n=><button key={n} type="button" className="appraisal-option" onClick={()=>commit({educationChildCount:n},'review','人数を確認',n===4?'4人分まで個別に確認します':`${n}人分の基準を合わせます`)}><strong>{n===4?'4人以上':`${n}人`}</strong><span>教育費がかかっている子</span></button>)}
+          </div>
+        ) : item.kind==='educationChildren' ? (
+          <div className="appraisal-options">
+            {Array.from({length:educationCount},(_,i)=><label key={i} className="appraisal-amount-input"><span>{i+1}人目</span><select value={educationChildren[i]?.stage??'publicElementary'} onChange={e=>{const stage=e.target.value as EducationStageV2;setEducationChildren(v=>{const next=[...v];next[i]={stage};return next})}}><option value="publicKindergarten">幼稚園（公立）</option><option value="privateKindergarten">幼稚園（私立）</option><option value="publicElementary">小学校（公立）</option><option value="privateElementary">小学校（私立）</option><option value="publicJuniorHigh">中学校（公立）</option><option value="privateJuniorHigh">中学校（私立）</option><option value="publicHigh">高校（公立）</option><option value="privateHigh">高校（私立）</option></select></label>)}
+            <button type="button" className="appraisal-option" onClick={()=>commit({educationChildren:educationChildren.slice(0,educationCount)},'review','基準を照合',`${educationCount}人分を合算します`)}><strong>この内容で比較する</strong><span>子ども別の基準を合算</span></button>
           </div>
         ) : item.kind==='subUnusedAmount' ? (
           <div className="appraisal-options">
