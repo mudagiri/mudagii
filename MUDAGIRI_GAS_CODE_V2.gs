@@ -2,7 +2,7 @@ const CFG={VERSION:'MUDAGIRI_SHEET_V3',SHEETS:{DIAG:'Diagnoses_V3',EVENT:'Events
 const CATS=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
 const CAT_LABEL={mobile:'通信費',energy:'光熱費',sub:'サブスク',car:'車',food:'食費',daily:'日用品',fun:'娯楽・交際',beautyFashion:'美容・服飾',rent:'住居費',insurance:'保険',childEducation:'子ども教育費',selfDevelopment:'自己投資'};
 const DIAG_BASE_HEADERS=['diagnosis_id','created_at','schema_version','type_model_version','methodology_version','household','age','monthly_income','monthly_saving','type_code','axis_fv','axis_pi','axis_au','strength_fv','strength_pi','strength_au','near_middle_fv','near_middle_pi','near_middle_au','monthly_improvement','future_goal','needs_review_json','expenses_json','raw_type_answers_json','raw_json','tone_mode'];
-const HUMAN_HEADERS=['都道府県','働き方','住居タイプ','年収帯'].concat(CATS.map(c=>CAT_LABEL[c]+' 入力額'),CATS.map(c=>CAT_LABEL[c]+' 追加鑑定'),CATS.map(c=>CAT_LABEL[c]+' 最終判定'),CATS.map(c=>CAT_LABEL[c]+' 比較基準'),CATS.map(c=>CAT_LABEL[c]+' 基準との差'),CATS.map(c=>CAT_LABEL[c]+' 確定改善額'),['見直しクエスト','診断タイプ名']);
+const HUMAN_HEADERS=['都道府県','働き方','住居タイプ','年収帯'].concat(CATS.flatMap(c=>[CAT_LABEL[c]+' 入力額',CAT_LABEL[c]+' 追加鑑定',CAT_LABEL[c]+' 最終判定',CAT_LABEL[c]+' 比較基準',CAT_LABEL[c]+' 基準との差',CAT_LABEL[c]+' 確定改善額']),['見直しクエスト','診断タイプ名']);
 function setupMudagiriV3(){
  const ss=SpreadsheetApp.getActive();
  ensure_(ss,CFG.SHEETS.DIAG,DIAG_BASE_HEADERS.concat(HUMAN_HEADERS));
@@ -29,12 +29,14 @@ function saveDiagnosis_(b){
  const base=[id,b.createdAt||new Date().toISOString(),b.schemaVersion||CFG.VERSION,m.type||'',m.diagnosis||'',p.household||'',num_(p.age),num_(p.monthlyTakeHome),'',r.typeCode||'','','','','','','',false,false,false,num_(r.improvement&&r.improvement.monthly),'',JSON.stringify(review),JSON.stringify(b.rawExpenses||{}),JSON.stringify(b.typeAnswers||{}),JSON.stringify(b),b.toneMode||''];
  const raw=b.rawExpenses||{}, ap=b.appraisal||{}, details=r.finalDetails||{}, fs=r.finalStatuses||{};
  const human=[p.prefecture||'',p.workStyle||'',p.housingType||'',b.annualIncomeBand||'']
-   .concat(CATS.map(c=>expense_(raw[c])))
-   .concat(CATS.map(c=>appraisal_(c,ap[c])))
-   .concat(CATS.map(c=>status_(fs[c])))
-   .concat(CATS.map(c=>numOrBlank_(details[c]&&details[c].comparable)))
-   .concat(CATS.map(c=>numOrBlank_(details[c]&&details[c].comparisonDifference)))
-   .concat(CATS.map(c=>numOrBlank_(details[c]&&details[c].confirmedSaving)))
+   .concat(CATS.flatMap(c=>[
+     expense_(raw[c]),
+     appraisal_(c,ap[c]),
+     status_(fs[c]),
+     numOrBlank_(details[c]&&details[c].comparable),
+     numOrBlank_(details[c]&&details[c].comparisonDifference),
+     numOrBlank_(details[c]&&details[c].confirmedSaving)
+   ]))
    .concat([(r.battleTargets||[]).map(c=>CAT_LABEL[c]||c).join(' / '),r.typeName||'']);
  const row=base.concat(human);
  const found=find_(s,1,id);if(found>1)s.getRange(found,1,1,row.length).setValues([row]);else s.appendRow(row);
