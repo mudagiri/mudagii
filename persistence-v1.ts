@@ -1,4 +1,5 @@
-import type { DiagnosisFactV1, LeadProfileV1 } from './data-platform-v1';
+export type DiagnosisFactV1 = Record<string,unknown>;
+export type LeadProfileV1 = Record<string,unknown>;
 
 export type FunnelEventName='diagnosis_started'|'diagnosis_completed'|'result_viewed'|'future_goal_selected'|'line_clicked'|'line_connected'|'appointment_cta_clicked'|'appointment_booked'|'valid_appointment'|'conversion';
 export interface FunnelEventV1 {eventId:string; anonymousUserId:string; diagnosisId:string; name:FunnelEventName; createdAt:string; data?:Record<string,unknown>}
