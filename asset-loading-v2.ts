@@ -41,7 +41,6 @@ export function preloadBattle(targets:EnemyAssetCategory[]){
   `${BATTLE}/MUDAGIRI_BATTLE_FOLLOW.png`,
   `${BATTLE}/FX-02_SLASH.png`,
   `${BATTLE}/FX-03_HIT.png`,
-  `${BATTLE}/FX-04_DEFEAT_PARTICLES.png`,
   ...targets.slice(0,3).flatMap(c=>[ENEMY_ASSETS[c].normal,ENEMY_ASSETS[c].defeated]),
  ]);
 }
