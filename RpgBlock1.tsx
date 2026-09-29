@@ -356,6 +356,49 @@ export default function RpgBlock1({
   useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.slice(appraisalIndex,appraisalIndex+2).map(x=>x.category))},[scene,appraisalQuestions,appraisalIndex]);
   useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(battleTargets.map(x=>x.category))},[scene,battleTargets]);
 
+  // Funnel observability only: no answers, amounts, or profile values are emitted here.
+  useEffect(()=>{
+    if(scene==='profile'){
+      onEvent?.('profile_step_viewed',{
+        step:householdSizePending?'3+':String(question?.no??questionIndex+1),
+        index:questionIndex+1,
+        total:QUESTIONS.length,
+      });
+    }
+  },[scene,questionIndex,householdSizePending,question?.no,onEvent]);
+
+  useEffect(()=>{
+    if(scene==='scan'&&currentScan){
+      onEvent?.('scan_step_viewed',{
+        category:currentScan.category,
+        index:scanIndex+1,
+        total:applicableScanCategories.length,
+      });
+    }
+  },[scene,scanIndex,currentScan?.category,applicableScanCategories.length,onEvent]);
+
+  useEffect(()=>{
+    if(scene==='typeQuiz'&&currentTypeQuestion){
+      onEvent?.('type_question_viewed',{
+        questionId:currentTypeQuestion.id,
+        index:typeIndex+1,
+        total:TYPE_QUESTIONS_V31.length,
+      });
+    }
+  },[scene,typeIndex,currentTypeQuestion?.id,onEvent]);
+
+  useEffect(()=>{
+    const current=appraisalQuestions[appraisalIndex];
+    if(scene==='appraisal'&&current){
+      onEvent?.('appraisal_step_viewed',{
+        category:current.category,
+        kind:current.kind,
+        index:appraisalIndex+1,
+        total:appraisalQuestions.length,
+      });
+    }
+  },[scene,appraisalIndex,appraisalQuestions,onEvent]);
+
   const beginAdventure = () => setScene('mode');
   const chooseMode = (mode:ToneMode) => {
     setSelectedToneMode(mode);
