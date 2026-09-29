@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TONE_MODES, type ToneMode } from './tone-mode-v3';
-import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
+import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3,housingScreenV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
 import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadBattle } from './asset-loading-v2';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
@@ -288,7 +288,8 @@ export default function RpgBlock1({
     });
     if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
     const rent=actual('rent');
-    if(rent>0)qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    const rentScreen=housingScreenV3(rent,comparisonBundle.benchmarkMeta.rent);
+    if(rent>0&&(rentScreen.band==='check'||rentScreen.band==='detail'||rentScreen.band==='audit'))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
     if(actual('insurance')>0){
       qs.push({category:'insurance',kind:'insuranceOverview',reason:'保険料の高さだけではムダ判定しません。まず、今の保障をどれくらい把握しているかだけ確認します。',question:'今入ってる保険、内容ちゃんと把握してる？'});
       const purpose=appraisalAnswers.insurance?.insurancePurpose;
@@ -297,7 +298,7 @@ export default function RpgBlock1({
     if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:(Number(flow.householdSize)>=6?6:Math.max(1,(Number(flow.householdSize)||2)-1)),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
-  },[incomeNumber,normalizedRaw,comparable,flow.household]);
+  },[incomeNumber,normalizedRaw,comparable,comparisonBundle.benchmarkMeta,flow.household]);
 
   const diagnosisBundle=useMemo(()=>incomeNumber>0?runDiagnosisAdapterV3({
     raw:normalizedRaw,comparable,monthlyTakeHome:incomeNumber,appraisal:appraisalAnswers
