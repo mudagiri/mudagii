@@ -81,7 +81,7 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
    if(ap?.satisfaction==='satisfied')return {status:'protect',attentionFlag:!!engine?.needsReview,battleBasis:'none'};
  }
  // Benchmark-only CHECK is information, not an enemy. Averages never create an RPG battle by themselves.
- if((category==='mobile'||category==='energy'||category==='daily')&&engine?.state==='CHECK')
+ if((category==='energy'||category==='daily')&&engine?.state==='CHECK')
    return {status:'review',attentionFlag:true,battleBasis:'none'};
  if(engine?.needsReview)return {status:'review',attentionFlag:true,battleBasis:'none'};
  return {status:'safe',attentionFlag:false,battleBasis:'none'};
