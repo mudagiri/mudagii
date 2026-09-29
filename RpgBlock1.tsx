@@ -41,6 +41,8 @@ type AppraisalAnswer = {
   educationChildren?: {stage:EducationStageV2}[];
   educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
+  mobileCarrier?: 'major'|'mvno'|'unknown';
+  mobileDeviceMixed?: boolean|'unknown';
 };
 type AppraisalMap = Partial<Record<EnemyAssetCategory, AppraisalAnswer>>;
 type AppraisalQuestion = {
@@ -49,7 +51,7 @@ type AppraisalQuestion = {
   question: string;
   maxAmount?: number;
   educationCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'mobileDeviceMixed';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -273,6 +275,10 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
+    if(actual('mobile')>0){
+      qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、大手キャリアと格安SIMで基準帯が違います。平均額には変換せず、まず回線タイプだけ確認します。',question:'スマホ回線はどのタイプ？'});
+      if(appraisalAnswers.mobile?.mobileCarrier==='major'||appraisalAnswers.mobile?.mobileCarrier==='mvno')qs.push({category:'mobile',kind:'mobileDeviceMixed',reason:'端末代が混ざると通信サービス料金と直接比較できないため、ここだけ確認します。',question:'その通信費、スマホ端末代も入ってる？'});
+    }
     if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
       const c=comp(category);
@@ -1336,6 +1342,16 @@ function AdditionalAppraisalScene({
       {label:'少し負担を感じる',sub:'家計とのバランスが気になる',patch:{educationPreference:'reviewSome'}},
       {label:'必要な教育費',sub:'今の内容は維持したい',patch:{educationPreference:'necessary'}},
       {label:'優先して守りたい',sub:'他を削ってでも大切',patch:{educationPreference:'protect'}},
+    ],
+    mobileCarrier:[
+      {label:'大手キャリア系',sub:'docomo・au・SoftBankなど',patch:{mobileCarrier:'major'},kind:'review',feedback:'価格帯を照合'},
+      {label:'格安SIM系',sub:'MVNOなど',patch:{mobileCarrier:'mvno'},kind:'review',feedback:'価格帯を照合'},
+      {label:'分からない',sub:'無理に推測しない',patch:{mobileCarrier:'unknown'},kind:'review',feedback:'要確認'},
+    ],
+    mobileDeviceMixed:[
+      {label:'端末代も入ってる',sub:'通信サービス料だけではない',patch:{mobileDeviceMixed:true},kind:'review',feedback:'端末代を分けて確認'},
+      {label:'入ってない',sub:'通信サービス料として見られる',patch:{mobileDeviceMixed:false},kind:'review',feedback:'価格帯と照合'},
+      {label:'分からない',sub:'請求明細を確認',patch:{mobileDeviceMixed:'unknown'},kind:'review',feedback:'要確認'},
     ],
     subCancellation:[
       {label:'解約・停止できる',sub:'次回以降の支払いを止められる',patch:{subCancellationConfirmed:true},kind:'battle',feedback:'ここで初めて改善額として確定します'},
