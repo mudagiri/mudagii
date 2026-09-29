@@ -50,6 +50,7 @@ type AppraisalQuestion = {
   question: string;
   maxAmount?: number;
   educationCount?: number;
+  educationMaxCount?: number;
   kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier';
 };
 type FinalEnemyJudgement = {
@@ -293,7 +294,7 @@ export default function RpgBlock1({
       const purpose=appraisalAnswers.insurance?.insurancePurpose;
       if(purpose==='unclear'||purpose==='mostly')qs.push({category:'insurance',kind:'insuranceReview',reason:'内容が曖昧な場合だけ、見直し時期をもう1つ確認します。',question:'最後にちゃんと見直したのは？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
+    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:Math.max(1,Math.min(6,Number(flow.householdSize)||2)),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
   },[incomeNumber,normalizedRaw,comparable,flow.household]);
@@ -1389,7 +1390,7 @@ function AdditionalAppraisalScene({
           </div>
         ) : item.kind==='educationChildCount' ? (
           <div className="appraisal-options">
-            {Array.from({length:Math.max(1,Math.min(6,Number(flow.householdSize)||2))},(_,i)=>i+1).map(n=><button key={n} type="button" className="appraisal-option" onClick={()=>commit({educationChildCount:n},'review','人数を確認',`${n}人分の基準を合わせます`)}><strong>{n===6?'6人':`${n}人`}</strong><span>教育費がかかっている子</span></button>)}
+            {Array.from({length:item.educationMaxCount??1},(_,i)=>i+1).map(n=><button key={n} type="button" className="appraisal-option" onClick={()=>commit({educationChildCount:n},'review','人数を確認',`${n}人分の基準を合わせます`)}><strong>{n===6?'6人':`${n}人`}</strong><span>教育費がかかっている子</span></button>)}
           </div>
         ) : item.kind==='educationChildren' ? (
           <div className="appraisal-options">
