@@ -166,9 +166,9 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const reviewPriority=(x:(typeof rows)[number])=>{
-  // Review items are not confirmed savings. Rank only the order of what to verify first.
-  // Explicit user/audit signals outrank benchmark-only gaps; larger positive gaps are a tie-breaker.
-  const explicit=x.battleBasis==='appraisal_review'?3:x.attentionFlag?2:1;
+  // Review items are not confirmed savings. Explicit user answers outrank benchmark-only signals.
+  // attentionFlag is secondary; a positive benchmark gap is only a tie-breaker and never a saving.
+  const explicit=x.appraisalSummary?3:x.attentionFlag?2:1;
   const gap=x.comparisonDifference!==null&&x.comparisonDifference>0?x.comparisonDifference:0;
   return explicit*1_000_000+gap;
  };
