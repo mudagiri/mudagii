@@ -41,10 +41,10 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
     <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
     <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
    </>:<>
-    {comparisonImpact>0?<><div className="rv3-kicker">見直しインパクト</div>
-    <div className="rv3-money">¥{yen(comparisonImpact)}</div><small>/ 月</small>
-    <h3>比較目安との差が出ている支出です。</h3>
-    <p>この全額がムダ・削減可能という意味ではありません。実際に減らせる金額は確認して確定します。</p></>:<>
+    {comparisonImpact>0?<><div className="rv3-kicker">比較目安との差（参考）</div>
+    <div className="rv3-money">¥{yen(comparisonImpact)}</div><small>/ 月・{vm.battleTargets.filter((x:any)=>x.comparisonDifference!==null&&x.comparisonDifference>0).length}項目の合計</small>
+    <h3>比較目安より高い部分を、確認ポイントとして表示しています。</h3>
+    <p>この金額はムダ額・削減可能額ではありません。具体的に不要・削減可能と確認できた金額だけを「確定改善額」にします。</p></>:<>
     <div className="rv3-kicker">改善額はまだ未確定</div>
     <h3>見直し候補はある。でも、推測で金額は出さない。</h3>
     <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p></>}
