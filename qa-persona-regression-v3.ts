@@ -304,3 +304,25 @@ console.log('EDUCATION_SEMANTIC_QA_PASS',2);
 }
 console.log('FIRST_QUEST_PRIORITY_QA_PASS',2);
 
+{
+ const r=raw({insurance:30000,car:60000,selfDevelopment:50000,food:90000});
+ const appraisal:any={insurance:{insurancePurpose:'clear'},car:{carNeed:'essential'},selfDevelopment:{selfDevelopmentValue:'results'},food:{satisfaction:'satisfied'}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:450000,raw:r,comparable:{insurance:null,car:null,selfDevelopment:null,food:47405},appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{insurance:null,car:null,selfDevelopment:null,food:47405},diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-result-protect-reasons',type:{code:'FPA',name:'QA'},toneMode:'gentle',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'500_599'});
+ for(const cat of ['insurance','car','selfDevelopment','food'] as Category[]){
+  const row=vm.rows.find(x=>x.category===cat);
+  if(row?.status!=='protect'||!row.reason||row.reason.includes('確認できた必要性・価値'))throw new Error(`RESULT_PROTECT_REASON_FAIL:${cat}:${row?.status}:${row?.reason}`);
+ }
+}
+{
+ const r=raw({mobile:12000});
+ const appraisal:any={mobile:{mobileCarrier:'major'}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:450000,raw:r,comparable:{mobile:null},appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable:{mobile:null},diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-result-mobile-comparator',type:{code:'FPA',name:'QA'},toneMode:'gentle',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'500_599'});
+ const row=vm.rows.find(x=>x.category==='mobile');
+ if(row?.comparator.label!=='回線タイプ別の携帯料金帯（参考）')throw new Error(`RESULT_MOBILE_COMPARATOR_FAIL:${row?.comparator.label}`);
+}
+console.log('RESULT_SEMANTIC_QA_PASS',5);
+
