@@ -687,7 +687,7 @@ function ProfileScene({
         {!householdSizePending && [1,2,6].includes(question.no) && <button
           type="button"
           className="pre-primary pre-next profile-primary-cta"
-          onClick={onNext}
+          onClick={()=>onNext()}
           disabled={(question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
           次へ ▶
