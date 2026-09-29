@@ -95,12 +95,22 @@ function reason(x:FinalCategoryV3):string{
    if(x.appraisal?.insuranceLastReview==='over3y'||x.appraisal?.insuranceLastReview==='never'||x.appraisal?.insuranceLastReview==='unknown')return '保障目的は一部把握していますが、見直しから時間が経っている・時期が不明なため契約内容を確認します。削減額はまだ確定していません。';
    return '保障内容や目的の追加確認が必要です。保険料の金額だけではムダ・削減額とは判定していません。';
   }
-  if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
-  if(x.category==='childEducation')return '子どもの年齢・進路・必要性を含めて判断するため、要鑑定です。';
+  if(x.category==='rent'){
+   const intent=appraisalIntent(x);
+   return intent?`${intent}、住環境の優先度とあわせて確認します。比較差だけを削減額にはしていません。`:'住環境や負担感を含めて判断する必要があるため、要鑑定です。';
+  }
+  if(x.category==='childEducation'){
+   const intent=appraisalIntent(x);
+   return intent?`${intent}、教育段階・進路とあわせて確認します。参考ベンチマークとの差は削減額ではありません。`:'子どもの教育段階・進路・必要性を含めて判断するため、要鑑定です。';
+  }
   if(x.category==='selfDevelopment'){
    if(x.appraisal?.selfDevelopmentValue==='inertia')return '惰性になっているという回答のため、続ける目的と利用状況を確認する対象です。金額だけでムダ・削減額とは判定していません。';
    if(x.appraisal?.selfDevelopmentValue==='unclear')return '効果がよく分からないという回答のため、目的と成果のつながりを確認する対象です。削減額はまだ確定していません。';
    return '目的・利用状況・成果を含めて判断するため、要鑑定です。金額だけではムダ判定していません。';
+  }
+  if(x.category==='food'||x.category==='fun'||x.category==='beautyFashion'){
+   const intent=appraisalIntent(x);
+   if(intent)return `${intent}、内容を確認する対象です。比較目安との差はムダ額・削減額には含めていません。`;
   }
   return '追加情報が必要なため、まだムダとは断定していません。';
  }
