@@ -123,3 +123,20 @@ for(const [name,amount,benchmark,appraisal,expected] of dailyCases){
 }
 console.log('DAILY_PERSISTENCE_QA_PASS',dailyCases.length);
 
+const foodCases:[string,number,number,AppraisalV3['food']|undefined,Status][]=[
+ ['食費-基準以下',45000,50000,undefined,'safe'],
+ ['食費-超過守る',80000,50000,{satisfaction:'verySatisfied'},'protect'],
+ ['食費-超過見直す',80000,50000,{satisfaction:'waste'},'review'],
+ ['食費-超過未回答',80000,50000,undefined,'review']
+];
+for(const [name,amount,benchmark,appraisal,expected] of foodCases){
+ const r=raw({food:amount});
+ const comparable={food:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:400000,raw:r,comparable,appraisal:appraisal?{food:appraisal}:undefined});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal:appraisal?{food:appraisal}:undefined});
+ const row=fin.categories.find(x=>x.category==='food');
+ if(row?.status!==expected)throw new Error(`FOOD_FINAL_FAIL:${name}:${row?.status}!=${expected}`);
+ if((row?.reducible??0)!==0)throw new Error(`FOOD_SAVING_MUST_BE_ZERO:${name}:${row?.reducible}`);
+}
+console.log('FOOD_VALUE_QA_PASS',foodCases.length);
+
