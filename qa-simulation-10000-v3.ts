@@ -39,6 +39,7 @@ for(let id=1;id<=10000;id++){
    const amount=zero?0:money(bases[c],.8);
    raw[c]={amount,known:true,applicability:'applicable'};
    if(c==='food'||c==='fun'||c==='beautyFashion')appraisal[c]={satisfaction:satisfaction()};
+   if(c==='mobile'&&amount>0)appraisal[c]={...(appraisal[c]??{}),mobileCarrier:pick(['major','mvno','unknown'] as const)};
    if(c==='sub'&&amount>0){
      const usage=pick(['none','one','several','unknown'] as const);
      const unused=(usage==='one'||usage==='several')&&rnd()<.62?Math.round(amount*(.15+rnd()*.55)):undefined;
@@ -57,8 +58,10 @@ for(let id=1;id<=10000;id++){
  try{
    const bundle=buildComparableV3({household,householdSize,age,annualIncomeBand:'unknown',prefecture,month,housingType,raw,educationChildren:appraisal.childEducation?.educationChildren});
    comparable=bundle.comparable;
+   if((raw.energy.amount??0)>0&&comparable.energy!==null&&comparable.energy!==undefined&&(raw.energy.amount??0)>comparable.energy)appraisal.energy={...(appraisal.energy??{}),energyPersistence:pick(['persistent','temporary','unknown'] as const)};
+   if((raw.daily.amount??0)>0&&comparable.daily!==null&&comparable.daily!==undefined&&(raw.daily.amount??0)>comparable.daily)appraisal.daily={...(appraisal.daily??{}),dailyPersistence:pick(['persistent','temporary','unknown'] as const)};
    const d=runDiagnosisAdapterV3({monthlyTakeHome:Math.max(120000,income),raw,comparable,appraisal});
-   const f=buildFinalJudgementsV3({raw,comparable,diagnosis:d.diagnosis,appraisal});
+   const f=buildFinalJudgementsV3({raw,comparable,benchmarkMeta:bundle.benchmarkMeta,diagnosis:d.diagnosis,appraisal});
    const battle=f.categories.filter(x=>x.status==='battle');
    const confirmed=f.categories.reduce((s,x)=>s+x.reducible,0);
    const review=f.categories.filter(x=>x.status==='review');
