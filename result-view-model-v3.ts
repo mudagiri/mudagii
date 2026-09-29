@@ -52,6 +52,10 @@ function reason(x:FinalCategoryV3):string{
  if(!x.raw.known)return '金額を把握していないため、ムダとは断定していません。まず金額や契約内容を確認します。';
  if(x.status==='protect')return '金額だけで斬らず、あなたが価値を感じている支出として守ります。';
  if(x.status==='review'){
+  if(x.category==='energy'){
+   if(x.appraisal?.energyPersistence==='persistent')return '比較目安を上回る状態が2〜3か月続いているため、明細確認の対象です。差額は改善額には含めていません。';
+   return '単月の金額だけではムダと断定せず、継続性や請求周期を追加確認します。';
+  }
   if(x.category==='sub')return '使っていない可能性はありますが、未使用額が分からないため改善額には含めていません。';
   if(x.category==='insurance')return '保障内容や目的まで確認しないと、金額だけではムダ判定できません。';
   if(x.category==='rent')return '住環境や負担感を含めて判断する必要があるため、要鑑定です。';
@@ -74,6 +78,7 @@ function reason(x:FinalCategoryV3):string{
 }
 function appraisalSummary(x:FinalCategoryV3):string|null{
  const a=x.appraisal;if(!a)return null;
+ if(x.category==='energy'&&a.energyPersistence)return ({persistent:'2〜3か月くらい続いている',temporary:'今月だけ高い',unknown:'継続しているか分からない'} as Record<string,string>)[a.energyPersistence]??null;
  if(x.category==='sub'){if(a.subUsage==='none')return 'ほぼ全部使っている';if(a.subUnusedAmount&&a.subUnusedAmount>0)return `未使用分 月¥${a.subUnusedAmount.toLocaleString('ja-JP')}を確認`;if(a.subUsage==='one')return '使っていない契約が1つくらいありそう';if(a.subUsage==='several')return '使っていない契約が2〜3個ありそう';if(a.subUsage==='unknown')return '契約状況を把握できていない';}
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'負担が気になってる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
