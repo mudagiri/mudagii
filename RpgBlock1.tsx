@@ -304,8 +304,8 @@ export default function RpgBlock1({
     raw:normalizedRaw,comparable,monthlyTakeHome:incomeNumber,appraisal:appraisalAnswers
   }):null,[normalizedRaw,comparable,incomeNumber,appraisalAnswers]);
   const finalBundle=useMemo(()=>diagnosisBundle?buildFinalJudgementsV3({
-    raw:normalizedRaw,diagnosis:diagnosisBundle.diagnosis,comparable,appraisal:appraisalAnswers
-  }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,appraisalAnswers]);
+    raw:normalizedRaw,diagnosis:diagnosisBundle.diagnosis,comparable,benchmarkMeta:comparisonBundle.benchmarkMeta,appraisal:appraisalAnswers
+  }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,comparisonBundle.benchmarkMeta,appraisalAnswers]);
   const finalJudgements=finalBundle.categories;
   const battleTargets=finalBundle.battleTargets;
 
