@@ -172,51 +172,51 @@ const HOUSING_TYPES = [
 const QUESTIONS: QuestionConfig[] = [
   {
     no: 1,
-    dialogue: 'よし、冒険の準備を始めるぞ！',
+    dialogue: 'まずはここから！',
     question: 'どこに住んでる？',
-    helper: '地域ごとの家計データと比較',
+    helper: '地域差がある支出を、近い条件で比べるぞ',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q1.png`,
-    footer: 'あと5問で冒険開始',
+    footer: '冒険準備 1 / 7',
   },
   {
     no: 2,
-    dialogue: 'よし、その調子！次いくぞ！',
+    dialogue: 'よし、その調子！',
     question: '年齢は？',
-    helper: '年齢に近い家計データと比較',
+    helper: '年齢で差が出る支出を、近い基準で比べるぞ',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q2.png`,
-    footer: '冒険準備 33%',
+    footer: '冒険準備 2 / 7',
   },
   {
     no: 3,
-    dialogue: 'いいぞ！半分まできた！',
+    dialogue: '次はパーティ編成だ！',
     question: '誰と暮らしてる？',
-    helper: '世帯人数に合わせて比較',
+    helper: 'ひとり暮らしか、複数世帯かで基準が変わるぞ',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q3.png`,
-    footer: 'CHECK POINT 50%',
+    footer: '冒険準備 3 / 7',
   },
   {
     no: 4,
-    dialogue: '……待て。ムダの気配がする。',
-    question: '働き方は？',
-    helper: '暮らし方に合わせて診断',
+    dialogue: 'ちょっと君のことも教えてくれ。',
+    question: '今の働き方は？',
+    helper: '診断結果をあなたに合った形で整理するために使うぞ',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q4.png`,
-    footer: '冒険準備 67%',
+    footer: '冒険準備 4 / 7',
   },
   {
     no: 5,
-    dialogue: '近いぞ……。住まいも確認しておこう。',
+    dialogue: '敵の気配が近い……',
     question: '今の住まいは？',
-    helper: '住宅費の基準を調整',
+    helper: '住居費の見方を正しく切り替えるぞ',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q5.png`,
-    footer: 'あと1問で準備完了',
+    footer: '冒険準備 5 / 7',
   },
   {
     no: 6,
-    dialogue: '最後だ。家計のものさしを合わせるぞ！',
+    dialogue: 'あと少し。家計全体のバランスを見るぞ！',
     question: '毎月の手取りは？',
     helper: '税金などが引かれた後。だいたいの平均でOK',
     sprite: `${ASSET}/MUDAGIRI_PROFILE_Q1.png`,
-    footer: '冒険者データ 100%',
+    footer: '冒険準備 6 / 7',
   },
 ];
 
@@ -379,9 +379,7 @@ export default function RpgBlock1({
       return;
     }
 
-    onFamilySelect(flow.household);
-    onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2)});
-    setScene('complete');
+    setScene('incomeCalibration');
   };
 
   const previousQuestion = () => {
@@ -423,7 +421,7 @@ export default function RpgBlock1({
           ) : scene === 'complete' ? (
             <CompleteScene onStartScan={() => setScene('incomeCalibration')} />
           ) : scene === 'incomeCalibration' ? (
-            <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onEvent?.('income_calibration_completed',{band});setScanIndex(0);setScene('scan')}} />
+            <IncomeCalibrationScene value={annualIncomeBand} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
@@ -627,7 +625,7 @@ function ProfileScene({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const progress = householdSizePending ? 58 : (question.no / 6) * 100;
+  const progress = householdSizePending ? (3 / 7) * 100 : (question.no / 7) * 100;
   const isWarning = question.no === 4;
   const isEncounter = question.no >= 5;
 
@@ -652,7 +650,7 @@ function ProfileScene({
       <header className="pre-profile-hud">
         <div className="pre-profile-hud-row">
           <span>冒険準備</span>
-          <b>{householdSizePending?'3+ / 6':`${question.no} / 6`}</b>
+          <b>{householdSizePending?'3 / 7':`${question.no} / 7`}</b>
         </div>
         <div className="pre-progress-track" aria-hidden="true">
           <span style={{ width: `${progress}%` }} />
@@ -661,7 +659,7 @@ function ProfileScene({
 
       {question.no === 3 && (
         <div className="pre-checkpoint" aria-hidden="true">
-          CHECK POINT 50%
+          PARTY CHECK
         </div>
       )}
 
@@ -692,7 +690,7 @@ function ProfileScene({
           onClick={onNext}
           disabled={(!householdSizePending && question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (!householdSizePending && question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
-          {!householdSizePending && question.no === 6 ? '準備完了 ▶' : '次へ ▶'}
+          次へ ▶
         </button>
 
         {index > 0 && (
@@ -872,9 +870,11 @@ function CompleteScene({ onStartScan }: { onStartScan: () => void }) {
 
 function IncomeCalibrationScene({value,onPick}:{value:AnnualIncomeBand;onPick:(v:AnnualIncomeBand)=>void}){
  const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
- return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/><section className="pre-panel pre-complete-panel" style={{paddingTop:22}}>
-  <div className="pre-complete-label">COMPARISON CALIBRATION</div><h2 className="pre-complete-title">より近い家計と比べるために<br/>だいたいの年収を教えて！</h2>
-  <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収。月の手取りとは別に、比較条件の調整だけに使います。</p>
+ return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/>
+  <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>冒険準備</span><b>7 / 7</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
+  <section className="pre-panel pre-complete-panel" style={{paddingTop:22}}>
+  <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
+  <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収でOK。家計全体のバランスや、あなたに近い条件で結果を見るために使うぞ。</p>
   <div style={{display:'grid',gap:8,marginTop:14}}>{opts.map(([v,l])=><button key={v} type="button" className={`pre-choice ${value===v?'is-selected':''}`} style={{minHeight:48}} onClick={()=>onPick(v)}>{l}</button>)}</div>
  </section></div>
 }
