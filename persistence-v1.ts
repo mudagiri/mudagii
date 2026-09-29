@@ -7,13 +7,13 @@ export interface MudagiriPersistenceAdapter {
  saveLead(lead:LeadProfileV1 & {anonymousUserId:string}):Promise<void>;
  appendEvent(event:FunnelEventV1):Promise<void>;
 }
-export interface AcquisitionV1 {source?:string;medium?:string;campaign?:string;content?:string;term?:string;referrer?:string;landingPath?:string}
+export interface AcquisitionV1 {source?:string;medium?:string;campaign?:string;content?:string;term?:string;shareRef?:string;shareType?:string;referrer?:string;landingPath?:string}
 const AU='mudagiri_anonymous_user_id_v1';
 const DX='mudagiri_active_diagnosis_id_v1';
 export const uid=(prefix:string)=>`${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,10)}`;
 export function getOrCreateAnonymousUserId(storage:Pick<Storage,'getItem'|'setItem'>=localStorage){let id=storage.getItem(AU);if(!id){id=uid('au');storage.setItem(AU,id)}return id}
 export function newDiagnosisId(storage:Pick<Storage,'setItem'>=localStorage){const id=uid('dx');storage.setItem(DX,id);return id}
-export function acquisitionFromLocation(loc:Pick<Location,'search'|'pathname'>=location,referrer=(typeof document!=='undefined'?document.referrer:'')):AcquisitionV1{const q=new URLSearchParams(loc.search);return {source:q.get('utm_source')||undefined,medium:q.get('utm_medium')||undefined,campaign:q.get('utm_campaign')||undefined,content:q.get('utm_content')||undefined,term:q.get('utm_term')||undefined,referrer:referrer||undefined,landingPath:loc.pathname}}
+export function acquisitionFromLocation(loc:Pick<Location,'search'|'pathname'>=location,referrer=(typeof document!=='undefined'?document.referrer:'')):AcquisitionV1{const q=new URLSearchParams(loc.search);return {source:q.get('utm_source')||undefined,medium:q.get('utm_medium')||undefined,campaign:q.get('utm_campaign')||undefined,content:q.get('utm_content')||undefined,term:q.get('utm_term')||undefined,shareRef:q.get('ref')||undefined,shareType:q.get('type')||undefined,referrer:referrer||undefined,landingPath:loc.pathname}}
 
 // Browser beta adapter. Durable across reloads on the same device; replace with server adapter before public launch.
 export class LocalPersistenceAdapter implements MudagiriPersistenceAdapter{
