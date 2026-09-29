@@ -3,7 +3,7 @@ import { TONE_MODES, type ToneMode } from './tone-mode-v3';
 import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3,housingScreenV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
 import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadBattle } from './asset-loading-v2';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
-import { TYPE_QUESTIONS_V31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
+import { TYPE_QUESTIONS_V31, scoreTypeAnswersV31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 import type { EducationStageV2 } from './comparable-resolver-v2';
@@ -1202,6 +1202,14 @@ function TypeQuizScene({
 
 function TypeCompleteScene({ answers, onContinue }: { answers: TypeAnswersV31; onContinue: () => void }) {
   const answered = Object.keys(answers).length;
+  const scored = scoreTypeAnswersV31(answers);
+  const axisLabel = (axis:'fv'|'pi'|'au') => {
+    if(scored.nearMiddle[axis]) return 'バランス型';
+    const positive = scored.axes[axis] > 0;
+    if(axis==='fv') return positive ? '未来寄り' : '今寄り';
+    if(axis==='pi') return positive ? '計画寄り' : '直感寄り';
+    return positive ? '普段から把握' : '必要時に確認';
+  };
 
   return (
     <div className="scan-scene type-complete-scene">
@@ -1214,8 +1222,14 @@ function TypeCompleteScene({ answers, onContinue }: { answers: TypeAnswersV31; o
         <h2>行動パターン<br />解析完了。</h2>
         <p>
           お前の「お金の使い方のクセ」は見えた。<br />
-          <strong>称号はまだ秘密だ。最後のクエストへ進むぞ。</strong>
+          <strong>まずは3つの傾向だけ先に開示する。</strong>
         </p>
+        <div className="type-axis-preview" aria-label="お金タイプの3つの傾向">
+          <div><span>時間軸</span><strong>{axisLabel('fv')}</strong></div>
+          <div><span>決め方</span><strong>{axisLabel('pi')}</strong></div>
+          <div><span>把握</span><strong>{axisLabel('au')}</strong></div>
+        </div>
+        <p className="type-complete-secret"><strong>称号はまだ秘密だ。最後のクエストの先で解放する。</strong></p>
         <div className="type-complete-next-label">
           NEXT：FINAL QUEST
         </div>
@@ -3060,6 +3074,7 @@ const CSS = String.raw`
   font-weight:780;
 }
 .type-complete-card p strong{color:#fff;font-size:16px}
+.type-axis-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 9px}.type-axis-preview div{min-width:0;padding:9px 5px;border:1px solid rgba(255,214,47,.38);border-radius:10px;background:rgba(20,53,73,.78);text-align:center}.type-axis-preview span{display:block;color:rgba(255,255,255,.62);font-size:9px;font-weight:900}.type-axis-preview strong{display:block;margin-top:3px;color:#ffd62f;font-size:12px;font-weight:1000;line-height:1.2}.type-complete-secret{margin-top:7px!important;font-size:12px!important}
 .type-complete-next-label{
   margin-top:14px;
   padding:11px 12px;
