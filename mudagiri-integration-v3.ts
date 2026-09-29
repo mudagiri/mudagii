@@ -8,7 +8,7 @@ export type Applicability='applicable'|'na';
 export type FinalStatus='battle'|'protect'|'safe'|'review'|'na';
 export interface RawExpense { amount:number|null; known:boolean; applicability:Applicability }
 export type RawExpenses=Record<Category,RawExpense>;
-export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown'; mobileDeviceMixed?:boolean|'unknown' }
+export interface AppraisalV3 { satisfaction?:Satisfaction; rentPreference?:'burdenHigh'|'burdenSome'|'reasonable'|'protect'; insurancePurpose?:'clear'|'mostly'|'unclear'; insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'; insuranceLifeChange?:'none'|'reviewed'|'notReviewed'|'unknown'; insurancePublicBenefits?:'considered'|'maybe'|'not'|'unknown'; insuranceDuplicate?:'none'|'intentional'|'possible'|'unknown'; educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect'; selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results'; subUnusedAmount?:number|null; subUsage?:'none'|'one'|'several'|'unknown'; subCancellationConfirmed?:boolean; educationStage?:EducationStage; educationChildren?:{stage:EducationStageV2}[]; educationChildCount?:number; carNeed?:'essential'|'useful'|'burden'|'notNeeded'; mobileCarrier?:'major'|'mvno'|'unknown' }
 export type BattleBasis='confirmed'|'appraisal_review'|'benchmark_check'|'none';
 export interface FinalCategoryV3 { category:Category; raw:RawExpense; engine:CategoryResult|null; comparable:number|null; status:FinalStatus; attentionFlag:boolean; reducible:number; priority:number; battleBasis:BattleBasis; comparisonDifference:number|null; appraisal:AppraisalV3|null }
 
@@ -33,7 +33,6 @@ function statusFor(category:Category,raw:RawExpense,engine:CategoryResult|null,a
  if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'battle',attentionFlag:false,battleBasis:'confirmed'};
 
  if(category==='mobile'){
-   if(ap?.mobileDeviceMixed===true)return {status:'review',attentionFlag:true,battleBasis:'none'};
    if(ap?.mobileCarrier==='major'||ap?.mobileCarrier==='mvno'){
      // Direct survey bands are retained as bands; no pseudo-average or confirmed saving is created.
      return {status:'review',attentionFlag:true,battleBasis:'none'};
