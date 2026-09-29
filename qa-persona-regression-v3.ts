@@ -6,7 +6,7 @@ type Status='battle'|'protect'|'safe'|'review'|'na';
 type Case={name:string;income:number;amounts:Partial<Record<Category,number>>;comparable?:Partial<Record<Category,number|null>>;appraisal?:Partial<Record<Category,AppraisalV3>>;expect:Partial<Record<Category,Status>>;confirmedMonthly?:number};
 const raw=(amounts:Case['amounts']):RawExpenses=>{const r=emptyRawExpenses();for(const [k,v] of Object.entries(amounts) as [Category,number][])r[k]={amount:v,known:true,applicability:'applicable'};return r};
 const cases:Case[]=[
- {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'review',energy:'safe',food:'safe',rent:'protect'},confirmedMonthly:0},
+ {name:'平均内の単身堅実型',income:320000,amounts:{mobile:4500,energy:9000,food:45000,daily:7000,fun:15000,beautyFashion:8000,rent:85000},comparable:{mobile:6000,energy:11000,food:50000,daily:9000,fun:20000,beautyFashion:10000},appraisal:{rent:{rentPreference:'reasonable'}},expect:{mobile:'review',energy:'safe',food:'safe',rent:'safe'},confirmedMonthly:0},
  {name:'通信だけ高い単身',income:300000,amounts:{mobile:14000},comparable:{mobile:6000},expect:{mobile:'review'},confirmedMonthly:0},
  {name:'光熱費だけ高い単身',income:300000,amounts:{energy:22000},comparable:{energy:11000},expect:{energy:'review'},confirmedMonthly:0},
  {name:'日用品だけ高い単身',income:300000,amounts:{daily:18000},comparable:{daily:9000},expect:{daily:'review'},confirmedMonthly:0},
@@ -49,7 +49,8 @@ for(const tc of cases){
  const r=raw(tc.amounts);
  const comparable=tc.comparable??{};
  const d=runDiagnosisAdapterV3({monthlyTakeHome:tc.income,raw:r,comparable,appraisal:tc.appraisal});
- const f=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal:tc.appraisal});
+ const benchmarkMeta=typeof tc.amounts.rent==='number'?{rent:resolveComparableV2({household:'single',age:30,prefecture:'東京都',month:9,housingType:'賃貸'}).rent!}:undefined;
+ const f=buildFinalJudgementsV3({raw:r,comparable,benchmarkMeta,diagnosis:d.diagnosis,appraisal:tc.appraisal});
  const by=new Map(f.categories.map(x=>[x.category,x]));
  for(const [cat,expected] of Object.entries(tc.expect) as [Category,Status][]){
   const got=by.get(cat)?.status;
