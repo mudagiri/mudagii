@@ -16,6 +16,8 @@ const failures:string[]=[];
 const byCategory=Object.fromEntries(CATS.map(c=>[c,{battle:0,protect:0,review:0,safe:0,confirmed:0}])) as Record<Category,{battle:number;protect:number;review:number;safe:number;confirmed:number}>;
 const byBasis:Record<string,number>={confirmed:0,appraisal_review:0,benchmark_check:0,none:0};
 const battleHistogram=Array.from({length:13},()=>0);
+const reviewHistogram=Array.from({length:13},()=>0);
+const actionableHistogram=Array.from({length:13},()=>0);
 
 for(let id=1;id<=10000;id++){
  const household=pick(['single','multi'] as const);
@@ -59,6 +61,10 @@ for(let id=1;id<=10000;id++){
    const f=buildFinalJudgementsV3({raw,comparable,diagnosis:d.diagnosis,appraisal});
    const battle=f.categories.filter(x=>x.status==='battle');
    const confirmed=f.categories.reduce((s,x)=>s+x.reducible,0);
+   const review=f.categories.filter(x=>x.status==='review');
+   const actionable=f.categories.filter(x=>x.status==='review'||x.status==='battle');
+   reviewHistogram[Math.min(12,review.length)]++;
+   actionableHistogram[Math.min(12,actionable.length)]++;
    m.cases++;m.battles+=battle.length;if(!battle.length)m.zeroBattle++;if(battle.length>3)m.over3Battle++;battleHistogram[Math.min(12,battle.length)]++;
    for(const x of f.categories){if(x.status==='battle'){byCategory[x.category].battle++;byBasis[x.battleBasis]=(byBasis[x.battleBasis]??0)+1}else if(x.status==='protect')byCategory[x.category].protect++;else if(x.status==='review')byCategory[x.category].review++;else if(x.status==='safe')byCategory[x.category].safe++;if(x.reducible>0)byCategory[x.category].confirmed++;}
    m.protect+=f.categories.filter(x=>x.status==='protect').length;m.review+=f.categories.filter(x=>x.status==='review').length;m.safe+=f.categories.filter(x=>x.status==='safe').length;
@@ -70,6 +76,6 @@ for(let id=1;id<=10000;id++){
    }
  }catch(e){m.violations++;failures.push(`#${id}: ${e instanceof Error?e.message:String(e)}`)}
 }
-console.log(JSON.stringify({...m,byBasis,battleHistogram,byCategory,avgBattles:m.battles/m.cases,zeroBattleRate:m.zeroBattle/m.cases,over3BattleRate:m.over3Battle/m.cases,confirmedCaseRate:m.confirmedCases/m.cases,avgConfirmedWhenPositive:m.confirmedCases?Math.round(m.confirmedYen/m.confirmedCases):0},null,2));
+console.log(JSON.stringify({...m,byBasis,battleHistogram,reviewHistogram,actionableHistogram,zeroReviewRate:reviewHistogram[0]/m.cases,zeroActionableRate:actionableHistogram[0]/m.cases,avgReviews:m.review/m.cases,byCategory,avgBattles:m.battles/m.cases,zeroBattleRate:m.zeroBattle/m.cases,over3BattleRate:m.over3Battle/m.cases,confirmedCaseRate:m.confirmedCases/m.cases,avgConfirmedWhenPositive:m.confirmedCases?Math.round(m.confirmedYen/m.confirmedCases):0},null,2));
 if(failures.length){console.error(failures.slice(0,30).join('\n'));throw new Error(`10k simulation violations: ${failures.length}`)}
 console.log('10,000-case deterministic simulation: PASS');
