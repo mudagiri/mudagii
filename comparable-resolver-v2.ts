@@ -98,7 +98,7 @@ export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
  return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
 }
 
-export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[]}):Partial<Record<Category,ComparableV2>>{
+export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot'}):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
  if(a.household==='single'){
@@ -106,7 +106,12 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   out.food={value:SINGLE.food[ai],confidence:'DIRECT',sourceVersion:'FOOD_V1.1_SINGLE_2025'};
   out.daily={value:SINGLE.daily[ai],confidence:'DIRECT',sourceVersion:'DAILY_V1.0_SINGLE_2025'};
   out.fun={value:SINGLE.fun[ai],confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_SINGLE_2025'};
-  out.beautyFashion={value:SINGLE.beautyFashion[ai],confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025',meta:{sexFallback:'all'}};
+  const maleBeauty=[5971,6925,2953] as const;
+  const femaleBeauty:[number,number,null]=[19313,14216,null];
+  const sexValue=a.beautySex==='male'?maleBeauty[ai]:a.beautySex==='female'?femaleBeauty[ai]:null;
+  out.beautyFashion=sexValue!==null&&sexValue!==undefined
+   ?{value:sexValue,confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025',meta:{sex:a.beautySex,sexFallback:false}}
+   :{value:SINGLE.beautyFashion[ai],confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025',meta:{sexFallback:'all',requestedSex:a.beautySex??'unanswered',fallbackReason:a.beautySex==='female'&&ai===2?'FEMALE_60PLUS_CROSS_UNAVAILABLE':a.beautySex==='preferNot'?'PREFER_NOT_TO_ANSWER':'SEX_NOT_ASKED'}};
  }else{
   const si=sizeBand(a.householdSize??2);
   out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month}};
