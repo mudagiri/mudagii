@@ -1,4 +1,5 @@
 import type { Category } from './mudagiri-diagnosis-v2';
+import { resolveComparableV1 } from './comparable-resolver-v1';
 
 export type HouseholdV2='single'|'multi';
 export type EducationStageV2='publicKindergarten'|'privateKindergarten'|'publicElementary'|'privateElementary'|'publicJuniorHigh'|'privateJuniorHigh'|'publicHigh'|'privateHigh';
@@ -101,11 +102,19 @@ export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
 export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot'}):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
+ // Restore the frozen V1 income correction only for multi-person households >= ¥5m.
+ // V2 keeps its newer household-size / seasonality / direct-source bases, then applies
+ // the V1 correction as a ratio so we do not regress those improvements.
+ const incomeRef=a.annualIncome&&a.household==='multi'&&a.annualIncome>=5_000_000
+  ?resolveComparableV1({household:'multi',age:a.age,annualIncome:a.annualIncome,prefecture:undefined})
+  :null;
+ const neutralRef=incomeRef?resolveComparableV1({household:'multi',age:a.age,annualIncome:0,prefecture:undefined}):null;
+ const incomeFactor=(c:Category)=>{const x=incomeRef?.[c],n=neutralRef?.[c];return typeof x==='number'&&typeof n==='number'&&n>0?x/n:1};
  if(a.household==='single'){
-  out.energy={value:SINGLE.energy[ai],confidence:'DIRECT',sourceVersion:'UTILITY_V2.1_SINGLE_2025'};
-  out.food={value:SINGLE.food[ai],confidence:'DIRECT',sourceVersion:'FOOD_V1.1_SINGLE_2025'};
-  out.daily={value:SINGLE.daily[ai],confidence:'DIRECT',sourceVersion:'DAILY_V1.0_SINGLE_2025'};
-  out.fun={value:SINGLE.fun[ai],confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_SINGLE_2025'};
+  out.energy={value:Math.round((SINGLE.energy[ai])*incomeFactor('energy')),confidence:'DIRECT',sourceVersion:'UTILITY_V2.1_SINGLE_2025'};
+  out.food={value:Math.round((SINGLE.food[ai])*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_SINGLE_2025'};
+  out.daily={value:Math.round((SINGLE.daily[ai])*incomeFactor('daily')),confidence:'DIRECT',sourceVersion:'DAILY_V1.0_SINGLE_2025'};
+  out.fun={value:Math.round((SINGLE.fun[ai])*incomeFactor('fun')),confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_SINGLE_2025'};
   const maleBeauty=[5971,6925,2953] as const;
   const femaleBeauty:[number,number,null]=[19313,14216,null];
   const sexValue=a.beautySex==='male'?maleBeauty[ai]:a.beautySex==='female'?femaleBeauty[ai]:null;
