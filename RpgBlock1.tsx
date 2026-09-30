@@ -413,7 +413,7 @@ export default function RpgBlock1({
     setSelectedToneMode(mode);
     setQuestionIndex(0);
     onBegin(mode);
-    window.setTimeout(()=>setScene('profile'),600);
+    window.requestAnimationFrame(()=>setScene('profile'));
   };
 
   const nextQuestion = (householdOverride?:FamilyProfile) => {
@@ -681,7 +681,7 @@ function ProfileScene({
   const isEncounter = question.no >= 5;
   const [partyChoiceLocked,setPartyChoiceLocked]=useState(false);
   useEffect(()=>{if(householdSizePending)setPartyChoiceLocked(false)},[householdSizePending]);
-  const choosePartySize=(n:string)=>{if(partyChoiceLocked)return;setPartyChoiceLocked(true);setFlow(v=>({...v,householdSize:n}));window.setTimeout(()=>onNext(),140)};
+  const choosePartySize=(n:string)=>{if(partyChoiceLocked)return;setPartyChoiceLocked(true);setFlow(v=>({...v,householdSize:n}));window.requestAnimationFrame(()=>onNext())};
 
   return (
     <div className={`pre-profile pre-q${question.no}`}>
