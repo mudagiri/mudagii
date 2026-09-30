@@ -523,7 +523,6 @@ export default function RpgBlock1({
                     ...answer,
                   },
                 }));
-                if(currentItem.kind==='educationChildCount'){return;}
                 if (appraisalIndex >= appraisalQuestions.length - 1) {onEvent?.('appraisal_completed',{count:appraisalQuestions.length});setScene('appraisalComplete');}
                 else setAppraisalIndex((i) => i + 1);
               }}
@@ -1314,10 +1313,13 @@ function AdditionalAppraisalScene({
 }) {
   const enemy = ENEMY_ASSETS[item.category];
   const [feedback,setFeedback] = useState<{label:string;detail:string;kind:AppraisalStatus}|null>(null);
+  const [answerLocked,setAnswerLocked] = useState(false);
   const remaining = total-current+1;
   const commit = (answer:AppraisalAnswer, kind:AppraisalStatus, label:string, detail:string) => {
+    if(answerLocked)return;
+    setAnswerLocked(true);
     setFeedback({kind,label,detail});
-    window.requestAnimationFrame(() => onAnswer(answer));
+    window.setTimeout(() => onAnswer(answer), 80);
   };
 
   const choiceSets: Record<string,{label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[]> = {
@@ -3421,6 +3423,21 @@ const CSS = String.raw`
   .appraisal-option span{font-size:11px!important;line-height:1.3}
 }
 
+
+/* ===== MOBILE UX HOTFIX V3.1: taps + collision ===== */
+.pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene{touch-action:pan-y}
+.pre-panel,.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
+.pre-profile-hud,.scan-hud,.type-quiz-hud,.appraisal-hud{pointer-events:none}
+.pre-dialogue,.pre-question-no,.pre-helper,.appraisal-kicker,.appraisal-reason{pointer-events:none}
+.profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back,.pre-select{position:relative;z-index:70;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.profile-choice,.income-band-option,.type-scale-option,.appraisal-option{min-height:56px!important}
+.profile-choice-grid,.appraisal-options,.type-scale{position:relative;z-index:70}
+@media(max-height:780px){
+ .pre-panel{margin-top:max(96px,calc(env(safe-area-inset-top) + 82px));margin-bottom:max(88px,calc(env(safe-area-inset-bottom) + 76px))}
+ .pre-profile-footer{pointer-events:none}
+ .pre-dialogue{margin-bottom:10px}
+ .profile-choice-grid{margin-top:12px}
+}
 
 /* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
 button,.pre-select,.pre-age-input input{touch-action:manipulation}
