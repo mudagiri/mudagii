@@ -729,7 +729,7 @@ function ProfileScene({
         <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
         <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>choosePartySize(n)}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
+        {householdSizePending ? <label className="pre-input-wrap"><span className="pre-sr-only">世帯人数</span><select className="pre-select" value={flow.householdSize} onChange={(e)=>choosePartySize(e.target.value)}>{['2','3','4','5','6'].map(n=><option key={n} value={n}>{n==='6'?'6人以上':`${n}人`}</option>)}</select></label> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
@@ -810,15 +810,15 @@ function ProfileInput({
   }
 
   if (no === 3) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}))}>{item.label}</button>)}</div>;
+    return <label className="pre-input-wrap"><span className="pre-sr-only">世帯構成</span><select className={selectClass} value={flow.household} onChange={(e)=>{const household=e.target.value as FamilyProfile;setFlow(v=>({...v,household,householdSize:household==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}))}}>{HOUSEHOLDS.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</select></label>;
   }
 
   if (no === 4) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,workStyle}))}>{workStyle}</button>)}</div>;
+    return <label className="pre-input-wrap"><span className="pre-sr-only">働き方</span><select className={selectClass} value={flow.workStyle} onChange={(e)=>setFlow(v=>({...v,workStyle:e.target.value}))}>{WORK_STYLES.map(workStyle=><option key={workStyle} value={workStyle}>{workStyle}</option>)}</select></label>;
   }
 
   if (no === 5) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,housingType}))}>{housingType}</button>)}</div>;
+    return <label className="pre-input-wrap"><span className="pre-sr-only">住居形態</span><select className={selectClass} value={flow.housingType} onChange={(e)=>setFlow(v=>({...v,housingType:e.target.value}))}>{HOUSING_TYPES.map(housingType=><option key={housingType} value={housingType}>{housingType}</option>)}</select></label>;
   }
 
   return (
@@ -852,7 +852,7 @@ function IncomeCalibrationScene({value,onPick,onBack}:{value:AnnualIncomeBand;on
   <section className="pre-panel pre-complete-panel" style={{paddingTop:18}}>
   <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
   <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>税引前のおおよその年収でOK。近い条件で結果を見るために使うぞ。</p>
-  <div className="profile-choice-grid profile-choice-grid-2 income-band-grid">{opts.map(([v,l],i)=><button key={v} type="button" className={`profile-choice ${draft===v?'is-selected':''} ${i===opts.length-1?'income-band-last':''}`} onClick={()=>setDraft(v)}>{l}</button>)}</div>
+  <label className="pre-input-wrap"><span className="pre-sr-only">年収帯</span><select className="pre-select" value={draft} onChange={(e)=>setDraft(e.target.value as AnnualIncomeBand)}>{opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
   <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onPick(draft)}>次へ ▶</button>
   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
  </section></div>
@@ -3616,6 +3616,41 @@ input,select,textarea{font-size:16px}
  .profile-choice-grid{margin-top:7px!important;gap:5px!important}
  .profile-choice{min-height:39px!important}
  .pre-panel .profile-primary-cta{min-height:44px!important;margin-top:5px!important}
+}
+
+/* ===== PROFILE FIXED FRAME V8: one stable geometry for Q1-Q7 ===== */
+.pre-profile .pre-panel,.pre-complete .pre-panel{
+  height:390px!important;min-height:390px!important;max-height:390px!important;
+  box-sizing:border-box!important;
+  display:flex!important;flex-direction:column!important;
+  padding:16px 18px 12px!important;
+}
+.pre-profile .pre-dialogue{flex:0 0 58px!important;min-height:58px!important;max-height:58px!important;margin:0 0 12px auto!important;display:flex!important;align-items:center!important}
+.pre-profile .pre-question-no{flex:0 0 auto!important}
+.pre-profile .pre-panel h2{flex:0 0 auto!important;min-height:38px!important;margin:5px 0 0!important;display:flex!important;align-items:center!important}
+.pre-profile .pre-helper{flex:0 0 40px!important;min-height:40px!important;max-height:40px!important;margin:3px 0 0!important;display:flex!important;align-items:flex-start!important}
+.pre-profile .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:8px 0 0!important}
+.pre-profile .pre-select,.pre-profile .pre-age-input{height:56px!important;min-height:56px!important}
+.pre-profile .profile-primary-cta{flex:0 0 54px!important;height:54px!important;margin:10px 0 0!important}
+.pre-profile .pre-back{flex:0 0 30px!important;height:30px!important;min-height:30px!important;margin:4px 0 -3px!important}
+.pre-profile .pre-profile-mudagiri{display:block!important;bottom:calc(max(56px,calc(env(safe-area-inset-bottom) + 44px)) + 370px)!important;max-height:20dvh!important}
+.pre-complete .pre-complete-label{flex:0 0 24px!important}
+.pre-complete .pre-complete-title{flex:0 0 42px!important}
+.pre-complete .pre-panel>p{flex:0 0 42px!important;margin:2px 0 0!important}
+.pre-complete .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:12px 0 0!important}
+.pre-complete .profile-primary-cta{flex:0 0 54px!important;margin:12px 0 0!important}
+.pre-complete .pre-back{flex:0 0 30px!important;margin:5px 0 -3px!important}
+@media(max-height:760px){
+ .pre-profile .pre-panel,.pre-complete .pre-panel{height:344px!important;min-height:344px!important;max-height:344px!important;padding:11px 15px 8px!important}
+ .pre-profile .pre-dialogue{flex-basis:44px!important;min-height:44px!important;max-height:44px!important;margin-bottom:7px!important}
+ .pre-profile .pre-panel h2{min-height:30px!important}
+ .pre-profile .pre-helper{flex-basis:30px!important;min-height:30px!important;max-height:30px!important}
+ .pre-profile .pre-input-wrap{flex-basis:50px!important;height:50px!important;margin-top:6px!important}
+ .pre-profile .pre-select,.pre-profile .pre-age-input{height:50px!important;min-height:50px!important}
+ .pre-profile .profile-primary-cta{flex-basis:48px!important;height:48px!important;margin-top:7px!important}
+ .pre-profile .pre-back{flex-basis:27px!important;height:27px!important;min-height:27px!important;margin-top:2px!important}
+ .pre-profile .pre-profile-mudagiri{bottom:calc(max(45px,calc(env(safe-area-inset-bottom) + 34px)) + 326px)!important;max-height:18dvh!important}
+ .pre-complete .pre-input-wrap{flex-basis:50px!important;height:50px!important}
 }
 
 `;
