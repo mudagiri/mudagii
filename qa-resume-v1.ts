@@ -11,8 +11,8 @@ const base={schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId:'d1',anonymous
 const s=new Mem();
 s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify(base));
 assert.equal(readJourneyDraftV1(s as any)?.diagnosisId,'d1');
-for(const scene of ['profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']){s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,scene}));assert.equal(readJourneyDraftV1(s as any)?.scene,scene)}
-for(const scene of ['opening','mode','battle','battleComplete','garbage']){s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,scene}));assert.equal(readJourneyDraftV1(s as any),null)}
+for(const scene of ['mode','profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']){s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,scene}));assert.equal(readJourneyDraftV1(s as any)?.scene,scene)}
+for(const scene of ['opening','battle','battleComplete','garbage']){s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,scene}));assert.equal(readJourneyDraftV1(s as any),null)}
 s.setItem(JOURNEY_DRAFT_KEY,'{bad');assert.equal(readJourneyDraftV1(s as any),null);
 s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,schemaVersion:'OLD'}));assert.equal(readJourneyDraftV1(s as any),null);
 s.setItem(JOURNEY_DRAFT_KEY,JSON.stringify({...base,typeIndex:99}));assert.equal(readJourneyDraftV1(s as any),null);
