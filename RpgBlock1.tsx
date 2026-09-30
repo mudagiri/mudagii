@@ -269,6 +269,11 @@ export default function RpgBlock1({
     [flow.household],
   );
   const currentScan = applicableScanCategories[scanIndex];
+  useEffect(()=>{
+    if(scene!=='scan')return;
+    if(applicableScanCategories.length===0)return;
+    if(scanIndex>=applicableScanCategories.length)setScanIndex(applicableScanCategories.length-1);
+  },[scene,scanIndex,applicableScanCategories.length]);
   const normalizedRaw=useMemo(()=>normalizeApplicability(rawExpenses,flow.household),[rawExpenses,flow.household]);
   const discoveredCount = applicableScanCategories.filter((item)=>{const r=normalizedRaw[item.category];return r?.applicability==='applicable'&&r.known&&Number(r.amount)>0}).length;
   const currentTypeQuestion = TYPE_QUESTIONS_V31[typeIndex];
