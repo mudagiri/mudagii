@@ -35,6 +35,7 @@ const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;s
  childCount:{dialogue:'子どもの人数だけ確認！',question:'そのうち、子どもは何人？',helper:'教育費と世帯人数の比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q3.png`},
  expenseSharing:{dialogue:'財布の分け方も大事だ。',question:'家賃や生活費、どう払ってる？',helper:'正確な割合までは聞きません。必要な支出だけ後で確認します。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
  contribution:{dialogue:'実家・家族同居はここだけ追加確認。',question:'家にお金を入れるときは？',helper:'まとめ払いを家賃や食費に勝手に分解しないために使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
+ contributionAmount:{dialogue:'まとめ払いは、そのまま1つの金額で見るぞ。',question:'毎月、家にいくら入れてる？',helper:'家賃・食費・光熱費へ勝手に分けません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
  prefecture:{dialogue:'比較相手をもう少し絞るぞ。',question:'今住んでる都道府県は？',helper:'地域差が出る支出だけ、比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  age:{dialogue:'あと少し。',question:'年齢は？',helper:'年齢で差が出る支出を、近い基準で比べます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
  housing:{dialogue:'住まいの条件を合わせよう。',question:'今の住まいは？',helper:'民営賃貸と持ち家・実家などを混ぜて比べません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q5.png`},
@@ -100,8 +101,10 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    </div>}
 
    {step==='contribution'&&<div className="mode-options">
-    {([['bundled','💴 毎月まとめて払ってる'],['itemized','🧾 家賃・食費など項目ごと'],['little_or_none','🌱 ほとんど払ってない']] as [Exclude<HouseholdContributionModeV4,null>,string][]).map(([v,l])=><Choice key={v} active={draft.householdContributionMode===v} onClick={()=>auto({householdContributionMode:v})}><strong>{l}</strong></Choice>)}
+    {([['bundled','💴 毎月まとめて払ってる'],['itemized','🧾 家賃・食費など項目ごと'],['little_or_none','🌱 ほとんど払ってない']] as [Exclude<HouseholdContributionModeV4,null>,string][]).map(([v,l])=><Choice key={v} active={draft.householdContributionMode===v} onClick={()=>{if(v==='bundled')auto({householdContributionMode:v,bundledContributionAmount:null});else auto({householdContributionMode:v,bundledContributionAmount:null})}}><strong>{l}</strong></Choice>)}
    </div>}
+
+   {step==='contributionAmount'&&<label className="pre-input-wrap"><span className="pre-sr-only">家に入れている生活費</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.bundledContributionAmount===null?'':draft.bundledContributionAmount.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({bundledContributionAmount:x===''?null:Number(x)})}} placeholder="50,000" aria-label="家に入れている生活費"/><span>/ 月</span></div></label>}
 
    {step==='prefecture'&&<label className="pre-input-wrap"><span className="pre-sr-only">都道府県</span><select className="pre-select" value={draft.prefecture} onChange={e=>patch({prefecture:e.target.value})}><option value="">選択してください</option>{PREFECTURES.map(p=><option key={p} value={p}>{p}</option>)}</select></label>}
 
