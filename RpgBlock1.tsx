@@ -1047,10 +1047,10 @@ function IncomeCalibrationScene({value,onPick,onBack}:{value:AnnualIncomeBand;on
  const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
  const [draft,setDraft]=useState<AnnualIncomeBand>(value);
  return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/>
-  <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>冒険準備</span><b>7 / 7</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
+  <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>比較設定</span><b>任意</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
   <section className="pre-panel pre-complete-panel" style={{paddingTop:18}}>
-  <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
-  <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>税引前のおおよその年収でOK。近い条件で結果を見るために使うぞ。</p>
+  <div className="pre-complete-label">もっと近い家計と比べる？</div><h2 className="pre-complete-title">世帯年収はざっくりどれくらい？</h2>
+  <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>任意です。家全体の税引前年収を使うと、一部の比較をもう少し近い条件にできます。分からなければ「わからない」でOK。</p>
   <label className="pre-input-wrap"><span className="pre-sr-only">年収帯</span><select className="pre-select" value={draft} onChange={(e)=>setDraft(e.target.value as AnnualIncomeBand)}>{opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
   <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onPick(draft)}>次へ ▶</button>
   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
