@@ -9,6 +9,10 @@ import {LocalPersistenceV3,productionPersistenceV3,eventV3,type PersistenceV3} f
 import {buildResultViewModelV3} from './result-view-model-v3';
 import {readActiveResultV1,writeActiveResultV1,readJourneyDraftV1,clearResumeStateV1,clearJourneyDraftV1} from './resume-state-v1';
 import type {AnnualIncomeBand,RawExpenses,FinalCategoryV3,AppraisalV3} from './mudagiri-integration-v3';
+import type {ProfileV4} from './mudagiri-profile-v4';
+import type {ExpenseRecordsV4} from './expense-record-v4';
+import type {ComparisonFactsV4} from './benchmark-router-v4';
+import type {FinalCategoryV4} from './final-judgement-v4';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -20,6 +24,7 @@ export type CompletedV3={
  finalJudgements:FinalCategoryV3[];
  methodologyVersion:string;
  resolverVersion:string;
+ scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null};
 };
 
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
@@ -78,7 +83,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      schemaVersion:'MUDAGIRI_SHEET_V3' as const,
      diagnosisId,anonymousUserId,createdAt:new Date().toISOString(),
      acquisition:typeof window!=='undefined'?acquisitionFromLocation():undefined,
-     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,
+     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,
      rawExpenses:v.rawExpenses,typeAnswers:v.typeAnswers,appraisal:v.appraisal,
      methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
      result:{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle,counts:vm.counts,improvement:vm.improvement,
