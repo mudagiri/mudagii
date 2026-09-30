@@ -57,7 +57,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  const toggleRelationship=(r:RelationshipV4)=>setDraft(v=>{
   const exists=v.relationships.includes(r);
   const relationships=exists?v.relationships.filter(x=>x!==r):[...v.relationships,r];
-  return {...v,relationships,childCount:r==='children'&&exists?null:v.childCount,householdContributionMode:r==='parents'&&exists?null:v.householdContributionMode};
+  return {...v,relationships,childCount:r==='children'?(exists?null:(v.childCount??1)):v.childCount,householdContributionMode:r==='parents'&&exists?null:v.householdContributionMode};
  });
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
