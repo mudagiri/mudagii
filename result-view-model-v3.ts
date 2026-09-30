@@ -1,7 +1,7 @@
 import type { Category } from './mudagiri-diagnosis-v2';
 import { communicationScreenV3, encounterStrengthV31, type AnnualIncomeBand, type FinalCategoryV3, type FinalStatus } from './mudagiri-integration-v3';
 
-export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.2' as const;
+export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.3' as const;
 export type ComparatorKind='optimization_rule'|'statistical_comparator'|'direct_benchmark'|'none';
 export interface ComparatorMetaV3 {kind:ComparatorKind;label:string;sourceKey:string|null}
 
@@ -205,5 +205,10 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
  const encounter=rows.filter(x=>x.encounterStrength==='strong').sort((a,b)=>reviewPriority(b)-reviewPriority(a)).slice(0,3);
  const secondaryReview=rows.filter(x=>x.encounterStrength==='medium').sort((a,b)=>reviewPriority(b)-reviewPriority(a));
  const firstQuest=battle[0]??encounter[0]??secondaryReview[0]??review[0]??null;
- return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,profile:args.profile??null,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,encounterTargets:encounter,secondaryReviewTargets:secondaryReview,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
+ const benchmarkRows=rows.filter(x=>x.known&&x.applicability==='applicable'&&x.amount!==null&&x.comparable!==null&&(x.comparator.kind==='statistical_comparator'||x.comparator.kind==='direct_benchmark'));
+ const benchmarkUserMonthly=benchmarkRows.reduce((n,x)=>n+(x.amount??0),0);
+ const benchmarkReferenceMonthly=benchmarkRows.reduce((n,x)=>n+(x.comparable??0),0);
+ const benchmarkDeltaMonthly=benchmarkUserMonthly-benchmarkReferenceMonthly;
+ const benchmarkSummary={available:benchmarkRows.length>0,scope:'comparable_categories' as const,label:'比較可能な項目の基準との差',userMonthly:benchmarkUserMonthly,benchmarkMonthly:benchmarkReferenceMonthly,deltaMonthly:benchmarkDeltaMonthly,deltaAnnual:benchmarkDeltaMonthly*12,categoryCount:benchmarkRows.length,excludedCount:rows.filter(x=>x.known&&x.applicability==='applicable').length-benchmarkRows.length,categories:benchmarkRows.map(x=>x.category)};
+ return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,profile:args.profile??null,annualIncomeBand:args.annualIncomeBand,counts,benchmarkSummary,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,encounterTargets:encounter,secondaryReviewTargets:secondaryReview,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
 }
