@@ -1,4 +1,4 @@
-import React,{useEffect,useMemo,useState} from 'react';
+import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import RpgBlock1,{type FamilyProfile} from './RpgBlock1';
 import ResultScreenV3 from './ResultScreenV3';
 import type {ToneMode} from './tone-mode-v3';
@@ -28,10 +28,10 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const [anonymousUserId]=useState(()=>typeof window==='undefined'?'server':getOrCreateAnonymousUserId());
  const store=useMemo(()=>persistence??(typeof window!=='undefined'?productionPersistenceV3(new LocalPersistenceV3()):undefined),[persistence]);
 
- const emit=(name:string,data?:Record<string,unknown>)=>{
+ const emit=useCallback((name:string,data?:Record<string,unknown>)=>{
    onEvent?.(name,data);
    store?.appendEvent(eventV3(anonymousUserId,diagnosisId,name,data));
- };
+ },[onEvent,store,anonymousUserId,diagnosisId]);
 
  useEffect(()=>{
    if(typeof window==='undefined')return;
@@ -39,7 +39,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    if(q.get('ref')!=='share')return;
    const typeCode=q.get('type')??undefined;
    emit('share_referral_landed',{source:'type_share',...(typeCode?{typeCode}:{})});
- },[]);
+ },[emit]);
 
  const complete=async(v:CompletedV3)=>{
    const scored=scoreTypeAnswersV31(v.typeAnswers);
