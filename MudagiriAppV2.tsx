@@ -14,6 +14,7 @@ import type {ProfileV4} from './mudagiri-profile-v4';
 import type {ExpenseRecordsV4} from './expense-record-v4';
 import type {ComparisonFactsV4} from './benchmark-router-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
+import {buildPersistencePayloadV4} from './persistence-v4';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -83,16 +84,25 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      diagnosisId,toneMode,profile:v.profile,type:typeVm,finalCategories:v.finalJudgements,
      monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
    });
+   const persistenceV4=v.scopeV4?buildPersistencePayloadV4({
+     diagnosisId,anonymousUserId,profile:v.scopeV4.profile,finalCategories:v.scopeV4.finalJudgements
+   }):null;
+   const savedFinalStatuses=v.scopeV4
+     ?Object.fromEntries(v.scopeV4.finalJudgements.map(x=>[x.category,{status:x.status==='cut'?'battle':x.status,attentionFlag:x.attentionFlag,reducible:x.confirmedSaving}]))
+     :Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}]));
+   const savedFinalDetails=v.scopeV4
+     ?Object.fromEntries(v.scopeV4.finalJudgements.map(x=>[x.category,{comparable:x.comparison.benchmark,comparisonAmount:x.comparison.amount,comparisonAmountScope:x.comparison.amountScope,comparisonQuality:x.comparison.quality,comparisonDifference:x.comparison.difference,confirmedSaving:x.confirmedSaving,battleBasis:x.status==='cut'?'confirmed':'none',sourceVersion:x.comparison.sourceVersion,benchmarkMeta:x.comparison.benchmarkMeta}]))
+     :Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}]));
    const snapshot={
      schemaVersion:'MUDAGIRI_SHEET_V3' as const,
      diagnosisId,anonymousUserId,createdAt:new Date().toISOString(),
      acquisition:typeof window!=='undefined'?acquisitionFromLocation():undefined,
-     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,
+     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,persistenceV4,
      rawExpenses:v.rawExpenses,typeAnswers:v.typeAnswers,appraisal:v.appraisal,
-     methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
+     methodology:{diagnosis:v.scopeV4?.diagnosisMethodology??v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
      result:{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle,counts:vm.counts,improvement:vm.improvement,
-       finalStatuses:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}])),
-       finalDetails:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}])),
+       finalStatuses:savedFinalStatuses,
+       finalDetails:savedFinalDetails,
        battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category)}
    };
    // RESULT must feel instant. Persist the resumable result locally first, render,
