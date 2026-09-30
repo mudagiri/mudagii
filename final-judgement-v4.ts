@@ -9,6 +9,7 @@ export interface FinalAppraisalV4 {
  satisfaction?:Satisfaction;
  subUnusedAmount?:number|null;
  subCancellationConfirmed?:boolean;
+ subUsage?:'none'|'one'|'several'|'unknown';
  energyPersistence?:'persistent'|'temporary'|'unknown';
  dailyPersistence?:'persistent'|'temporary'|'unknown';
  carNeed?:'essential'|'useful'|'burden'|'notNeeded';
