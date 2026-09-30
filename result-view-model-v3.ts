@@ -79,7 +79,7 @@ function reason(x:FinalCategoryV3):string{
    const carrier=x.appraisal?.mobileCarrier??'unknown';
    const s=communicationScreenV3(x.raw.amount??0,carrier);
    const carrierLabel=carrier==='major'?'大手キャリア':carrier==='mvno'?'格安SIM':'回線タイプ不明';
-   const bandLabel=({standard:'P50帯以内',higher:'P50超〜P75未満',check:'P75帯以上',detail:'P90帯以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
+   const bandLabel=({standard:'一般的な料金帯',higher:'一般的な料金帯より高め',check:'やや高めの目安以上',detail:'かなり高めの目安以上',unknown:'料金帯との照合は保留'} as Record<string,string>)[s.band];
    return `${carrierLabel}の調査価格帯では${bandLabel}です。ただし入力額はスマホ＋自宅インターネット合計のため、携帯料金帯との差だけでムダ・削減額とは判定していません。`;
   }
   if(x.category==='energy'){
