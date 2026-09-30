@@ -37,4 +37,14 @@ eq(r.selfDevelopment?.value,null,'self-development audit only');
 
 eq(Object.keys(__resolverV2Audit.H).length,47,'housing must contain 47 prefectures');
 ok(__resolverV2Audit.MONTH.length===12,'utility must contain 12 month indices');
+
+// Income correction: only multi-person ¥5m+; single remains unchanged.
+const baseMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
+const incMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
+ok(incMulti.food?.value!==baseMulti.food?.value,'multi 8m income must affect food comparable');
+ok(incMulti.daily?.value!==baseMulti.daily?.value,'multi 8m income must affect daily comparable');
+const baseSingle=resolveComparableV2({household:'single',age:30,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
+const incSingle=resolveComparableV2({household:'single',age:30,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
+eq(incSingle.food?.value,baseSingle.food?.value,'single income correction must stay disabled');
+
 console.log('RESOLVER_V2_QA_PASS');
