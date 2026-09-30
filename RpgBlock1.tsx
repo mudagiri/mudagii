@@ -351,9 +351,8 @@ export default function RpgBlock1({
     };
 
     if(actual('mobile')>0){
-      if(!appraisalAnswers.mobile?.mobileScope){
-        qs.push({category:'mobile',kind:'mobileScope',reason:'通信費は、スマホ1回線と「スマホ＋自宅ネット・家族分」では比較単位が違います。',question:'この通信費、何が入ってる？'});
-      }else if(appraisalAnswers.mobile.mobileScope==='mobileOnly'&&!appraisalAnswers.mobile?.mobileCarrier){
+      qs.push({category:'mobile',kind:'mobileScope',reason:'通信費は、スマホ1回線と「スマホ＋自宅ネット・家族分」では比較単位が違います。',question:'この通信費、何が入ってる？'});
+      if(appraisalAnswers.mobile?.mobileScope==='mobileOnly'){
         qs.push({category:'mobile',kind:'mobileCarrier',reason:'スマホ1回線だけなので、同じ回線タイプの料金帯を参考にします。',question:'スマホ回線はどのタイプ？'});
       }
     }
@@ -373,15 +372,15 @@ export default function RpgBlock1({
       const legacyComparable=comp(category);
       const v4Fact=fact(category);
       const isBeautyAudit=category==='beautyFashion'&&(profileV4?v4Fact?.quality==='none':comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT');
+      const beautySexAlreadyAsked=!!appraisalAnswers.beautyFashion?.beautySex;
       const beautyNeedsSex=category==='beautyFashion'
         &&(profileV4?profileV4.householdSize===1:flow.household==='single')
         &&actual(category)>0
         &&(profileV4?v4Fact?.benchmark!==null:legacyComparable!==null)
-        &&aboveReference(category)
-        &&!appraisalAnswers.beautyFashion?.beautySex;
+        &&(aboveReference(category)||beautySexAlreadyAsked);
       if(beautyNeedsSex){
         qs.push({category:'beautyFashion',kind:'beautySex',reason:'美容・服飾費は男女差が大きいため、基準を超えた人だけ、より近い比較値に補正します。',question:'より近い基準で見るために教えてね'});
-        return;
+        if(!beautySexAlreadyAsked)return;
       }
       const scopeNeedsValueCheck=profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2&&actual(category)>0&&noMatchedComparison(category);
       if(actual(category)>0&&(aboveReference(category)||isBeautyAudit||scopeNeedsValueCheck)){
@@ -709,8 +708,18 @@ export default function RpgBlock1({
                     ...answer,
                   },
                 }));
-                if (appraisalIndex >= appraisalQuestions.length - 1) {onEvent?.('appraisal_completed',{count:appraisalQuestions.length});setScene('appraisalComplete');}
-                else setAppraisalIndex((i) => i + 1);
+                const spawnsFollowup =
+                  (currentItem.kind==='mobileScope'&&answer.mobileScope==='mobileOnly') ||
+                  (currentItem.kind==='subUsage'&&(answer.subUsage==='one'||answer.subUsage==='several')) ||
+                  (currentItem.kind==='subUnusedAmount'&&typeof answer.subUnusedAmount==='number'&&answer.subUnusedAmount>0) ||
+                  (currentItem.kind==='insuranceOverview'&&(answer.insurancePurpose==='mostly'||answer.insurancePurpose==='unclear')) ||
+                  currentItem.kind==='beautySex';
+                if (appraisalIndex >= appraisalQuestions.length - 1 && !spawnsFollowup) {
+                  onEvent?.('appraisal_completed',{count:appraisalQuestions.length});
+                  setScene('appraisalComplete');
+                } else {
+                  setAppraisalIndex((i) => i + 1);
+                }
               }}
             />
           ) : scene === 'appraisalComplete' ? (
