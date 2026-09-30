@@ -931,8 +931,8 @@ function ScanScene({
     // 「発見」後は自動遷移せず、ユーザーが敵を確認してから次へ進む。
     const isOpeningScan = current <= 2;
     const isEndingScan = current >= Math.max(total - 1, 1);
-    const revealAt = isOpeningScan ? 550 : isEndingScan ? 470 : 330;
-    const detectedAt = isOpeningScan ? 1100 : isEndingScan ? 930 : 690;
+    const revealAt = isOpeningScan ? 440 : isEndingScan ? 380 : 220;
+    const detectedAt = isOpeningScan ? 860 : isEndingScan ? 760 : 480;
 
     timers.current.push(window.setTimeout(() => setPhase('reveal'), revealAt));
     timers.current.push(window.setTimeout(() => setPhase('detected'), detectedAt));
