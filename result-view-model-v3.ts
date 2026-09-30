@@ -71,7 +71,7 @@ function reason(x:FinalCategoryV3):string{
   if(x.category==='childEducation'&&(x.appraisal?.educationPreference==='necessary'||x.appraisal?.educationPreference==='protect'))return '必要・優先して守りたい教育費という回答を踏まえ、参考値との差だけでは見直し対象にしません。';
   if(x.category==='selfDevelopment'&&x.appraisal?.selfDevelopmentValue==='purpose')return '目的が明確という回答のため、金額だけでは見直し対象にしません。';
   if(x.category==='selfDevelopment'&&x.appraisal?.selfDevelopmentValue==='results')return '成果につながっているという回答のため、価値のある自己投資として守ります。';
-  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&x.appraisal?.satisfaction)return '満足度・価値判断を踏まえ、比較目安を上回っていても金額だけでは見直し対象にしません。';
+  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&(x.appraisal?.satisfaction==='verySatisfied'||x.appraisal?.satisfaction==='satisfied'))return '満足度・価値判断を踏まえ、比較目安を上回っていても金額だけでは見直し対象にしません。';
   return '金額だけで斬らず、確認できた必要性・価値を踏まえて守ります。';
  }
  if(x.status==='review'){
@@ -145,7 +145,7 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  }
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
- if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
+ if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足していて、この支出は守りたい',satisfied:'満足していて、今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
  if(x.category==='insurance'&&a.insurancePurpose){
   const purpose=({clear:'保障目的をかなり把握',mostly:'保障目的をだいたい把握',unclear:'保障目的がよく分からない'} as Record<string,string>)[a.insurancePurpose]??null;
   const review=({recent:'最近見直した',within3y:'3年以内に見直した',over3y:'3年以上見直していない',never:'見直したことがない',unknown:'見直し時期が分からない'} as Record<string,string>)[a.insuranceLastReview??'']??null;
