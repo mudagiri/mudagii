@@ -48,7 +48,9 @@ export function buildDiagnosisInputV4(a:{profile:ProfileV4;records:ExpenseRecord
  if(income===null||!(income>0))return null;
  const categories=buildCategoryInputsV4(a);
  const saving=Math.max(0,a.monthlySavingInvestment??0);
- const knownSpend=categories.reduce((sum,x)=>sum+x.actual,0);
+ const categorySpend=categories.reduce((sum,x)=>sum+x.actual,0);
+ const bundledContribution=a.profile.householdContributionMode==='bundled'?Math.max(0,a.profile.bundledContributionAmount??0):0;
+ const knownSpend=categorySpend+bundledContribution;
  return {
   monthlyTakeHomeIncome:income,
   monthlySavingInvestment:saving,
