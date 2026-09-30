@@ -1517,6 +1517,7 @@ function BattleIntroScene({
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
         <h2>{targets.length ? MODE_COPY[toneMode].battleIntroTitle : '優先チェック対象なし'}</h2>
         {targets.length ? (
+          <>
           <p className="appraisal-reason">{MODE_COPY[toneMode].battleIntroBody}</p>
           <div className="battle-targets">
             {targets.map((t,i)=>{
@@ -1524,6 +1525,7 @@ function BattleIntroScene({
               return <div key={t.category}><img src={e.normal} alt="" /><span>#{i+1}</span><strong>{e.name}</strong></div>;
             })}
           </div>
+          </>
         ) : (
           <p className="appraisal-reason">強く優先する敵は見つからなかった。<br /><strong>無理にムダ認定せず、結果で全項目を確認しよう。</strong></p>
         )}
