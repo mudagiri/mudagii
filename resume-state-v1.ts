@@ -3,6 +3,25 @@ export const ACTIVE_RESULT_SCHEMA='MUDAGIRI_ACTIVE_RESULT_V1' as const;
 export const JOURNEY_DRAFT_KEY='mudagiri_journey_draft_v1';
 export const ACTIVE_RESULT_KEY='mudagiri_active_result_v1';
 
+export type JourneyDraftV1={
+ schemaVersion:typeof JOURNEY_DRAFT_SCHEMA;
+ diagnosisId:string;
+ anonymousUserId:string;
+ updatedAt:string;
+ toneMode:string;
+ scene:string;
+ questionIndex:number;
+ householdSizePending:boolean;
+ flow:any;
+ annualIncomeBand:any;
+ scanIndex:number;
+ rawExpenses:any;
+ scanTouched:any;
+ appraisalIndex:number;
+ appraisalAnswers:any;
+ typeIndex:number;
+ typeAnswers:any;
+};
 export type ActiveResultV1={
  schemaVersion:typeof ACTIVE_RESULT_SCHEMA;
  diagnosisId:string;
@@ -14,6 +33,12 @@ export type ActiveResultV1={
 
 const parse=<T>(raw:string|null):T|null=>{try{return raw?JSON.parse(raw) as T:null}catch{return null}};
 
+export function readJourneyDraftV1(storage:Pick<Storage,'getItem'>=localStorage):JourneyDraftV1|null{
+ const v=parse<JourneyDraftV1>(storage.getItem(JOURNEY_DRAFT_KEY));
+ if(!v||v.schemaVersion!==JOURNEY_DRAFT_SCHEMA||!v.diagnosisId||!v.scene)return null;
+ return v;
+}
+export function writeJourneyDraftV1(v:JourneyDraftV1,storage:Pick<Storage,'setItem'>=localStorage){storage.setItem(JOURNEY_DRAFT_KEY,JSON.stringify(v))}
 export function readActiveResultV1(storage:Pick<Storage,'getItem'>=localStorage):ActiveResultV1|null{
  const v=parse<ActiveResultV1>(storage.getItem(ACTIVE_RESULT_KEY));
  if(!v||v.schemaVersion!==ACTIVE_RESULT_SCHEMA||!v.diagnosisId||!v.completed)return null;
