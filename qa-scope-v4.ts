@@ -17,6 +17,7 @@ const base=(patch:Partial<ProfileV4>={}):ProfileV4=>({
  relationships:[],
  expenseSharing:null,
  householdContributionMode:null,
+ bundledContributionAmount:null,
  prefecture:'東京都',
  age:35,
  housingTenure:'rental',
