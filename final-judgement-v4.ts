@@ -35,9 +35,9 @@ export interface FinalCategoryV4 {
  reasonCode:string;
 }
 
-const engineMap=(diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').runDiagnosisV2>|null)=>{
+const engineMap=(diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').runDiagnosisV2>|null,categoryResults?:CategoryResult[])=>{
  const map=new Map<Category,CategoryResult>();
- for(const x of diagnosis?.categories??[])map.set(x.category,x);
+ for(const x of categoryResults??diagnosis?.categories??[])map.set(x.category,x);
  return map;
 };
 
@@ -100,8 +100,8 @@ function decide(category:Category,record:ExpenseRecordV4,comparison:ComparisonFa
  return {status:engine?.needsReview?'review':'safe',attentionFlag:!!engine?.needsReview,reasonCode:engine?.needsReview?'ENGINE_REVIEW':'NO_REVIEW_SIGNAL'};
 }
 
-export function buildFinalJudgementsV4(a:{records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').runDiagnosisV2>|null;appraisal?:FinalAppraisalsV4}){
- const byEngine=engineMap(a.diagnosis);
+export function buildFinalJudgementsV4(a:{records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').runDiagnosisV2>|null;categoryResults?:CategoryResult[];appraisal?:FinalAppraisalsV4}){
+ const byEngine=engineMap(a.diagnosis,a.categoryResults);
  const categories:FinalCategoryV4[]=V4_CATEGORIES.map(category=>{
   const record=a.records[category];
   const comparison=a.comparisons[category];
