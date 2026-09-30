@@ -7,6 +7,7 @@ import { TYPE_QUESTIONS_V31, scoreTypeAnswersV31, type RawAnswerV31, type TypeAn
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 import type { EducationStageV2 } from './comparable-resolver-v2';
+import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -17,6 +18,9 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
   onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
+  resumeDraft?: JourneyDraftV1|null;
+  diagnosisId?: string;
+  anonymousUserId?: string;
 };
 
 type Scene = 'opening' | 'mode' | 'profile' | 'incomeCalibration' | 'scan' | 'scanComplete' | 'typeQuiz' | 'typeComplete' | 'appraisal' | 'appraisalComplete' | 'battleIntro' | 'battle' | 'battleComplete';
@@ -237,20 +241,23 @@ export default function RpgBlock1({
   onFamilySelect,
   onCompleteV3,
   onEvent,
+  resumeDraft,
+  diagnosisId,
+  anonymousUserId,
 }: Props) {
-  const [scene, setScene] = useState<Scene>(() => (step === 'profile' ? 'profile' : 'opening'));
-  const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>(toneMode);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [flow, setFlow] = useState<ProfileFlow>(INITIAL_FLOW);
-  const [householdSizePending,setHouseholdSizePending]=useState(false);
-  const [scanIndex, setScanIndex] = useState(0);
-  const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>emptyRawExpenses());
-  const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>({});
-  const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>('unknown');
-  const [typeIndex, setTypeIndex] = useState(0);
-  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>({});
-  const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>({});
-  const [appraisalIndex, setAppraisalIndex] = useState(0);
+  const [scene, setScene] = useState<Scene>(() => (resumeDraft?.scene as Scene) || (step === 'profile' ? 'profile' : 'opening'));
+  const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>((resumeDraft?.toneMode as ToneMode)||toneMode);
+  const [questionIndex, setQuestionIndex] = useState(resumeDraft?.questionIndex??0);
+  const [flow, setFlow] = useState<ProfileFlow>(()=>resumeDraft?.flow??INITIAL_FLOW);
+  const [householdSizePending,setHouseholdSizePending]=useState(resumeDraft?.householdSizePending??false);
+  const [scanIndex, setScanIndex] = useState(resumeDraft?.scanIndex??0);
+  const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>resumeDraft?.rawExpenses??emptyRawExpenses());
+  const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
+  const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>(resumeDraft?.annualIncomeBand??'unknown');
+  const [typeIndex, setTypeIndex] = useState(resumeDraft?.typeIndex??0);
+  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(resumeDraft?.typeAnswers??{});
+  const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>(resumeDraft?.appraisalAnswers??{});
+  const [appraisalIndex, setAppraisalIndex] = useState(resumeDraft?.appraisalIndex??0);
   const educationStage=appraisalAnswers.childEducation?.educationStage;
   const [battleIndex, setBattleIndex] = useState(0);
 
@@ -326,6 +333,13 @@ export default function RpgBlock1({
   const battleTargets=finalBundle.battleTargets;
   const encounterTargets=finalBundle.encounterTargets;
 
+
+
+  useEffect(()=>{
+    if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
+    if(scene==='opening'||scene==='mode'||scene==='battle'||scene==='battleComplete')return;
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+  },[scene,selectedToneMode,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
     const body = document.body;
