@@ -14,6 +14,9 @@ import ProfileV4Scene from './ProfileV4Scene';
 import HouseholdTotalV4Scene from './HouseholdTotalV4Scene';
 import {emptyExpenseRecordsV4,type ExpenseRecordsV4} from './expense-record-v4';
 import {applyDiagnosisAmountV4,applyHouseholdTotalV4,requiresHouseholdTotalV4} from './scope-flow-v4';
+import {buildComparisonFactsV4,type ComparisonFactsV4} from './benchmark-router-v4';
+import {runDiagnosisAdapterV4} from './diagnosis-adapter-v4';
+import {buildFinalJudgementsV4,type FinalCategoryV4} from './final-judgement-v4';
 import {emptyProfileDraftV4,finalizeProfileV4,legacyFamilyProfileV4,profileStepsV4,resolverHousingTypeV4,shouldOfferAnnualIncomeCalibrationV4,type ProfileDraftV4,type ProfileV4} from './mudagiri-profile-v4';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
@@ -23,7 +26,7 @@ type Props = {
   toneMode: ToneMode;
   onBegin: (mode: ToneMode) => void;
   onFamilySelect: (profile: FamilyProfile) => void;
-  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
+  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string;scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null}}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
   resumeDraft?: JourneyDraftV1|null;
   diagnosisId?: string;
@@ -298,6 +301,15 @@ export default function RpgBlock1({
     educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren,
     beautySex:appraisalAnswers.beautyFashion?.beautySex
   }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
+  const resolvedExpenseRecordsV4=useMemo<ExpenseRecordsV4>(()=>{
+    const next={...expenseRecordsV4};
+    next.childEducation={...next.childEducation,metadata:{...next.childEducation.metadata,educationChildren:appraisalAnswers.childEducation?.educationChildren}};
+    next.beautyFashion={...next.beautyFashion,metadata:{...next.beautyFashion.metadata,beautySex:appraisalAnswers.beautyFashion?.beautySex}};
+    return next;
+  },[expenseRecordsV4,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
+  const comparisonsV4=useMemo(()=>profileV4?buildComparisonFactsV4({profile:profileV4,records:resolvedExpenseRecordsV4,month:new Date().getMonth()+1}):null,[profileV4,resolvedExpenseRecordsV4]);
+  const diagnosisV4=useMemo(()=>profileV4&&comparisonsV4?runDiagnosisAdapterV4({profile:profileV4,records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,appraisalAnswers]);
+  const finalV4=useMemo(()=>profileV4&&comparisonsV4&&diagnosisV4?buildFinalJudgementsV4({records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,diagnosis:diagnosisV4.diagnosis,categoryResults:diagnosisV4.categoryResults,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,diagnosisV4,appraisalAnswers]);
   const comparable=useMemo(()=>{
     const base={...comparisonBundle.comparable};
     if(profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2){
@@ -462,6 +474,7 @@ export default function RpgBlock1({
   const beginScanFromProfile=(p:ProfileV4,band:AnnualIncomeBand)=>{
     const completed={...p,annualIncomeBand:band};
     setProfileV4(completed);
+    if(completed.childCount===0)setExpenseRecordsV4(prev=>({...prev,childEducation:{...prev.childEducation,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
     setProfileV4Draft(v=>({...v,annualIncomeBand:band}));
     setAnnualIncomeBand(band);
     syncLegacyProfileFromV4(completed);
@@ -517,7 +530,8 @@ export default function RpgBlock1({
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
-      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0'
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
+      scopeV4:profileV4&&comparisonsV4&&finalV4?{profile:profileV4,expenseRecords:resolvedExpenseRecordsV4,comparisons:comparisonsV4,finalJudgements:finalV4.categories,confirmedMonthly:finalV4.confirmedMonthly,diagnosisMethodology:diagnosisV4?.diagnosis?.methodologyVersion??null}:undefined
     });
   };
   return (
