@@ -3567,5 +3567,56 @@ input,select,textarea{font-size:16px}
   }
 }
 
+/* ===== PROFILE VISUAL MASTER V7: Android screenshot calibrated ===== */
+.pre-profile,.pre-complete{overflow:hidden!important}
+.pre-profile-hud{position:absolute!important;top:max(17px,calc(env(safe-area-inset-top) + 9px))!important;left:20px!important;right:20px!important}
+.pre-panel{
+ position:absolute!important;z-index:60!important;left:20px!important;right:20px!important;
+ bottom:max(56px,calc(env(safe-area-inset-bottom) + 44px))!important;width:auto!important;min-height:0!important;
+ margin:0!important;padding:14px 18px 13px!important;border-radius:20px!important;
+}
+.pre-dialogue{width:72%!important;min-height:54px!important;margin:-2px 0 14px auto!important;padding:10px 13px!important;font-size:14px!important;line-height:1.5!important}
+.pre-question-no{margin:0!important;font-size:11px!important}
+.pre-panel h2{margin:6px 0 0!important;font-size:clamp(24px,6.4vw,30px)!important;line-height:1.22!important}
+.pre-helper{margin:6px 0 0!important;font-size:13px!important;line-height:1.45!important}
+.pre-input-wrap{margin-top:14px!important}
+.pre-select,.pre-age-input{min-height:52px!important}
+.profile-choice-grid{margin-top:14px!important;gap:8px!important}
+.profile-choice{min-height:52px!important;padding:8px 7px!important;font-size:14px!important}
+.pre-panel .profile-primary-cta{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:100%!important;min-height:54px!important;margin:12px 0 0!important;font-size:17px!important}
+.pre-panel .pre-back{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:block!important;width:100%!important;min-height:34px!important;margin:6px 0 -4px!important;padding:5px 10px!important;text-align:center!important;font-size:12px!important}
+.pre-profile-footer{position:absolute!important;left:0!important;right:0!important;bottom:max(10px,env(safe-area-inset-bottom))!important;margin:0!important}
+.pre-profile-mudagiri{display:block!important;z-index:24!important;bottom:39.5%!important}
+.pre-checkpoint{top:23%!important}
+.pre-q4 .pre-panel{padding:12px 18px 10px!important}
+.pre-q4 .pre-dialogue{min-height:50px!important;margin-bottom:10px!important}
+.pre-q4 .pre-helper{margin-top:4px!important}
+.pre-q4 .profile-choice-grid{margin-top:10px!important;gap:7px!important}
+.pre-q4 .profile-choice{min-height:48px!important}
+.pre-q4 .profile-primary-cta{min-height:50px!important;margin-top:9px!important}
+.pre-q4 .pre-back{margin-top:3px!important}
+@media(max-height:760px){
+ .pre-profile{overflow:hidden!important}
+ .pre-panel{position:absolute!important;left:18px!important;right:18px!important;bottom:max(45px,calc(env(safe-area-inset-bottom) + 34px))!important;width:auto!important;margin:0!important;padding:11px 15px 9px!important}
+ .pre-dialogue{width:72%!important;min-height:44px!important;margin:-2px 0 9px auto!important;padding:8px 11px!important;font-size:12px!important}
+ .pre-panel h2{font-size:22px!important;margin-top:4px!important}
+ .pre-helper{font-size:11px!important;margin-top:3px!important}
+ .profile-choice-grid{margin-top:9px!important;gap:6px!important}
+ .profile-choice{min-height:44px!important;font-size:12px!important}
+ .pre-input-wrap{margin-top:9px!important}
+ .pre-panel .profile-primary-cta{min-height:48px!important;margin-top:7px!important}
+ .pre-panel .pre-back{min-height:30px!important;margin-top:2px!important;padding:3px!important}
+ .pre-profile-mudagiri{display:block!important;width:min(30vw,132px)!important;max-height:21dvh!important;bottom:38.5%!important}
+}
+@media(max-height:650px){
+ .pre-profile{overflow:hidden!important}
+ .pre-profile-mudagiri{display:none!important}
+ .pre-dialogue{min-height:38px!important;margin-bottom:6px!important}
+ .pre-helper{display:none!important}
+ .profile-choice-grid{margin-top:7px!important;gap:5px!important}
+ .profile-choice{min-height:39px!important}
+ .pre-panel .profile-primary-cta{min-height:44px!important;margin-top:5px!important}
+}
+
 `;
 
