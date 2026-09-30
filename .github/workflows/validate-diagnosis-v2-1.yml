@@ -7,6 +7,7 @@ on:
       - diagnosis-v2-1-frozen
       - qa-mobile-ui-v1
       - diagnosis-result-v3-2
+      - v4-scope-contract
   pull_request:
     branches:
       - main
@@ -32,4 +33,5 @@ jobs:
       - run: npm run qa:battle
       - run: npm run qa:resume
       - run: npm run qa:result-safety
+      - run: npm run qa:scope
       - run: npm run qa:10k
