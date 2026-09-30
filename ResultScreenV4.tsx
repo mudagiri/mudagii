@@ -37,7 +37,7 @@ async function makeTypeShareFile(vm:any){
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
 }
 
-export default function ResultScreenV4({vm,onLine,onEvent,onRestart}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void;onRestart?:()=>void}){
+export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExternal}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void;onRestart?:()=>void;onBeforeExternal?:()=>void}){
  const [open,setOpen]=useState<string|null>(null);
  const [revealed,setRevealed]=useState(false);
  useEffect(()=>{
@@ -47,6 +47,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart}:{vm:any;onL
    return()=>window.clearTimeout(id);
  },[]);
  async function share(){
+  onBeforeExternal?.();
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
   const shareUrl=new URL(window.location.origin+window.location.pathname);shareUrl.searchParams.set('ref','share');shareUrl.searchParams.set('type',vm.type.code);
   const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n${shareUrl.toString()}\n#ムダギリ診断`;
@@ -95,7 +96,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart}:{vm:any;onL
 
   <section className="rv3-title"><div className="rv3-kicker">SHARE TYPE</div><h3>称号だけなら、家計の金額を出さずにシェアできます。</h3><button className="rv3-primary" onClick={share}>この称号をシェアする</button><small>収入・支出・都道府県などのプロフィール情報は含みません</small></section>
 
-  <section className="rv3-next"><div className="rv3-kicker">SAVE RESULT</div><h3>この診断結果を残しておく</h3><p>LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。相談は任意です。</p><button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button><small>✓ 結果保存　✓ 確認手順　✓ 無料　／　相談は任意</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
+  <section className="rv3-next"><div className="rv3-kicker">SAVE RESULT</div><h3>この診断結果を残しておく</h3><p>LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。相談は任意です。</p><button className="rv3-primary" onClick={()=>{onBeforeExternal?.();onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button><small>✓ 結果保存　✓ 確認手順　✓ 無料　／　相談は任意</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
   </div></div></main></>
 }
 const CSS=`
