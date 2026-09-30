@@ -157,6 +157,17 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になってる',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながってる'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
 }
+function evidenceLabel(x:FinalCategoryV3):string{
+ if(x.comparable!==null)return comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta).label;
+ if(x.category==='mobile'&&x.appraisal?.mobileCarrier)return '回線タイプ別の料金帯で照合';
+ if(x.category==='insurance')return '平均額ではなく保障目的・見直し状況で判定';
+ if(x.category==='sub')return '平均額ではなく未使用契約・未使用額で判定';
+ if(x.category==='car')return '平均額ではなく必要性・維持費構造で判定';
+ if(x.category==='selfDevelopment')return '平均額ではなく目的・利用状況・成果で判定';
+ if(x.category==='rent')return '賃貸以外は民営賃貸の参考値を流用せず回答内容で判定';
+ if(x.category==='beautyFashion')return '該当条件で十分な比較値がないため回答内容で判定';
+ return '数値比較できる基準なし・回答内容で判定';
+}
 function nextCheck(x:FinalCategoryV3):string{
  if(x.status==='na')return '確認不要';
  if(!x.raw.known)return x.category==='insurance'?'保険料と保障内容が分かる資料を確認':'直近の明細・請求額を確認';
@@ -194,7 +205,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,encounterStrength:encounterStrengthV31(x),confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
-  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x),comparisonContext:comparisonContext(x,args.profile??null,args.annualIncomeBand)
+  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),evidenceLabel:evidenceLabel(x),reason:reason(x),nextCheck:nextCheck(x),comparisonContext:comparisonContext(x,args.profile??null,args.annualIncomeBand)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const reviewPriority=(x:(typeof rows)[number])=>{
