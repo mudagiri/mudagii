@@ -26,7 +26,7 @@ function appraisalIntent(x:FinalCategoryV3):string|null{
  if(x.category==='mobile'&&a.mobileCarrier){
   const label=({major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'} as Record<string,string>)[a.mobileCarrier]??'回線タイプ不明';
   const s=communicationScreenV3(x.raw.amount??0,a.mobileCarrier);
-  const band=({standard:'P50帯以内',higher:'P50超〜P75未満',check:'P75帯以上',detail:'P90帯以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
+  const band=({standard:'一般的な料金帯',higher:'一般的な料金帯より高め',check:'やや高めの目安以上',detail:'かなり高めの目安以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
   return `${label} / ${band}`;
  }
  if(x.category==='sub'){
@@ -166,7 +166,7 @@ function referenceDetail(x:FinalCategoryV3):string|null{
  const p50=carrier==='major'?m.majorP50:m.mvnoP50;
  const p75=carrier==='major'?m.majorP75:m.mvnoP75;
  const p90=carrier==='major'?m.majorP90:m.mvnoP90;
- return p50&&p75&&p90?`${label}：P50帯 ${p50}円 / P75帯 ${p75}円 / P90帯 ${p90}円`:null;
+ return p50&&p75&&p90?`${label}：一般的な料金帯 ${p50}円 / やや高めの目安 ${p75}円 / かなり高めの目安 ${p90}円`:null;
 }
 function evidenceLabel(x:FinalCategoryV3):string{
  if(x.comparable!==null)return comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta).label;
