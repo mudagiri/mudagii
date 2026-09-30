@@ -4,6 +4,7 @@ import { buildComparisonFactsV4 } from './benchmark-router-v4';
 import { runDiagnosisAdapterV4 } from './diagnosis-adapter-v4';
 import { buildFinalJudgementsV4 } from './final-judgement-v4';
 import { requiresHouseholdTotalV4 } from './scope-flow-v4';
+import { buildResultViewModelV4 } from './result-view-model-v4';
 import type { ProfileV4 } from './mudagiri-profile-v4';
 import { emptyProfileDraftV4, profileStepsV4, finalizeProfileV4, shouldOfferAnnualIncomeCalibrationV4 } from './mudagiri-profile-v4';
 
@@ -223,4 +224,29 @@ console.log('SCOPE_V4_QA PASS');
  const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:null,categoryResults:dx.categoryResults,appraisal:{sub:{subUnusedAmount:1980,subCancellationConfirmed:true,subUsage:'one'}}});
  A.equal(final.confirmedMonthly,1980);
  A.equal(final.categories.find(x=>x.category==='sub')?.status,'cut');
+}
+
+
+{
+ const profile=base({householdSize:2,adultCount:2,relationships:['partner'],expenseSharing:'split'});
+ const records=emptyExpenseRecordsV4();
+ amount(records,'food',40000,{householdTotal:80000});
+ amount(records,'rent',100000,{householdTotal:200000});
+ const facts=buildComparisonFactsV4({profile,records,month:1});
+ const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,appraisal:{food:{satisfaction:'satisfied'},rent:{rentPreference:'reasonable'}}});
+ const vm=buildResultViewModelV4({profile,finalCategories:final.categories});
+ const food=vm.rows.find(x=>x.category==='food')!;
+ A.equal(food.diagnosisAmount,40000);
+ A.equal(food.personalBurden,40000);
+ A.equal(food.householdTotal,80000);
+ A.equal(food.comparison.amount,80000);
+ A.equal(food.comparison.amountLabel,'家全体の支出');
+ const rent=vm.rows.find(x=>x.category==='rent')!;
+ A.equal(rent.diagnosisAmount,100000);
+ A.equal(rent.comparison.amount,200000);
+ A.equal(rent.comparison.amountLabel,'住まい全体');
+ A.ok(vm.comparisonGroups.some(x=>x.scopeLabel==='家全体の支出'));
+ A.ok(vm.comparisonGroups.some(x=>x.scopeLabel==='住まい全体'));
+ A.equal(vm.comparisonAggregationRule,'NEVER_MIX_AMOUNT_SCOPES');
 }
