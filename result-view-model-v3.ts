@@ -9,8 +9,8 @@ const LABEL:Record<Category,string>={mobile:'通信費',energy:'光熱費',sub:'
 const ENEMY:Record<Category,string>={mobile:'通信ザウルス',energy:'電気ウナギ魔人',sub:'サブスクサキュバス',car:'ムダカー',food:'クイダオーレ',daily:'チリツモコビト',fun:'アソビスギー',beautyFashion:'ミエハリーヌ',rent:'ヤチンダー',insurance:'ホケンミエナイダー',childEducation:'マナビンボー',selfDevelopment:'ジコトウシン'};
 
 export function comparatorMetaV3(c:Category, comparable:number|null, benchmarkMeta?:FinalCategoryV3['benchmarkMeta']):ComparatorMetaV3{
- if(c==='childEducation'&&comparable!==null)return {kind:'direct_benchmark',label:'参考ベンチマーク',sourceKey:'mext_education'};
- if(c==='rent'&&comparable!==null)return {kind:'statistical_comparator',label:'都道府県の民営賃貸参考値',sourceKey:'housing_v2_private_rent'};
+ if(c==='childEducation'&&comparable!==null)return {kind:'direct_benchmark',label:'学校段階に応じた教育費の参考目安',sourceKey:'mext_education'};
+ if(c==='rent'&&comparable!==null)return {kind:'statistical_comparator',label:'同じ都道府県の民営賃貸の家賃目安',sourceKey:'housing_v2_private_rent'};
  if(c==='beautyFashion'&&comparable!==null){
   const sex=benchmarkMeta?.meta?.sex;
   const fallback=benchmarkMeta?.meta?.sexFallback;
@@ -176,7 +176,7 @@ function evidenceLabel(x:FinalCategoryV3):string{
  if(x.category==='car')return '平均額ではなく必要性・維持費構造で判定';
  if(x.category==='selfDevelopment')return '平均額ではなく目的・利用状況・成果で判定';
  if(x.category==='rent')return '賃貸以外は民営賃貸の参考値を流用せず回答内容で判定';
- if(x.category==='beautyFashion')return '該当条件で十分な比較値がないため回答内容で判定';
+ if(x.category==='beautyFashion')return 'あなたに合う十分な比較データがないため、満足度・価値判断で判定';
  return '数値比較できる基準なし・回答内容で判定';
 }
 function nextCheck(x:FinalCategoryV3):string{
