@@ -3406,5 +3406,61 @@ button,.pre-select,.pre-age-input input{touch-action:manipulation}
   .profile-choice{min-height:50px}
 }
 
+
+/* ===== IPHONE FIRST QA: Safari viewport / safe-area / keyboard ===== */
+.pre-root,.pre-stage{
+  height:100svh;
+  height:100dvh;
+  min-height:100svh;
+}
+@supports(height:100dvh){
+  .pre-root,.pre-stage{height:100dvh}
+}
+button,.pre-select,.scan-money input,.pre-age-input input{
+  -webkit-tap-highlight-color:transparent;
+}
+input,select,textarea{font-size:16px}
+.pre-op-copy,.pre-profile-hud,.scan-hud,.type-quiz-hud{
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+
+/* iPhone SE / Safari with browser chrome: preserve controls before decoration. */
+@media(max-height:700px){
+  .scan-scene,.type-quiz-scene{
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .scan-mudagiri-input,.type-quiz-guide{display:none}
+  .scan-panel,.type-quiz-card{
+    position:relative;
+    left:auto;
+    right:auto;
+    bottom:auto;
+    width:calc(100% - 28px);
+    min-height:0;
+    margin:max(104px,calc(env(safe-area-inset-top) + 92px)) auto max(22px,calc(env(safe-area-inset-bottom) + 14px));
+  }
+  .scan-dialogue{width:100%;min-height:0;margin:0 0 10px;padding:10px 12px;font-size:14px}
+  .scan-world-hud{top:max(76px,calc(env(safe-area-inset-top) + 62px));padding:8px 12px}
+  .scan-world-count strong{font-size:30px}
+  .type-quiz-card{padding:13px 13px 11px}
+}
+
+/* Keep iOS virtual keyboard from hiding the primary action while entering money/age. */
+@media(max-height:560px){
+  .pre-profile,.scan-scene{
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .pre-profile-mudagiri,.scan-mudagiri,.scan-world-hud{display:none}
+  .pre-panel,.scan-panel{
+    margin-top:max(70px,calc(env(safe-area-inset-top) + 58px));
+    margin-bottom:max(16px,env(safe-area-inset-bottom));
+  }
+}
+
 `;
 
