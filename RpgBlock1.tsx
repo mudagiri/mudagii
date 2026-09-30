@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { TONE_MODES, type ToneMode } from './tone-mode-v3';
+import { TONE_MODES, MODE_COPY, type ToneMode } from './tone-mode-v3';
 import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3,housingScreenV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
 import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadBattle } from './asset-loading-v2';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
@@ -499,6 +499,7 @@ export default function RpgBlock1({
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
+              toneMode={selectedToneMode}
               scanned={applicableScanCategories.length}
               discovered={discoveredCount}
               onStartAppraisal={() => {
@@ -529,6 +530,7 @@ export default function RpgBlock1({
             />
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
+              toneMode={selectedToneMode}
               judgements={finalJudgements}
               onContinue={() => {
                 setTypeIndex(0);
@@ -559,6 +561,7 @@ export default function RpgBlock1({
             />
           ) : scene === 'battleIntro' ? (
             <BattleIntroScene
+              toneMode={selectedToneMode}
               targets={encounterTargets}
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
               onStart={() => {
@@ -569,11 +572,13 @@ export default function RpgBlock1({
             />
           ) : scene === 'battle' && encounterTargets.length ? (
             <ComboBattleScene
+              toneMode={selectedToneMode}
               targets={encounterTargets}
               onDone={() => setScene('battleComplete')}
             />
           ) : (
             <BattleCompleteScene
+              toneMode={selectedToneMode}
               battleCount={encounterTargets.length}
               reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
               onResult={finishDiagnosis}
@@ -1078,10 +1083,12 @@ function ScanScene({
 }
 
 function ScanCompleteScene({
+  toneMode,
   scanned,
   discovered,
   onStartAppraisal,
 }: {
+  toneMode: ToneMode;
   scanned: number;
   discovered: number;
   onStartAppraisal: () => void;
@@ -1109,12 +1116,8 @@ function ScanCompleteScene({
 
       <section className="appraisal-intro-card">
         <div className="appraisal-intro-kicker">FINAL CHECK</div>
-        <h2>……まだ斬るな。</h2>
-        <p>
-          <strong>敵がいる＝ムダとは限らない。</strong><br />
-          同じ1万円でも、納得して使う金と<br />
-          なんとなく消える金は違う。
-        </p>
+        <h2>{MODE_COPY[toneMode].scanCompleteTitle}</h2>
+        <p>{MODE_COPY[toneMode].scanCompleteBody}</p>
         <div className="appraisal-intro-rule">
           <span>次の目的</span>
           <b>本当に倒すべき敵を選別する</b>
@@ -1466,7 +1469,7 @@ function AdditionalAppraisalScene({
 }
 
 function AppraisalCompleteScene({
-  judgements,onContinue,
+  toneMode,judgements,onContinue,
 }:{
   judgements:FinalCategoryV3[]; onContinue:()=>void;
 }) {
@@ -1484,11 +1487,8 @@ function AppraisalCompleteScene({
       <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
       <section className="appraisal-card">
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
-        <h2>鑑定完了。</h2>
-        <p className="appraisal-reason">
-          高いからって、全部ムダとは限らない。<br />
-          <strong>守る支出と、見直す候補を分けた。次は君自身のお金のクセを解析するぞ。</strong>
-        </p>
+        <h2>{MODE_COPY[toneMode].appraisalCompleteTitle}</h2>
+        <p className="appraisal-reason">{MODE_COPY[toneMode].appraisalCompleteBody}</p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
@@ -1505,9 +1505,9 @@ function AppraisalCompleteScene({
 }
 
 function BattleIntroScene({
-  targets,reviewCount,onStart,
+  toneMode,targets,reviewCount,onStart,
 }:{
-  targets:FinalCategoryV3[]; reviewCount:number; onStart:()=>void;
+  toneMode:ToneMode; targets:FinalCategoryV3[]; reviewCount:number; onStart:()=>void;
 }) {
   return (
     <div className="scan-scene battle-intro-scene">
@@ -1515,8 +1515,9 @@ function BattleIntroScene({
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? '見直しクエストを特定！' : '優先チェック対象なし'}</h2>
+        <h2>{targets.length ? MODE_COPY[toneMode].battleIntroTitle : '優先チェック対象なし'}</h2>
         {targets.length ? (
+          <p className="appraisal-reason">{MODE_COPY[toneMode].battleIntroBody}</p>
           <div className="battle-targets">
             {targets.map((t,i)=>{
               const e=ENEMY_ASSETS[t.category];
@@ -1535,7 +1536,7 @@ function BattleIntroScene({
   );
 }
 
-function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone:()=>void }) {
+function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targets:FinalCategoryV3[]; onDone:()=>void }) {
   const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
   const [pose,setPose]=useState<'ready'|'swing'|'follow'>('ready');
   const [hitIndex,setHitIndex]=useState(-1);
@@ -1599,8 +1600,8 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
 
       <section className="combo-panel">
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'PRIORITY CHECK':'QUEST CLEAR'}</div>
-        <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'優先順位をロックするぞ！':`${targets.length}体、優先チェック完了！`}</h2>
-        {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
+        <h2>{phase==='ready'?MODE_COPY[toneMode].battleReady:phase==='action'?MODE_COPY[toneMode].battleAction:MODE_COPY[toneMode].battleClear}</h2>
+        {phase==='ready'&&<p>{MODE_COPY[toneMode].battleBody}</p>}
         {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>優先チェック開始！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
           :<div className="combo-slash-label">CHECK × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
@@ -1609,7 +1610,7 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
   );
 }
 
-function BattleCompleteScene({battleCount,reviewCount,onResult}:{battleCount:number;reviewCount:number;onResult:()=>void}) {
+function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void}) {
   return (
     <div className="scan-scene battle-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
@@ -1620,7 +1621,7 @@ function BattleCompleteScene({battleCount,reviewCount,onResult}:{battleCount:num
         <h2>{battleCount ? `${battleCount}件の見直しクエスト完了！` : '家計防衛成功！'}</h2>
         <p className="appraisal-reason">
           {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
-          <br /><strong>次は、称号と家計の全結果を開示する。</strong>
+          <br /><strong>{MODE_COPY[toneMode].resultLead}</strong>
         </p>
         <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
         <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
