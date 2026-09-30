@@ -329,6 +329,18 @@ export default function RpgBlock1({
   const finalBundle=useMemo(()=>diagnosisBundle?buildFinalJudgementsV3({
     raw:normalizedRaw,diagnosis:diagnosisBundle.diagnosis,comparable,benchmarkMeta:comparisonBundle.benchmarkMeta,appraisal:appraisalAnswers
   }):{categories:[] as FinalCategoryV3[],battleTargets:[] as FinalCategoryV3[],encounterTargets:[] as FinalCategoryV3[],secondaryReviewTargets:[] as FinalCategoryV3[]},[normalizedRaw,diagnosisBundle,comparable,comparisonBundle.benchmarkMeta,appraisalAnswers]);
+  useEffect(()=>{
+    if(!resumeDraft||scene!=='appraisal')return;
+    if(!appraisalQuestions.length){setAppraisalIndex(0);setScene('appraisalComplete');return;}
+    if(appraisalIndex>=appraisalQuestions.length)setAppraisalIndex(Math.max(0,appraisalQuestions.length-1));
+  },[resumeDraft,scene,appraisalQuestions.length,appraisalIndex]);
+
+  useEffect(()=>{
+    if(!resumeDraft||scene!=='scan')return;
+    if(!applicableScanCategories.length)return;
+    if(scanIndex>=applicableScanCategories.length)setScanIndex(Math.max(0,applicableScanCategories.length-1));
+  },[resumeDraft,scene,applicableScanCategories.length,scanIndex]);
+
   const finalJudgements=finalBundle.categories;
   const battleTargets=finalBundle.battleTargets;
   const encounterTargets=finalBundle.encounterTargets;
