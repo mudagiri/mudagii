@@ -87,3 +87,53 @@ A high-energy fantasy berserker mascot charging joyfully toward a glowing experi
 - Strength/blind spot and 3 axes remain text/UI, not baked into the image.
 - Share card may reuse the same character but must render all text in code.
 - Share image must never include income, expense amounts, prefecture or other profile data.
+
+
+## F. Runtime asset contract (FROZEN before generation)
+Canonical runtime directory:
+- `/public/assets/types/v31/`
+
+Canonical files:
+- `TYPE_FPA.png`
+- `TYPE_FPU.png`
+- `TYPE_FIA.png`
+- `TYPE_FIU.png`
+- `TYPE_VPA.png`
+- `TYPE_VPU.png`
+- `TYPE_VIA.png`
+- `TYPE_VIU.png`
+
+Production requirements:
+- PNG with real alpha transparency; no baked background.
+- Square master, recommended 1024×1024 minimum.
+- Character silhouette should occupy roughly 68–78% of canvas height, with safe transparent margin on every edge.
+- Face and primary prop must remain readable when rendered at 140px CSS width.
+- No important semantic prop may sit in the outer 10% of the canvas; Result/share crops must not remove meaning.
+- Keep one consistent virtual light direction and pixel density across all eight.
+- Do not bake name, catchphrase, axes, rarity, percentages or diagnosis values into the art.
+
+Runtime mapping:
+```ts
+export const TYPE_ART_V31 = {
+  FPA:'/assets/types/v31/TYPE_FPA.png',
+  FPU:'/assets/types/v31/TYPE_FPU.png',
+  FIA:'/assets/types/v31/TYPE_FIA.png',
+  FIU:'/assets/types/v31/TYPE_FIU.png',
+  VPA:'/assets/types/v31/TYPE_VPA.png',
+  VPU:'/assets/types/v31/TYPE_VPU.png',
+  VIA:'/assets/types/v31/TYPE_VIA.png',
+  VIU:'/assets/types/v31/TYPE_VIU.png',
+} as const;
+```
+
+Placement targets:
+1. Result hero: 132–156px CSS width on 390px baseline, placed between the unlock kicker and type name without obscuring text.
+2. 375×667 fallback: 104–120px or hidden only if required to preserve result meaning/CTA reachability.
+3. Share canvas: character occupies an identity zone separate from all text; text remains code-rendered.
+4. The same canonical PNG is reused for Result and share. Do not generate separate share-card art unless later QA proves necessary.
+
+Approval gate:
+- Inspect each master at 100%, 140px and 110px.
+- Inspect all eight as a contact sheet in grayscale silhouette view as well as color.
+- A type fails if its axis meaning depends on tiny details, if two silhouettes are confusable, or if it appears morally/rationally superior to another.
+- FPA is the calibration image. No other type is generated until FPA passes pixel-language, transparency, silhouette and mobile-size QA.
