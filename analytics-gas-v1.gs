@@ -30,6 +30,8 @@ function doGet() {
 }
 
 function appendEvent_(v) {
+  if (!v.eventId) throw new Error('EVENTS: missing eventId');
+  if (exists_('EVENTS', 2, v.eventId)) return;
   const d = v.data || {};
   append_('EVENTS', [
     new Date(), v.eventId || '', v.anonymousUserId || '', v.diagnosisId || '',
@@ -80,6 +82,15 @@ function upsert_(sheetName, keyColumn, key, row) {
   sh.appendRow(row);
 }
 
+function exists_(sheetName, keyColumn, key) {
+  if (!key) return false;
+  const sh = sheet_(sheetName);
+  const last = sh.getLastRow();
+  if (last < 2) return false;
+  return !!sh.getRange(2, keyColumn, last - 1, 1)
+    .createTextFinder(String(key)).matchEntireCell(true).findNext();
+}
+
 function sheet_(name) {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
   if (!sh) throw new Error('Missing sheet: ' + name);
@@ -99,4 +110,16 @@ function smokeTest() {
     name:'analytics_smoke_test', createdAt:new Date().toISOString(),
     data:{source:'gas_editor'}
   });
+}
+
+
+/** Run in editor to verify idempotency. Exactly one row should be added. */
+function idempotencyTest() {
+  const id = 'idem_' + Date.now();
+  const v = {eventId:id, anonymousUserId:'idem_user', diagnosisId:'idem_diag', name:'analytics_idempotency_test', createdAt:new Date().toISOString(), data:{source:'gas_editor'}};
+  appendEvent_(v);
+  appendEvent_(v);
+  const sh = sheet_('EVENTS');
+  const matches = sh.getRange(2,2,Math.max(1,sh.getLastRow()-1),1).getValues().flat().filter(x => String(x) === id).length;
+  if (matches !== 1) throw new Error('Idempotency failed: ' + matches);
 }
