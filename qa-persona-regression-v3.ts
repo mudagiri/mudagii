@@ -353,3 +353,31 @@ for(const category of ['energy','daily','food','fun','beautyFashion','rent','chi
  if(row.status==='battle')throw new Error('BENCHMARK_GAP_MUST_NOT_CREATE_CONFIRMED_BATTLE:'+category);
 }
 console.log('BENCHMARK_GAP_SEMANTIC_INVARIANT_PASS');
+
+
+// Review-potential must remain separate from confirmed saving and respect category materiality.
+const potentialCases:[string,Category,number,number,'low'|'medium'|'high'][]=[
+ ['食費-大幅超過','food',80000,45000,'high'],
+ ['食費-小幅超過','food',50000,45000,'medium'],
+ ['住居費-小幅超過','rent',110000,100000,'low'],
+ ['住居費-大幅超過','rent',180000,100000,'high']
+];
+for(const [name,category,amount,benchmark,expected] of potentialCases){
+ const r=raw({[category]:amount}); const comparable={[category]:benchmark};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-potential',type:{code:'FPA',name:'QA'},toneMode:'serious',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'unknown'});
+ const row=vm.rows.find(x=>x.category===category)!;
+ if(row.reviewPotential.level!==expected)throw new Error('REVIEW_POTENTIAL_LEVEL_FAIL:'+name+':'+row.reviewPotential.level+'!='+expected);
+ if(row.reducible!==0)throw new Error('REVIEW_POTENTIAL_MUST_NOT_CREATE_SAVING:'+name);
+}
+// A large benchmark gap can coexist with a protected, valued expense.
+{
+ const r=raw({food:80000}); const comparable={food:45000}; const appraisal={food:{satisfaction:'verySatisfied' as const}};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable,appraisal});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis,appraisal});
+ const vm=buildResultViewModelV3({diagnosisId:'qa-valued-gap',type:{code:'FPA',name:'QA'},toneMode:'serious',finalCategories:fin.categories,monthlyImprovement:0,annualIncomeBand:'unknown'});
+ const row=vm.rows.find(x=>x.category==='food')!;
+ if(row.reviewPotential.level!=='high'||row.status!=='protect'||row.reducible!==0)throw new Error('VALUED_HIGH_GAP_MUST_STAY_PROTECTED_WITH_ZERO_SAVING');
+}
+console.log('REVIEW_POTENTIAL_QA_PASS');
