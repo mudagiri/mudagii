@@ -9,7 +9,7 @@ if(c<0||d<=c)throw new Error('RESULT_SAFETY_QA_FAIL:share function missing');
 const share=result.slice(c,d);
 const sensitive=/(vm\.profile|prefecture|monthlyTakeHome|annualIncome|rawExpenses|benchmarkSummary|improvement)/;
 const checks=[
- ['active result before render',app.indexOf('writeActiveResultV1(')>=0&&app.indexOf('writeActiveResultV1(')<app.indexOf('setResult(vm);')],
+ ['active result before completion render',(()=>{const complete=app.indexOf('const complete=async');const write=app.indexOf('writeActiveResultV1(',complete);const render=app.indexOf('setResult(vm);',complete);return complete>=0&&write>=0&&render>=0&&write<render})()],
  ['draft cleared on completion',app.includes('clearJourneyDraftV1();')],
  ['result restored on return',app.includes("emit('result_restored',{source:'reload_or_return'})")],
  ['external navigation guarded',app.includes("throw new Error('active result missing before external navigation')")],
