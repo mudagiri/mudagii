@@ -86,14 +86,18 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
        finalDetails:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}])),
        battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category)}
    };
-   await store?.saveDiagnosis(snapshot);
+   // RESULT must feel instant. Persist the resumable result locally first, render,
+   // then send the heavier diagnosis snapshot without blocking navigation.
    if(typeof window!=='undefined'){
      writeActiveResultV1({schemaVersion:'MUDAGIRI_ACTIVE_RESULT_V1',diagnosisId,anonymousUserId,completedAt:new Date().toISOString(),methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},completed:{...v,toneMode}});
      clearJourneyDraftV1();
    }
-   emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,monthlyImprovement:vm.improvement.monthly,toneMode});
    setResult(vm);
-   window.scrollTo({top:0,behavior:'auto'});
+   if(typeof window!=='undefined')window.scrollTo({top:0,behavior:'auto'});
+   queueMicrotask(()=>{
+     emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,monthlyImprovement:vm.improvement.monthly,toneMode});
+     void Promise.resolve(store?.saveDiagnosis(snapshot)).catch(()=>{});
+   });
  };
 
  if(resumeChoice&&draft)return <main style={{minHeight:'100dvh',display:'grid',placeItems:'center',background:'#070d14',color:'#fff',fontFamily:'system-ui',padding:24}}><section style={{width:'min(100%,390px)',padding:24,border:'1px solid #293644',borderRadius:16,background:'#0d1721',textAlign:'center'}}><div style={{color:'#f5cc39',fontWeight:900,fontSize:12,letterSpacing:'.12em'}}>QUEST DATA FOUND</div><h2>冒険の続きが残っています</h2><p style={{color:'#aeb8c2',lineHeight:1.7}}>前回の入力内容を使って、途中から再開できます。</p><button style={{width:'100%',minHeight:54,borderRadius:12,border:0,fontWeight:900,background:'#f5cc39'}} onClick={()=>{setResumeChoice(false);emit('journey_resumed',{scene:draft.scene})}}>▶ 続きから再開</button><button style={{marginTop:16,border:0,background:'transparent',color:'#aeb8c2',textDecoration:'underline'}} onClick={()=>{clearResumeStateV1();onEvent?.('journey_restarted',{from:'draft'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'draft'}));setDraft(null);setResumeChoice(false);setDiagnosisId(newDiagnosisId())}}>最初から</button></section></main>;
