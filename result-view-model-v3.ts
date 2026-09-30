@@ -1,7 +1,7 @@
 import type { Category } from './mudagiri-diagnosis-v2';
 import { communicationScreenV3, encounterStrengthV31, type AnnualIncomeBand, type FinalCategoryV3, type FinalStatus } from './mudagiri-integration-v3';
 
-export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.3' as const;
+export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.4' as const;
 export type ComparatorKind='optimization_rule'|'statistical_comparator'|'direct_benchmark'|'none';
 export interface ComparatorMetaV3 {kind:ComparatorKind;label:string;sourceKey:string|null}
 
@@ -218,12 +218,24 @@ function comparisonContext(x:FinalCategoryV3,profile:{prefecture:string;age:numb
  return {displayAge:profile?.age??null,ageBucket,household:profile?.household??null,householdSize:profile?.householdSize??null,prefecture:profile?.prefecture??null,housingType:profile?.housingType??null,incomeBand:annualIncomeBand,incomeBandLabel:INCOME_LABEL[annualIncomeBand],incomeApplied,criteria:bits,confidence:x.benchmarkMeta?.confidence??null,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:m};
 }
 
+function reviewPotential(x:FinalCategoryV3){
+ const amount=x.raw.known&&x.raw.applicability==='applicable'&&x.raw.amount!==null?x.raw.amount:null;
+ const ref=x.comparable;
+ if(amount===null||ref===null||ref<=0)return {available:false as const,delta:null,ratio:null,level:'none' as const,label:'比較できる基準なし'};
+ const delta=amount-ref; const ratio=delta/ref;
+ if(delta<=0)return {available:true as const,delta,ratio,level:'low' as const,label:'基準内'};
+ // Potential means possible household impact, never confirmed waste/saving.
+ const score=(delta>=30000?2:delta>=10000?1:0)+(ratio>=0.5?2:ratio>=0.2?1:0);
+ const level=score>=3?'high':score>=1?'medium':'low';
+ return {available:true as const,delta,ratio,level,label:level==='high'?'見直しインパクト 大':level==='medium'?'見直しインパクト 中':'見直しインパクト 小'};
+}
+
 export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string;catchphrase?:string;strengthLabel?:string;blindSpot?:string;shareHook?:string;axes?:{fv:number;pi:number;au:number};axisStrength?:{fv:number;pi:number;au:number};nearMiddle?:{fv:boolean;pi:boolean;au:boolean}};toneMode:string;profile?:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
  const counts=(['battle','protect','safe','review','na'] as FinalStatus[]).reduce((o,k)=>({...o,[k]:args.finalCategories.filter(x=>x.status===k).length}),{} as Record<FinalStatus,number>);
  const rows=args.finalCategories.map(x=>({
   category:x.category,label:LABEL[x.category],enemyName:ENEMY[x.category],status:x.status,attentionFlag:x.attentionFlag,
   amount:x.raw.amount,known:x.raw.known,applicability:x.raw.applicability,
-  comparable:x.comparable,comparisonDifference:x.comparisonDifference,
+  comparable:x.comparable,comparisonDifference:x.comparisonDifference,reviewPotential:reviewPotential(x),
   comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,encounterStrength:encounterStrengthV31(x),confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
