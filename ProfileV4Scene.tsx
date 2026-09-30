@@ -103,7 +103,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    </div>}
 
    {step==='expenseSharing'&&<div className="mode-options">
-    {([['self_all','✨ 自分がほぼ全部'],['self_more','💰 自分が多め'],['split','🤝 だいたい分担'],['other_more','🏠 相手・家族が多め']] as [Exclude<ExpenseSharingV4,null>,string][]).map(([v,l])=><Choice key={v} active={draft.expenseSharing===v} onClick={()=>auto({expenseSharing:v})}><strong>{l}</strong></Choice>)}
+    {([['self_all','✨ 自分がほぼ全部'],['self_more','💰 自分が多め'],['split','🤝 だいたい分担'],['other_more','🏠 相手・家族が多め'],['varies','🔀 項目ごとに違う']] as [Exclude<ExpenseSharingV4,null>,string][]).map(([v,l])=><Choice key={v} active={draft.expenseSharing===v} onClick={()=>auto({expenseSharing:v})}><strong>{l}</strong></Choice>)}
    </div>}
 
    {step==='contribution'&&<div className="mode-options">
