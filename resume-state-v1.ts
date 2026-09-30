@@ -18,6 +18,8 @@ export type JourneyDraftV1={
  annualIncomeBand:any;
  scanIndex:number;
  rawExpenses:any;
+ expenseRecordsV4?:any;
+ scanScopeCategory?:any;
  scanTouched:any;
  appraisalIndex:number;
  appraisalAnswers:any;
