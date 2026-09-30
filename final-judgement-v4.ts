@@ -19,6 +19,8 @@ export interface FinalAppraisalV4 {
  educationPreference?:'reviewHigh'|'reviewSome'|'necessary'|'protect';
  selfDevelopmentValue?:'inertia'|'unclear'|'purpose'|'results';
  mobileContractReviewed?:boolean;
+ mobileScope?:'mobileOnly'|'mobileInternet'|'familyOrMultiple'|'unknown';
+ mobileCarrier?:'major'|'mvno'|'unknown';
 }
 
 export type FinalAppraisalsV4=Partial<Record<Category,FinalAppraisalV4>>;
@@ -49,7 +51,8 @@ function decide(category:Category,record:ExpenseRecordV4,comparison:ComparisonFa
  if(engine?.state==='CONFIRMED'&&(engine.confirmedSaving??0)>0)return {status:'cut',attentionFlag:false,reasonCode:'CONFIRMED_AVOIDABLE_AMOUNT'};
 
  if(category==='mobile'){
-  return {status:'review',attentionFlag:true,reasonCode:ap?.mobileContractReviewed?'MOBILE_PLAN_REVIEWED_NO_CONFIRMED_SAVING':'MOBILE_SCOPE_REQUIRES_CONTRACT_REVIEW'};
+  if(ap?.mobileScope==='mobileOnly'&&(ap.mobileCarrier==='major'||ap.mobileCarrier==='mvno'))return {status:'review',attentionFlag:true,reasonCode:'MOBILE_ONLY_RATE_BAND_REVIEW'};
+  return {status:'review',attentionFlag:true,reasonCode:'MOBILE_SCOPE_REQUIRES_CONTRACT_REVIEW'};
  }
  if(category==='sub'){
   if(ap?.subUsage==='none')return {status:'safe',attentionFlag:false,reasonCode:'SUBSCRIPTIONS_IN_USE'};
