@@ -336,7 +336,6 @@ export default function RpgBlock1({
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
   const comp=(c:EnemyAssetCategory)=>comparable[c as Category]??null;
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
-    if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
     const fact=(category:EnemyAssetCategory)=>comparisonsV4?.[category as Category]??null;
     const aboveReference=(category:EnemyAssetCategory)=>{
