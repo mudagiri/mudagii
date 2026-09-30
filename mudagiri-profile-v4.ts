@@ -2,7 +2,7 @@ import type { HouseholdV2 } from './comparable-resolver-v2';
 
 export type DiagnosisScopeV4='personal'|'household';
 export type RelationshipV4='partner'|'children'|'parents'|'other';
-export type ExpenseSharingV4='self_all'|'self_more'|'split'|'other_more'|null;
+export type ExpenseSharingV4='self_all'|'self_more'|'split'|'other_more'|'varies'|null;
 export type HouseholdContributionModeV4='bundled'|'itemized'|'little_or_none'|null;
 export type HousingTenureV4='rental'|'owned'|'family_home'|'company_housing'|'other';
 export type HousingSubtypeV4='private_rental'|'public_rental'|'unknown_rental'|'mortgage'|'no_mortgage'|'other'|null;
