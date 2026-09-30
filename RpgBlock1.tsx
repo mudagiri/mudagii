@@ -354,24 +354,6 @@ export default function RpgBlock1({
   },[scene,selectedToneMode,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
-    const body = document.body;
-    const html = document.documentElement;
-    const oldBodyOverflow = body.style.overflow;
-    const oldHtmlOverflow = html.style.overflow;
-    const oldBodyOverscroll = body.style.overscrollBehavior;
-
-    body.style.overflow = 'hidden';
-    html.style.overflow = 'hidden';
-    body.style.overscrollBehavior = 'none';
-
-    return () => {
-      body.style.overflow = oldBodyOverflow;
-      html.style.overflow = oldHtmlOverflow;
-      body.style.overscrollBehavior = oldBodyOverscroll;
-    };
-  }, []);
-
-  useEffect(() => {
     if (step === 'profile' && scene === 'opening') {
       setScene('profile');
     }
@@ -791,7 +773,7 @@ function ProfileInput({
 }) {
   const selectClass = 'pre-select';
   const [choiceLocked,setChoiceLocked]=useState(false);
-  const chooseOnce=(apply:()=>void,next:()=>void)=>{if(choiceLocked)return;setChoiceLocked(true);apply();window.setTimeout(next,140)};
+  const chooseOnce=(apply:()=>void,next:()=>void)=>{if(choiceLocked)return;setChoiceLocked(true);apply();window.requestAnimationFrame(next)};
 
   if (no === 1) {
     return (
@@ -1171,7 +1153,7 @@ function TypeQuizScene({
     if (picked) return;
     const id = `${choice}-${strength}`;
     setPicked(id);
-    window.setTimeout(() => onAnswer({ choice, strength }), 260);
+    window.requestAnimationFrame(() => onAnswer({ choice, strength }));
   };
 
   const progress = (current / total) * 100;
@@ -1335,7 +1317,7 @@ function AdditionalAppraisalScene({
   const remaining = total-current+1;
   const commit = (answer:AppraisalAnswer, kind:AppraisalStatus, label:string, detail:string) => {
     setFeedback({kind,label,detail});
-    window.setTimeout(() => onAnswer(answer), 650);
+    window.requestAnimationFrame(() => onAnswer(answer));
   };
 
   const choiceSets: Record<string,{label:string;sub:string;patch:AppraisalAnswer;kind?:AppraisalStatus;feedback?:string}[]> = {
@@ -3385,6 +3367,43 @@ const CSS = String.raw`
   .appraisal-option{min-height:70px!important;padding:9px 9px}
   .appraisal-option strong{font-size:14px!important;line-height:1.3}
   .appraisal-option span{font-size:11px!important;line-height:1.3}
+}
+
+
+/* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
+button,.pre-select,.pre-age-input input{touch-action:manipulation}
+.pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg{pointer-events:none}
+.profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back{min-height:48px}
+
+@media(max-height:780px){
+  .pre-profile{
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .pre-profile-hud{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:50}
+  .pre-profile-mudagiri{display:none}
+  .pre-checkpoint,.pre-enemy-eyes,.pre-encounter-shadow{opacity:.45}
+  .pre-panel{
+    position:relative;
+    left:auto;
+    right:auto;
+    bottom:auto;
+    width:calc(100% - 28px);
+    min-height:0;
+    margin:max(112px,calc(env(safe-area-inset-top) + 96px)) auto max(76px,calc(env(safe-area-inset-bottom) + 64px));
+    padding:16px 15px 14px;
+  }
+  .pre-dialogue{width:100%;min-height:0;margin:0 0 12px;padding:9px 11px}
+  .pre-panel h2{font-size:clamp(21px,5.8vw,25px)}
+  .pre-profile-footer{position:fixed;z-index:45}
+}
+
+@media(max-height:700px){
+  .pre-panel{margin-top:max(92px,calc(env(safe-area-inset-top) + 82px))}
+  .profile-choice-grid{gap:7px}
+  .profile-choice{min-height:50px}
 }
 
 `;
