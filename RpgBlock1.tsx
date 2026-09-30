@@ -262,6 +262,7 @@ export default function RpgBlock1({
   const [appraisalIndex, setAppraisalIndex] = useState(resumeDraft?.appraisalIndex??0);
   const educationStage=appraisalAnswers.childEducation?.educationStage;
   const [battleIndex, setBattleIndex] = useState(0);
+  const diagnosisFinishLock=React.useRef(false);
 
   const question = QUESTIONS[questionIndex];
   const applicableScanCategories = useMemo(
@@ -450,7 +451,8 @@ export default function RpgBlock1({
   };
 
   const finishDiagnosis=()=>{
-    if(!onCompleteV3)return;
+    if(!onCompleteV3||diagnosisFinishLock.current)return;
+    diagnosisFinishLock.current=true;
     onEvent?.('battle_completed',{count:encounterTargets.length,confirmedCount:battleTargets.length});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
