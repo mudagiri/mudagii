@@ -24,7 +24,7 @@ Rules:
 8. Do not generate eight palette swaps. Pose + silhouette + prop + motif must differ.
 
 ## B. MASTER STYLE PROMPT
-Create a premium original Japanese fantasy RPG character for the household-finance game “Mudagiri” in a HIGH-QUALITY MODERN PIXEL-ART style. The pixel language must be immediately visible: deliberate pixel clusters, stepped diagonal edges, limited-but-rich shading ramps, crisp sprite-like highlights, readable pixel texture and controlled dithering where useful. Do NOT render as smooth anime, glossy gacha illustration, painterly 2.5D art, vector art, or merely place a pixel filter over a smooth illustration. Aim for the feeling of a beloved 16-bit/32-bit era JRPG character reimagined with modern high-resolution pixel craftsmanship: expressive face, compact heroic proportions, bold readable silhouette, playful but trustworthy rather than childish, and enough detail for a Result hero while remaining recognizable around 140px on a smartphone. Full or three-quarter body centered in a square composition with generous clear space around the silhouette. Transparent background only. No scenery, frame, card, typography, letters, numbers, logo, watermark, real-world brand or currency symbol. Keep all eight characters in one cohesive sprite-art universe with consistent pixel scale, outline weight, proportions, lighting direction and shading discipline. Do not imply wealth, poverty, intelligence, moral virtue, financial success or failure through clothing quality.
+Create a premium original gender-neutral NON-HUMAN fantasy RPG money-spirit / household-guardian creature for the household-finance game “Mudagiri” in a HIGH-QUALITY MODERN PIXEL-ART style. Never depict a human, humanoid knight, human face, human hairstyle, human skin, or a character whose apparent gender/age affects identification. The pixel language must be immediately visible: deliberate pixel clusters, stepped diagonal edges, limited-but-rich shading ramps, crisp sprite-like highlights, readable pixel texture and controlled dithering where useful. Do NOT render as smooth anime, glossy gacha illustration, painterly 2.5D art, vector art, or merely place a pixel filter over a smooth illustration. Aim for the feeling of a beloved 16-bit/32-bit era JRPG character reimagined with modern high-resolution pixel craftsmanship: expressive creature face, compact mascot-like fantasy proportions, bold readable silhouette, playful but trustworthy rather than childish, and enough detail for a Result hero while remaining recognizable around 140px on a smartphone. Full or three-quarter body centered in a square composition with generous clear space around the silhouette. Transparent background only. No scenery, frame, card, typography, letters, numbers, logo, watermark, real-world brand or currency symbol. Keep all eight characters in one cohesive sprite-art universe with consistent pixel scale, outline weight, proportions, lighting direction and shading discipline. Do not imply wealth, poverty, intelligence, moral virtue, financial success or failure through clothing quality.
 
 Use this MASTER STYLE for every type, then append exactly one type-specific semantic prompt below.
 
@@ -33,7 +33,7 @@ Use this MASTER STYLE for every type, then append exactly one type-specific sema
 ### FPA — 鉄壁マネー要塞
 Semantic target: Future + Plan + Awareness.
 Append:
-A vigilant fortress-guardian archetype. Stable squared stance, compact shield shaped with orderly layered segments, a small open tactical ledger or glowing status gauge clearly being monitored, neatly organized utility pouches, subtle protective storage motif behind the shoulders like a miniature fortress battlement. Calm confident expression, not smug. Symmetrical and highly structured silhouette. Visual feeling: “I look ahead, make a plan, and usually know what is happening.” Avoid crowns, treasure piles, excessive armor, or anything implying this type is the best or richest.
+A living fortress guardian beast: the creature itself is a compact walking citadel, not a knight holding castle equipment. Broad crenellated stone-shell body, four short sturdy fantasy-beast legs, a warm expressive face formed naturally within the central gate/stone structure, and two small utility arms integrated into the walls. Symmetrical highly structured silhouette. Layered defensive plates and tiny battlement shapes communicate protection; one integrated glowing status gauge is visibly being monitored, with orderly storage compartments built into the body. Calm confident expression, not smug. Visual feeling: “I look ahead, make a plan, and usually know what is happening.” Avoid humans, humanoid armor anatomy, crowns, treasure piles, coin piles, weapons, or anything implying this type is the best or richest.
 
 ### FPU — 穴あき家計の番人
 Semantic target: Future + Plan + Use-when-needed.
@@ -137,3 +137,13 @@ Approval gate:
 - Inspect all eight as a contact sheet in grayscale silhouette view as well as color.
 - A type fails if its axis meaning depends on tiny details, if two silhouettes are confusable, or if it appears morally/rationally superior to another.
 - FPA is the calibration image. No other type is generated until FPA passes pixel-language, transparency, silhouette and mobile-size QA.
+
+
+## G. Non-human identity rule (FROZEN 2026-09-30)
+All eight Money Types are identity avatars for a mixed-gender audience. Therefore every canonical Type character must be gender-neutral and non-human.
+- No human or near-human faces, hair, skin, body anatomy or gender-coded clothing.
+- Prefer original household-guardian beasts, money spirits, living objects, magical creatures or hybrid fantasy species.
+- Do not solve neutrality by making all eight the same mascot species. Each type needs a different primary silhouette/species concept.
+- Identification should come from behavior and axis semantics, not sex, age, beauty, wealth or social status.
+- Cute/relatable is allowed; babyish children's-app styling is not.
+- Existing human FPA calibration generation is REJECTED and is not canonical art.
