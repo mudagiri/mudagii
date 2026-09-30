@@ -1508,7 +1508,7 @@ function BattleIntroScene({
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? '見直しクエストを特定！' : '家計防衛成功！'}</h2>
+        <h2>{targets.length ? '見直しクエストを特定！' : '優先チェック対象なし'}</h2>
         {targets.length ? (
           <div className="battle-targets">
             {targets.map((t,i)=>{
@@ -1517,7 +1517,7 @@ function BattleIntroScene({
             })}
           </div>
         ) : (
-          <p className="appraisal-reason">無理に斬る敵はいなかった。<br /><strong>かなり上手くお金を使えてるぞ。</strong></p>
+          <p className="appraisal-reason">強く優先する敵は見つからなかった。<br /><strong>無理にムダ認定せず、結果で全項目を確認しよう。</strong></p>
         )}
         {reviewCount>0 && <div className="battle-review-note">🔍 金額だけでは断定できない敵が {reviewCount} 体残っています</div>}
         <button type="button" className="pre-primary appraisal-next" onClick={onStart}>
