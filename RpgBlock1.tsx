@@ -443,6 +443,22 @@ export default function RpgBlock1({
   const finalJudgements=finalBundle.categories;
   const battleTargets=finalBundle.battleTargets;
   const encounterTargets=finalBundle.encounterTargets;
+  const v4VisualTargets=useMemo(()=>{
+    if(!finalV4)return null;
+    return finalV4.categories
+      .filter(x=>x.status==='cut'||(x.status==='review'&&x.attentionFlag))
+      .sort((a,b)=>{
+        const aRank=a.status==='cut'?2:1,bRank=b.status==='cut'?2:1;
+        if(aRank!==bRank)return bRank-aRank;
+        if(a.status==='cut')return b.confirmedSaving-a.confirmedSaving;
+        return (b.screeningDelta??0)-(a.screeningDelta??0);
+      })
+      .slice(0,3)
+      .map(x=>({category:x.category as EnemyAssetCategory}));
+  },[finalV4]);
+  const visibleBattleTargets=v4VisualTargets??encounterTargets;
+  const visibleReviewCount=finalV4?finalV4.categories.filter(x=>x.status==='review').length:finalJudgements.filter(x=>x.status==='review').length;
+  const visibleConfirmedCount=finalV4?finalV4.categories.filter(x=>x.status==='cut'&&x.confirmedSaving>0).length:battleTargets.length;
 
 
 
@@ -462,7 +478,7 @@ export default function RpgBlock1({
   useEffect(()=>{if(scene==='profile')preloadProfile(question?.sprite,QUESTIONS[questionIndex+1]?.sprite)},[scene,questionIndex,question]);
   useEffect(()=>{if(scene==='scan')preloadScan(currentScan?.category)},[scene,scanIndex,currentScan,applicableScanCategories]);
   useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.slice(appraisalIndex,appraisalIndex+2).map(x=>x.category))},[scene,appraisalQuestions,appraisalIndex]);
-  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(encounterTargets.map(x=>x.category))},[scene,encounterTargets]);
+  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(visibleBattleTargets.map(x=>x.category))},[scene,visibleBattleTargets]);
 
   // Funnel observability only: no answers, amounts, or profile values are emitted here.
   useEffect(()=>{
@@ -595,7 +611,7 @@ export default function RpgBlock1({
   const finishDiagnosis=()=>{
     if(!onCompleteV3||diagnosisFinishLock.current)return;
     diagnosisFinishLock.current=true;
-    onEvent?.('battle_completed',{count:encounterTargets.length,confirmedCount:battleTargets.length});
+    onEvent?.('battle_completed',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
@@ -727,25 +743,25 @@ export default function RpgBlock1({
           ) : scene === 'battleIntro' ? (
             <BattleIntroScene
               toneMode={selectedToneMode}
-              targets={encounterTargets}
-              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              targets={visibleBattleTargets}
+              reviewCount={visibleReviewCount}
               onStart={() => {
                 setBattleIndex(0);
-                onEvent?.('battle_started',{count:encounterTargets.length,confirmedCount:battleTargets.length});
-                setScene(encounterTargets.length ? 'battle' : 'battleComplete');
+                onEvent?.('battle_started',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
+                setScene(visibleBattleTargets.length ? 'battle' : 'battleComplete');
               }}
             />
-          ) : scene === 'battle' && encounterTargets.length ? (
+          ) : scene === 'battle' && visibleBattleTargets.length ? (
             <ComboBattleScene
               toneMode={selectedToneMode}
-              targets={encounterTargets}
+              targets={visibleBattleTargets}
               onDone={() => setScene('battleComplete')}
             />
           ) : (
             <BattleCompleteScene
               toneMode={selectedToneMode}
-              battleCount={encounterTargets.length}
-              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              battleCount={visibleBattleTargets.length}
+              reviewCount={visibleReviewCount}
               onResult={finishDiagnosis}
             />
           )}
@@ -1672,7 +1688,7 @@ function AppraisalCompleteScene({
 function BattleIntroScene({
   toneMode,targets,reviewCount,onStart,
 }:{
-  toneMode:ToneMode; targets:FinalCategoryV3[]; reviewCount:number; onStart:()=>void;
+  toneMode:ToneMode; targets:{category:EnemyAssetCategory}[]; reviewCount:number; onStart:()=>void;
 }) {
   return (
     <div className="scan-scene battle-intro-scene">
@@ -1703,7 +1719,7 @@ function BattleIntroScene({
   );
 }
 
-function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targets:FinalCategoryV3[]; onDone:()=>void }) {
+function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targets:{category:EnemyAssetCategory}[]; onDone:()=>void }) {
   const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
   const [pose,setPose]=useState<'ready'|'swing'|'follow'>('ready');
   const [hitIndex,setHitIndex]=useState(-1);
