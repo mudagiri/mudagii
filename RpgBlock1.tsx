@@ -3629,7 +3629,7 @@ const CSS = String.raw`
 }
 .profile-choice,.income-band-option,.type-scale-option,.appraisal-option{min-height:52px!important}
 .pre-panel .profile-primary-cta{min-height:54px!important}
-.pre-panel .pre-back{min-height:38px!important}
+.pre-panel .pre-back{min-height:48px!important}
 
 /* Never let CTA/back overlap form content. */
 .pre-panel .profile-primary-cta{
@@ -3660,17 +3660,18 @@ const CSS = String.raw`
   .pre-panel{padding:12px 13px 9px!important}
   .profile-choice{min-height:44px!important}
   .pre-panel .profile-primary-cta{min-height:50px!important;margin-top:7px!important}
-  .pre-panel .pre-back{min-height:34px!important;margin-top:3px!important}
+  .pre-panel .pre-back{min-height:48px!important;margin-top:3px!important}
 }
 @media(max-height:660px){
   .pre-dialogue{display:none!important}
   .pre-helper{font-size:12px!important}
   .profile-choice-grid{gap:5px!important}
-  .profile-choice{min-height:42px!important}
+  .profile-choice{min-height:48px!important}
 }
 
 /* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
 button,.pre-select,.pre-age-input input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.profile-choice:active,.mode-option:active,.pre-primary:active,.pre-back:active,.appraisal-option:active,.income-band-option:active{filter:brightness(1.12);transition:filter .06s linear}
 .pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg{pointer-events:none}
 .profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back{min-height:48px}
 .mode-option{min-height:58px;touch-action:manipulation}.mode-back{min-width:48px;min-height:48px;touch-action:manipulation}
