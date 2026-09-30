@@ -562,7 +562,7 @@ export default function RpgBlock1({
             />
           ) : scene === 'battle' && encounterTargets.length ? (
             <ComboBattleScene
-              targets={battleTargets}
+              targets={encounterTargets}
               onDone={() => setScene('battleComplete')}
             />
           ) : (
