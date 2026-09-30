@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { TONE_MODES, MODE_COPY, type ToneMode } from './tone-mode-v3';
+import { TONE_MODES, type ToneMode } from './tone-mode-v3';
+
+const toneLine=(mode:ToneMode, gentle:string, serious:string, hell:string)=>mode==='gentle'?gentle:mode==='hell'?hell:serious;
 import { emptyRawExpenses, normalizeApplicability, buildComparableV3, runDiagnosisAdapterV3, buildFinalJudgementsV3,housingScreenV3, type AnnualIncomeBand, type RawExpenses, type FinalCategoryV3 } from './mudagiri-integration-v3';
 import { preloadOpening, preloadProfile, preloadScan, preloadAppraisal, preloadBattle } from './asset-loading-v2';
 import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
@@ -1116,8 +1118,8 @@ function ScanCompleteScene({
 
       <section className="appraisal-intro-card">
         <div className="appraisal-intro-kicker">FINAL CHECK</div>
-        <h2>{MODE_COPY[toneMode].scanCompleteTitle}</h2>
-        <p>{MODE_COPY[toneMode].scanCompleteBody}</p>
+        <h2>{toneLine(toneMode,'ここから、必要な支出をちゃんと守ろう。','……まだ斬るな。','待て。まだ処刑するな。')}</h2>
+        <p>{toneLine(toneMode,'平均より高くても、それだけでムダにはしないよ。使う理由まで見て、本当に見直せるところだけ探そう。','敵がいる＝ムダではない。比較差と必要性を分けて、本当に見直せる支出だけ判定する。','平均超えを全部ムダ扱いするのは雑魚診断だ。必要な金は生かす。惰性で消えてる金だけ炙り出すぞ。')}</p>
         <div className="appraisal-intro-rule">
           <span>次の目的</span>
           <b>本当に倒すべき敵を選別する</b>
@@ -1487,8 +1489,8 @@ function AppraisalCompleteScene({
       <img className="appraisal-mudagiri" src={SCAN_MUDAGIRI_BATTLE} alt="ムダギリくん" />
       <section className="appraisal-card">
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
-        <h2>{MODE_COPY[toneMode].appraisalCompleteTitle}</h2>
-        <p className="appraisal-reason">{MODE_COPY[toneMode].appraisalCompleteBody}</p>
+        <h2>{toneLine(toneMode,'仕分けできたよ。','鑑定完了。','仕分け終了。逃げ道は消えた。')}</h2>
+        <p className="appraisal-reason">{toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
@@ -1515,10 +1517,10 @@ function BattleIntroScene({
       <div className="type-complete-shade" aria-hidden="true" />
       <section className="battle-intro-card">
         <div className="appraisal-kicker">{targets.length ? 'TARGET LOCK' : 'HOUSEHOLD DEFENSE'}</div>
-        <h2>{targets.length ? MODE_COPY[toneMode].battleIntroTitle : '優先チェック対象なし'}</h2>
+        <h2>{targets.length ? toneLine(toneMode,'見直しやすいところから確認しよう！','見直しクエストを特定！','処刑候補をロックした。') : '優先チェック対象なし'}</h2>
         {targets.length ? (
           <>
-          <p className="appraisal-reason">{MODE_COPY[toneMode].battleIntroBody}</p>
+          <p className="appraisal-reason">{toneLine(toneMode,'全部を削らなくて大丈夫。今のあなたが確認しやすい順に見ていこう。','金額だけでは斬らない。回答と根拠がそろった優先項目から確認する。','安心しろ。高いだけでは斬らん。根拠がある奴だけ前に出した。')}</p>
           <div className="battle-targets">
             {targets.map((t,i)=>{
               const e=ENEMY_ASSETS[t.category];
@@ -1602,8 +1604,8 @@ function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targe
 
       <section className="combo-panel">
         <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'PRIORITY CHECK':'QUEST CLEAR'}</div>
-        <h2>{phase==='ready'?MODE_COPY[toneMode].battleReady:phase==='action'?MODE_COPY[toneMode].battleAction:MODE_COPY[toneMode].battleClear}</h2>
-        {phase==='ready'&&<p>{MODE_COPY[toneMode].battleBody}</p>}
+        <h2>{phase==='ready'?toneLine(toneMode,'大丈夫。見直せそうなところだけ確認しよう。','見直すべき相手は見えた。','逃げ道は塞いだ。確認するぞ。'):phase==='action'?toneLine(toneMode,'ひとつずつ、やさしく仕分け中！','優先順位をロックするぞ！','本物のムダだけ炙り出す！'):toneLine(toneMode,'優先チェック完了！','優先チェック完了！','優先チェック終了。観念しろ。')}</h2>
+        {phase==='ready'&&<p>{toneLine(toneMode,'必要な支出はそのまま。確認できた改善余地だけRESULTで見せるね。','判定理由と、確定できた改善額だけをRESULTで開示する。','平均との差で盛る気はない。確定できた改善額だけRESULTで突きつける。')}</p>}
         {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>優先チェック開始！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
           :<div className="combo-slash-label">CHECK × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
@@ -1623,7 +1625,7 @@ function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMo
         <h2>{battleCount ? `${battleCount}件の見直しクエスト完了！` : '家計防衛成功！'}</h2>
         <p className="appraisal-reason">
           {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
-          <br /><strong>{MODE_COPY[toneMode].resultLead}</strong>
+          <br /><strong>{toneLine(toneMode,'おつかれさま！ 守る支出も含めて、あなたの家計を整理できたよ。','判定完了。比較差と、本当に確認できた改善余地は分けて見るぞ。','判決の時間だ。平均との差と、本物の改善余地を混同するなよ。')}</strong>
         </p>
         <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
         <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
