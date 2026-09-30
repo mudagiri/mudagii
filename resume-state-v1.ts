@@ -37,7 +37,7 @@ export type ActiveResultV1={
 
 const parse=<T>(raw:string|null):T|null=>{try{return raw?JSON.parse(raw) as T:null}catch{return null}};
 
-const STABLE_DRAFT_SCENES=new Set(['profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']);
+const STABLE_DRAFT_SCENES=new Set(['mode','profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']);
 export function readJourneyDraftV1(storage:Pick<Storage,'getItem'>=localStorage):JourneyDraftV1|null{
  const v=parse<JourneyDraftV1>(storage.getItem(JOURNEY_DRAFT_KEY));
  if(!v||v.schemaVersion!==JOURNEY_DRAFT_SCHEMA||!v.diagnosisId||!STABLE_DRAFT_SCENES.has(v.scene))return null;
