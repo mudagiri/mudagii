@@ -32,8 +32,8 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?475:420,860,42,2);
  const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
  rows.forEach((r,i)=>{const y=565+i*125;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
- x.textAlign='center';x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1050);x.fillStyle='#f5cc39';x.font='900 30px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1110);
- x.fillStyle='#87929d';x.font='700 21px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1220);
+ x.textAlign='center';x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('強み',300,1010);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.strengthLabel??'',300,1050,360,32,2);x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('死角',780,1010);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.blindSpot??'',780,1050,360,32,2);x.fillStyle='#fff';x.font='900 30px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1160);x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1208);
+ x.fillStyle='#87929d';x.font='700 20px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1270);
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
 }
 
@@ -67,7 +67,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>家計クエスト完了</h1><p>12項目の回答を、金額だけでなく必要性・満足度・確認情報まで含めて鑑定しました。</p></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
-  <section className="rv3-title">
+  <section className="rv3-title rv3-type-card">
    <div className="rv3-kicker">MONEY TYPE UNLOCKED</div><div className="rv3-muted">あなたのお金タイプは――</div>
    <h2>{vm.type.name}</h2>{vm.type.catchphrase&&<h3 className="rv3-catch">{vm.type.catchphrase}</h3>}{vm.type.description&&<p>{vm.type.description}</p>}
    {vm.type.axisStrength&&<div className="rv3-axes" aria-label="お金タイプ3軸">
@@ -76,7 +76,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <TypeAxis label="把握" value={vm.type.axisStrength.au} positive={(vm.type.axes?.au??0)>=0} negativeText="必要時に確認" positiveText="普段から把握" middle={vm.type.nearMiddle?.au}/>
    </div>}
    <div className="rv3-type-notes">{vm.type.strengthLabel&&<div><small>強み</small><b>{vm.type.strengthLabel}</b></div>}{vm.type.blindSpot&&<div><small>死角</small><b>{vm.type.blindSpot}</b></div>}</div>
-   <div className="rv3-mode">{modeName[vm.toneMode]??vm.toneMode}で診断</div><small>8問・3軸から判定した傾向です</small>
+   <div className="rv3-type-stamp"><span>TYPE {vm.type.code}</span><span>{modeName[vm.toneMode]??vm.toneMode} MODE</span></div><small>8問・3軸から判定したお金の使い方の傾向です</small>
   </section>
 
   <section className="rv3-verdict"><div className="rv3-kicker">YOUR HOUSEHOLD VERDICT</div><h3>今回の家計判定</h3>
@@ -116,5 +116,7 @@ const CSS=`
 
 .rv3-verdict-saving{margin:16px auto 0;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;background:#0d1721;text-align:center}.rv3-verdict-saving small,.rv3-verdict-saving span{display:block;color:#aeb8c2}.rv3-verdict-saving strong{display:block;margin:4px 0;color:#f5cc39;font-size:24px}.rv3-verdict-saving.is-safe strong{color:#dce4eb;font-size:19px}
 .rv3-early-share{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px!important;border-bottom:1px solid #24303c;background:#0b141d}.rv3-early-share>div{min-width:0;text-align:left}.rv3-early-share b,.rv3-early-share small{display:block}.rv3-early-share b{margin-top:4px;font-size:13px}.rv3-early-share small{margin-top:3px;color:#87929d;font-size:10px}.rv3-early-share button{flex:0 0 auto;min-height:46px;padding:0 14px;border:0;border-radius:10px;background:#f5cc39;color:#07111b;font-weight:1000}
+
+.rv3-type-card{position:relative;margin:0 12px 14px;padding:26px 16px!important;border:1px solid rgba(245,204,57,.48)!important;border-radius:18px;background:linear-gradient(180deg,#101b26 0%,#0a121b 100%);box-shadow:0 14px 34px rgba(0,0,0,.28)}.rv3-type-card:before{content:"TYPE UNLOCKED";position:absolute;top:10px;right:12px;color:rgba(245,204,57,.35);font-size:9px;font-weight:1000;letter-spacing:.12em}.rv3-type-card h2{font-size:clamp(30px,8.3vw,36px)!important;text-wrap:balance}.rv3-type-card .rv3-catch{font-size:16px;line-height:1.45;color:#fff}.rv3-type-stamp{display:flex;justify-content:center;gap:7px;margin-top:12px}.rv3-type-stamp span{padding:5px 8px;border:1px solid #344454;border-radius:999px;color:#9da8b3;font-size:9px;font-weight:900;letter-spacing:.08em}
 `;
 // deploy-sync: human-readable diagnosis details
