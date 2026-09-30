@@ -10,7 +10,8 @@
     "qa:persona": "npx --yes tsx@4.20.6 qa-persona-regression-v3.ts",
     "preview": "vite preview",
     "qa:type": "npx --yes tsx@4.20.6 qa-type-e2e-v3.ts",
-    "qa:resume": "npx --yes tsx@4.20.6 qa-resume-v1.ts"
+    "qa:resume": "npx --yes tsx@4.20.6 qa-resume-v1.ts",
+    "qa:resolver": "npx --yes tsx@4.20.6 qa-resolver-v2.ts"
   },
   "dependencies": {
     "react": "19.1.1",
