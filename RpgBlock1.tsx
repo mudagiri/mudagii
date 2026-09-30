@@ -3481,9 +3481,10 @@ const CSS = String.raw`
 }
 
 /* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
-button,.pre-select,.pre-age-input input{touch-action:manipulation}
+button,.pre-select,.pre-age-input input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg{pointer-events:none}
 .profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back{min-height:48px}
+.mode-option{min-height:58px;touch-action:manipulation}.mode-back{min-width:48px;min-height:48px;touch-action:manipulation}
 
 @media(max-height:780px){
   .pre-profile{
