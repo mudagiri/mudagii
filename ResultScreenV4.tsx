@@ -81,8 +81,11 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
   <section className="rv3-verdict"><div className="rv3-kicker">YOUR HOUSEHOLD VERDICT</div><h3>今回の家計判定</h3>
    <div className="rv3-verdict-grid"><div><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div><div><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div><div><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div></div>
+   {vm.improvement.monthly>0?<div className="rv3-verdict-saving"><small>確認できた改善余地</small><strong>月 ¥{yen(vm.improvement.monthly)}</strong><span>年間 ¥{yen(vm.improvement.annual)}</span></div>:<div className="rv3-verdict-saving is-safe"><small>今回の診断</small><strong>無理に削る必要なし</strong><span>必要な支出は「守る」と判定しています</span></div>}
    <p className="rv3-note">高い支出＝ムダとは判定していません。必要性や満足度が確認できた支出は「守る支出」として扱います。</p>
   </section>
+
+  <section className="rv3-early-share"><div><div className="rv3-kicker">TYPE CARD</div><b>「{vm.type.name}」を金額なしでシェア</b><small>収入・支出・都道府県は含みません</small></div><button onClick={share}>称号をシェア</button></section>
 
   {!!vm.encounterTargets.length&&<section className="rv3-section"><div className="rv3-kicker">PRIORITY QUESTS</div><h3>まず確認したい項目</h3><p className="rv3-muted">回答内容とカテゴリ固有の根拠から、優先度が高いものだけを最大3件表示しています。</p>{vm.encounterTargets.filter((x:any)=>x.status!=='battle').map((x:any)=><article className="rv3-card" key={`e-${x.category}`}><div className="rv3-row"><b>🎯 {x.enemyName}</b><b>要チェック</b></div><div className="rv3-muted">{x.label} {x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>{x.appraisalSummary&&<div className="rv3-answer">あなたの回答：<b>{x.appraisalSummary}</b></div>}<p>{x.reason}</p><small>次に確認：{x.nextCheck}</small></article>)}</section>}
 
@@ -93,8 +96,6 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?'次にやることは、1つだけ。':'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}</>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
 
   <section className="rv3-section"><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">タップすると、比較根拠・判定理由・次の確認内容を見られます。</p><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div><div><b>比較・根拠：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></section>
-
-  <section className="rv3-title"><div className="rv3-kicker">SHARE TYPE</div><h3>称号だけなら、家計の金額を出さずにシェアできます。</h3><button className="rv3-primary" onClick={share}>この称号をシェアする</button><small>収入・支出・都道府県などのプロフィール情報は含みません</small></section>
 
   <section className="rv3-next"><div className="rv3-kicker">SAVE RESULT</div><h3>この診断結果を残しておく</h3><p>LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。相談は任意です。</p><button className="rv3-primary" onClick={()=>{onBeforeExternal?.();onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button><small>✓ 結果保存　✓ 確認手順　✓ 無料　／　相談は任意</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
   </div></div></main></>
@@ -112,5 +113,8 @@ const CSS=`
 .rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}.rv3-next-answer{padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;font-size:12px!important}
 @media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}}
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
+
+.rv3-verdict-saving{margin:16px auto 0;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;background:#0d1721;text-align:center}.rv3-verdict-saving small,.rv3-verdict-saving span{display:block;color:#aeb8c2}.rv3-verdict-saving strong{display:block;margin:4px 0;color:#f5cc39;font-size:24px}.rv3-verdict-saving.is-safe strong{color:#dce4eb;font-size:19px}
+.rv3-early-share{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px!important;border-bottom:1px solid #24303c;background:#0b141d}.rv3-early-share>div{min-width:0;text-align:left}.rv3-early-share b,.rv3-early-share small{display:block}.rv3-early-share b{margin-top:4px;font-size:13px}.rv3-early-share small{margin-top:3px;color:#87929d;font-size:10px}.rv3-early-share button{flex:0 0 auto;min-height:46px;padding:0 14px;border:0;border-radius:10px;background:#f5cc39;color:#07111b;font-weight:1000}
 `;
 // deploy-sync: human-readable diagnosis details
