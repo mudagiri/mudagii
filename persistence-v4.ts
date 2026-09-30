@@ -15,6 +15,7 @@ export interface DiagnosisPersistenceV4 {
  age:number;
  housingTenure:string;
  housingSubtype:string|null;
+ bundledContributionAmount:number|null;
  monthlyTakeHome:number|null;
  categories:CategoryPersistenceV4[];
 }
@@ -71,6 +72,7 @@ export function buildPersistencePayloadV4(a:{diagnosisId:string;anonymousUserId:
   age:a.profile.age,
   housingTenure:a.profile.housingTenure,
   housingSubtype:a.profile.housingSubtype??null,
+  bundledContributionAmount:a.profile.bundledContributionAmount,
   monthlyTakeHome:a.profile.monthlyTakeHome,
   categories,
  };
