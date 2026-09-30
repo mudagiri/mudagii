@@ -73,7 +73,9 @@ export function resolverAnnualIncomeV4(p:ProfileV4):number|null{
 }
 
 export function resolverHousingTypeV4(p:ProfileV4){
- if(p.housingTenure==='rental')return '賃貸';
+ if(p.housingTenure==='rental'&&p.housingSubtype==='private_rental')return '賃貸';
+ if(p.housingTenure==='rental'&&p.housingSubtype==='public_rental')return '公営住宅';
+ if(p.housingTenure==='rental')return '賃貸（種別不明）';
  if(p.housingTenure==='owned'&&p.housingSubtype==='mortgage')return '持ち家（ローンあり）';
  if(p.housingTenure==='owned')return '持ち家（ローンなし）';
  if(p.housingTenure==='family_home'||p.housingTenure==='company_housing')return '実家・社宅など';
@@ -138,7 +140,11 @@ export function profileStepValidV4(step:ProfileStepV4,d:ProfileDraftV4){
  if(step==='contribution')return d.householdContributionMode!==null;
  if(step==='prefecture')return d.prefecture.trim().length>0;
  if(step==='age')return Number.isInteger(d.age)&&Number(d.age)>=18&&Number(d.age)<=120;
- if(step==='housing')return d.housingTenure!==null;
+ if(step==='housing'){
+  if(d.housingTenure==='rental')return d.housingSubtype==='private_rental'||d.housingSubtype==='public_rental'||d.housingSubtype==='unknown_rental';
+  if(d.housingTenure==='owned')return d.housingSubtype==='mortgage'||d.housingSubtype==='no_mortgage';
+  return d.housingTenure!==null;
+ }
  if(step==='income')return d.monthlyTakeHomeAnswered;
  return false;
 }
