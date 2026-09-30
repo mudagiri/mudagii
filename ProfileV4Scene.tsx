@@ -38,7 +38,7 @@ const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;s
  prefecture:{dialogue:'比較相手をもう少し絞るぞ。',question:'今住んでる都道府県は？',helper:'地域差が出る支出だけ、比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  age:{dialogue:'あと少し。',question:'年齢は？',helper:'年齢で差が出る支出を、近い基準で比べます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
  housing:{dialogue:'住まいの条件を合わせよう。',question:'今の住まいは？',helper:'民営賃貸と持ち家・実家などを混ぜて比べません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q5.png`},
- income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金などが引かれた後。だいたいでOK。分からなくても進めます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
+ income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金などが引かれた後。だいたいの平均でOK。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
 };
 
 function Choice({active,children,onClick}:{active:boolean;children:React.ReactNode;onClick:()=>void}){
@@ -115,7 +115,6 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
 
    {step==='income'&&<div>
     <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り"/><span>/ 月</span></div></label>
-    <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
    </div>}
 
    {!['scope','expenseSharing','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onNext} disabled={!valid}>次へ ▶</button>}
