@@ -5,7 +5,7 @@ import { runDiagnosisAdapterV4 } from './diagnosis-adapter-v4';
 import { buildFinalJudgementsV4 } from './final-judgement-v4';
 import { requiresHouseholdTotalV4 } from './scope-flow-v4';
 import type { ProfileV4 } from './mudagiri-profile-v4';
-import { emptyProfileDraftV4, profileStepsV4, finalizeProfileV4 } from './mudagiri-profile-v4';
+import { emptyProfileDraftV4, profileStepsV4, finalizeProfileV4, shouldOfferAnnualIncomeCalibrationV4 } from './mudagiri-profile-v4';
 
 const base=(patch:Partial<ProfileV4>={}):ProfileV4=>({
  diagnosisScope:'personal',
@@ -191,4 +191,21 @@ console.log('SCOPE_V4_QA PASS');
  d.monthlyTakeHome=250000;
  d.monthlyTakeHomeAnswered=true;
  A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','contribution','prefecture','age','housing','income']);
+}
+
+
+{
+ const profile=base({housingSubtype:'public_rental'});
+ const records=emptyExpenseRecordsV4();
+ amount(records,'rent',60000);
+ const facts=buildComparisonFactsV4({profile,records});
+ A.equal(facts.rent.benchmark,null);
+ A.equal(facts.rent.quality,'none');
+}
+
+{
+ const personalMulti=base({householdSize:2,adultCount:2,relationships:['partner'],expenseSharing:'split'});
+ const householdMulti=base({diagnosisScope:'household',householdSize:2,adultCount:2,relationships:['partner']});
+ A.equal(shouldOfferAnnualIncomeCalibrationV4(personalMulti),false);
+ A.equal(shouldOfferAnnualIncomeCalibrationV4(householdMulti),true);
 }
