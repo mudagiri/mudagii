@@ -123,6 +123,7 @@ const amount=(records:ReturnType<typeof emptyExpenseRecordsV4>,category:keyof Re
  const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
  A.equal(dx.diagnosis,null);
  A.equal(dx.skippedReason,'monthly_take_home_unknown_or_zero');
+ A.equal(dx.categoryResults.find(x=>x.category==='food')?.actual,50000);
  A.ok((facts.food.benchmark??0)>0);
 }
 
@@ -208,4 +209,18 @@ console.log('SCOPE_V4_QA PASS');
  const householdMulti=base({diagnosisScope:'household',householdSize:2,adultCount:2,relationships:['partner']});
  A.equal(shouldOfferAnnualIncomeCalibrationV4(personalMulti),false);
  A.equal(shouldOfferAnnualIncomeCalibrationV4(householdMulti),true);
+}
+
+
+{
+ const profile=base({monthlyTakeHome:null});
+ const records=emptyExpenseRecordsV4();
+ amount(records,'sub',5000);
+ const facts=buildComparisonFactsV4({profile,records});
+ const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts,appraisal:{sub:{subUnusedAmount:1980,subCancellationConfirmed:true}}});
+ A.equal(dx.diagnosis,null);
+ A.equal(dx.categoryResults.find(x=>x.category==='sub')?.confirmedSaving,1980);
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:null,categoryResults:dx.categoryResults,appraisal:{sub:{subUnusedAmount:1980,subCancellationConfirmed:true,subUsage:'one'}}});
+ A.equal(final.confirmedMonthly,1980);
+ A.equal(final.categories.find(x=>x.category==='sub')?.status,'cut');
 }
