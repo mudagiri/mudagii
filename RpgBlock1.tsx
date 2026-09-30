@@ -3275,6 +3275,30 @@ const CSS = String.raw`
   .pre-dialogue{font-size:16px}
 }
 
+/* IPHONE SE TRANSITION FALLBACK: completion/bridge CTAs must always remain reachable. */
+@media(max-height:700px){
+  .scan-complete-scene,.appraisal-intro-scene,.type-complete-scene{
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .scan-complete-mudagiri,.appraisal-intro-mudagiri{display:none}
+  .scan-complete-card,.appraisal-intro-card,.type-complete-card{
+    position:relative;
+    left:auto;right:auto;bottom:auto;
+    width:calc(100% - 28px);
+    margin:max(92px,calc(env(safe-area-inset-top) + 80px)) auto max(22px,calc(env(safe-area-inset-bottom) + 14px));
+  }
+  .appraisal-intro-summary{
+    position:relative;
+    top:auto;left:auto;
+    width:calc(100% - 48px);
+    margin:max(72px,calc(env(safe-area-inset-top) + 62px)) auto -62px;
+    transform:none;
+  }
+}
+
 /* IPHONE SE FALLBACK: controls win over decorative one-screen composition. */
 @media(max-height:700px){
   .appraisal-scene,.battle-intro-scene{
