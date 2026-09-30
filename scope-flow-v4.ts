@@ -6,6 +6,7 @@ const SHARED=new Set<Category>(['rent','energy','food','daily','childEducation']
 
 export function requiresHouseholdTotalV4(profile:ProfileV4,category:Category){
  if(profile.diagnosisScope!=='personal'||profile.householdSize<2)return false;
+ if(profile.householdContributionMode==='bundled')return false;
  return SHARED.has(category);
 }
 
