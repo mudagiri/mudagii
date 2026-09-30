@@ -114,7 +114,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    setResult(vm);
    if(typeof window!=='undefined')window.scrollTo({top:0,behavior:'auto'});
    queueMicrotask(()=>{
-     emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,monthlyImprovement:vm.improvement.monthly,toneMode});
+     emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,toneMode});
      void Promise.resolve(store?.saveDiagnosis(snapshot)).catch(()=>{});
    });
  };
