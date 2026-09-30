@@ -14,7 +14,8 @@
     "qa:resolver": "npx --yes tsx@4.20.6 qa-resolver-v2.ts",
     "qa:battle": "node qa-battle-rpg-v1.mjs",
     "qa:result-safety": "node qa-result-safety-v1.mjs",
-    "qa:scope": "npx --yes tsx@4.20.6 qa-scope-v4.ts"
+    "qa:scope": "npx --yes tsx@4.20.6 qa-scope-v4.ts",
+    "qa:appraisal-flow": "node qa-appraisal-flow-v4.mjs"
   },
   "dependencies": {
     "react": "19.1.1",
