@@ -157,6 +157,17 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になってる',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながってる'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
 }
+function referenceDetail(x:FinalCategoryV3):string|null{
+ if(x.category!=='mobile'||!x.appraisal?.mobileCarrier)return null;
+ const carrier=x.appraisal.mobileCarrier;
+ const m=x.benchmarkMeta?.meta??{};
+ const label=carrier==='major'?'大手キャリア系':carrier==='mvno'?'格安SIM系':null;
+ if(!label)return '回線タイプが不明なため、料金帯との照合は保留';
+ const p50=carrier==='major'?m.majorP50:m.mvnoP50;
+ const p75=carrier==='major'?m.majorP75:m.mvnoP75;
+ const p90=carrier==='major'?m.majorP90:m.mvnoP90;
+ return p50&&p75&&p90?`${label}：P50帯 ${p50}円 / P75帯 ${p75}円 / P90帯 ${p90}円`:null;
+}
 function evidenceLabel(x:FinalCategoryV3):string{
  if(x.comparable!==null)return comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta).label;
  if(x.category==='mobile'&&x.appraisal?.mobileCarrier)return '回線タイプ別の料金帯で照合';
@@ -205,7 +216,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,encounterStrength:encounterStrengthV31(x),confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
-  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),evidenceLabel:evidenceLabel(x),reason:reason(x),nextCheck:nextCheck(x),comparisonContext:comparisonContext(x,args.profile??null,args.annualIncomeBand)
+  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),evidenceLabel:evidenceLabel(x),referenceDetail:referenceDetail(x),reason:reason(x),nextCheck:nextCheck(x),comparisonContext:comparisonContext(x,args.profile??null,args.annualIncomeBand)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const reviewPriority=(x:(typeof rows)[number])=>{
