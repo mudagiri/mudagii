@@ -56,6 +56,7 @@ type AppraisalAnswer = {
   educationChildren?: {stage:EducationStageV2}[];
   educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
+  mobileScope?: 'mobileOnly'|'mobileInternet'|'familyOrMultiple'|'unknown';
   mobileCarrier?: 'major'|'mvno'|'unknown';
   energyPersistence?: 'persistent'|'temporary'|'unknown';
   dailyPersistence?: 'persistent'|'temporary'|'unknown';
@@ -68,7 +69,7 @@ type AppraisalQuestion = {
   maxAmount?: number;
   educationCount?: number;
   educationMaxCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileScope'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -351,7 +352,11 @@ export default function RpgBlock1({
     };
 
     if(actual('mobile')>0){
-      qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、スマホ・自宅回線・端末代・家族分で意味が変わります。平均額でムダ判定せず、まず回線タイプを確認します。',question:'スマホ回線はどのタイプ？'});
+      if(!appraisalAnswers.mobile?.mobileScope){
+        qs.push({category:'mobile',kind:'mobileScope',reason:'通信費は、スマホ1回線と「スマホ＋自宅ネット・家族分」では比較単位が違います。',question:'この通信費、何が入ってる？'});
+      }else if(appraisalAnswers.mobile.mobileScope==='mobileOnly'&&!appraisalAnswers.mobile?.mobileCarrier){
+        qs.push({category:'mobile',kind:'mobileCarrier',reason:'スマホ1回線だけなので、同じ回線タイプの料金帯を参考にします。',question:'スマホ回線はどのタイプ？'});
+      }
     }
     if(actual('energy')>0&&aboveReference('energy')){
       qs.push({category:'energy',kind:'energyPersistence',reason:'光熱費は季節や水道の隔月請求で一時的に上がるため、1か月だけでは見直し判定しません。',question:'この金額、最近2〜3か月くらい続いてる？'});
@@ -1554,6 +1559,12 @@ function AdditionalAppraisalScene({
       {label:'2〜3か月くらい続いてる',sub:'一時的ではなく高めの状態が続いている',patch:{energyPersistence:'persistent'},kind:'review',feedback:'継続しているため要確認'},
       {label:'今月だけ高い',sub:'季節要因・水道の隔月請求など',patch:{energyPersistence:'temporary'},kind:'safe',feedback:'単月だけではムダ判定しません'},
       {label:'分からない',sub:'無理に推測しない',patch:{energyPersistence:'unknown'},kind:'review',feedback:'まだ判定保留'},
+    ],
+    mobileScope:[
+      {label:'スマホ1回線だけ',sub:'自分のスマホ料金だけ',patch:{mobileScope:'mobileOnly'},kind:'review',feedback:'同じ単位で料金帯を確認'},
+      {label:'スマホ＋自宅ネット',sub:'光回線・ホームルーターなどを含む',patch:{mobileScope:'mobileInternet'},kind:'review',feedback:'合算額として確認'},
+      {label:'家族分・複数回線も含む',sub:'家族のスマホや複数契約を含む',patch:{mobileScope:'familyOrMultiple'},kind:'review',feedback:'契約構成を確認'},
+      {label:'よく分からない',sub:'請求内訳から確認する',patch:{mobileScope:'unknown'},kind:'review',feedback:'比較は保留'},
     ],
     mobileCarrier:[
       {label:'大手キャリア系',sub:'docomo・au・SoftBankなど',patch:{mobileCarrier:'major'},kind:'review',feedback:'価格帯を照合'},
