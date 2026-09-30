@@ -1,5 +1,5 @@
 import type { Category } from './mudagiri-diagnosis-v2';
-import { communicationScreenV3, type AnnualIncomeBand, type FinalCategoryV3, type FinalStatus } from './mudagiri-integration-v3';
+import { communicationScreenV3, encounterStrengthV31, type AnnualIncomeBand, type FinalCategoryV3, type FinalStatus } from './mudagiri-integration-v3';
 
 export const RESULT_VM_VERSION='MUDAGIRI_RESULT_VM_V3.2' as const;
 export type ComparatorKind='optimization_rule'|'statistical_comparator'|'direct_benchmark'|'none';
@@ -178,7 +178,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   comparable:x.comparable,comparisonDifference:x.comparisonDifference,
   comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
-  battleBasis:x.battleBasis,confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
+  battleBasis:x.battleBasis,encounterStrength:encounterStrengthV31(x),confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
   appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
@@ -190,6 +190,8 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   return explicit*1_000_000+gap;
  };
  const review=rows.filter(x=>x.status==='review').sort((a,b)=>reviewPriority(b)-reviewPriority(a));
- const firstQuest=battle[0]??review[0]??null;
- return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,profile:args.profile??null,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
+ const encounter=rows.filter(x=>x.encounterStrength==='strong').sort((a,b)=>reviewPriority(b)-reviewPriority(a)).slice(0,3);
+ const secondaryReview=rows.filter(x=>x.encounterStrength==='medium').sort((a,b)=>reviewPriority(b)-reviewPriority(a));
+ const firstQuest=battle[0]??encounter[0]??secondaryReview[0]??review[0]??null;
+ return {version:RESULT_VM_VERSION,diagnosisId:args.diagnosisId,type:args.type,toneMode:args.toneMode,profile:args.profile??null,annualIncomeBand:args.annualIncomeBand,counts,improvement:{monthly:args.monthlyImprovement,annual:args.monthlyImprovement*12,fiveYear:args.monthlyImprovement*60},battleTargets:battle,encounterTargets:encounter,secondaryReviewTargets:secondaryReview,rows,firstQuest,share:{includeFinancialAmounts:false,includeProfile:false,modeBadge:args.toneMode}};
 }
