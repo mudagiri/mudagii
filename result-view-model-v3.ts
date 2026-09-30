@@ -137,6 +137,12 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  const a=x.appraisal;if(!a)return null;
  if(x.category==='energy'&&a.energyPersistence)return ({persistent:'高めの状態が2〜3か月くらい続いている',temporary:'今月だけ高い',unknown:'高い状態が続いているか分からない'} as Record<string,string>)[a.energyPersistence]??null;
  if(x.category==='daily'&&a.dailyPersistence)return ({persistent:'高めの状態が2〜3か月くらい続いている',temporary:'今月だけ高い',unknown:'高い状態が続いているか分からない'} as Record<string,string>)[a.dailyPersistence]??null;
+ if(x.category==='mobile'&&a.mobileCarrier){
+  const carrier=({major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'} as Record<string,string>)[a.mobileCarrier]??'回線タイプ不明';
+  const band=communicationScreenV3(x.raw.amount??0,a.mobileCarrier);
+  const bandLabel=({standard:'一般的な料金帯',higher:'一般的な料金帯より高め',check:'やや高めの目安以上',detail:'かなり高めの目安以上',unknown:'料金帯との照合は保留'} as Record<string,string>)[band.band];
+  return `${carrier} / ${bandLabel}`;
+ }
  if(x.category==='sub'){
   const usage=({none:'ほぼ全部使っている',one:'使っていない契約が1つくらいありそう',several:'使っていない契約が2〜3個ありそう',unknown:'契約状況を把握できていない'} as Record<string,string>)[a.subUsage??'']??null;
   const unused=(a.subUnusedAmount??0)>0?`未使用分 月¥${a.subUnusedAmount!.toLocaleString('ja-JP')}`:null;
