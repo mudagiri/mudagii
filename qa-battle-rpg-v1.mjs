@@ -7,7 +7,7 @@ const checks=[
  ['result uses finishDiagnosis',src.includes('onResult={finishDiagnosis}')],
  ['finish lock exists',src.includes('diagnosisFinishLock=React.useRef(false)')],
  ['finish lock guards callback',src.includes('if(!onCompleteV3||diagnosisFinishLock.current)return;')&&src.includes('diagnosisFinishLock.current=true;')],
- ['battle targets capped',src.includes('.slice(0,3)')],
+ ['battle targets sourced from final bundle',src.includes('const encounterTargets=finalBundle.encounterTargets;')],
  ['battle scene exists',/type Scene =[^;]*'battle'[^;]*'battleComplete'/.test(src)],
  ['battle intro resumable',src.includes("'battleIntro'")&&src.includes('resumeDraft?.scene as Scene')]
 ];
