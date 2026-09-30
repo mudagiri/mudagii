@@ -284,6 +284,18 @@ export default function RpgBlock1({
     [flow.household],
   );
   const currentScan = applicableScanCategories[scanIndex];
+  const displayedScan=useMemo(()=>{
+    if(!currentScan)return currentScan;
+    if(profileV4?.householdContributionMode!=='bundled')return currentScan;
+    const direct:Partial<Record<EnemyAssetCategory,{question:string;helper:string}>>={
+      rent:{question:'家へのまとめ払いとは別に、住居費を直接払ってる？',helper:'別で払っている家賃・住宅費だけ。なければ0円'},
+      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'自分で直接払っている電気・ガス・水道だけ。なければ0円'},
+      food:{question:'まとめ払いとは別に、食費を月いくら払ってる？',helper:'自分で直接払う外食・自炊など。家に入れる生活費は含めない'},
+      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'自分で直接買う日用品だけ。家に入れる生活費は含めない'},
+    };
+    const copy=direct[currentScan.category];
+    return copy?{...currentScan,...copy}:currentScan;
+  },[currentScan,profileV4?.householdContributionMode]);
   useEffect(()=>{
     if(scene!=='scan')return;
     if(applicableScanCategories.length===0)return;
@@ -567,7 +579,7 @@ export default function RpgBlock1({
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
-              config={currentScan}
+              config={displayedScan??currentScan}
               current={scanIndex + 1}
               total={applicableScanCategories.length}
               discoveredBefore={applicableScanCategories
