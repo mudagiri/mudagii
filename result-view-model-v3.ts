@@ -26,7 +26,7 @@ function appraisalIntent(x:FinalCategoryV3):string|null{
  if(x.category==='mobile'&&a.mobileCarrier){
   const label=({major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'} as Record<string,string>)[a.mobileCarrier]??'回線タイプ不明';
   const s=communicationScreenV3(x.raw.amount??0,a.mobileCarrier);
-  const band=({standard:'一般的な料金帯',higher:'一般的な料金帯より高め',check:'やや高めの目安以上',detail:'かなり高めの目安以上',unknown:'価格帯照合保留'} as Record<string,string>)[s.band];
+  const band=({standard:'一般的な料金帯',higher:'一般的な料金帯より高め',check:'やや高めの目安以上',detail:'かなり高めの目安以上',unknown:'料金帯との照合は保留'} as Record<string,string>)[s.band];
   return `${label} / ${band}`;
  }
  if(x.category==='sub'){
