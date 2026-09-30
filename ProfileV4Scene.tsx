@@ -54,6 +54,12 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  const progress=((safeIndex+1)/Math.max(steps.length,1))*100;
  const valid=profileStepValidV4(step,draft);
  const patch=(x:Partial<ProfileDraftV4>)=>setDraft(v=>({...v,...x}));
+ const setHouseholdSize=(n:number)=>setDraft(v=>{
+  const householdSize=Math.max(1,Math.min(10,n));
+  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null};
+  const childCount=v.childCount===null?null:Math.min(v.childCount,householdSize-1);
+  return {...v,householdSize,childCount};
+ });
  const auto=(x:Partial<ProfileDraftV4>)=>{setDraft(v=>({...v,...x}));window.requestAnimationFrame(onNext);};
  const toggleRelationship=(r:RelationshipV4)=>setDraft(v=>{
   const exists=v.relationships.includes(r);
@@ -81,9 +87,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    </div>}
 
    {step==='householdSize'&&<div className="pre-age-input" style={{justifyContent:'center'}}>
-    <button type="button" className="pre-back" onClick={()=>patch({householdSize:Math.max(1,(draft.householdSize??1)-1)})}>−</button>
+    <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)-1)}>−</button>
     <strong style={{minWidth:80,textAlign:'center',fontSize:24}}>{draft.householdSize??1}人</strong>
-    <button type="button" className="pre-back" onClick={()=>patch({householdSize:Math.min(10,(draft.householdSize??1)+1)})}>＋</button>
+    <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)+1)}>＋</button>
    </div>}
 
    {step==='relationships'&&<div className="mode-options">
