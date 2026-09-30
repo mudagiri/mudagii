@@ -106,7 +106,7 @@ export interface ProfileDraftV4 {
 export function emptyProfileDraftV4():ProfileDraftV4{
  return {
   diagnosisScope:'',
-  householdSize:null,
+  householdSize:1,
   childCount:null,
   relationships:[],
   expenseSharing:null,
