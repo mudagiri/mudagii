@@ -7,6 +7,7 @@ alter table analytics.diagnoses add column if not exists adult_count integer;
 alter table analytics.diagnoses add column if not exists child_count integer;
 alter table analytics.diagnoses add column if not exists housing_tenure text;
 alter table analytics.diagnoses add column if not exists housing_subtype text;
+alter table analytics.diagnoses add column if not exists bundled_contribution_amount numeric;
 alter table analytics.diagnoses alter column monthly_take_home_income drop not null;
 
 alter table analytics.diagnosis_categories add column if not exists diagnosis_amount numeric;
