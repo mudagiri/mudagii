@@ -30,6 +30,7 @@ jobs:
       - run: npm run build
       - run: npm run qa:resolver
       - run: npm run qa:scope
+      - run: npm run qa:appraisal-flow
       - run: npm run qa:persona
       - run: npm run qa:type
       - run: npm run qa:battle
