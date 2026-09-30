@@ -16,15 +16,15 @@ Axis semantics:
 Rules:
 1. No type may look morally superior, richer, poorer, smarter or more successful.
 2. Do not depict literal debt, poverty, bankruptcy, gambling, luxury-brand logos, currency brands or financial institutions.
-3. Each character needs a distinct silhouette at ~140px mobile display.
+3. Each character needs a distinct silhouette at ~140px mobile display. Pixel structure must still read at that size; never rely on tiny decorative detail.
 4. Transparent background. No text, letters, numbers, logos, UI labels or type code inside art.
 5. Square master composition, centered full/three-quarter body, generous transparent margin.
 6. Keep facial expression readable on mobile.
-7. Same universe, rendering, outline language and proportions across all eight.
+7. Same universe, pixel scale, rendering, outline language, lighting and proportions across all eight.
 8. Do not generate eight palette swaps. Pose + silhouette + prop + motif must differ.
 
 ## B. MASTER STYLE PROMPT
-Create a premium original Japanese mobile RPG character illustration for the household-finance game “Mudagiri”. A charming fantasy mascot-class character, stylized 2.5D game art with crisp readable silhouette, expressive face, compact heroic proportions, polished cel-shaded rendering, subtle pixel-RPG heritage without being literal pixel art, bold clean outer contour, controlled material detail, soft cinematic rim light, playful but trustworthy rather than childish, designed to remain recognizable at small smartphone size. Full or three-quarter body centered in a square composition, generous clear space around the silhouette. Transparent background only. No scenery, no frame, no card, no typography, no letters, no numbers, no logo, no watermark, no real-world brand, no currency symbol. The character belongs to the same cohesive visual universe as seven sibling money-personality archetypes. Do not imply wealth, poverty, intelligence, moral virtue, financial success, or failure through clothing quality.
+Create a premium original Japanese fantasy RPG character for the household-finance game “Mudagiri” in a HIGH-QUALITY MODERN PIXEL-ART style. The pixel language must be immediately visible: deliberate pixel clusters, stepped diagonal edges, limited-but-rich shading ramps, crisp sprite-like highlights, readable pixel texture and controlled dithering where useful. Do NOT render as smooth anime, glossy gacha illustration, painterly 2.5D art, vector art, or merely place a pixel filter over a smooth illustration. Aim for the feeling of a beloved 16-bit/32-bit era JRPG character reimagined with modern high-resolution pixel craftsmanship: expressive face, compact heroic proportions, bold readable silhouette, playful but trustworthy rather than childish, and enough detail for a Result hero while remaining recognizable around 140px on a smartphone. Full or three-quarter body centered in a square composition with generous clear space around the silhouette. Transparent background only. No scenery, frame, card, typography, letters, numbers, logo, watermark, real-world brand or currency symbol. Keep all eight characters in one cohesive sprite-art universe with consistent pixel scale, outline weight, proportions, lighting direction and shading discipline. Do not imply wealth, poverty, intelligence, moral virtue, financial success or failure through clothing quality.
 
 Use this MASTER STYLE for every type, then append exactly one type-specific semantic prompt below.
 
