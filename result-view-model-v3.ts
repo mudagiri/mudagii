@@ -143,7 +143,7 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
   const confirmed=a.subCancellationConfirmed===true?'停止・解約できることを確認済み':a.subCancellationConfirmed===false?'停止・解約できるか未確認':null;
   return [usage,unused,confirmed].filter(Boolean).join(' / ')||null;
  }
- if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'負担が気になってる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
+ if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
  if(x.category==='insurance'&&a.insurancePurpose){
@@ -159,7 +159,7 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
   const pref=a.educationPreference?({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as Record<string,string>)[a.educationPreference]:null;
   return [children??stage,pref].filter(Boolean).join(' / ')||null;
  }
- if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になってる',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながってる'} as Record<string,string>)[a.selfDevelopmentValue]??null;
+ if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的が明確',results:'成果につながっている'} as Record<string,string>)[a.selfDevelopmentValue]??null;
  return null;
 }
 function referenceDetail(x:FinalCategoryV3):string|null{
