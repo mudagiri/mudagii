@@ -24,7 +24,7 @@ export type CompletedV3={
 
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
  const [toneMode,setToneMode]=useState<ToneMode>('serious');
- const [restored]=useState(()=>typeof window==='undefined'?null:readActiveResultV1());
+ const [restored,setRestored]=useState(()=>typeof window==='undefined'?null:readActiveResultV1());
  const [result,setResult]=useState<any>(null);
  const [diagnosisId,setDiagnosisId]=useState(()=>restored?.diagnosisId??(typeof window==='undefined'?'server':newDiagnosisId()));
  const [anonymousUserId]=useState(()=>restored?.anonymousUserId??(typeof window==='undefined'?'server':getOrCreateAnonymousUserId()));
@@ -91,7 +91,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    window.scrollTo({top:0,behavior:'auto'});
  };
 
- if(result)return <ResultScreenV4 vm={result} onEvent={emit} onRestart={()=>{if(typeof window!=='undefined')clearResumeStateV1();setResult(null);setToneMode('serious');setDiagnosisId(typeof window==='undefined'?'server':newDiagnosisId());emit('journey_restarted',{from:'result'});window.scrollTo({top:0,behavior:'auto'})}} onLine={async(ctx)=>{
+ if(result)return <ResultScreenV4 vm={result} onEvent={emit} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={async(ctx)=>{
    const payload={...ctx,anonymousUserId,diagnosisId};
    try{await store?.saveLead?.({leadId:'lead_'+diagnosisId,anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null});}catch{}
    if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
