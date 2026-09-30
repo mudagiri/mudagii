@@ -172,14 +172,17 @@ function nextCheck(x:FinalCategoryV3):string{
 }
 const INCOME_LABEL:Record<AnnualIncomeBand,string>={under500:'500万円未満','500_599':'500〜599万円','600_699':'600〜699万円','700_799':'700〜799万円','800_999':'800〜999万円','1000plus':'1,000万円以上',unknown:'未回答'};
 function comparisonContext(x:FinalCategoryV3,profile:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number}|null,annualIncomeBand:AnnualIncomeBand){
- const m=x.benchmarkMeta?.meta??{}; const bits:string[]=[];
- if(profile?.age)bits.push(`${profile.age}歳`);
- if(profile?.household==='single')bits.push('単身世帯'); else if(profile?.household==='multi')bits.push(`${profile.householdSize||2}人世帯`);
- if(x.category==='energy'&&profile?.prefecture)bits.push(profile.prefecture);
+ const m=x.benchmarkMeta?.meta??{}; const bits:string[]=[]; const single=profile?.household==='single'; const multi=profile?.household==='multi';
+ const ageBucket=profile?.age?(profile.age<=34?'34歳以下':profile.age<=59?'35〜59歳':'60歳以上'):null;
+ if(single&&['energy','food','daily','fun','beautyFashion'].includes(x.category)&&profile?.age)bits.push(`${profile.age}歳（基準データ上は${ageBucket}区分）`);
+ if(multi&&['energy','food','daily','fun'].includes(x.category))bits.push(`${profile?.householdSize||2}人世帯`);
+ if(x.category==='energy'&&multi&&profile?.prefecture)bits.push(profile.prefecture);
+ if(x.category==='energy'&&multi&&typeof m.month==='number')bits.push(`${m.month}月`);
  if(x.category==='rent'&&profile?.prefecture)bits.push(`${profile.prefecture}・民営賃貸`);
- if(x.category==='beautyFashion'&&m.sex==='male')bits.push('男性'); else if(x.category==='beautyFashion'&&m.sex==='female')bits.push('女性');
+ if(x.category==='beautyFashion'&&m.sex==='male')bits.push('男性'); else if(x.category==='beautyFashion'&&m.sex==='female')bits.push('女性'); else if(x.category==='beautyFashion'&&m.sexFallback)bits.push('性別横断の比較目安');
  if(x.category==='childEducation'&&x.appraisal?.educationChildren?.length)bits.push(`子ども${x.appraisal.educationChildren.length}人・学校段階別`);
- const incomeApplied=profile?.household==='multi'&&annualIncomeBand!=='unknown'&&annualIncomeBand!=='under500'&&['energy','food','daily','fun'].includes(x.category); if(incomeApplied)bits.push(`年収${INCOME_LABEL[annualIncomeBand]}`); return {displayAge:profile?.age??null,household:profile?.household??null,householdSize:profile?.householdSize??null,prefecture:profile?.prefecture??null,housingType:profile?.housingType??null,incomeBand:annualIncomeBand,incomeBandLabel:INCOME_LABEL[annualIncomeBand],incomeApplied,criteria:bits,confidence:x.benchmarkMeta?.confidence??null,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:m};
+ const incomeApplied=multi&&annualIncomeBand!=='unknown'&&annualIncomeBand!=='under500'&&['energy','food','daily','fun'].includes(x.category); if(incomeApplied)bits.push(`年収${INCOME_LABEL[annualIncomeBand]}`);
+ return {displayAge:profile?.age??null,ageBucket,household:profile?.household??null,householdSize:profile?.householdSize??null,prefecture:profile?.prefecture??null,housingType:profile?.housingType??null,incomeBand:annualIncomeBand,incomeBandLabel:INCOME_LABEL[annualIncomeBand],incomeApplied,criteria:bits,confidence:x.benchmarkMeta?.confidence??null,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:m};
 }
 
 export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string;catchphrase?:string;strengthLabel?:string;blindSpot?:string;shareHook?:string;axes?:{fv:number;pi:number;au:number};axisStrength?:{fv:number;pi:number;au:number};nearMiddle?:{fv:boolean;pi:boolean;au:boolean}};toneMode:string;profile?:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
