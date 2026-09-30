@@ -33,6 +33,7 @@ export interface FinalCategoryV4 {
  screeningDelta:number|null;
  attentionFlag:boolean;
  reasonCode:string;
+ appraisal:FinalAppraisalV4|null;
 }
 
 const engineMap=(diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').runDiagnosisV2>|null,categoryResults?:CategoryResult[])=>{
@@ -117,6 +118,7 @@ export function buildFinalJudgementsV4(a:{records:ExpenseRecordsV4;comparisons:C
    screeningDelta:comparison.difference,
    attentionFlag:choice.attentionFlag,
    reasonCode:choice.reasonCode,
+   appraisal:a.appraisal?.[category]??null,
   };
  });
  const cuts=categories.filter(x=>x.status==='cut'&&x.confirmedSaving>0).sort((a,b)=>b.confirmedSaving-a.confirmedSaving);
