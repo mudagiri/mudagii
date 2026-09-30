@@ -7,6 +7,7 @@ import {scoreTypeAnswersV31,type TypeAnswersV31} from './type-questionnaire-v3.1
 import {newDiagnosisId,getOrCreateAnonymousUserId,acquisitionFromLocation} from './persistence-v1';
 import {LocalPersistenceV3,productionPersistenceV3,eventV3,type PersistenceV3} from './persistence-v3';
 import {buildResultViewModelV3} from './result-view-model-v3';
+import {buildResultViewModelV4} from './result-view-model-v4';
 import {readActiveResultV1,writeActiveResultV1,readJourneyDraftV1,clearResumeStateV1,clearJourneyDraftV1} from './resume-state-v1';
 import type {AnnualIncomeBand,RawExpenses,FinalCategoryV3,AppraisalV3} from './mudagiri-integration-v3';
 import type {ProfileV4} from './mudagiri-profile-v4';
@@ -59,10 +60,13 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    try{
      const scored=scoreTypeAnswersV31(v.typeAnswers);
      const content=TYPE_CONTENT_V31[scored.code];
-     const vm=buildResultViewModelV3({
+     const typeVm={code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle};
+     const vm=v.scopeV4?buildResultViewModelV4({
+       diagnosisId:restored.diagnosisId,toneMode:restored.completed.toneMode??'serious',profile:v.scopeV4.profile,
+       type:typeVm,finalCategories:v.scopeV4.finalJudgements,annualIncomeBand:v.annualIncomeBand
+     }):buildResultViewModelV3({
        diagnosisId:restored.diagnosisId,toneMode:restored.completed.toneMode??'serious',profile:v.profile,
-       type:{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle},
-       finalCategories:v.finalJudgements,monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
+       type:typeVm,finalCategories:v.finalJudgements,monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
      });
      setToneMode(restored.completed.toneMode??'serious');setResult(vm);
      emit('result_restored',{source:'reload_or_return'});
@@ -72,12 +76,12 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const complete=async(v:CompletedV3)=>{
    const scored=scoreTypeAnswersV31(v.typeAnswers);
    const content=TYPE_CONTENT_V31[scored.code];
-   const vm=buildResultViewModelV3({
-     diagnosisId,toneMode,profile:v.profile,
-     type:{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle},
-     finalCategories:v.finalJudgements,
-     monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),
-     annualIncomeBand:v.annualIncomeBand
+   const typeVm={code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle};
+   const vm=v.scopeV4?buildResultViewModelV4({
+     diagnosisId,toneMode,profile:v.scopeV4.profile,type:typeVm,finalCategories:v.scopeV4.finalJudgements,annualIncomeBand:v.annualIncomeBand
+   }):buildResultViewModelV3({
+     diagnosisId,toneMode,profile:v.profile,type:typeVm,finalCategories:v.finalJudgements,
+     monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
    });
    const snapshot={
      schemaVersion:'MUDAGIRI_SHEET_V3' as const,
