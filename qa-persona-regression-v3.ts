@@ -339,3 +339,17 @@ console.log('RESULT_SEMANTIC_QA_PASS',5);
 console.log('RESULT_BEAUTY_MULTI_QA_PASS',1);
 
 
+
+
+// Core semantic invariant: benchmark/reference gap is informational and must never become confirmed saving by itself.
+for(const category of ['energy','daily','food','fun','beautyFashion','rent','childEducation'] as Category[]){
+ const r=raw({[category]:100000});
+ const comparable={[category]:10000};
+ const d=runDiagnosisAdapterV3({monthlyTakeHome:500000,raw:r,comparable});
+ const fin=buildFinalJudgementsV3({raw:r,comparable,diagnosis:d.diagnosis});
+ const row=fin.categories.find(x=>x.category===category)!;
+ if((row.comparisonDifference??0)<=0)throw new Error('SEMANTIC_GAP_SETUP_FAIL:'+category);
+ if((row.reducible??0)!==0)throw new Error('BENCHMARK_GAP_MUST_NOT_BECOME_SAVING:'+category+':'+row.reducible);
+ if(row.status==='battle')throw new Error('BENCHMARK_GAP_MUST_NOT_CREATE_CONFIRMED_BATTLE:'+category);
+}
+console.log('BENCHMARK_GAP_SEMANTIC_INVARIANT_PASS');
