@@ -3,11 +3,13 @@ import React,{useEffect,useState} from 'react';
 const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
 const modeName:Record<string,string>={gentle:'😇 甘やかしムダギリ',serious:'⚔️ 正論ムダギリ',hell:'💀 地獄ムダギリ'};
+// GitHub Pages is hosted under /mudagii/. Root-absolute /assets/... points at
+// mudagiri.github.io/assets and 404s, so keep result art relative to Vite's base.
 const TYPE_ART_V31:Record<string,string>={
- FPA:'/assets/types/v31/TYPE_FPA.png',FPU:'/assets/types/v31/TYPE_FPU.png',
- FIA:'/assets/types/v31/TYPE_FIA.png',FIU:'/assets/types/v31/TYPE_FIU.png',
- VPA:'/assets/types/v31/TYPE_VPA.png',VPU:'/assets/types/v31/TYPE_VPU.png',
- VIA:'/assets/types/v31/TYPE_VIA.png',VIU:'/assets/types/v31/TYPE_VIU.png',
+ FPA:'./assets/types/v31/TYPE_FPA.png',FPU:'./assets/types/v31/TYPE_FPU.png',
+ FIA:'./assets/types/v31/TYPE_FIA.png',FIU:'./assets/types/v31/TYPE_FIU.png',
+ VPA:'./assets/types/v31/TYPE_VPA.png',VPU:'./assets/types/v31/TYPE_VPU.png',
+ VIA:'./assets/types/v31/TYPE_VIA.png',VIU:'./assets/types/v31/TYPE_VIU.png',
 };
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
 
