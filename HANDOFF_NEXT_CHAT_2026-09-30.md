@@ -8,11 +8,12 @@ Use the included repository snapshot and specifications to continue implementati
 
 ## Read order
 1. START_HERE.md
-2. RESULT_V4_SPEC.md
-3. RETURN_RESUME_V1_SPEC.md
-4. TYPE_ART_V31_PROMPTS.md
-5. current runtime files named in START_HERE.md
-6. QA files
+2. MOBILE_UX_REBUILD_V1_SPEC.md
+3. RESULT_V4_SPEC.md
+4. RETURN_RESUME_V1_SPEC.md
+5. TYPE_ART_V31_PROMPTS.md
+6. current runtime files named in START_HERE.md
+7. QA files
 
 ## Absolute source-of-truth rule
 Before writing to GitHub, re-fetch current main. This ZIP is a handoff snapshot, not permission to overwrite a newer main. If GitHub main is ahead, reconcile first.
@@ -30,6 +31,16 @@ Do not alter without explicit user approval:
 - share privacy: no income/spend/prefecture
 
 ## Execution order
+### Phase 0 — Full mobile UX/UI rebuild
+Implement MOBILE_UX_REBUILD_V1_SPEC.md before Result V4.
+- audit Opening -> Mode -> PROFILE -> Scan -> Type -> Appraisal -> Battle -> Result
+- remove character/copy/control collisions
+- decorative layers pointer-events:none
+- immediate tap feedback; remove unnecessary timeout gates
+- conditional vertical scrolling when content cannot fit
+- preserve RPG one-scene feeling without fixed-height collisions
+- pass 375x667 / 390x844 / 412x915 / 430x932 and Android Chrome/iOS safe-area checks
+
 ### Phase 1 — Result V4
 Implement RESULT_V4_SPEC.md.
 Mandatory fixes:
