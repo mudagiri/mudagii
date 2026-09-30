@@ -9,7 +9,7 @@ const checks=[
  ['finish lock guards callback',src.includes('if(!onCompleteV3||diagnosisFinishLock.current)return;')&&src.includes('diagnosisFinishLock.current=true;')],
  ['battle targets capped',src.includes('.slice(0,3)')],
  ['battle scene exists',/type Scene =[^;]*'battle'[^;]*'battleComplete'/.test(src)],
- ['battle intro resumable',src.includes("'battleIntro'")&&src.includes('resumeDraft?.scene')]
+ ['battle intro resumable',src.includes("'battleIntro'")&&src.includes('resumeDraft?.scene as Scene')]
 ];
 for(const [name,ok] of checks){if(!ok)throw new Error('BATTLE_RPG_QA_FAIL:'+name);console.log('PASS',name)}
 console.log('BATTLE_RPG_QA_PASS',checks.length);
