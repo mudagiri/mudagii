@@ -337,42 +337,90 @@ export default function RpgBlock1({
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
     if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
+    const fact=(category:EnemyAssetCategory)=>comparisonsV4?.[category as Category]??null;
+    const aboveReference=(category:EnemyAssetCategory)=>{
+      const f=fact(category);
+      if(profileV4)return f?.difference!==null&&f?.difference!==undefined&&f.difference>0;
+      const legacy=comp(category);
+      return legacy!==null&&actual(category)>legacy;
+    };
+    const noMatchedComparison=(category:EnemyAssetCategory)=>{
+      if(!profileV4)return false;
+      const f=fact(category);
+      return !f||f.quality==='none'||f.benchmark===null||f.amount===null;
+    };
+
     if(actual('mobile')>0){
-      qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、大手キャリアと格安SIMで基準帯が違います。平均額には変換せず、まず回線タイプだけ確認します。',question:'スマホ回線はどのタイプ？'});
+      qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、スマホ・自宅回線・端末代・家族分で意味が変わります。平均額でムダ判定せず、まず回線タイプを確認します。',question:'スマホ回線はどのタイプ？'});
     }
-    if(actual('energy')>0&&comp('energy')!==null&&actual('energy')>(comp('energy')??0)){
+    if(actual('energy')>0&&aboveReference('energy')){
       qs.push({category:'energy',kind:'energyPersistence',reason:'光熱費は季節や水道の隔月請求で一時的に上がるため、1か月だけでは見直し判定しません。',question:'この金額、最近2〜3か月くらい続いてる？'});
     }
-    if(actual('daily')>0&&comp('daily')!==null&&actual('daily')>(comp('daily')??0)){
+    if(actual('daily')>0&&aboveReference('daily')){
       qs.push({category:'daily',kind:'dailyPersistence',reason:'日用品はまとめ買いなどで月ごとのブレがあるため、1か月の比較超過だけでは見直し判定しません。',question:'この日用品費、最近2〜3か月くらい続いてる？'});
     }
-    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
+    if(actual('sub')>0){
+      qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
+      if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});
+      if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});
+    }
+
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
-      const c=comp(category);
-      const isBeautyAudit=category==='beautyFashion'&&comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT';
-      const beautyNeedsSex=category==='beautyFashion'&&flow.household==='single'&&actual(category)>0&&c!==null&&actual(category)>c&&!appraisalAnswers.beautyFashion?.beautySex;
+      const legacyComparable=comp(category);
+      const v4Fact=fact(category);
+      const isBeautyAudit=category==='beautyFashion'&&(profileV4?v4Fact?.quality==='none':comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT');
+      const beautyNeedsSex=category==='beautyFashion'
+        &&(profileV4?profileV4.householdSize===1:flow.household==='single')
+        &&actual(category)>0
+        &&(profileV4?v4Fact?.benchmark!==null:legacyComparable!==null)
+        &&aboveReference(category)
+        &&!appraisalAnswers.beautyFashion?.beautySex;
       if(beautyNeedsSex){
         qs.push({category:'beautyFashion',kind:'beautySex',reason:'美容・服飾費は男女差が大きいため、基準を超えた人だけ、より近い比較値に補正します。',question:'より近い基準で見るために教えてね'});
         return;
       }
-      if(actual(category)>0&&((c!==null&&actual(category)>c)||isBeautyAudit)){
-        const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:isBeautyAudit?['複数世帯の美容・服飾費は、根拠のない平均値を作らず価値判断で確認します。','今の美容・服飾費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
+      const scopeNeedsValueCheck=profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2&&actual(category)>0&&noMatchedComparison(category);
+      if(actual(category)>0&&(aboveReference(category)||isBeautyAudit||scopeNeedsValueCheck)){
+        const copy=category==='food'
+          ?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']
+          :category==='fun'
+            ?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']
+            :isBeautyAudit
+              ?['美容・服飾費は、条件が合わない平均値を作らずあなたの価値判断で確認します。','今の美容・服飾費について、一番近いのは？']
+              :['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
+
     if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
+
     const rent=actual('rent');
-    const rentScreen=housingScreenV3(rent,comparisonBundle.benchmarkMeta.rent);
-    if(rent>0&&(rentScreen.band==='check'||rentScreen.band==='detail'||rentScreen.band==='audit'))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    const rentFact=fact('rent');
+    const rentComparisonAmount=profileV4?rentFact?.amount??null:rent;
+    const rentScreen=rentComparisonAmount!==null
+      ?housingScreenV3(rentComparisonAmount,profileV4?rentFact?.benchmarkMeta??undefined:comparisonBundle.benchmarkMeta.rent)
+      :null;
+    const rentBurdenHigh=incomeNumber>0&&rent/incomeNumber>.35;
+    const rentNeedsContext=profileV4
+      ?rentFact?.quality==='none'
+      :rentScreen?.band==='audit';
+    if(rent>0&&(rentBurdenHigh||rentNeedsContext||rentScreen?.band==='check'||rentScreen?.band==='detail')){
+      qs.push({category:'rent',kind:'rent',reason:'住まいは、本人負担と住まい全体の金額、そして「守りたい価値」を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    }
+
     if(actual('insurance')>0){
       qs.push({category:'insurance',kind:'insuranceOverview',reason:'保険料の高さだけではムダ判定しません。まず、今の保障をどれくらい把握しているかだけ確認します。',question:'今入ってる保険、内容ちゃんと把握してる？'});
       const purpose=appraisalAnswers.insurance?.insurancePurpose;
       if(purpose==='unclear'||purpose==='mostly')qs.push({category:'insurance',kind:'insuranceReview',reason:'内容が曖昧な場合だけ、見直し時期をもう1つ確認します。',question:'最後にちゃんと見直したのは？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:(Number(flow.householdSize)>=6?6:Math.max(1,(Number(flow.householdSize)||2)-1)),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
+    if(flow.household==='children'&&actual('childEducation')>0){
+      qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:(Number(flow.householdSize)>=6?6:Math.max(1,(Number(flow.householdSize)||2)-1)),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});
+      if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});
+      qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
+    }
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
-  },[incomeNumber,normalizedRaw,comparable,comparisonBundle.benchmarkMeta,flow.household]);
+  },[incomeNumber,normalizedRaw,comparable,comparisonBundle.benchmarkMeta,comparisonsV4,profileV4,flow.household,flow.householdSize,appraisalAnswers]);
 
   const diagnosisBundle=useMemo(()=>incomeNumber>0?runDiagnosisAdapterV3({
     raw:normalizedRaw,comparable,monthlyTakeHome:incomeNumber,appraisal:appraisalAnswers
