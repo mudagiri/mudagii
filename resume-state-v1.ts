@@ -33,15 +33,20 @@ export type ActiveResultV1={
 
 const parse=<T>(raw:string|null):T|null=>{try{return raw?JSON.parse(raw) as T:null}catch{return null}};
 
+const STABLE_DRAFT_SCENES=new Set(['profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']);
 export function readJourneyDraftV1(storage:Pick<Storage,'getItem'>=localStorage):JourneyDraftV1|null{
  const v=parse<JourneyDraftV1>(storage.getItem(JOURNEY_DRAFT_KEY));
- if(!v||v.schemaVersion!==JOURNEY_DRAFT_SCHEMA||!v.diagnosisId||!v.scene)return null;
+ if(!v||v.schemaVersion!==JOURNEY_DRAFT_SCHEMA||!v.diagnosisId||!STABLE_DRAFT_SCENES.has(v.scene))return null;
+ if(!Number.isInteger(v.questionIndex)||v.questionIndex<0||v.questionIndex>5)return null;
+ if(!Number.isInteger(v.scanIndex)||v.scanIndex<0||v.scanIndex>11)return null;
+ if(!Number.isInteger(v.appraisalIndex)||v.appraisalIndex<0)return null;
+ if(!Number.isInteger(v.typeIndex)||v.typeIndex<0||v.typeIndex>7)return null;
  return v;
 }
 export function writeJourneyDraftV1(v:JourneyDraftV1,storage:Pick<Storage,'setItem'>=localStorage){storage.setItem(JOURNEY_DRAFT_KEY,JSON.stringify(v))}
 export function readActiveResultV1(storage:Pick<Storage,'getItem'>=localStorage):ActiveResultV1|null{
  const v=parse<ActiveResultV1>(storage.getItem(ACTIVE_RESULT_KEY));
- if(!v||v.schemaVersion!==ACTIVE_RESULT_SCHEMA||!v.diagnosisId||!v.completed)return null;
+ if(!v||v.schemaVersion!==ACTIVE_RESULT_SCHEMA||!v.diagnosisId||!v.anonymousUserId||!v.completed||!v.methodology)return null;
  return v;
 }
 export function writeActiveResultV1(v:ActiveResultV1,storage:Pick<Storage,'setItem'>=localStorage){
