@@ -35,7 +35,8 @@ const reasonText=(x:FinalCategoryV4)=>{
  if(r==='SELF_INVESTMENT_VALUE_CONFIRMED')return '目的や成果につながっているため、守る支出として扱います。';
  if(r==='SELF_INVESTMENT_VALUE_REVIEW')return '目的・利用状況・成果とのつながりを確認する項目です。';
  if(r==='EDUCATION_PRIORITY_PROTECTED')return '教育方針を優先する回答のため、比較差だけでは削減対象にしていません。';
- if(r==='MOBILE_SCOPE_REQUIRES_CONTRACT_REVIEW')return '通信費は契約範囲を確認しないと同条件比較できないため、契約内容を確認します。';
+ if(r==='MOBILE_ONLY_RATE_BAND_REVIEW')return 'スマホ1回線の金額として、同じ回線タイプの料金帯を参考に確認します。料金帯との差は削減額ではありません。';
+ if(r==='MOBILE_SCOPE_REQUIRES_CONTRACT_REVIEW')return '通信費はスマホ・自宅ネット・家族分などの契約範囲を確認してから判断します。合算額をスマホ料金帯へ直接比較しません。';
  if(r==='AMOUNT_UNKNOWN')return '金額が未把握のため、明細確認が先です。';
  if(r==='ZERO_SPEND')return '現在の支出は0円です。';
  if(r==='NOT_APPLICABLE')return '今回の生活条件では対象外です。';
@@ -58,6 +59,11 @@ const appraisalSummary=(x:FinalCategoryV4):string|null=>{
  const a=x.appraisal;if(!a)return null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足していて守りたい',satisfied:'満足していて今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'住居費をかなり負担に感じる',burdenSome:'住居費を少し負担に感じる',reasonable:'今の住居費は妥当',protect:'今の住環境を優先したい'} as Record<string,string>)[a.rentPreference]??null;
+ if(x.category==='mobile'&&a.mobileScope){
+  const scope=({mobileOnly:'スマホ1回線だけ',mobileInternet:'スマホ＋自宅ネット',familyOrMultiple:'家族分・複数回線を含む',unknown:'請求範囲が不明'} as Record<string,string>)[a.mobileScope]??'通信費の範囲を確認';
+  const carrier=a.mobileScope==='mobileOnly'&&a.mobileCarrier?({major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'} as Record<string,string>)[a.mobileCarrier]:null;
+  return [scope,carrier].filter(Boolean).join(' / ');
+ }
  if(x.category==='sub'&&(a.subUnusedAmount??0)>0)return `未使用分 月¥${Math.round(a.subUnusedAmount??0).toLocaleString('ja-JP')}${a.subCancellationConfirmed===true?' / 停止・解約可能を確認済み':''}`;
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='insurance'&&a.insurancePurpose)return ({clear:'保障目的を把握',mostly:'保障目的をだいたい把握',unclear:'保障目的がよく分からない'} as Record<string,string>)[a.insurancePurpose]??null;
