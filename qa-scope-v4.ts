@@ -188,12 +188,13 @@ console.log('SCOPE_V4_QA PASS');
  d.relationships=['parents'];
  d.expenseSharing='other_more';
  d.householdContributionMode='bundled';
+ d.bundledContributionAmount=50000;
  d.prefecture='東京都';
  d.age=28;
  d.housingTenure='family_home';
  d.monthlyTakeHome=250000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','contribution','prefecture','age','housing','income']);
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','contribution','contributionAmount','prefecture','age','housing','income']);
 }
 
 
