@@ -170,6 +170,18 @@ function nextCheck(x:FinalCategoryV3):string{
  if(x.category==='selfDevelopment')return '目的・利用状況・成果を確認';
  return '直近1〜3か月の明細を確認';
 }
+const INCOME_LABEL:Record<AnnualIncomeBand,string>={under500:'500万円未満','500_599':'500〜599万円','600_699':'600〜699万円','700_799':'700〜799万円','800_999':'800〜999万円','1000plus':'1,000万円以上',unknown:'未回答'};
+function comparisonContext(x:FinalCategoryV3,profile:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number}|null,annualIncomeBand:AnnualIncomeBand){
+ const m=x.benchmarkMeta?.meta??{}; const bits:string[]=[];
+ if(profile?.age)bits.push(`${profile.age}歳`);
+ if(profile?.household==='single')bits.push('単身世帯'); else if(profile?.household==='multi')bits.push(`${profile.householdSize||2}人世帯`);
+ if(x.category==='energy'&&profile?.prefecture)bits.push(profile.prefecture);
+ if(x.category==='rent'&&profile?.prefecture)bits.push(`${profile.prefecture}・民営賃貸`);
+ if(x.category==='beautyFashion'&&m.sex==='male')bits.push('男性'); else if(x.category==='beautyFashion'&&m.sex==='female')bits.push('女性');
+ if(x.category==='childEducation'&&x.appraisal?.educationChildren?.length)bits.push(`子ども${x.appraisal.educationChildren.length}人・学校段階別`);
+ return {displayAge:profile?.age??null,household:profile?.household??null,householdSize:profile?.householdSize??null,prefecture:profile?.prefecture??null,housingType:profile?.housingType??null,incomeBand:annualIncomeBand,incomeBandLabel:INCOME_LABEL[annualIncomeBand],incomeApplied:false,criteria:bits,confidence:x.benchmarkMeta?.confidence??null,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:m};
+}
+
 export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:string;name:string;description?:string;catchphrase?:string;strengthLabel?:string;blindSpot?:string;shareHook?:string;axes?:{fv:number;pi:number;au:number};axisStrength?:{fv:number;pi:number;au:number};nearMiddle?:{fv:boolean;pi:boolean;au:boolean}};toneMode:string;profile?:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};finalCategories:FinalCategoryV3[];monthlyImprovement:number;annualIncomeBand:AnnualIncomeBand}){
  const counts=(['battle','protect','safe','review','na'] as FinalStatus[]).reduce((o,k)=>({...o,[k]:args.finalCategories.filter(x=>x.status===k).length}),{} as Record<FinalStatus,number>);
  const rows=args.finalCategories.map(x=>({
@@ -179,7 +191,7 @@ export function buildResultViewModelV3(args:{diagnosisId:string;type:{code:strin
   comparator:comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta),
   diagnosisState:x.engine?.state??null,reasonCodes:x.engine?.reasonCodes??[],needsReview:x.engine?.needsReview??false,
   battleBasis:x.battleBasis,encounterStrength:encounterStrengthV31(x),confirmedSaving:x.engine?.confirmedSaving??null,reducible:x.reducible,priority:x.priority,
-  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x)
+  appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),reason:reason(x),nextCheck:nextCheck(x),comparisonContext:comparisonContext(x,args.profile??null,args.annualIncomeBand)
  }));
  const battle=rows.filter(x=>x.status==='battle').sort((a,b)=>(b.battleBasis==='confirmed'?2:1)-(a.battleBasis==='confirmed'?2:1)||(b.comparisonDifference??0)-(a.comparisonDifference??0)).slice(0,3);
  const reviewPriority=(x:(typeof rows)[number])=>{
