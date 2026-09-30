@@ -752,7 +752,7 @@ function ProfileScene({
           次へ ▶
         </button>}
 
-        {index > 0 && (
+        {(index > 0 || householdSizePending) && (
           <button type="button" className="pre-back" onClick={onBack}>
             ← 戻る
           </button>
