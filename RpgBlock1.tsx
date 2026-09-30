@@ -459,12 +459,14 @@ export default function RpgBlock1({
     }
   },[scene,appraisalIndex,appraisalQuestions,onEvent]);
 
-  const beginAdventure = () => setScene('mode');
-  const chooseMode = (mode:ToneMode) => {
-    setSelectedToneMode(mode);
+  const beginAdventure = () => {
     setQuestionIndex(0);
     setProfileV4Draft(emptyProfileDraftV4());
     setProfileV4(null);
+    setScene('profile');
+  };
+  const chooseMode = (mode:ToneMode) => {
+    setSelectedToneMode(mode);
     onBegin(mode);
     window.requestAnimationFrame(()=>setScene('profile'));
   };
@@ -497,6 +499,12 @@ export default function RpgBlock1({
 
   const nextQuestion = () => {
     const steps=profileStepsV4(profileV4Draft);
+    const currentStep=steps[Math.min(questionIndex,Math.max(0,steps.length-1))];
+    if(currentStep==='scope'){
+      setQuestionIndex(1);
+      setScene('mode');
+      return;
+    }
     if(questionIndex < steps.length - 1){
       setQuestionIndex(value=>value+1);
       return;
@@ -512,8 +520,9 @@ export default function RpgBlock1({
   };
 
   const previousQuestion = () => {
-    if(questionIndex===0){setScene('mode');return;}
-    setQuestionIndex(value=>Math.max(0,value-1));
+    if(questionIndex===0){setScene('opening');return;}
+    if(questionIndex===1){setScene('mode');return;}
+    setQuestionIndex(value=>Math.max(1,value-1));
   };
 
   const advanceScanCategory=()=>{
@@ -555,7 +564,7 @@ export default function RpgBlock1({
           {scene === 'opening' ? (
             <OpeningScene onStart={beginAdventure} />
           ) : scene === 'mode' ? (
-            <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>setScene('opening')} />
+            <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>{setQuestionIndex(0);setScene('profile')}} />
           ) : scene === 'profile' ? (
             <ProfileV4Scene
               draft={profileV4Draft}
