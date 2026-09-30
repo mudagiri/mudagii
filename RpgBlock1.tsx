@@ -678,9 +678,7 @@ function ProfileScene({
   const progress = householdSizePending ? (3 / 7) * 100 : (question.no / 7) * 100;
   const isWarning = question.no === 4;
   const isEncounter = question.no >= 5;
-  const [partyChoiceLocked,setPartyChoiceLocked]=useState(false);
-  useEffect(()=>{if(householdSizePending)setPartyChoiceLocked(false)},[householdSizePending]);
-  const choosePartySize=(n:string)=>{if(partyChoiceLocked)return;setPartyChoiceLocked(true);setFlow(v=>({...v,householdSize:n}));window.requestAnimationFrame(()=>onNext())};
+  const choosePartySize=(n:string)=>{setFlow(v=>({...v,householdSize:n}))};
 
   return (
     <div className={`pre-profile pre-q${question.no}`}>
@@ -731,17 +729,17 @@ function ProfileScene({
         <h2>{householdSizePending?'あなたを含めて何人暮らし？':question.question}</h2>
         <p className="pre-helper">{householdSizePending?'世帯人数に合った家計データと比較するために使います':question.helper}</p>
 
-        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} disabled={partyChoiceLocked} onClick={()=>choosePartySize(n)}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
+        {householdSizePending ? <div className="profile-choice-grid profile-choice-grid-5">{['2','3','4','5','6'].map(n=><button key={n} type="button" className={`profile-choice ${flow.householdSize===n?'is-selected':''}`} onClick={()=>choosePartySize(n)}>{n==='6'?'6人以上':`${n}人`}</button>)}</div> : <ProfileInput
           no={question.no}
           flow={flow}
           setFlow={setFlow}
           onChoiceNext={onNext}
         />}
 
-        {!householdSizePending && [1,2,6].includes(question.no) && <button
+        {<button
           type="button"
           className="pre-primary pre-next profile-primary-cta"
-          onClick={()=>onNext()}
+          onClick={()=>onNext(question.no===3?flow.household:undefined)}
           disabled={(question.no === 2 && (Number(flow.age) < 18 || Number(flow.age) > 99)) || (question.no === 6 && Number(flow.monthlyTakeHome) <= 0)}
         >
           次へ ▶
@@ -771,8 +769,6 @@ function ProfileInput({
   onChoiceNext: (householdOverride?:FamilyProfile) => void;
 }) {
   const selectClass = 'pre-select';
-  const [choiceLocked,setChoiceLocked]=useState(false);
-  const chooseOnce=(apply:()=>void,next:()=>void)=>{if(choiceLocked)return;setChoiceLocked(true);apply();window.requestAnimationFrame(next)};
 
   if (no === 1) {
     return (
@@ -814,15 +810,15 @@ function ProfileInput({
   }
 
   if (no === 3) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)})),()=>onChoiceNext(item.value))}>{item.label}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSEHOLDS.map(item=><button key={item.value} type="button" className={`profile-choice ${flow.household===item.value?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,household:item.value,householdSize:item.value==='single'?'1':(v.householdSize==='1'?'2':v.householdSize)}))}>{item.label}</button>)}</div>;
   }
 
   if (no === 4) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,workStyle})),()=>onChoiceNext())}>{workStyle}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{WORK_STYLES.map(workStyle=><button key={workStyle} type="button" className={`profile-choice ${flow.workStyle===workStyle?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,workStyle}))}>{workStyle}</button>)}</div>;
   }
 
   if (no === 5) {
-    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} disabled={choiceLocked} onClick={()=>chooseOnce(()=>setFlow(v=>({...v,housingType})),()=>onChoiceNext())}>{housingType}</button>)}</div>;
+    return <div className="profile-choice-grid profile-choice-grid-2">{HOUSING_TYPES.map(housingType=><button key={housingType} type="button" className={`profile-choice ${flow.housingType===housingType?'is-selected':''}`} onClick={()=>setFlow(v=>({...v,housingType}))}>{housingType}</button>)}</div>;
   }
 
   return (
@@ -850,16 +846,17 @@ function ProfileInput({
 
 function IncomeCalibrationScene({value,onPick,onBack}:{value:AnnualIncomeBand;onPick:(v:AnnualIncomeBand)=>void;onBack:()=>void}){
  const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
+ const [draft,setDraft]=useState<AnnualIncomeBand>(value);
  return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/>
   <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>冒険準備</span><b>7 / 7</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
-  <section className="pre-panel pre-complete-panel" style={{paddingTop:22}}>
+  <section className="pre-panel pre-complete-panel" style={{paddingTop:18}}>
   <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
-  <p style={{fontSize:12,opacity:.7,lineHeight:1.6}}>税引前のおおよその年収でOK。家計全体のバランスや、あなたに近い条件で結果を見るために使うぞ。</p>
-  <div className="profile-choice-grid profile-choice-grid-2 income-band-grid">{opts.map(([v,l],i)=><button key={v} type="button" className={`profile-choice ${value===v?'is-selected':''} ${i===opts.length-1?'income-band-last':''}`} onClick={()=>onPick(v)}>{l}</button>)}</div>
+  <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>税引前のおおよその年収でOK。近い条件で結果を見るために使うぞ。</p>
+  <div className="profile-choice-grid profile-choice-grid-2 income-band-grid">{opts.map(([v,l],i)=><button key={v} type="button" className={`profile-choice ${draft===v?'is-selected':''} ${i===opts.length-1?'income-band-last':''}`} onClick={()=>setDraft(v)}>{l}</button>)}</div>
+  <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onPick(draft)}>次へ ▶</button>
   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
  </section></div>
 }
-
 const BATTLE_ASSET = './assets/battle1';
 const SCAN_MUDAGIRI_GUIDE = `${ASSET}/MUDAGIRI_PROFILE_Q1.png`;
 const SCAN_MUDAGIRI_RUN = `${ASSET}/MUDAGIRI_PROFILE_Q2.png`;
