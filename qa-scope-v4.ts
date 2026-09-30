@@ -5,6 +5,7 @@ import { runDiagnosisAdapterV4 } from './diagnosis-adapter-v4';
 import { buildFinalJudgementsV4 } from './final-judgement-v4';
 import { requiresHouseholdTotalV4 } from './scope-flow-v4';
 import type { ProfileV4 } from './mudagiri-profile-v4';
+import { emptyProfileDraftV4, profileStepsV4, finalizeProfileV4 } from './mudagiri-profile-v4';
 
 const base=(patch:Partial<ProfileV4>={}):ProfileV4=>({
  diagnosisScope:'personal',
@@ -126,3 +127,68 @@ const amount=(records:ReturnType<typeof emptyExpenseRecordsV4>,category:keyof Re
 }
 
 console.log('SCOPE_V4_QA PASS');
+
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='personal';
+ d.householdSize=1;
+ d.prefecture='東京都';
+ d.age=35;
+ d.housingTenure='rental';
+ d.housingSubtype='private_rental';
+ d.monthlyTakeHome=350000;
+ d.monthlyTakeHomeAnswered=true;
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','prefecture','age','housing','income']);
+ const p=finalizeProfileV4(d);
+ A.equal(p.householdSize,1);
+ A.equal(p.adultCount,1);
+}
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='personal';
+ d.householdSize=2;
+ d.relationships=['partner'];
+ d.expenseSharing='split';
+ d.prefecture='東京都';
+ d.age=35;
+ d.housingTenure='rental';
+ d.housingSubtype='private_rental';
+ d.monthlyTakeHome=350000;
+ d.monthlyTakeHomeAnswered=true;
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','prefecture','age','housing','income']);
+}
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='household';
+ d.householdSize=4;
+ d.relationships=['partner','children'];
+ d.childCount=2;
+ d.prefecture='東京都';
+ d.age=40;
+ d.housingTenure='owned';
+ d.housingSubtype='mortgage';
+ d.monthlyTakeHome=600000;
+ d.monthlyTakeHomeAnswered=true;
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','childCount','prefecture','age','housing','income']);
+ const p=finalizeProfileV4(d);
+ A.equal(p.adultCount,2);
+ A.equal(p.childCount,2);
+}
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='personal';
+ d.householdSize=3;
+ d.relationships=['parents'];
+ d.expenseSharing='other_more';
+ d.householdContributionMode='bundled';
+ d.prefecture='東京都';
+ d.age=28;
+ d.housingTenure='family_home';
+ d.monthlyTakeHome=250000;
+ d.monthlyTakeHomeAnswered=true;
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','contribution','prefecture','age','housing','income']);
+}
