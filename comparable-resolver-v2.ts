@@ -99,7 +99,7 @@ export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
  return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
 }
 
-export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot'}):Partial<Record<Category,ComparableV2>>{
+export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot'}):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
  // Restore the frozen V1 income correction only for multi-person households >= ¥5m.
