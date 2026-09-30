@@ -42,7 +42,7 @@ const engineMap=(diagnosis:ReturnType<typeof import('./mudagiri-diagnosis-v2').r
  return map;
 };
 
-function decide(category:Category,record:ExpenseRecordV4,comparison:ComparisonFactV4,engine:CategoryResult|null,ap?:FinalAppraisalV4):Omit<FinalCategoryV4,'category'|'record'|'comparison'|'engine'|'confirmedSaving'|'screeningDelta'>{
+function decide(category:Category,record:ExpenseRecordV4,comparison:ComparisonFactV4,engine:CategoryResult|null,ap?:FinalAppraisalV4):Omit<FinalCategoryV4,'category'|'record'|'comparison'|'engine'|'confirmedSaving'|'screeningDelta'|'appraisal'>{
  if(record.applicability==='na')return {status:'na',attentionFlag:false,reasonCode:'NOT_APPLICABLE'};
  if(!record.known||record.diagnosisAmount===null)return {status:'review',attentionFlag:true,reasonCode:'AMOUNT_UNKNOWN'};
  if(record.diagnosisAmount===0)return {status:'safe',attentionFlag:false,reasonCode:'ZERO_SPEND'};
