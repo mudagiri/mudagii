@@ -225,7 +225,15 @@ function reviewPotential(x:FinalCategoryV3){
  const delta=amount-ref; const ratio=delta/ref;
  if(delta<=0)return {available:true as const,delta,ratio,level:'low' as const,label:'基準内'};
  // Potential means possible household impact, never confirmed waste/saving.
- const score=(delta>=30000?2:delta>=10000?1:0)+(ratio>=0.5?2:ratio>=0.2?1:0);
+ // Category-aware materiality: flexible spending can be actionable at smaller gaps,
+ // while housing/education need a larger gap before we call the possible impact large.
+ const flexible=['food','daily','fun','beautyFashion'].includes(x.category);
+ const structural=['rent','childEducation'].includes(x.category);
+ const highYen=structural?50000:flexible?20000:30000;
+ const mediumYen=structural?20000:flexible?8000:10000;
+ const highRatio=structural?0.5:0.4;
+ const mediumRatio=structural?0.25:0.2;
+ const score=(delta>=highYen?2:delta>=mediumYen?1:0)+(ratio>=highRatio?2:ratio>=mediumRatio?1:0);
  const level=score>=3?'high':score>=1?'medium':'low';
  return {available:true as const,delta,ratio,level,label:level==='high'?'見直しインパクト 大':level==='medium'?'見直しインパクト 中':'見直しインパクト 小'};
 }
