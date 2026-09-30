@@ -3424,6 +3424,62 @@ const CSS = String.raw`
 }
 
 
+/* ===== MOBILE INTERACTION CONTRACT V4: audited 2026-09-30 =====
+   Rule: scroll is the safety net; only discrete choices auto-advance.
+   Numeric/select inputs require an explicit CTA. Decorative layers never receive taps. */
+.pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene,.pre-complete{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y!important;
+}
+.pre-profile-hud,.scan-hud,.type-quiz-hud,.appraisal-hud{pointer-events:none!important}
+.pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg,
+.pre-dialogue,.pre-question-no,.pre-helper,.pre-checkpoint,.pre-profile-footer{pointer-events:none!important}
+.pre-panel{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:calc(100% - 32px)!important;
+  min-height:0!important;
+  margin:max(47vh,360px) auto max(34px,calc(env(safe-area-inset-bottom) + 22px))!important;
+  padding:18px 18px 16px!important;
+  z-index:60!important;
+}
+.pre-dialogue{width:100%!important;min-height:0!important;margin:0 0 14px!important}
+.profile-choice-grid,.pre-input-wrap{position:relative;z-index:70}
+.profile-choice,.pre-primary,.pre-back,.pre-select,.pre-age-input,.pre-age-input input{
+  position:relative;z-index:71;pointer-events:auto!important;touch-action:manipulation!important;
+}
+.profile-choice{min-height:58px!important}
+.pre-panel .profile-primary-cta{
+  position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;
+  width:100%!important;min-height:58px!important;margin:12px 0 0!important;
+}
+.pre-panel .pre-back{
+  position:relative!important;left:auto!important;bottom:auto!important;transform:none!important;
+  width:100%!important;min-height:44px!important;margin:8px 0 0!important;padding:9px 12px!important;text-align:center;
+}
+.pre-profile-footer{position:relative!important;bottom:auto!important;margin:-18px 0 max(18px,env(safe-area-inset-bottom))!important}
+.pre-checkpoint{position:absolute;top:25vh}
+@media(max-height:780px){
+  .pre-panel{margin-top:max(43vh,310px)!important}
+  .pre-profile-mudagiri{display:block}
+}
+@media(max-height:620px){
+  .pre-panel{margin-top:max(38vh,230px)!important}
+  .pre-profile-mudagiri{display:none}
+}
+.pre-complete .pre-panel{margin-top:max(24vh,170px)!important}
+.scan-scene,.type-quiz-scene,.appraisal-scene{scroll-padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
+.scan-panel button,.scan-panel input,.type-scale-option,.appraisal-option{
+  position:relative;z-index:70;pointer-events:auto!important;touch-action:manipulation!important;
+}
+.type-scale-option,.appraisal-option{min-height:58px!important}
+
 /* ===== PROFILE COLLISION HOTFIX V3.2: keep controls in document flow ===== */
 .pre-panel .profile-primary-cta{
   position:relative!important;
