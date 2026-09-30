@@ -16,6 +16,7 @@ export interface ProfileV4 {
  relationships:RelationshipV4[];
  expenseSharing:ExpenseSharingV4;
  householdContributionMode:HouseholdContributionModeV4;
+ bundledContributionAmount:number|null;
  prefecture:string;
  age:number;
  housingTenure:HousingTenureV4;
@@ -47,6 +48,8 @@ export function assertProfileV4(p:ProfileV4){
  if(p.diagnosisScope==='personal'&&p.householdSize>=2&&!p.expenseSharing)throw new Error('PERSONAL_MULTI_REQUIRES_EXPENSE_SHARING');
  if(!(p.diagnosisScope==='personal'&&p.relationships.includes('parents'))&&p.householdContributionMode!==null)throw new Error('CONTRIBUTION_MODE_NOT_APPLICABLE');
  if(p.diagnosisScope==='personal'&&p.relationships.includes('parents')&&p.householdContributionMode===null)throw new Error('PARENT_COHABIT_REQUIRES_CONTRIBUTION_MODE');
+ if(p.householdContributionMode==='bundled'&&(p.bundledContributionAmount===null||!Number.isFinite(p.bundledContributionAmount)||p.bundledContributionAmount<0))throw new Error('BUNDLED_CONTRIBUTION_AMOUNT_REQUIRED');
+ if(p.householdContributionMode!=='bundled'&&p.bundledContributionAmount!==null)throw new Error('BUNDLED_CONTRIBUTION_AMOUNT_NOT_APPLICABLE');
  if(!p.prefecture.trim())throw new Error('PREFECTURE_REQUIRED');
  if(!Number.isInteger(p.age)||p.age<18||p.age>120)throw new Error('INVALID_AGE');
  if(p.monthlyTakeHome!==null&&(!Number.isFinite(p.monthlyTakeHome)||p.monthlyTakeHome<0))throw new Error('INVALID_MONTHLY_TAKE_HOME');
@@ -85,7 +88,7 @@ export function resolverHousingTypeV4(p:ProfileV4){
 export const PROFILE_V4_VERSION='MUDAGIRI_PROFILE_V4_0';
 
 
-export type ProfileStepV4='scope'|'householdSize'|'relationships'|'childCount'|'expenseSharing'|'contribution'|'prefecture'|'age'|'housing'|'income';
+export type ProfileStepV4='scope'|'householdSize'|'relationships'|'childCount'|'expenseSharing'|'contribution'|'contributionAmount'|'prefecture'|'age'|'housing'|'income';
 
 export interface ProfileDraftV4 {
  diagnosisScope:DiagnosisScopeV4|'';
@@ -94,6 +97,7 @@ export interface ProfileDraftV4 {
  relationships:RelationshipV4[];
  expenseSharing:ExpenseSharingV4;
  householdContributionMode:HouseholdContributionModeV4;
+ bundledContributionAmount:number|null;
  prefecture:string;
  age:number|null;
  housingTenure:HousingTenureV4|null;
@@ -111,6 +115,7 @@ export function emptyProfileDraftV4():ProfileDraftV4{
   relationships:[],
   expenseSharing:null,
   householdContributionMode:null,
+  bundledContributionAmount:null,
   prefecture:'',
   age:null,
   housingTenure:null,
@@ -127,6 +132,7 @@ export function profileStepsV4(d:ProfileDraftV4):ProfileStepV4[]{
  if((d.householdSize??0)>=2&&d.relationships.includes('children'))steps.push('childCount');
  if(d.diagnosisScope==='personal'&&(d.householdSize??0)>=2)steps.push('expenseSharing');
  if(d.diagnosisScope==='personal'&&d.relationships.includes('parents'))steps.push('contribution');
+ if(d.householdContributionMode==='bundled')steps.push('contributionAmount');
  steps.push('prefecture','age','housing','income');
  return steps;
 }
@@ -138,6 +144,7 @@ export function profileStepValidV4(step:ProfileStepV4,d:ProfileDraftV4){
  if(step==='childCount')return Number.isInteger(d.childCount)&&Number(d.childCount)>=1&&Number(d.childCount)<Number(d.householdSize);
  if(step==='expenseSharing')return d.expenseSharing!==null;
  if(step==='contribution')return d.householdContributionMode!==null;
+ if(step==='contributionAmount')return d.bundledContributionAmount!==null&&Number.isFinite(d.bundledContributionAmount)&&d.bundledContributionAmount>=0;
  if(step==='prefecture')return d.prefecture.trim().length>0;
  if(step==='age')return Number.isInteger(d.age)&&Number(d.age)>=18&&Number(d.age)<=120;
  if(step==='housing'){
@@ -161,6 +168,7 @@ export function finalizeProfileV4(d:ProfileDraftV4):ProfileV4{
   relationships:householdSize===1?[]:[...d.relationships],
   expenseSharing:d.diagnosisScope==='personal'&&householdSize>=2?d.expenseSharing:null,
   householdContributionMode:d.diagnosisScope==='personal'&&d.relationships.includes('parents')?d.householdContributionMode:null,
+  bundledContributionAmount:d.householdContributionMode==='bundled'?d.bundledContributionAmount:null,
   prefecture:d.prefecture,
   age:d.age!,
   housingTenure:d.housingTenure!,
