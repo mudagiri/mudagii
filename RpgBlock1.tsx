@@ -3424,6 +3424,36 @@ const CSS = String.raw`
 }
 
 
+/* ===== PROFILE COLLISION HOTFIX V3.2: keep controls in document flow ===== */
+.pre-panel .profile-primary-cta{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:100%!important;
+  margin:10px 0 0!important;
+  min-height:56px!important;
+}
+.pre-panel .pre-back{
+  position:relative!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  width:100%;
+  min-height:42px;
+  margin:8px 0 -4px!important;
+  padding:8px 12px!important;
+  text-align:center;
+}
+.pre-panel{padding-bottom:16px!important}
+.pre-panel .pre-input-wrap{margin-bottom:0}
+.pre-panel .profile-choice-grid{margin-bottom:0}
+@media(max-height:780px){
+  .pre-panel .profile-primary-cta{margin-top:9px!important}
+  .pre-panel .pre-back{margin-top:7px!important}
+  .pre-panel{padding-bottom:14px!important}
+}
+
 /* ===== MOBILE UX HOTFIX V3.1: taps + collision ===== */
 .pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene{touch-action:pan-y}
 .pre-panel,.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
