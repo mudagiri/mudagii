@@ -65,7 +65,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
  return <>
  <style>{CSS}</style>
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.counts.battle>0?'削減クエスト発見！':vm.counts.review>0?'確認クエスト発見！':'家計防衛成功！'}</h1><p>{vm.counts.battle>0?`削減可能額まで確認できた項目が ${vm.counts.battle} 件あります。`:vm.counts.review>0?`まだ判断に確認が必要な項目が ${vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 削減確定 <b>{vm.counts.battle}</b></span><span>🛡️ 守る <b>{vm.counts.protect}</b></span><span>🔍 要確認 <b>{vm.counts.review}</b></span></div></section>
+  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>{vm.battleTargets.length>0?'削減クエスト発見！':vm.encounterTargets.length>0?'優先チェック発見！':'優先チェック対象なし'}</h1><p>{vm.battleTargets.length>0?`削減可能額まで確認できた項目が ${vm.battleTargets.length} 件あります。`:vm.encounterTargets.length>0?`回答と確認情報から、優先して見る項目を ${vm.encounterTargets.length} 件に絞りました。`:'今回の情報では、強く優先する見直し項目は見つかりませんでした。'}</p><div className="rv3-count"><span>⚔️ 削減確定 <b>{vm.battleTargets.length}</b></span><span>🎯 優先チェック <b>{vm.encounterTargets.length}</b></span><span>🔍 その他確認 <b>{vm.secondaryReviewTargets.length}</b></span></div></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title">
@@ -103,6 +103,8 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
    <p className="rv3-note">具体的に不要・削減可能と確認できた実額だけを改善額に含めます。比較平均との差や「要鑑定」の金額は含みません。実際の削減には契約変更・解約などの実行が必要です。</p>
   </section>
 
+  {!!vm.encounterTargets.length&&<section className="rv3-section"><h3>🎯 優先して確認する項目</h3><p className="rv3-muted">本人回答やカテゴリ固有の確認情報から優先度が高い項目です。削減額が未確定のものは、ムダと断定していません。</p>{vm.encounterTargets.filter((x:any)=>x.status!=='battle').map((x:any)=><article className="rv3-card" key={`e-${x.category}`}><div className="rv3-row"><b>{x.enemyName}</b><b>要チェック</b></div><div className="rv3-muted">{x.label} ¥{yen(x.amount)}/月</div>{x.appraisalSummary&&<div className="rv3-answer">あなたの回答：<b>{x.appraisalSummary}</b></div>}<p>{x.reason}</p></article>)}</section>}
+
   {!!vm.battleTargets.length&&<section className="rv3-section"><h3>⚔️ 削減可能と確認できた項目</h3>{vm.battleTargets.map((x:any)=><article className="rv3-card" key={x.category}>
    <div className="rv3-row"><b>{x.enemyName}</b><b>{x.confirmedSaving!==null&&x.confirmedSaving>0?`確定 ¥${yen(x.confirmedSaving)}/月`:'改善額 未確定'}</b></div>
    <div className="rv3-muted">{x.label} ¥{yen(x.amount)}/月</div>
@@ -119,7 +121,7 @@ export default function ResultScreenV3({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
   </section>
 
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?'まず1つだけ、ここを確認。':'今の家計を守るために。'}</h3>
-   {vm.firstQuest?<><p>{vm.firstQuest.status==='battle'?'優先して見直す項目':'まだ判断に情報が必要な項目'}</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':'🔍'} {vm.firstQuest.label}</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">あなたの回答「{vm.firstQuest.appraisalSummary}」をもとに選びました。</p>}</>:<p>優先して見直す項目は見つかりませんでした。今の状態を維持するためのチェックリストを用意します。</p>}
+   {vm.firstQuest?<><p>{vm.firstQuest.status==='battle'?'削減可能と確認できた項目':vm.firstQuest.encounterStrength==='strong'?'優先して確認する項目':'まだ判断に情報が必要な項目'}</p><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p>まずやること：<b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">あなたの回答「{vm.firstQuest.appraisalSummary}」をもとに選びました。</p>}</>:<p>優先して見直す項目は見つかりませんでした。今の状態を維持するためのチェックリストを用意します。</p>}
    <p className="rv3-note">LINEでは診断結果を保存し、未確定項目があれば確認手順を受け取れます。必要なら、その項目を無料相談で一緒に確定できます。</p>
    <button className="rv3-primary" onClick={()=>{onEvent?.('line_clicked',{firstQuest:vm.firstQuest?.category});onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category})}}>▶ 診断結果と確認手順をLINEで受け取る</button>
    <small>✓ 診断結果を保存　✓ 未確定項目の確認手順　✓ 無料<br/>相談は任意です。公式LINEの友だち追加が必要です</small>
