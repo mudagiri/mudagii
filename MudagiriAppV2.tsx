@@ -61,7 +61,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      result:{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle,counts:vm.counts,improvement:vm.improvement,
        finalStatuses:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}])),
        finalDetails:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}])),
-       battleTargets:vm.battleTargets.map((x:any)=>x.category)}
+       battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category)}
    };
    await store?.saveDiagnosis(snapshot);
    emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,monthlyImprovement:vm.improvement.monthly,toneMode});
