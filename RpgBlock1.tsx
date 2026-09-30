@@ -1573,10 +1573,10 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
       <div className="combo-enemies">
         {targets.map((target,i)=>{
           const enemy=ENEMY_ASSETS[target.category];
-          const defeated=phase==='defeated'||(phase==='action'&&i<hitIndex);
+          const checked=phase==='defeated'||(phase==='action'&&i<hitIndex);
           const hitting=phase==='action'&&i===hitIndex;
-          return <div key={target.category} className={`combo-enemy-slot slot-${i} ${hitting?'is-hit':''} ${defeated?'is-defeated':''}`}>
-            <img src={defeated?enemy.defeated:enemy.normal} alt={enemy.name}/>
+          return <div key={target.category} className={`combo-enemy-slot slot-${i} ${hitting?'is-hit':''} ${checked?'is-defeated':''}`}>
+            <img src={enemy.normal} alt={enemy.name}/>
             {phase==='ready'&&<strong>{enemy.name}</strong>}
             {hitting&&<><img className="combo-slash" src={`${BATTLE_ASSET}/FX-02_SLASH.png`} alt=""/><img className="combo-hit" src={`${BATTLE_ASSET}/FX-03_HIT.png`} alt=""/></>}
           </div>
@@ -1591,12 +1591,12 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
       {phase==='action'&&hitIndex>=0&&<div className="combo-white-flash" key={`flash-${hitIndex}`} />}
 
       <section className="combo-panel">
-        <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'MUDAGIRI COMBO':'QUEST CLEAR'}</div>
-        <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'一気にいくぞ！':`${targets.length}体、見直しクエスト完了！`}</h2>
+        <div className="battle-result-kicker">{phase==='ready'?'TARGETS LOCKED':phase==='action'?'PRIORITY CHECK':'QUEST CLEAR'}</div>
+        <h2>{phase==='ready'?'見直すべき相手は見えた。':phase==='action'?'優先順位をロックするぞ！':`${targets.length}体、優先チェック完了！`}</h2>
         {phase==='ready'&&<p>判定理由と、確定できた改善額だけをRESULTで開示する。</p>}
-        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>ムダギリ発動！ ▶</button>
+        {phase==='ready'?<button type="button" className="pre-primary combo-attack" onClick={attack}>優先チェック開始！ ▶</button>
           :phase==='defeated'?<button type="button" className="pre-primary combo-attack" onClick={onDone}>診断結果へ ▶</button>
-          :<div className="combo-slash-label">SLASH × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
+          :<div className="combo-slash-label">CHECK × {Math.min(Math.max(hitIndex+1,1),targets.length)}</div>}
       </section>
     </div>
   );
