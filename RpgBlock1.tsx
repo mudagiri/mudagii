@@ -10,6 +10,8 @@ import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-dia
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 import type { EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
+import ProfileV4Scene from './ProfileV4Scene';
+import {emptyProfileDraftV4,finalizeProfileV4,legacyFamilyProfileV4,profileStepsV4,resolverHousingTypeV4,shouldOfferAnnualIncomeCalibrationV4,type ProfileDraftV4,type ProfileV4} from './mudagiri-profile-v4';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -18,7 +20,7 @@ type Props = {
   toneMode: ToneMode;
   onBegin: (mode: ToneMode) => void;
   onFamilySelect: (profile: FamilyProfile) => void;
-  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
+  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
   resumeDraft?: JourneyDraftV1|null;
   diagnosisId?: string;
@@ -251,7 +253,9 @@ export default function RpgBlock1({
   const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>((resumeDraft?.toneMode as ToneMode)||toneMode);
   const [questionIndex, setQuestionIndex] = useState(resumeDraft?.questionIndex??0);
   const [flow, setFlow] = useState<ProfileFlow>(()=>resumeDraft?.flow??INITIAL_FLOW);
-  const [householdSizePending,setHouseholdSizePending]=useState(resumeDraft?.householdSizePending??false);
+  const [profileV4Draft,setProfileV4Draft]=useState<ProfileDraftV4>(()=>resumeDraft?.profileV4Draft??emptyProfileDraftV4());
+  const [profileV4,setProfileV4]=useState<ProfileV4|null>(()=>resumeDraft?.profileV4??null);
+  const [householdSizePending,setHouseholdSizePending]=useState(false);
   const [scanIndex, setScanIndex] = useState(resumeDraft?.scanIndex??0);
   const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>resumeDraft?.rawExpenses??emptyRawExpenses());
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
@@ -265,6 +269,8 @@ export default function RpgBlock1({
   const diagnosisFinishLock=React.useRef(false);
 
   const question = QUESTIONS[questionIndex];
+  const profileV4Steps=useMemo(()=>profileStepsV4(profileV4Draft),[profileV4Draft]);
+  const profileV4Step=profileV4Steps[Math.min(questionIndex,Math.max(0,profileV4Steps.length-1))];
   const applicableScanCategories = useMemo(
     () => SCAN_CATEGORIES.filter((item) => item.category !== 'childEducation' || flow.household === 'children'),
     [flow.household],
@@ -287,7 +293,15 @@ export default function RpgBlock1({
     educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren,
     beautySex:appraisalAnswers.beautyFashion?.beautySex
   }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
-  const comparable=comparisonBundle.comparable;
+  const comparable=useMemo(()=>{
+    const base={...comparisonBundle.comparable};
+    if(profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2){
+      // Until a household-total follow-up is collected, never compare a personal burden
+      // against multi-household benchmarks. Missing comparison is safer than false precision.
+      for(const category of ['energy','food','daily','fun','beautyFashion','rent','childEducation'] as Category[])base[category]=null;
+    }
+    return base;
+  },[comparisonBundle.comparable,profileV4]);
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
   const comp=(c:EnemyAssetCategory)=>comparable[c as Category]??null;
@@ -358,8 +372,8 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
     if(scene==='opening'||scene==='mode'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
-  },[scene,selectedToneMode,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+  },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
     if (step === 'profile' && scene === 'opening') {
@@ -377,12 +391,12 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(scene==='profile'){
       onEvent?.('profile_step_viewed',{
-        step:householdSizePending?'3+':String(question?.no??questionIndex+1),
+        step:profileV4Step??'profile',
         index:questionIndex+1,
-        total:QUESTIONS.length,
+        total:profileV4Steps.length,
       });
     }
-  },[scene,questionIndex,householdSizePending,question?.no,onEvent]);
+  },[scene,questionIndex,profileV4Step,profileV4Steps.length,onEvent]);
 
   useEffect(()=>{
     if(scene==='scan'&&currentScan){
@@ -420,34 +434,56 @@ export default function RpgBlock1({
   const chooseMode = (mode:ToneMode) => {
     setSelectedToneMode(mode);
     setQuestionIndex(0);
+    setProfileV4Draft(emptyProfileDraftV4());
+    setProfileV4(null);
     onBegin(mode);
     window.requestAnimationFrame(()=>setScene('profile'));
   };
 
-  const nextQuestion = (householdOverride?:FamilyProfile) => {
-    const effectiveHousehold=householdOverride??flow.household;
-    if(question?.no===3 && effectiveHousehold!=='single' && !householdSizePending){
-      setHouseholdSizePending(true);
-      return;
-    }
-    if(householdSizePending){
-      setHouseholdSizePending(false);
-      setQuestionIndex((value)=>value+1);
-      return;
-    }
-    if (questionIndex < QUESTIONS.length - 1) {
-      setQuestionIndex((value) => value + 1);
-      return;
-    }
+  const syncLegacyProfileFromV4=(p:ProfileV4)=>{
+    const household=legacyFamilyProfileV4(p);
+    setFlow({
+      prefecture:p.prefecture,
+      age:String(p.age),
+      household,
+      householdSize:String(p.householdSize),
+      workStyle:'',
+      housingType:resolverHousingTypeV4(p),
+      monthlyTakeHome:p.monthlyTakeHome===null?'':String(p.monthlyTakeHome),
+    });
+    onFamilySelect(household);
+  };
 
-    setScene('incomeCalibration');
+  const beginScanFromProfile=(p:ProfileV4,band:AnnualIncomeBand)=>{
+    const completed={...p,annualIncomeBand:band};
+    setProfileV4(completed);
+    setProfileV4Draft(v=>({...v,annualIncomeBand:band}));
+    setAnnualIncomeBand(band);
+    syncLegacyProfileFromV4(completed);
+    onEvent?.('profile_completed',{diagnosisScope:completed.diagnosisScope,householdSize:completed.householdSize,hasChildren:completed.childCount>0,annualIncomeBand:band});
+    setScanIndex(0);
+    setScene('scan');
+  };
+
+  const nextQuestion = () => {
+    const steps=profileStepsV4(profileV4Draft);
+    if(questionIndex < steps.length - 1){
+      setQuestionIndex(value=>value+1);
+      return;
+    }
+    const completed=finalizeProfileV4(profileV4Draft);
+    setProfileV4(completed);
+    syncLegacyProfileFromV4(completed);
+    if(shouldOfferAnnualIncomeCalibrationV4(completed)){
+      setScene('incomeCalibration');
+      return;
+    }
+    beginScanFromProfile(completed,'unknown');
   };
 
   const previousQuestion = () => {
-    if(householdSizePending){setHouseholdSizePending(false);return;}
-    if (questionIndex === 0) return;
-    if(question?.no===4 && flow.household!=='single'){setQuestionIndex((value)=>value-1);setHouseholdSizePending(true);return;}
-    setQuestionIndex((value) => value - 1);
+    if(questionIndex===0){setScene('mode');return;}
+    setQuestionIndex(value=>Math.max(0,value-1));
   };
 
   const finishDiagnosis=()=>{
@@ -455,7 +491,7 @@ export default function RpgBlock1({
     diagnosisFinishLock.current=true;
     onEvent?.('battle_completed',{count:encounterTargets.length,confirmedCount:battleTargets.length});
     onCompleteV3({
-      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
+      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
       methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0'
     });
@@ -471,17 +507,15 @@ export default function RpgBlock1({
           ) : scene === 'mode' ? (
             <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>setScene('opening')} />
           ) : scene === 'profile' ? (
-            <ProfileScene
-              question={question}
+            <ProfileV4Scene
+              draft={profileV4Draft}
               index={questionIndex}
-              householdSizePending={householdSizePending}
-              flow={flow}
-              setFlow={setFlow}
+              setDraft={setProfileV4Draft}
               onNext={nextQuestion}
               onBack={previousQuestion}
             />
           ) : scene === 'incomeCalibration' ? (
-            <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(QUESTIONS.length-1);setScene('profile')}} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
+            <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene('profile')}} onPick={(band)=>{const completed=profileV4??finalizeProfileV4(profileV4Draft);onEvent?.('income_calibration_completed',{band});beginScanFromProfile(completed,band)}} />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
