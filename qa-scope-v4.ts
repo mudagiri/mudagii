@@ -271,3 +271,62 @@ console.log('SCOPE_V4_QA PASS');
  A.equal(food.comparisonAmountScope,'household');
  A.equal(food.benchmarkEligible,true);
 }
+
+
+{
+ const profile=base();
+ const records=emptyExpenseRecordsV4();
+ amount(records,'mobile',12000);
+ const facts=buildComparisonFactsV4({profile,records});
+ const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
+ const combined=buildFinalJudgementsV4({
+  records,comparisons:facts,diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,
+  appraisal:{mobile:{mobileScope:'mobileInternet'}}
+ });
+ A.equal(combined.categories.find(x=>x.category==='mobile')?.status,'review');
+ A.equal(combined.categories.find(x=>x.category==='mobile')?.reasonCode,'MOBILE_SCOPE_REQUIRES_CONTRACT_REVIEW');
+ const mobileOnly=buildFinalJudgementsV4({
+  records,comparisons:facts,diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,
+  appraisal:{mobile:{mobileScope:'mobileOnly',mobileCarrier:'major'}}
+ });
+ A.equal(mobileOnly.categories.find(x=>x.category==='mobile')?.reasonCode,'MOBILE_ONLY_RATE_BAND_REVIEW');
+ A.equal(mobileOnly.categories.find(x=>x.category==='mobile')?.confirmedSaving,0);
+}
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='personal';
+ d.householdSize=1;
+ d.prefecture='東京都';
+ d.age=35;
+ d.housingTenure='rental';
+ d.housingSubtype='private_rental';
+ d.monthlyTakeHome=null;
+ d.monthlyTakeHomeAnswered=true;
+ const profile=finalizeProfileV4(d);
+ A.equal(profile.monthlyTakeHome,null);
+}
+
+{
+ const d=emptyProfileDraftV4();
+ d.diagnosisScope='personal';
+ d.householdSize=3;
+ d.relationships=['parents'];
+ d.expenseSharing='other_more';
+ d.householdContributionMode='bundled';
+ d.bundledContributionAmount=50000;
+ d.prefecture='東京都';
+ d.age=28;
+ d.housingTenure='family_home';
+ d.monthlyTakeHome=250000;
+ d.monthlyTakeHomeAnswered=true;
+ const profile=finalizeProfileV4(d);
+ A.equal(requiresHouseholdTotalV4(profile,'rent'),false);
+ A.equal(requiresHouseholdTotalV4(profile,'food'),false);
+ const records=emptyExpenseRecordsV4();
+ const facts=buildComparisonFactsV4({profile,records});
+ const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,categoryResults:dx.categoryResults});
+ const vm=buildResultViewModelV4({profile,finalCategories:final.categories});
+ A.equal(vm.bundledContribution?.amount,50000);
+}
