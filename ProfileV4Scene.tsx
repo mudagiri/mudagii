@@ -72,7 +72,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   <section className="pre-panel">
    <div className="pre-dialogue">{meta.dialogue}</div>
    <div className="pre-question-no">QUEST SETTING</div>
-   <h2>{meta.question}</h2>
+   <h2>{step==='income'?(draft.diagnosisScope==='household'?'家全体の毎月の手取りは？':'あなた自身の毎月の手取りは？'):meta.question}</h2>
    <p className="pre-helper">{meta.helper}</p>
 
    {step==='scope'&&<div className="mode-options">
