@@ -107,6 +107,8 @@ Opening/公開metadataで伝えるのは **家計診断 / RPGとして楽しめ�
 - Strong signals require user appraisal and/or category-specific objective evidence; benchmark gap alone is never waste or confirmed saving.
 - `secondaryReviewTargets` retains medium evidence for non-battle follow-up/result context.
 - This revision changes RPG presentation eligibility only. It does not change the 12 benchmark sources, Type V3.1, PROFILE V4, or confirmed-saving contract.
+- Battle/Result semantics are frozen as: CONFIRMED = verified reducible amount; STRONG encounter = priority check, not a confirmed waste/defeat; MEDIUM = secondary review; zero encounter = no strong priority under current answers, not proof that the entire household is optimal.
+- Result must surface encounter targets separately from generic REVIEW and must never render an unconfirmed STRONG encounter as a defeated enemy.
 
 ### Release gate
 同一HEADで以下をすべて通過してからrelease/FROZEN扱いにする。
