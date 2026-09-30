@@ -1555,16 +1555,16 @@ function ComboBattleScene({ targets,onDone }:{ targets:FinalCategoryV3[]; onDone
     // One readable combo beat per enemy:
     // wind-up/step -> SWING -> SLASH/HIT -> FOLLOW -> next target.
     targets.forEach((_,i)=>{
-      const t=i*620;
-      timers.current.push(window.setTimeout(()=>setPose('swing'),t+120));
-      timers.current.push(window.setTimeout(()=>setHitIndex(i),t+205));
-      timers.current.push(window.setTimeout(()=>setPose('follow'),t+335));
+      const t=i*460;
+      timers.current.push(window.setTimeout(()=>setPose('swing'),t+80));
+      timers.current.push(window.setTimeout(()=>setHitIndex(i),t+145));
+      timers.current.push(window.setTimeout(()=>setPose('follow'),t+255));
       if(i<targets.length-1){
-        timers.current.push(window.setTimeout(()=>setPose('ready'),t+500));
+        timers.current.push(window.setTimeout(()=>setPose('ready'),t+370));
       }
     });
 
-    const finish=targets.length*620+120;
+    const finish=targets.length*460+80;
     timers.current.push(window.setTimeout(()=>{
       setHitIndex(targets.length);
       setPose('follow');
