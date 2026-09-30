@@ -171,10 +171,10 @@ function referenceDetail(x:FinalCategoryV3):string|null{
 function evidenceLabel(x:FinalCategoryV3):string{
  if(x.comparable!==null)return comparatorMetaV3(x.category,x.comparable,x.benchmarkMeta).label;
  if(x.category==='mobile'&&x.appraisal?.mobileCarrier)return '回線タイプ別の料金帯で照合';
- if(x.category==='insurance')return '平均額ではなく保障目的・見直し状況で判定';
- if(x.category==='sub')return '平均額ではなく未使用契約・未使用額で判定';
- if(x.category==='car')return '平均額ではなく必要性・維持費構造で判定';
- if(x.category==='selfDevelopment')return '平均額ではなく目的・利用状況・成果で判定';
+ if(x.category==='insurance')return '保険料の平均ではなく、保障目的を把握できているか・見直し時期で判定';
+ if(x.category==='sub')return '支払額の平均ではなく、実際に使っていない契約・金額があるかで判定';
+ if(x.category==='car')return '車代の平均ではなく、生活・仕事での必要性と維持費の内訳で判定';
+ if(x.category==='selfDevelopment')return '支払額の平均ではなく、目的・利用状況・成果につながっているかで判定';
  if(x.category==='rent')return '賃貸以外は民営賃貸の参考値を流用せず回答内容で判定';
  if(x.category==='beautyFashion')return 'あなたに合う十分な比較データがないため、満足度・価値判断で判定';
  return '数値比較できる基準なし・回答内容で判定';
