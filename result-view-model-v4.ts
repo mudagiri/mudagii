@@ -146,6 +146,11 @@ export function buildResultViewModelV4(a:{
   type:a.type??{code:'',name:'',axes:{fv:0,pi:0,au:0},axisStrength:{fv:0,pi:0,au:0},nearMiddle:{fv:true,pi:true,au:true}},
   annualIncomeBand:a.annualIncomeBand??'unknown',
   profile:a.profile,
+  bundledContribution:a.profile.householdContributionMode==='bundled'&&a.profile.bundledContributionAmount!==null?{
+    amount:a.profile.bundledContributionAmount,
+    label:'家に入れている生活費',
+    note:'家賃・食費・光熱費などへ推定配分せず、まとめ払いのまま別枠で扱っています。'
+  }:null,
   counts,
   improvement:{monthly:confirmedMonthly,annual:confirmedMonthly*12,fiveYear:confirmedMonthly*60},
   rows,battleTargets,encounterTargets,secondaryReviewTargets,firstQuest,
