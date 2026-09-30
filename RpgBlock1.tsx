@@ -11,6 +11,9 @@ import { resolveComparableV1, type EducationStage } from './comparable-resolver-
 import type { EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
 import ProfileV4Scene from './ProfileV4Scene';
+import HouseholdTotalV4Scene from './HouseholdTotalV4Scene';
+import {emptyExpenseRecordsV4,type ExpenseRecordsV4} from './expense-record-v4';
+import {applyDiagnosisAmountV4,applyHouseholdTotalV4,requiresHouseholdTotalV4} from './scope-flow-v4';
 import {emptyProfileDraftV4,finalizeProfileV4,legacyFamilyProfileV4,profileStepsV4,resolverHousingTypeV4,shouldOfferAnnualIncomeCalibrationV4,type ProfileDraftV4,type ProfileV4} from './mudagiri-profile-v4';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
@@ -258,6 +261,8 @@ export default function RpgBlock1({
   const [householdSizePending,setHouseholdSizePending]=useState(false);
   const [scanIndex, setScanIndex] = useState(resumeDraft?.scanIndex??0);
   const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>resumeDraft?.rawExpenses??emptyRawExpenses());
+  const [expenseRecordsV4,setExpenseRecordsV4]=useState<ExpenseRecordsV4>(()=>resumeDraft?.expenseRecordsV4??emptyExpenseRecordsV4());
+  const [scanScopeCategory,setScanScopeCategory]=useState<EnemyAssetCategory|null>(()=>resumeDraft?.scanScopeCategory??null);
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
   const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>(resumeDraft?.annualIncomeBand??'unknown');
   const [typeIndex, setTypeIndex] = useState(resumeDraft?.typeIndex??0);
@@ -372,8 +377,8 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
     if(scene==='opening'||scene==='mode'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
-  },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+  },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
     if (step === 'profile' && scene === 'opening') {
@@ -486,6 +491,25 @@ export default function RpgBlock1({
     setQuestionIndex(value=>Math.max(0,value-1));
   };
 
+  const advanceScanCategory=()=>{
+    if(scanIndex>=applicableScanCategories.length-1){
+      if(flow.household!=='children')setRawExpenses(prev=>({...prev,childEducation:{amount:null,known:false,applicability:'na'}}));
+      onEvent?.('scan_completed',{scanned:applicableScanCategories.length});
+      setScene('scanComplete');
+      return;
+    }
+    setScanIndex(index=>index+1);
+  };
+
+  const maybeAdvanceScanCategory=(category:EnemyAssetCategory)=>{
+    const record=expenseRecordsV4[category as Category];
+    if(profileV4&&record?.known&&Number(record.diagnosisAmount)>0&&requiresHouseholdTotalV4(profileV4,category as Category)&&profileV4.householdContributionMode!=='bundled'){
+      setScanScopeCategory(category);
+      return;
+    }
+    advanceScanCategory();
+  };
+
   const finishDiagnosis=()=>{
     if(!onCompleteV3||diagnosisFinishLock.current)return;
     diagnosisFinishLock.current=true;
@@ -516,6 +540,16 @@ export default function RpgBlock1({
             />
           ) : scene === 'incomeCalibration' ? (
             <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene('profile')}} onPick={(band)=>{const completed=profileV4??finalizeProfileV4(profileV4Draft);onEvent?.('income_calibration_completed',{band});beginScanFromProfile(completed,band)}} />
+          ) : scene === 'scan' && scanScopeCategory && profileV4 ? (
+            <HouseholdTotalV4Scene
+              category={scanScopeCategory as Category}
+              value={expenseRecordsV4[scanScopeCategory as Category]?.householdTotal!==null&&expenseRecordsV4[scanScopeCategory as Category]?.householdTotal!==undefined?String(expenseRecordsV4[scanScopeCategory as Category].householdTotal):''}
+              unknown={expenseRecordsV4[scanScopeCategory as Category]?.metadata.householdTotalUnknown===true}
+              onChange={(value)=>setExpenseRecordsV4(prev=>({...prev,[scanScopeCategory]:{...applyHouseholdTotalV4(prev[scanScopeCategory as Category],Number(value||0)),metadata:{...prev[scanScopeCategory as Category].metadata,householdTotalUnknown:false}}}))}
+              onUnknown={()=>setExpenseRecordsV4(prev=>{const row=prev[scanScopeCategory as Category];const unknown=row.metadata.householdTotalUnknown===true;return {...prev,[scanScopeCategory]:{...applyHouseholdTotalV4(row,null),metadata:{...row.metadata,householdTotalUnknown:!unknown}}}})}
+              onDone={()=>{setScanScopeCategory(null);advanceScanCategory()}}
+              onBack={()=>setScanScopeCategory(null)}
+            />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
@@ -527,18 +561,23 @@ export default function RpgBlock1({
                 .filter((item) => {const r=normalizedRaw[item.category];return r?.known&&Number(r.amount)>0}).length}
               value={rawExpenses[currentScan.category]?.known&&rawExpenses[currentScan.category]?.amount!==null?String(rawExpenses[currentScan.category].amount):''}
               unknown={!!scanTouched[currentScan.category]&&rawExpenses[currentScan.category]?.applicability==='applicable'&&!rawExpenses[currentScan.category]?.known}
-              onChange={(value) => {setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:Number(value||0),known:true,applicability:'applicable'}}))}}
-              onUnknown={()=>{setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:null,known:false,applicability:'applicable'}}))}}
-              onNA={currentScan.category==='car'?()=>{setScanTouched(prev=>({...prev,car:true}));setRawExpenses(prev=>({...prev,car:{amount:null,known:false,applicability:'na'}}))}:undefined}
-              onDone={() => {
-                if (scanIndex >= applicableScanCategories.length - 1) {
-                  if(flow.household!=='children')setRawExpenses(prev=>({...prev,childEducation:{amount:null,known:false,applicability:'na'}}));
-                  onEvent?.('scan_completed',{scanned:applicableScanCategories.length});
-                  setScene('scanComplete');
-                  return;
-                }
-                setScanIndex((index) => index + 1);
+              onChange={(value) => {
+                const amount=Number(value||0);
+                setScanTouched(prev=>({...prev,[currentScan.category]:true}));
+                setRawExpenses(prev=>({...prev,[currentScan.category]:{amount,known:true,applicability:'applicable'}}));
+                if(profileV4)setExpenseRecordsV4(prev=>({...prev,[currentScan.category]:applyDiagnosisAmountV4(profileV4,prev[currentScan.category as Category],amount)}));
               }}
+              onUnknown={()=>{
+                setScanTouched(prev=>({...prev,[currentScan.category]:true}));
+                setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:null,known:false,applicability:'applicable'}}));
+                setExpenseRecordsV4(prev=>({...prev,[currentScan.category]:{...prev[currentScan.category as Category],diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'applicable'}}));
+              }}
+              onNA={currentScan.category==='car'?()=>{
+                setScanTouched(prev=>({...prev,car:true}));
+                setRawExpenses(prev=>({...prev,car:{amount:null,known:false,applicability:'na'}}));
+                setExpenseRecordsV4(prev=>({...prev,car:{...prev.car,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
+              }:undefined}
+              onDone={()=>maybeAdvanceScanCategory(currentScan.category)}
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
