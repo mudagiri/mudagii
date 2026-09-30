@@ -3,6 +3,13 @@ import React,{useEffect,useState} from 'react';
 const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
 const modeName:Record<string,string>={gentle:'😇 甘やかしムダギリ',serious:'⚔️ 正論ムダギリ',hell:'💀 地獄ムダギリ'};
+const TYPE_ART_V31:Record<string,string>={
+ FPA:'/assets/types/v31/TYPE_FPA.png',FPU:'/assets/types/v31/TYPE_FPU.png',
+ FIA:'/assets/types/v31/TYPE_FIA.png',FIU:'/assets/types/v31/TYPE_FIU.png',
+ VPA:'/assets/types/v31/TYPE_VPA.png',VPU:'/assets/types/v31/TYPE_VPU.png',
+ VIA:'/assets/types/v31/TYPE_VIA.png',VIU:'/assets/types/v31/TYPE_VIU.png',
+};
+function typeArt(code:string){return TYPE_ART_V31[code]??'';}
 
 function TypeAxis({label,value,positive,positiveText,negativeText,middle}:{label:string;value:number;positive:boolean;positiveText:string;negativeText:string;middle?:boolean}){
  const pct=middle?50:positive?50+Math.min(50,value/2):50-Math.min(50,value/2);
@@ -23,16 +30,18 @@ function drawCenteredWrapped(x:CanvasRenderingContext2D,text:string,cx:number,y:
  if(line)lines.push(line);if(lines.length>maxLines){lines=lines.slice(0,maxLines);let last=lines[maxLines-1];while(last&&x.measureText(last+'…').width>maxWidth)last=last.slice(0,-1);lines[maxLines-1]=last+'…'}
  lines.forEach((v,i)=>x.fillText(v,cx,y+i*lineHeight));return lines.length;
 }
+function loadCanvasImage(src:string){return new Promise<HTMLImageElement|null>(resolve=>{if(!src){resolve(null);return}const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src})}
 async function makeTypeShareFile(vm:any){
  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const x=canvas.getContext('2d');if(!x)return null;
  x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
  x.textAlign='center';x.fillStyle='#f5cc39';x.font='900 34px system-ui,sans-serif';x.fillText('ムダギリ診断',540,150);
  x.fillStyle='#87929d';x.font='800 26px system-ui,sans-serif';x.fillText('MY MONEY TYPE',540,225);
- x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';const nameLines=drawCenteredWrapped(x,vm.type.name,540,330,900,72,2);
- x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?475:420,860,42,2);
+ const art=await loadCanvasImage(typeArt(vm.type.code));if(art){const maxW=330,maxH=300,scale=Math.min(maxW/art.naturalWidth,maxH/art.naturalHeight);const w=art.naturalWidth*scale,h=art.naturalHeight*scale;x.imageSmoothingEnabled=false;x.drawImage(art,(1080-w)/2,255-h/2,w,h)}
+ x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';const nameLines=drawCenteredWrapped(x,vm.type.name,540,455,900,72,2);
+ x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?600:545,860,42,2);
  const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
- rows.forEach((r,i)=>{const y=565+i*125;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
- x.textAlign='center';x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('強み',300,1010);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.strengthLabel??'',300,1050,360,32,2);x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('死角',780,1010);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.blindSpot??'',780,1050,360,32,2);x.fillStyle='#fff';x.font='900 30px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1160);x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1208);
+ rows.forEach((r,i)=>{const y=680+i*105;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
+ x.textAlign='center';x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('強み',300,1025);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.strengthLabel??'',300,1065,360,32,2);x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('死角',780,1025);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.blindSpot??'',780,1065,360,32,2);x.fillStyle='#fff';x.font='900 30px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1175);x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1223);
  x.fillStyle='#87929d';x.font='700 20px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1270);
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
 }
@@ -69,6 +78,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title rv3-type-card">
    <div className="rv3-kicker">MONEY TYPE UNLOCKED</div><div className="rv3-muted">あなたのお金タイプは――</div>
+   {typeArt(vm.type.code)&&<img className="rv3-type-art" src={typeArt(vm.type.code)} alt="" aria-hidden="true" decoding="async"/>}
    <h2>{vm.type.name}</h2>{vm.type.catchphrase&&<h3 className="rv3-catch">{vm.type.catchphrase}</h3>}{vm.type.description&&<p>{vm.type.description}</p>}
    {vm.type.axisStrength&&<div className="rv3-axes" aria-label="お金タイプ3軸">
     <TypeAxis label="時間軸" value={vm.type.axisStrength.fv} positive={(vm.type.axes?.fv??0)>=0} negativeText="今寄り" positiveText="未来寄り" middle={vm.type.nearMiddle?.fv}/>
@@ -111,13 +121,13 @@ const CSS=`
 .rv3-book{margin-top:14px;border-top:1px solid #293644}.rv3-book-row{border-bottom:1px solid #293644}.rv3-book-row>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:0;border:0;background:transparent;color:#fff;text-align:left}.rv3-detail{padding:0 0 15px;color:#aeb8c2;font-size:12px;line-height:1.7}
 .rv3-message{margin:8px 20px 28px;padding:18px!important;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-explain{margin-top:10px;padding:10px;border-radius:9px;background:#111e2b;font-size:12px}.rv3-explain b{margin-left:4px}.rv3-explain span{display:block;margin-top:4px;color:#9eabb7;line-height:1.5}.rv3-message p,.rv3-next p{color:#aeb8c2;font-size:13px;line-height:1.7}
 .rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}.rv3-next-answer{padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;font-size:12px!important}
-@media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}}
+@media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}.rv3-type-art{width:112px;height:112px;margin-top:8px}}
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
 
 .rv3-verdict-saving{margin:16px auto 0;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;background:#0d1721;text-align:center}.rv3-verdict-saving small,.rv3-verdict-saving span{display:block;color:#aeb8c2}.rv3-verdict-saving strong{display:block;margin:4px 0;color:#f5cc39;font-size:24px}.rv3-verdict-saving.is-safe strong{color:#dce4eb;font-size:19px}
 .rv3-early-share{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px!important;border-bottom:1px solid #24303c;background:#0b141d}.rv3-early-share>div{min-width:0;text-align:left}.rv3-early-share b,.rv3-early-share small{display:block}.rv3-early-share b{margin-top:4px;font-size:13px}.rv3-early-share small{margin-top:3px;color:#87929d;font-size:10px}.rv3-early-share button{flex:0 0 auto;min-height:46px;padding:0 14px;border:0;border-radius:10px;background:#f5cc39;color:#07111b;font-weight:1000}
 
-.rv3-type-card{position:relative;margin:0 12px 14px;padding:26px 16px!important;border:1px solid rgba(245,204,57,.48)!important;border-radius:18px;background:linear-gradient(180deg,#101b26 0%,#0a121b 100%);box-shadow:0 14px 34px rgba(0,0,0,.28)}.rv3-type-card:before{content:"TYPE UNLOCKED";position:absolute;top:10px;right:12px;color:rgba(245,204,57,.35);font-size:9px;font-weight:1000;letter-spacing:.12em}.rv3-type-card h2{font-size:clamp(30px,8.3vw,36px)!important;text-wrap:balance}.rv3-type-card .rv3-catch{font-size:16px;line-height:1.45;color:#fff}.rv3-type-stamp{display:flex;justify-content:center;gap:7px;margin-top:12px}.rv3-type-stamp span{padding:5px 8px;border:1px solid #344454;border-radius:999px;color:#9da8b3;font-size:9px;font-weight:900;letter-spacing:.08em}
+.rv3-type-card{position:relative;margin:0 12px 14px;padding:26px 16px!important;border:1px solid rgba(245,204,57,.48)!important;border-radius:18px;background:linear-gradient(180deg,#101b26 0%,#0a121b 100%);box-shadow:0 14px 34px rgba(0,0,0,.28)}.rv3-type-card:before{content:"TYPE UNLOCKED";position:absolute;top:10px;right:12px;color:rgba(245,204,57,.35);font-size:9px;font-weight:1000;letter-spacing:.12em}.rv3-type-card h2{font-size:clamp(30px,8.3vw,36px)!important;text-wrap:balance}.rv3-type-art{display:block;width:clamp(132px,38vw,156px);height:clamp(132px,38vw,156px);margin:10px auto 4px;object-fit:contain;image-rendering:pixelated}.rv3-type-card .rv3-catch{font-size:16px;line-height:1.45;color:#fff}.rv3-type-stamp{display:flex;justify-content:center;gap:7px;margin-top:12px}.rv3-type-stamp span{padding:5px 8px;border:1px solid #344454;border-radius:999px;color:#9da8b3;font-size:9px;font-weight:900;letter-spacing:.08em}
 
 .rv3-save{margin-top:26px!important;background:linear-gradient(180deg,#101b25,#0b141e)!important}.rv3-save p strong{color:#fff}.rv3-save-preview{display:grid;gap:7px;margin-top:14px;padding:13px;border:1px solid #344454;border-radius:11px;background:#08111a;text-align:left}.rv3-save-preview span{color:#87929d;font-size:10px;font-weight:900;letter-spacing:.08em}.rv3-save-preview b{font-size:12px;line-height:1.4}
 `;
