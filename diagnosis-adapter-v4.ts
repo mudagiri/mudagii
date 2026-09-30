@@ -1,5 +1,5 @@
-import type { Category, DiagnosisInput, Satisfaction } from './mudagiri-diagnosis-v2';
-import { runDiagnosisV2 } from './mudagiri-diagnosis-v2';
+import type { Category, CategoryInput, CategoryResult, DiagnosisInput, Satisfaction } from './mudagiri-diagnosis-v2';
+import { categoryDiagnosis, runDiagnosisV2 } from './mudagiri-diagnosis-v2';
 import type { ExpenseRecordsV4 } from './expense-record-v4';
 import { V4_CATEGORIES, assertExpenseRecordV4 } from './expense-record-v4';
 import type { ComparisonFactsV4 } from './benchmark-router-v4';
@@ -17,15 +17,13 @@ export type DiagnosisAppraisalsV4=Partial<Record<Category,DiagnosisAppraisalV4>>
 export interface DiagnosisAdapterV4Result {
  input:DiagnosisInput|null;
  diagnosis:ReturnType<typeof runDiagnosisV2>|null;
+ categoryInputs:CategoryInput[];
+ categoryResults:CategoryResult[];
  skippedReason:'monthly_take_home_unknown_or_zero'|null;
 }
 
-export function buildDiagnosisInputV4(a:{profile:ProfileV4;records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;appraisal?:DiagnosisAppraisalsV4;monthlySavingInvestment?:number;emergencyMonths?:number}):DiagnosisInput|null{
- assertProfileV4(a.profile);
- const income=a.profile.monthlyTakeHome;
- if(income===null||!(income>0))return null;
-
- const categories:DiagnosisInput['categories']=[];
+export function buildCategoryInputsV4(a:{records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;appraisal?:DiagnosisAppraisalsV4}):CategoryInput[]{
+ const categories:CategoryInput[]=[];
  for(const category of V4_CATEGORIES){
   const record=a.records[category];
   assertExpenseRecordV4(record);
@@ -41,7 +39,14 @@ export function buildDiagnosisInputV4(a:{profile:ProfileV4;records:ExpenseRecord
    cancellationConfirmed:category==='sub'?ap?.subCancellationConfirmed:undefined,
   });
  }
+ return categories;
+}
 
+export function buildDiagnosisInputV4(a:{profile:ProfileV4;records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;appraisal?:DiagnosisAppraisalsV4;monthlySavingInvestment?:number;emergencyMonths?:number}):DiagnosisInput|null{
+ assertProfileV4(a.profile);
+ const income=a.profile.monthlyTakeHome;
+ if(income===null||!(income>0))return null;
+ const categories=buildCategoryInputsV4(a);
  const saving=Math.max(0,a.monthlySavingInvestment??0);
  const knownSpend=categories.reduce((sum,x)=>sum+x.actual,0);
  return {
@@ -54,9 +59,12 @@ export function buildDiagnosisInputV4(a:{profile:ProfileV4;records:ExpenseRecord
 }
 
 export function runDiagnosisAdapterV4(a:{profile:ProfileV4;records:ExpenseRecordsV4;comparisons:ComparisonFactsV4;appraisal?:DiagnosisAppraisalsV4;monthlySavingInvestment?:number;emergencyMonths?:number}):DiagnosisAdapterV4Result{
+ assertProfileV4(a.profile);
+ const categoryInputs=buildCategoryInputsV4(a);
+ const categoryResults=categoryInputs.map(categoryDiagnosis);
  const input=buildDiagnosisInputV4(a);
- if(!input)return {input:null,diagnosis:null,skippedReason:'monthly_take_home_unknown_or_zero'};
- return {input,diagnosis:runDiagnosisV2(input),skippedReason:null};
+ if(!input)return {input:null,diagnosis:null,categoryInputs,categoryResults,skippedReason:'monthly_take_home_unknown_or_zero'};
+ return {input,diagnosis:runDiagnosisV2(input),categoryInputs,categoryResults,skippedReason:null};
 }
 
-export const DIAGNOSIS_ADAPTER_V4_VERSION='MUDAGIRI_DIAGNOSIS_ADAPTER_V4_0';
+export const DIAGNOSIS_ADAPTER_V4_VERSION='MUDAGIRI_DIAGNOSIS_ADAPTER_V4_1';
