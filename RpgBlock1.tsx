@@ -3275,6 +3275,34 @@ const CSS = String.raw`
   .pre-dialogue{font-size:16px}
 }
 
+/* IPHONE SE FALLBACK: controls win over decorative one-screen composition. */
+@media(max-height:700px){
+  .appraisal-scene,.battle-intro-scene{
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .appraisal-hud{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:40;margin:0 16px;padding-top:8px}
+  .appraisal-enemy,.appraisal-mudagiri{display:none}
+  .appraisal-card{
+    position:relative;
+    left:auto;right:auto;bottom:auto;
+    width:calc(100% - 28px);
+    min-height:0!important;
+    margin:max(86px,calc(env(safe-area-inset-top) + 74px)) auto max(22px,calc(env(safe-area-inset-bottom) + 14px));
+  }
+  .battle-intro-card{
+    position:relative;
+    top:auto;left:auto;right:auto;bottom:auto;
+    width:calc(100% - 28px);
+    margin:max(92px,calc(env(safe-area-inset-top) + 80px)) auto max(22px,calc(env(safe-area-inset-bottom) + 14px));
+    transform:none;
+  }
+  .battle-targets img{height:54px}
+  .battle-targets strong{white-space:normal;line-height:1.2}
+}
+
 /* FINAL AUDIT: never shrink primary tap targets below 56px */
 .scan-start,.scan-next-search,.battle-next,.appraisal-next,.type-complete-cta,.appraisal-intro-cta{min-height:56px!important}
 .scan-start,.scan-next-search,.battle-next{font-size:clamp(15px,4.1vw,17px)}
