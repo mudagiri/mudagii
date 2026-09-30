@@ -725,7 +725,7 @@ export default function RpgBlock1({
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
               toneMode={selectedToneMode}
-              judgements={finalJudgements}
+              judgements={finalV4?.categories??finalJudgements}
               onContinue={() => {
                 setTypeIndex(0);
                 setTypeAnswers({});
@@ -1671,10 +1671,10 @@ function AdditionalAppraisalScene({
 function AppraisalCompleteScene({
   toneMode,judgements,onContinue,
 }:{
-  toneMode:ToneMode; judgements:FinalCategoryV3[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;
 }) {
   const counts = {
-    battle:judgements.filter(x=>x.status==='battle').length,
+    battle:judgements.filter(x=>x.status==='battle'||x.status==='cut').length,
     protect:judgements.filter(x=>x.status==='protect').length,
     safe:judgements.filter(x=>x.status==='safe').length,
     review:judgements.filter(x=>x.status==='review').length,
