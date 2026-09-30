@@ -137,7 +137,12 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  const a=x.appraisal;if(!a)return null;
  if(x.category==='energy'&&a.energyPersistence)return ({persistent:'2〜3か月くらい続いている',temporary:'今月だけ高い',unknown:'継続しているか分からない'} as Record<string,string>)[a.energyPersistence]??null;
  if(x.category==='daily'&&a.dailyPersistence)return ({persistent:'2〜3か月くらい続いている',temporary:'今月だけ高い',unknown:'継続しているか分からない'} as Record<string,string>)[a.dailyPersistence]??null;
- if(x.category==='sub'){if(a.subUsage==='none')return 'ほぼ全部使っている';if(a.subUnusedAmount&&a.subUnusedAmount>0)return `未使用分 月¥${a.subUnusedAmount.toLocaleString('ja-JP')}を確認`;if(a.subUsage==='one')return '使っていない契約が1つくらいありそう';if(a.subUsage==='several')return '使っていない契約が2〜3個ありそう';if(a.subUsage==='unknown')return '契約状況を把握できていない';}
+ if(x.category==='sub'){
+  const usage=({none:'ほぼ全部使っている',one:'使っていない契約が1つくらいありそう',several:'使っていない契約が2〜3個ありそう',unknown:'契約状況を把握できていない'} as Record<string,string>)[a.subUsage??'']??null;
+  const unused=(a.subUnusedAmount??0)>0?`未使用分 月¥${a.subUnusedAmount!.toLocaleString('ja-JP')}`:null;
+  const confirmed=a.subCancellationConfirmed===true?'停止・解約できることを確認済み':a.subCancellationConfirmed===false?'停止・解約できるか未確認':null;
+  return [usage,unused,confirmed].filter(Boolean).join(' / ')||null;
+ }
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'負担が気になってる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
