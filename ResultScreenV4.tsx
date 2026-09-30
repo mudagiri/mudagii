@@ -88,7 +88,7 @@ export default function ResultScreenV4({vm,onLine,onEvent}:{vm:any;onLine?:(x:an
     <div className="rv3-kicker">今回確定できた改善額</div>
     <div className="rv3-money">¥{yen(vm.improvement.monthly)}</div><small>/ 月</small>
     <div className="rv3-grid"><div>年間<br/><b>¥{yen(vm.improvement.annual)}</b></div><div>5年間<br/><b>¥{yen(vm.improvement.fiveYear)}</b></div></div>
-   </>:<><>
+   </>:<>
     <div className="rv3-kicker">改善額はまだ未確定</div>
     <h3>見直し候補はある。でも、推測で金額は出さない。</h3>
     <p>{vm.counts.battle+vm.counts.review>0?`確認が必要な項目が ${vm.counts.battle+vm.counts.review} 件あります。`:'今回、優先して見直す項目は見つかりませんでした。'}</p></>}
