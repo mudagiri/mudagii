@@ -13,7 +13,8 @@
     "qa:resume": "npx --yes tsx@4.20.6 qa-resume-v1.ts",
     "qa:resolver": "npx --yes tsx@4.20.6 qa-resolver-v2.ts",
     "qa:battle": "node qa-battle-rpg-v1.mjs",
-    "qa:result-safety": "node qa-result-safety-v1.mjs"
+    "qa:result-safety": "node qa-result-safety-v1.mjs",
+    "qa:scope": "npx --yes tsx@4.20.6 qa-scope-v4.ts"
   },
   "dependencies": {
     "react": "19.1.1",
