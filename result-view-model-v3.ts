@@ -196,7 +196,7 @@ const INCOME_LABEL:Record<AnnualIncomeBand,string>={under500:'500万円未満','
 function comparisonContext(x:FinalCategoryV3,profile:{prefecture:string;age:number;household:string;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number}|null,annualIncomeBand:AnnualIncomeBand){
  const m=x.benchmarkMeta?.meta??{}; const bits:string[]=[]; const single=profile?.household==='single'; const multi=profile?.household==='multi';
  const ageBucket=profile?.age?(profile.age<=34?'34歳以下':profile.age<=59?'35〜59歳':'60歳以上'):null;
- if(single&&['energy','food','daily','fun','beautyFashion'].includes(x.category)&&profile?.age)bits.push(`${profile.age}歳（基準データ上は${ageBucket}区分）`);
+ if(single&&['energy','food','daily','fun','beautyFashion'].includes(x.category)&&profile?.age)bits.push(`${profile.age}歳（比較上は${ageBucket}）`);
  if(multi&&['energy','food','daily','fun'].includes(x.category))bits.push(`${profile?.householdSize||2}人世帯`);
  if(x.category==='energy'&&multi&&profile?.prefecture)bits.push(profile.prefecture);
  if(x.category==='energy'&&multi&&typeof m.month==='number')bits.push(`${m.month}月`);
