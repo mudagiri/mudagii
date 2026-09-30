@@ -2,7 +2,8 @@ const CFG={VERSION:'MUDAGIRI_SHEET_V3',SHEETS:{DIAG:'Diagnoses_V3',EVENT:'Events
 const CATS=['mobile','energy','sub','car','food','daily','fun','beautyFashion','rent','insurance','childEducation','selfDevelopment'];
 const CAT_LABEL={mobile:'通信費',energy:'光熱費',sub:'サブスク',car:'車',food:'食費',daily:'日用品',fun:'娯楽・交際',beautyFashion:'美容・服飾',rent:'住居費',insurance:'保険',childEducation:'子ども教育費',selfDevelopment:'自己投資'};
 const DIAG_BASE_HEADERS=['diagnosis_id','created_at','schema_version','type_model_version','methodology_version','household','age','monthly_income','monthly_saving','type_code','axis_fv','axis_pi','axis_au','strength_fv','strength_pi','strength_au','near_middle_fv','near_middle_pi','near_middle_au','monthly_improvement','future_goal','needs_review_json','expenses_json','raw_type_answers_json','raw_json','tone_mode'];
-const HUMAN_HEADERS=['都道府県','働き方','住居タイプ','年収帯'].concat(CATS.flatMap(c=>[CAT_LABEL[c]+' 入力額',CAT_LABEL[c]+' 追加鑑定',CAT_LABEL[c]+' 最終判定',CAT_LABEL[c]+' 比較基準',CAT_LABEL[c]+' 基準との差',CAT_LABEL[c]+' 確定改善額']),['見直しクエスト','診断タイプ名']);
+const V4_HEADERS=['診断範囲V4','世帯人数V4','大人人数V4','子ども人数V4','家に入れるまとめ生活費','V4 scope-safe JSON'];
+const HUMAN_HEADERS=['都道府県','働き方','住居タイプ','年収帯'].concat(CATS.flatMap(c=>[CAT_LABEL[c]+' 入力額',CAT_LABEL[c]+' 追加鑑定',CAT_LABEL[c]+' 最終判定',CAT_LABEL[c]+' 比較基準',CAT_LABEL[c]+' 基準との差',CAT_LABEL[c]+' 確定改善額']),['見直しクエスト','診断タイプ名'],V4_HEADERS);
 function setupMudagiriV3(){
  const ss=SpreadsheetApp.getActive();
  ensure_(ss,CFG.SHEETS.DIAG,DIAG_BASE_HEADERS.concat(HUMAN_HEADERS));
@@ -24,7 +25,7 @@ function doPost(e){
 }
 function saveDiagnosis_(b){
  const s=SpreadsheetApp.getActive().getSheetByName(CFG.SHEETS.DIAG),id=String(b.diagnosisId||'');if(!id)throw new Error('diagnosisId required');
- const p=b.profile||{},m=b.methodology||{},r=b.result||{},statuses=r.finalStatuses||{};
+ const p=b.profile||{},m=b.methodology||{},r=b.result||{},statuses=r.finalStatuses||{},scopeV4=b.scopeV4||{},p4=scopeV4.profile||{};
  const review=Object.keys(statuses).filter(k=>statuses[k]&&(statuses[k].status==='review'||statuses[k].status==='battle'));
  const base=[id,b.createdAt||new Date().toISOString(),b.schemaVersion||CFG.VERSION,m.type||'',m.diagnosis||'',p.household||'',num_(p.age),num_(p.monthlyTakeHome),'',r.typeCode||'','','','','','','',false,false,false,num_(r.improvement&&r.improvement.monthly),'',JSON.stringify(review),JSON.stringify(b.rawExpenses||{}),JSON.stringify(b.typeAnswers||{}),JSON.stringify(b),b.toneMode||''];
  const raw=b.rawExpenses||{}, ap=b.appraisal||{}, details=r.finalDetails||{}, fs=r.finalStatuses||{};
@@ -37,7 +38,15 @@ function saveDiagnosis_(b){
      numOrBlank_(details[c]&&details[c].comparisonDifference),
      numOrBlank_(details[c]&&details[c].confirmedSaving)
    ]))
-   .concat([(r.battleTargets||[]).map(c=>CAT_LABEL[c]||c).join(' / '),r.typeName||'']);
+   .concat([(r.battleTargets||[]).map(c=>CAT_LABEL[c]||c).join(' / '),r.typeName||''])
+   .concat([
+     p4.diagnosisScope||p.diagnosisScope||'',
+     numOrBlank_(p4.householdSize||p.householdSize),
+     numOrBlank_(p4.adultCount||p.adultCount),
+     numOrBlank_(p4.childCount===0?0:(p4.childCount||p.childCount)),
+     numOrBlank_(p4.bundledContributionAmount),
+     JSON.stringify(b.persistenceV4||scopeV4||{})
+   ]);
  const row=base.concat(human);
  const found=find_(s,1,id);if(found>1)s.getRange(found,1,1,row.length).setValues([row]);else s.appendRow(row);
 }
@@ -80,7 +89,9 @@ function appraisal_(cat,a){if(!a)return '';
   educationPreference:{reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'},
   selfDevelopmentValue:{inertia:'惰性になってる',unclear:'効果がよく分からない',purpose:'目的は明確',results:'成果につながってる'},
   subUsage:{none:'使っていないものなし',one:'使っていないもの1つ',several:'使っていないもの複数',unknown:'利用状況不明'},
-  carNeed:{essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'負担が気になってる',notNeeded:'なくても困らないかも'}
+  carNeed:{essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'負担が気になってる',notNeeded:'なくても困らないかも'},
+  mobileScope:{mobileOnly:'スマホ1回線だけ',mobileInternet:'スマホ＋自宅ネット',familyOrMultiple:'家族分・複数回線を含む',unknown:'通信請求範囲不明'},
+  mobileCarrier:{major:'大手キャリア系',mvno:'格安SIM系',unknown:'回線タイプ不明'}
  };
  const out=[];
  if(a.satisfaction)out.push(map.satisfaction[a.satisfaction]||a.satisfaction);
@@ -92,5 +103,7 @@ function appraisal_(cat,a){if(!a)return '';
  if(a.subUsage)out.push(map.subUsage[a.subUsage]||a.subUsage);
  if(a.subUnusedAmount!==undefined&&a.subUnusedAmount!==null)out.push('未使用 '+numOrBlank_(a.subUnusedAmount)+'円/月');
  if(a.carNeed)out.push(map.carNeed[a.carNeed]||a.carNeed);
+ if(a.mobileScope)out.push(map.mobileScope[a.mobileScope]||a.mobileScope);
+ if(a.mobileScope==='mobileOnly'&&a.mobileCarrier)out.push(map.mobileCarrier[a.mobileCarrier]||a.mobileCarrier);
  return out.join(' / ')
 }
