@@ -100,11 +100,11 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    <p className="rv3-note">高い支出＝ムダとは判定していません。必要性や満足度が確認できた支出は「守る支出」として扱います。</p>
   </details>
 
-  <section className="rv3-early-share"><div><div className="rv3-kicker">TYPE CARD</div><b>「{vm.type.name}」を金額なしでシェア</b><small>収入・支出・都道府県は含みません</small></div><button onClick={share}>称号をシェア</button></section>
-
 
 
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>ほかの項目は下の12カテゴリ鑑定図鑑で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
+
+  <section className="rv3-early-share"><div><div className="rv3-kicker">TYPE CARD</div><b>「{vm.type.name}」を金額なしでシェア</b><small>収入・支出・都道府県は含みません</small></div><button onClick={share}>称号をシェア</button></section>
 
   <details className="rv3-section rv3-book-shell"><summary><div><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">全項目の判定根拠を確認できます</p></div><span>開く⌄</span></summary><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>あなた：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div><div><b>比較・根拠：</b>{x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.comparisonContext?.criteria?.length>0&&<div><b>比較条件：</b>{x.comparisonContext.criteria.join(' × ')}</div>}{x.comparisonContext?.incomeBandLabel&&<div><b>所得帯：</b>{x.comparisonContext.incomeBandLabel}{x.comparisonContext.incomeApplied?'（基準値に反映）':'（プロフィール情報・この基準値には未反映）'}</div>}{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></details>
 
