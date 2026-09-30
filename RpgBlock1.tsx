@@ -1473,7 +1473,7 @@ function AdditionalAppraisalScene({
 function AppraisalCompleteScene({
   toneMode,judgements,onContinue,
 }:{
-  judgements:FinalCategoryV3[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:FinalCategoryV3[]; onContinue:()=>void;
 }) {
   const counts = {
     battle:judgements.filter(x=>x.status==='battle').length,
