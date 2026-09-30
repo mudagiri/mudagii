@@ -3424,105 +3424,58 @@ const CSS = String.raw`
 }
 
 
-/* ===== MOBILE INTERACTION CONTRACT V4: audited 2026-09-30 =====
-   Rule: scroll is the safety net; only discrete choices auto-advance.
-   Numeric/select inputs require an explicit CTA. Decorative layers never receive taps. */
-.pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene,.pre-complete{
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior-y:contain;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-y!important;
+/* ===== SINGLE SCREEN CONTRACT V5: Result only scrolls ===== */
+.pre-root,.pre-stage,.pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene,.pre-complete{
+  width:100%;height:100svh;height:100dvh;min-height:0!important;overflow:hidden!important;overscroll-behavior:none;
 }
-.pre-profile-hud,.scan-hud,.type-quiz-hud,.appraisal-hud{pointer-events:none!important}
 .pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg,
-.pre-dialogue,.pre-question-no,.pre-helper,.pre-checkpoint,.pre-profile-footer{pointer-events:none!important}
-.pre-panel{
-  position:relative!important;
-  left:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  width:calc(100% - 32px)!important;
-  min-height:0!important;
-  margin:max(47vh,360px) auto max(34px,calc(env(safe-area-inset-bottom) + 22px))!important;
-  padding:18px 18px 16px!important;
-  z-index:60!important;
-}
-.pre-dialogue{width:100%!important;min-height:0!important;margin:0 0 14px!important}
-.profile-choice-grid,.pre-input-wrap{position:relative;z-index:70}
-.profile-choice,.pre-primary,.pre-back,.pre-select,.pre-age-input,.pre-age-input input{
-  position:relative;z-index:71;pointer-events:auto!important;touch-action:manipulation!important;
-}
-.profile-choice{min-height:58px!important}
-.pre-panel .profile-primary-cta{
-  position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;
-  width:100%!important;min-height:58px!important;margin:12px 0 0!important;
-}
-.pre-panel .pre-back{
-  position:relative!important;left:auto!important;bottom:auto!important;transform:none!important;
-  width:100%!important;min-height:44px!important;margin:8px 0 0!important;padding:9px 12px!important;text-align:center;
-}
-.pre-profile-footer{position:relative!important;bottom:auto!important;margin:-18px 0 max(18px,env(safe-area-inset-bottom))!important}
-.pre-checkpoint{position:absolute;top:25vh}
-@media(max-height:780px){
-  .pre-panel{margin-top:max(43vh,310px)!important}
-  .pre-profile-mudagiri{display:block}
-}
-@media(max-height:620px){
-  .pre-panel{margin-top:max(38vh,230px)!important}
-  .pre-profile-mudagiri{display:none}
-}
-.pre-complete .pre-panel{margin-top:max(24vh,170px)!important}
-.scan-scene,.type-quiz-scene,.appraisal-scene{scroll-padding-bottom:max(24px,env(safe-area-inset-bottom))}
-.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
-.scan-panel button,.scan-panel input,.type-scale-option,.appraisal-option{
+.pre-dialogue,.pre-question-no,.pre-helper,.pre-checkpoint,.pre-profile-footer,
+.pre-profile-hud,.scan-hud,.type-quiz-hud,.appraisal-hud{pointer-events:none!important}
+.pre-panel,.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
+.profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back,.pre-select,
+.scan-panel button,.scan-panel input,.pre-age-input,.pre-age-input input{
   position:relative;z-index:70;pointer-events:auto!important;touch-action:manipulation!important;
 }
-.type-scale-option,.appraisal-option{min-height:58px!important}
+.profile-choice,.income-band-option,.type-scale-option,.appraisal-option{min-height:52px!important}
+.pre-panel .profile-primary-cta{min-height:54px!important}
+.pre-panel .pre-back{min-height:38px!important}
 
-/* ===== PROFILE COLLISION HOTFIX V3.2: keep controls in document flow ===== */
+/* Never let CTA/back overlap form content. */
 .pre-panel .profile-primary-cta{
-  position:relative!important;
-  left:auto!important;
-  right:auto!important;
-  bottom:auto!important;
-  width:100%!important;
-  margin:10px 0 0!important;
-  min-height:56px!important;
+  position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;
+  width:100%!important;margin:10px 0 0!important;
 }
 .pre-panel .pre-back{
-  position:relative!important;
-  left:auto!important;
-  bottom:auto!important;
-  transform:none!important;
-  width:100%;
-  min-height:42px;
-  margin:8px 0 -4px!important;
-  padding:8px 12px!important;
-  text-align:center;
+  position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;
+  width:100%!important;margin:5px 0 -5px!important;padding:6px 10px!important;text-align:center;
 }
-.pre-panel{padding-bottom:16px!important}
-.pre-panel .pre-input-wrap{margin-bottom:0}
-.pre-panel .profile-choice-grid{margin-bottom:0}
-@media(max-height:780px){
-  .pre-panel .profile-primary-cta{margin-top:9px!important}
-  .pre-panel .pre-back{margin-top:7px!important}
-  .pre-panel{padding-bottom:14px!important}
-}
+.pre-panel{padding-bottom:12px!important}
+.pre-panel .profile-choice-grid,.pre-panel .pre-input-wrap{margin-bottom:0!important}
 
-/* ===== MOBILE UX HOTFIX V3.1: taps + collision ===== */
-.pre-profile,.scan-scene,.type-quiz-scene,.appraisal-scene{touch-action:pan-y}
-.pre-panel,.scan-panel,.type-quiz-card,.appraisal-card{z-index:60}
-.pre-profile-hud,.scan-hud,.type-quiz-hud,.appraisal-hud{pointer-events:none}
-.pre-dialogue,.pre-question-no,.pre-helper,.appraisal-kicker,.appraisal-reason{pointer-events:none}
-.profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back,.pre-select{position:relative;z-index:70;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.profile-choice,.income-band-option,.type-scale-option,.appraisal-option{min-height:56px!important}
-.profile-choice-grid,.appraisal-options,.type-scale{position:relative;z-index:70}
-@media(max-height:780px){
- .pre-panel{margin-top:max(96px,calc(env(safe-area-inset-top) + 82px));margin-bottom:max(88px,calc(env(safe-area-inset-bottom) + 76px))}
- .pre-profile-footer{pointer-events:none}
- .pre-dialogue{margin-bottom:10px}
- .profile-choice-grid{margin-top:12px}
+/* Compact progressively instead of introducing scroll. */
+@media(max-height:820px){
+  .pre-profile-mudagiri{transform:scale(.90);transform-origin:left bottom}
+  .pre-dialogue{min-height:0!important;margin-bottom:9px!important;padding:9px 11px!important}
+  .pre-panel{padding:14px 14px 10px!important}
+  .pre-panel h2{font-size:clamp(21px,5.8vw,25px)!important;margin-top:5px!important;margin-bottom:5px!important}
+  .pre-helper{margin-top:4px!important;margin-bottom:8px!important;line-height:1.35!important}
+  .profile-choice-grid{gap:7px!important}
+  .profile-choice{min-height:48px!important}
+}
+@media(max-height:740px){
+  .pre-profile-mudagiri{display:none!important}
+  .pre-checkpoint,.pre-enemy-eyes,.pre-encounter-shadow{opacity:.35}
+  .pre-dialogue{margin-bottom:7px!important}
+  .pre-panel{padding:12px 13px 9px!important}
+  .profile-choice{min-height:44px!important}
+  .pre-panel .profile-primary-cta{min-height:50px!important;margin-top:7px!important}
+  .pre-panel .pre-back{min-height:34px!important;margin-top:3px!important}
+}
+@media(max-height:660px){
+  .pre-dialogue{display:none!important}
+  .pre-helper{font-size:12px!important}
+  .profile-choice-grid{gap:5px!important}
+  .profile-choice{min-height:42px!important}
 }
 
 /* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
