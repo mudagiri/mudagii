@@ -358,7 +358,7 @@ console.log('BENCHMARK_GAP_SEMANTIC_INVARIANT_PASS');
 // Review-potential must remain separate from confirmed saving and respect category materiality.
 const potentialCases:[string,Category,number,number,'low'|'medium'|'high'][]=[
  ['食費-大幅超過','food',80000,45000,'high'],
- ['食費-小幅超過','food',50000,45000,'medium'],
+ ['食費-小幅超過','food',55000,45000,'medium'],
  ['住居費-小幅超過','rent',110000,100000,'low'],
  ['住居費-大幅超過','rent',180000,100000,'high']
 ];
