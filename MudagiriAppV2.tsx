@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import RpgBlock1,{type FamilyProfile} from './RpgBlock1';
-import ResultScreenV3 from './ResultScreenV3';
+import ResultScreenV4 from './ResultScreenV4';
 import type {ToneMode} from './tone-mode-v3';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
 import {scoreTypeAnswersV31,type TypeAnswersV31} from './type-questionnaire-v3.1';
@@ -69,7 +69,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    window.scrollTo({top:0,behavior:'auto'});
  };
 
- if(result)return <ResultScreenV3 vm={result} onEvent={emit} onLine={async(ctx)=>{
+ if(result)return <ResultScreenV4 vm={result} onEvent={emit} onLine={async(ctx)=>{
    const payload={...ctx,anonymousUserId,diagnosisId};
    try{await store?.saveLead?.({leadId:'lead_'+diagnosisId,anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null});}catch{}
    if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
