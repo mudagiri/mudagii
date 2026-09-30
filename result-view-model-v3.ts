@@ -142,10 +142,10 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
  if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足・守りたい',satisfied:'今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
  if(x.category==='insurance'&&a.insurancePurpose){
-  if(a.insurancePurpose==='clear')return 'かなり把握している';
-  if(a.insuranceLastReview==='over3y'||a.insuranceLastReview==='never')return 'しばらく見直していない';
-  if(a.insurancePurpose==='unclear')return 'よく分からない';
-  return 'だいたい把握している';
+  const purpose=({clear:'保障目的をかなり把握',mostly:'保障目的をだいたい把握',unclear:'保障目的がよく分からない'} as Record<string,string>)[a.insurancePurpose]??null;
+  const review=({recent:'最近見直した',within3y:'3年以内に見直した',over3y:'3年以上見直していない',never:'見直したことがない',unknown:'見直し時期が分からない'} as Record<string,string>)[a.insuranceLastReview??'']??null;
+  const duplicate=a.insuranceDuplicate==='possible'?'保障重複の可能性あり':null;
+  return [purpose,review,duplicate].filter(Boolean).join(' / ')||null;
  }
  if(x.category==='childEducation'){
   const stageLabels={publicKindergarten:'幼稚園・保育相当（公立）',privateKindergarten:'幼稚園・保育相当（私立）',publicElementary:'小学校（公立）',privateElementary:'小学校（私立）',publicJuniorHigh:'中学校（公立）',privateJuniorHigh:'中学校（私立）',publicHigh:'高校（公立）',privateHigh:'高校（私立）'} as Record<string,string>;
