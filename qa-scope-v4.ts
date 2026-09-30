@@ -2,6 +2,8 @@ import { strict as A } from 'node:assert';
 import { emptyExpenseRecordsV4 } from './expense-record-v4';
 import { buildComparisonFactsV4 } from './benchmark-router-v4';
 import { runDiagnosisAdapterV4 } from './diagnosis-adapter-v4';
+import { buildFinalJudgementsV4 } from './final-judgement-v4';
+import { requiresHouseholdTotalV4 } from './scope-flow-v4';
 import type { ProfileV4 } from './mudagiri-profile-v4';
 
 const base=(patch:Partial<ProfileV4>={}):ProfileV4=>({
@@ -47,6 +49,9 @@ const amount=(records:ReturnType<typeof emptyExpenseRecordsV4>,category:keyof Re
  const food=dx.diagnosis?.categories.find(x=>x.category==='food');
  A.equal(food?.actual,40000);
  A.equal(food?.comparable,null);
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,appraisal:{food:{satisfaction:'inertia'}}});
+ A.equal(final.categories.find(x=>x.category==='food')?.status,'review');
+ A.equal(requiresHouseholdTotalV4(profile,'food'),true);
 }
 
 {
@@ -91,6 +96,8 @@ const amount=(records:ReturnType<typeof emptyExpenseRecordsV4>,category:keyof Re
  const rent=dx.diagnosis?.categories.find(x=>x.category==='rent');
  A.equal(rent?.actual,100000);
  A.equal(rent?.comparable,null);
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,appraisal:{rent:{rentPreference:'reasonable'}}});
+ A.equal(final.categories.find(x=>x.category==='rent')?.status,'protect');
 }
 
 {
@@ -102,6 +109,9 @@ const amount=(records:ReturnType<typeof emptyExpenseRecordsV4>,category:keyof Re
  const sub=dx.diagnosis?.categories.find(x=>x.category==='sub');
  A.equal(sub?.state,'CONFIRMED');
  A.equal(sub?.confirmedSaving,1980);
+ const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,appraisal:{sub:{subUnusedAmount:1980,subCancellationConfirmed:true,subUsage:'one'}}});
+ A.equal(final.confirmedMonthly,1980);
+ A.equal(final.categories.find(x=>x.category==='sub')?.status,'cut');
 }
 
 {
