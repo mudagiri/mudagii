@@ -27,6 +27,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const [restored,setRestored]=useState(()=>typeof window==='undefined'?null:readActiveResultV1());
  const [draft,setDraft]=useState(()=>typeof window==='undefined'?null:readJourneyDraftV1());
  const [resumeChoice,setResumeChoice]=useState(()=>!restored&&!!draft);
+ const [resumeOffered]=useState(()=>!restored&&!!draft);
  const [result,setResult]=useState<any>(null);
  const [diagnosisId,setDiagnosisId]=useState(()=>restored?.diagnosisId??draft?.diagnosisId??(typeof window==='undefined'?'server':newDiagnosisId()));
  const [anonymousUserId]=useState(()=>restored?.anonymousUserId??draft?.anonymousUserId??(typeof window==='undefined'?'server':getOrCreateAnonymousUserId()));
@@ -36,6 +37,8 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    onEvent?.(name,data);
    store?.appendEvent(eventV3(anonymousUserId,diagnosisId,name,data));
  },[onEvent,store,anonymousUserId,diagnosisId]);
+
+ useEffect(()=>{if(resumeOffered&&draft)emit('journey_resume_offered',{scene:draft.scene})},[resumeOffered,draft,emit]);
 
  useEffect(()=>{
    if(typeof window==='undefined')return;
