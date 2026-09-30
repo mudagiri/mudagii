@@ -150,7 +150,7 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
   return [usage,unused,confirmed].filter(Boolean).join(' / ')||null;
  }
  if(x.category==='car'&&a.carNeed)return ({essential:'生活・仕事に必須',useful:'あるとかなり便利',burden:'維持費の負担が気になる',notNeeded:'なくても困らないかも'} as Record<string,string>)[a.carNeed]??null;
- if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'かなり負担を感じる',burdenSome:'少し負担を感じる',reasonable:'今の家なら妥当',protect:'今の住環境を優先'} as Record<string,string>)[a.rentPreference]??null;
+ if(x.category==='rent'&&a.rentPreference)return ({burdenHigh:'今の住居費をかなり負担に感じる',burdenSome:'今の住居費を少し負担に感じる',reasonable:'今の住居費は妥当だと思う',protect:'今の住環境を優先したい'} as Record<string,string>)[a.rentPreference]??null;
  if((x.category==='food'||x.category==='fun'||x.category==='beautyFashion')&&a.satisfaction)return ({verySatisfied:'かなり満足していて、この支出は守りたい',satisfied:'満足していて、今くらいでいい',inertia:'少し見直したい',waste:'かなり見直したい'} as Record<string,string>)[a.satisfaction]??null;
  if(x.category==='insurance'&&a.insurancePurpose){
   const purpose=({clear:'保障目的をかなり把握',mostly:'保障目的をだいたい把握',unclear:'保障目的がよく分からない'} as Record<string,string>)[a.insurancePurpose]??null;
@@ -162,7 +162,7 @@ function appraisalSummary(x:FinalCategoryV3):string|null{
   const stageLabels={publicKindergarten:'幼稚園・保育相当（公立）',privateKindergarten:'幼稚園・保育相当（私立）',publicElementary:'小学校（公立）',privateElementary:'小学校（私立）',publicJuniorHigh:'中学校（公立）',privateJuniorHigh:'中学校（私立）',publicHigh:'高校（公立）',privateHigh:'高校（私立）'} as Record<string,string>;
   const children=a.educationChildren?.length?a.educationChildren.map((child,i)=>`${i+1}人目:${stageLabels[child.stage]??child.stage}`).join(' / '):null;
   const stage=!children&&a.educationStage?stageLabels[a.educationStage]:null;
-  const pref=a.educationPreference?({reviewHigh:'かなり見直したい',reviewSome:'少し負担を感じる',necessary:'必要な教育費',protect:'優先して守りたい'} as Record<string,string>)[a.educationPreference]:null;
+  const pref=a.educationPreference?({reviewHigh:'教育費をかなり見直したい',reviewSome:'教育費の負担を少し感じる',necessary:'必要な教育費だと思う',protect:'教育費は優先して守りたい'} as Record<string,string>)[a.educationPreference]:null;
   return [children??stage,pref].filter(Boolean).join(' / ')||null;
  }
  if(x.category==='selfDevelopment'&&a.selfDevelopmentValue)return ({inertia:'惰性になっている',unclear:'効果がよく分からない',purpose:'目的が明確',results:'成果につながっている'} as Record<string,string>)[a.selfDevelopmentValue]??null;
