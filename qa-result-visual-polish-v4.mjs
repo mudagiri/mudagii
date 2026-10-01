@@ -33,6 +33,16 @@ const checks=[
  ['even benchmark uses muted neutral color',
   result.includes('.rv3-benchmark-hero.is-even>strong{color:#c7d4dc!important}')],
 
+
+ ['Mudagiri dialogue appears throughout Result',(result.match(/className="rv3-mudagiri-talk"/g)||[]).length>=7],
+ ['share dialogue is privacy reassuring',result.includes('金額は出さない。タイプだけ見せてやれ。')],
+ ['benchmark dialogue avoids premature waste labeling',result.includes('でもまだムダ認定は早い。')],
+ ['verdict dialogue explains the three-way split',result.includes('削る・見る・守る。ちゃんと分けたぞ。')],
+ ['NEXT QUEST dialogue is action-focused',result.includes('次はここだけ見ればOKだ。')],
+ ['consult dialogue is a separate deeper step',result.includes('もっと深掘りするなら、こっちだ。')],
+ ['LINE dialogue frames saving the result',result.includes('戦果、消える前に残しとけ。')],
+ ['friend dialogue supports viral curiosity',result.includes('友達は何タイプだろうな？')],
+ ['dialogue bubble has a visual speech-tail',result.includes('.rv3-mudagiri-talk:after')],
  ['diagnosis logic remains outside this visual file change',!result.includes('function buildFinalJudgementsV4')&&!result.includes('function resolveComparable')],
 ];
 for(const [name,ok] of checks){
