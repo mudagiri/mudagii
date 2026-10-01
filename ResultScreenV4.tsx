@@ -20,6 +20,10 @@ const MUDAGIRI_RESULT_ART={
  verdict:'./assets/battle1/MUDAGIRI_BATTLE.png',
  guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
  share:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+ shareHint:'./assets/prebattle/MUDAGIRI_PROFILE_Q2.png',
+ quest:'./assets/battle1/MUDAGIRI_BATTLE_SWING.png',
+ save:'./assets/prebattle/MUDAGIRI_PROFILE_Q5.png',
+ friend:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
 } as const;
 
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
@@ -277,9 +281,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section className="rv3-social-share">
-   <div className="rv3-kicker">SHARE YOUR TYPE</div>
-   <h3>このタイプ、友だちにも見せる？</h3>
-   <p>金額・収入・都道府県はシェア画像に入りません。</p>
+   <div className="rv3-mini-guide-row">
+    <div><div className="rv3-kicker">SHARE YOUR TYPE</div><h3>このタイプ、友だちにも見せる？</h3><p>金額・収入・都道府県はシェア画像に入りません。</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.shareHint} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <div className="rv3-social-grid">
     <button type="button" className="is-x" onClick={shareX}><b>𝕏</b><span>X</span></button>
     <button type="button" className="is-instagram" onClick={()=>nativeShare('instagram')}><b>◎</b><span>Instagram</span></button>
@@ -351,7 +356,13 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
 
 
-  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
+  <section className="rv3-next">
+   <div className="rv3-mini-guide-row is-next">
+    <div><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.quest} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   {vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}
+  </section>
 
   <section className="rv3-consult-route">
    <div className="rv3-consult-head">
@@ -406,7 +417,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section ref={earlyLineRef as any} className="rv3-line-early">
-   <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
+   <div className="rv3-mini-guide-row is-save">
+    <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.save} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <button className="rv3-primary" onClick={()=>lineHandoff('after_next_quest')}>無料でLINEへ引き継ぐ ▶</button>
    <small>✓ 無料　✓ 診断コードを発行　✓ 登録しただけで相談予約にはなりません</small>
   </section>
@@ -414,9 +428,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <details className="rv3-section rv3-book-shell" onToggle={(e)=>{if((e.currentTarget as HTMLDetailsElement).open)onEvent?.('result_book_opened',{typeCode:vm.type.code})}}><summary><div><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">気になる項目だけ詳しく確認</p></div><span>見る⌄</span></summary><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>{x.diagnosisAmountLabel??'あなた'}：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>{x.householdTotal!==null&&x.householdTotal!==undefined&&x.householdTotal!==x.amount&&<div><b>家全体：</b>¥{yen(x.householdTotal)}/月</div>}{x.comparisonAmount!==null&&x.comparisonAmount!==undefined&&x.comparisonAmount!==x.amount&&x.comparisonAmount!==x.householdTotal&&<div><b>{x.comparisonAmountLabel??'比較対象'}：</b>¥{yen(x.comparisonAmount)}/月</div>}<div><b>{x.comparable!==null?'比較の目安':'判定の見方'}：</b>{x.evidenceLabel??x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.referenceDetail&&<div><b>料金の目安：</b>{x.referenceDetail}</div>}{x.comparisonContext?.criteria?.length>0&&<div><b>比較条件：</b>{x.comparisonContext.criteria.join(' × ')}</div>}{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.reviewPotential?.available&&x.reviewPotential.delta>0&&<div className={`rv3-potential is-${x.reviewPotential.level}`}><b>{x.reviewPotential.label}</b><small>基準との差から見た「見直した場合の家計インパクト」。確定した削減額ではありません。</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></details>
 
   <section className="rv3-viral-loop">
-   <div className="rv3-kicker">FRIEND QUEST</div>
-   <h3>友達は何タイプ？</h3>
-   <p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p>
+   <div className="rv3-mini-guide-row is-friend">
+    <div><div className="rv3-kicker">FRIEND QUEST</div><h3>友達は何タイプ？</h3><p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.friend} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <details className="rv3-type-gallery">
     <summary>8タイプ全部を見る <span>⌄</span></summary>
     <div className="rv3-type-gallery-grid">
@@ -529,6 +544,173 @@ const CSS=`
 .rv3-type-card{position:relative;margin:0 12px 14px;padding:26px 16px!important;border:1px solid rgba(245,204,57,.48)!important;border-radius:18px;background:linear-gradient(180deg,#101b26 0%,#0a121b 100%);box-shadow:0 14px 34px rgba(0,0,0,.28)}.rv3-type-card:before{content:"TYPE UNLOCKED";position:absolute;top:10px;right:12px;color:rgba(245,204,57,.35);font-size:9px;font-weight:1000;letter-spacing:.12em}.rv3-type-card h2{font-size:clamp(30px,8.3vw,36px)!important;text-wrap:balance}.rv3-type-art{display:block;width:clamp(132px,38vw,156px);height:clamp(132px,38vw,156px);margin:10px auto 4px;object-fit:contain;image-rendering:pixelated}.rv3-type-card .rv3-catch{font-size:16px;line-height:1.45;color:#fff}.rv3-type-stamp{display:flex;justify-content:center;gap:7px;margin-top:12px}.rv3-type-stamp span{padding:5px 8px;border:1px solid #344454;border-radius:999px;color:#9da8b3;font-size:9px;font-weight:900;letter-spacing:.08em}
 
 .rv3-save{margin-top:26px!important;background:linear-gradient(180deg,#101b25,#0b141e)!important}.rv3-save p strong{color:#fff}.rv3-save-preview{display:grid;gap:7px;margin-top:14px;padding:13px;border:1px solid #344454;border-radius:11px;background:#08111a;text-align:left}.rv3-save-preview span{color:#87929d;font-size:10px;font-weight:900;letter-spacing:.08em}.rv3-save-preview b{font-size:12px;line-height:1.4}
+
+/* Result visual polish V4: semantic palette + persistent Mudagiri guide */
+.rv3{
+ --rv-bg:#08131d;
+ --rv-surface:#102231;
+ --rv-surface-2:#142b3d;
+ --rv-gold:#f6c84b;
+ --rv-cyan:#62c8ec;
+ --rv-teal:#68d2bd;
+ --rv-violet:#9a8cff;
+ --rv-coral:#ef8f76;
+ --rv-green:#4fd778;
+ --rv-text:#f6f8fb;
+ --rv-muted:#aab7c3;
+ background:
+  radial-gradient(circle at 20% 4%,rgba(154,140,255,.15),transparent 28%),
+  radial-gradient(circle at 82% 18%,rgba(98,200,236,.12),transparent 30%),
+  linear-gradient(180deg,#0d1c29 0%,#091723 48%,#07111a 100%)!important;
+}
+.rv3-inner{background:linear-gradient(180deg,rgba(255,255,255,.008),transparent 34%)}
+.rv3-kicker{color:var(--rv-gold)}
+.rv3-muted,.rv3 small{color:var(--rv-muted)}
+
+.rv3-mudagiri-cameo{width:68px;height:68px;flex:0 0 68px}
+.rv3-mini-guide-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.rv3-mini-guide-row>div{min-width:0;flex:1}
+.rv3-mini-guide-row h3{margin-top:7px!important}
+.rv3-mini-guide-row p{margin-top:7px!important}
+.rv3-mini-guide-row.is-next .rv3-mudagiri-cameo{width:78px;height:78px;flex-basis:78px}
+.rv3-mini-guide-row.is-save .rv3-mudagiri-cameo{width:64px;height:64px;flex-basis:64px}
+.rv3-mini-guide-row.is-friend .rv3-mudagiri-cameo{width:72px;height:72px;flex-basis:72px}
+
+.rv3-type-card{
+ border-color:rgba(154,140,255,.58)!important;
+ background:
+  radial-gradient(circle at 50% 8%,rgba(154,140,255,.18),transparent 34%),
+  linear-gradient(160deg,#20294d 0%,#121d32 48%,#0d1725 100%)!important;
+ box-shadow:0 16px 38px rgba(19,18,52,.34)!important;
+}
+.rv3-type-card:before{color:rgba(190,180,255,.48)!important}
+.rv3-type-card h2{color:#f7e58b!important}
+.rv3-axes,.rv3-type-notes>div{background:rgba(9,19,34,.72)!important}
+.rv3-axis-track i{background:var(--rv-violet)!important}
+.rv3-type-notes>div:first-child{border-color:rgba(246,200,75,.58)!important;background:rgba(246,200,75,.07)!important}
+
+.rv3-social-share{
+ border-color:rgba(154,140,255,.48)!important;
+ background:linear-gradient(145deg,#1b2341 0%,#121b31 55%,#0e1828 100%)!important;
+ box-shadow:0 12px 26px rgba(10,8,34,.20);
+}
+.rv3-social-share .rv3-kicker{color:#b8adff}
+.rv3-social-grid button{background:#142437!important}
+.rv3-social-grid .is-instagram,.rv3-social-grid .is-threads{border-color:rgba(154,140,255,.62)!important}
+.rv3-social-grid .is-line{border-color:rgba(79,215,120,.68)!important}
+
+.rv3-benchmark{
+ border-top:1px solid rgba(98,200,236,.22)!important;
+ background:
+  linear-gradient(180deg,rgba(22,55,74,.64),rgba(8,23,35,.18))!important;
+}
+.rv3-benchmark .rv3-kicker{color:var(--rv-cyan)}
+.rv3-benchmark-hero{
+ border-color:rgba(98,200,236,.54)!important;
+ background:linear-gradient(180deg,#17364a,#102536)!important;
+ box-shadow:0 12px 26px rgba(6,24,36,.22)!important;
+}
+.rv3-benchmark-hero>strong{color:#ffd65f!important}
+.rv3-impact-grid>div{border-color:rgba(98,200,236,.26)!important;background:#102536!important}
+.rv3-impact-grid .is-10y{
+ border-color:rgba(246,200,75,.68)!important;
+ background:linear-gradient(180deg,rgba(246,200,75,.12),#122638)!important;
+}
+.rv3-top-gap{
+ border-color:rgba(98,200,236,.54)!important;
+ background:linear-gradient(180deg,#142c3e,#0f202f)!important;
+}
+.rv3-top-gap-head span{color:#8fd9f2!important}
+.rv3-benchmark-details>summary{border-color:rgba(98,200,236,.36)!important;background:#11293a!important}
+
+.rv3-verdict-open{
+ border-top:1px solid rgba(104,210,189,.22)!important;
+ background:linear-gradient(180deg,rgba(18,47,54,.62),rgba(8,21,29,.18))!important;
+}
+.rv3-verdict-open .rv3-kicker{color:var(--rv-teal)}
+.rv3-verdict-grid>div{background:#112431!important}
+.rv3-verdict-grid .is-cut{border-color:rgba(239,143,118,.58)!important}
+.rv3-verdict-grid .is-review{border-color:rgba(246,200,75,.64)!important}
+.rv3-verdict-grid .is-protect{border-color:rgba(104,210,189,.60)!important}
+.rv3-verdict-grid .is-cut b{color:var(--rv-coral)!important}
+.rv3-verdict-grid .is-review b{color:var(--rv-gold)!important}
+.rv3-verdict-grid .is-protect b{color:var(--rv-teal)!important}
+
+.rv3-next{
+ border-color:rgba(246,200,75,.74)!important;
+ background:
+  radial-gradient(circle at 88% 14%,rgba(246,200,75,.12),transparent 28%),
+  linear-gradient(160deg,#2b2817,#171d22 52%,#101922)!important;
+ box-shadow:0 12px 28px rgba(64,48,7,.18);
+}
+.rv3-next .rv3-kicker{color:#ffe07b}
+.rv3-quest{background:#242816!important;border:1px solid rgba(246,200,75,.28);border-radius:10px}
+.rv3-next-answer{background:#20271b!important}
+
+.rv3-consult-route{
+ border-color:rgba(104,210,189,.60)!important;
+ background:
+  radial-gradient(circle at 90% 0,rgba(104,210,189,.13),transparent 34%),
+  linear-gradient(160deg,#153742,#102936 52%,#0d1c29)!important;
+}
+.rv3-consult-route .rv3-kicker{color:var(--rv-teal)}
+.rv3-consult-tabs button{background:#112432!important;border-color:#3f5f68!important}
+.rv3-consult-tabs button.is-active{border-color:var(--rv-teal)!important;background:rgba(104,210,189,.11)!important;color:#8ce1d1!important}
+.rv3-consult-tabs button.is-recommended:not(.is-active){border-color:rgba(246,200,75,.52)!important}
+.rv3-consult-copy{background:#102735!important;border-color:rgba(104,210,189,.32)!important}
+.rv3-consult-copy>small{color:#8ce1d1!important}
+
+.rv3-line-early{
+ border-color:rgba(79,215,120,.58)!important;
+ background:
+  radial-gradient(circle at 92% 8%,rgba(79,215,120,.14),transparent 30%),
+  linear-gradient(160deg,#143322,#10261c 52%,#0d1d18)!important;
+}
+.rv3-line-early .rv3-kicker{color:#76e590}
+.rv3-line-early .rv3-primary{
+ background:var(--rv-green)!important;
+ border-color:#a8efba!important;
+ color:#07150b!important;
+ box-shadow:0 7px 0 #24843f!important;
+}
+.rv3-line-early .rv3-primary:active{box-shadow:0 4px 0 #24843f!important}
+
+.rv3-book-shell{
+ margin-top:18px;
+ border-top:1px solid rgba(98,200,236,.22)!important;
+ background:linear-gradient(180deg,rgba(16,41,57,.38),transparent)!important;
+}
+.rv3-book-shell>summary>span{color:#79d3ef!important}
+
+.rv3-viral-loop{
+ border-color:rgba(154,140,255,.52)!important;
+ background:
+  radial-gradient(circle at 92% 8%,rgba(154,140,255,.14),transparent 28%),
+  linear-gradient(160deg,#211f43,#161c34 54%,#111928)!important;
+}
+.rv3-viral-loop .rv3-kicker{color:#b9afff}
+.rv3-type-gallery>summary{background:#18223a!important;border-color:rgba(154,140,255,.40)!important}
+.rv3-friend-invite{background:#eeeaff!important;border-color:#c7bfff!important;color:#17152f!important}
+
+.rv3-save{
+ border-color:rgba(79,215,120,.42)!important;
+ background:linear-gradient(160deg,#123123,#10261d 48%,#0d1b18)!important;
+}
+.rv3-save .rv3-kicker{color:#7be693}
+.rv3-save .rv3-primary{
+ background:var(--rv-green)!important;
+ border-color:#a8efba!important;
+ color:#07150b!important;
+ box-shadow:0 7px 0 #24843f!important;
+}
+.rv3-save-preview{background:#0d2118!important;border-color:rgba(79,215,120,.32)!important}
+
+@media(max-width:390px){
+ .rv3-mudagiri-cameo{width:60px;height:60px;flex-basis:60px}
+ .rv3-mini-guide-row.is-next .rv3-mudagiri-cameo{width:70px;height:70px;flex-basis:70px}
+ .rv3-mini-guide-row.is-friend .rv3-mudagiri-cameo{width:64px;height:64px;flex-basis:64px}
+}
+
 `;
 // deploy-sync: human-readable diagnosis details
 
