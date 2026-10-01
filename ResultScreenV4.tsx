@@ -20,6 +20,10 @@ const MUDAGIRI_RESULT_ART={
  verdict:'./assets/battle1/MUDAGIRI_BATTLE.png',
  guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
  share:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+ shareHint:'./assets/prebattle/MUDAGIRI_PROFILE_Q2.png',
+ quest:'./assets/battle1/MUDAGIRI_BATTLE_SWING.png',
+ save:'./assets/prebattle/MUDAGIRI_PROFILE_Q5.png',
+ friend:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
 } as const;
 
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
@@ -277,9 +281,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section className="rv3-social-share">
-   <div className="rv3-kicker">SHARE YOUR TYPE</div>
-   <h3>このタイプ、友だちにも見せる？</h3>
-   <p>金額・収入・都道府県はシェア画像に入りません。</p>
+   <div className="rv3-mini-guide-row">
+    <div><div className="rv3-kicker">SHARE YOUR TYPE</div><h3>このタイプ、友だちにも見せる？</h3><p>金額・収入・都道府県はシェア画像に入りません。</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.shareHint} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <div className="rv3-social-grid">
     <button type="button" className="is-x" onClick={shareX}><b>𝕏</b><span>X</span></button>
     <button type="button" className="is-instagram" onClick={()=>nativeShare('instagram')}><b>◎</b><span>Instagram</span></button>
@@ -351,7 +356,13 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
 
 
-  <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
+  <section className="rv3-next">
+   <div className="rv3-mini-guide-row is-next">
+    <div><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.quest} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   {vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}
+  </section>
 
   <section className="rv3-consult-route">
    <div className="rv3-consult-head">
@@ -406,7 +417,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section ref={earlyLineRef as any} className="rv3-line-early">
-   <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
+   <div className="rv3-mini-guide-row is-save">
+    <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.save} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <button className="rv3-primary" onClick={()=>lineHandoff('after_next_quest')}>無料でLINEへ引き継ぐ ▶</button>
    <small>✓ 無料　✓ 診断コードを発行　✓ 登録しただけで相談予約にはなりません</small>
   </section>
@@ -414,9 +428,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <details className="rv3-section rv3-book-shell" onToggle={(e)=>{if((e.currentTarget as HTMLDetailsElement).open)onEvent?.('result_book_opened',{typeCode:vm.type.code})}}><summary><div><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">気になる項目だけ詳しく確認</p></div><span>見る⌄</span></summary><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>{x.diagnosisAmountLabel??'あなた'}：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>{x.householdTotal!==null&&x.householdTotal!==undefined&&x.householdTotal!==x.amount&&<div><b>家全体：</b>¥{yen(x.householdTotal)}/月</div>}{x.comparisonAmount!==null&&x.comparisonAmount!==undefined&&x.comparisonAmount!==x.amount&&x.comparisonAmount!==x.householdTotal&&<div><b>{x.comparisonAmountLabel??'比較対象'}：</b>¥{yen(x.comparisonAmount)}/月</div>}<div><b>{x.comparable!==null?'比較の目安':'判定の見方'}：</b>{x.evidenceLabel??x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.referenceDetail&&<div><b>料金の目安：</b>{x.referenceDetail}</div>}{x.comparisonContext?.criteria?.length>0&&<div><b>比較条件：</b>{x.comparisonContext.criteria.join(' × ')}</div>}{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.reviewPotential?.available&&x.reviewPotential.delta>0&&<div className={`rv3-potential is-${x.reviewPotential.level}`}><b>{x.reviewPotential.label}</b><small>基準との差から見た「見直した場合の家計インパクト」。確定した削減額ではありません。</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></details>
 
   <section className="rv3-viral-loop">
-   <div className="rv3-kicker">FRIEND QUEST</div>
-   <h3>友達は何タイプ？</h3>
-   <p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p>
+   <div className="rv3-mini-guide-row is-friend">
+    <div><div className="rv3-kicker">FRIEND QUEST</div><h3>友達は何タイプ？</h3><p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p></div>
+    <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.friend} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <details className="rv3-type-gallery">
     <summary>8タイプ全部を見る <span>⌄</span></summary>
     <div className="rv3-type-gallery-grid">
