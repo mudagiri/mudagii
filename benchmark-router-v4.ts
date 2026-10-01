@@ -41,6 +41,13 @@ function comparisonCandidate(category:Category,profile:ProfileV4,record:ExpenseR
   return {amount:record.diagnosisAmount,scope:diagnosisScopeForCategory(category,profile),fromDiagnosis:true,reason:'SINGLE_PERSON_SCOPE_MATCH'};
  }
 
+ // Insurance is user-scope compatible even in a multi-person household:
+ // personal diagnosis compares the user's own premium with a personal reference,
+ // household diagnosis compares the household premium with a household reference.
+ if(category==='insurance'&&profile.diagnosisScope==='personal'){
+  return {amount:record.diagnosisAmount,scope:'personal' as const,fromDiagnosis:true,reason:'PERSONAL_INSURANCE_SCOPE_MATCH'};
+ }
+
  if(profile.diagnosisScope==='household'){
   return {amount:record.diagnosisAmount,scope:diagnosisScopeForCategory(category,profile),fromDiagnosis:true,reason:'HOUSEHOLD_DIAGNOSIS_SCOPE_MATCH'};
  }
@@ -76,6 +83,7 @@ export function buildComparisonFactsV4(a:{profile:ProfileV4;records:ExpenseRecor
   housingType:resolverHousingTypeV4(a.profile),
   educationChildren:childMeta.educationChildren,
   beautySex:beautyMeta.beautySex,
+  insuranceScope:a.profile.diagnosisScope,
  });
 
  return Object.fromEntries(V4_CATEGORIES.map(category=>{
@@ -104,4 +112,4 @@ export function buildComparisonFactsV4(a:{profile:ProfileV4;records:ExpenseRecor
  })) as ComparisonFactsV4;
 }
 
-export const BENCHMARK_ROUTER_V4_VERSION='MUDAGIRI_BENCHMARK_ROUTER_V4_0';
+export const BENCHMARK_ROUTER_V4_VERSION='MUDAGIRI_BENCHMARK_ROUTER_V4_1';
