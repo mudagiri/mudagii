@@ -10,6 +10,7 @@ const checks=[
  ['handoff code itself contains no financial copy',result.includes('コード自体には収入・支出額は含まれません。')],
  ['confirm copies code before LINE',result.includes("navigator.clipboard?.writeText(message)")&&result.includes("line_handoff_confirmed")],
  ['lead payload stores handoff code',app.includes('handoffCode:ctx?.handoffCode??null')],
+ ['handoff code is searchable in current Lead ID without GAS redeploy',app.includes("leadId:'lead_'+diagnosisId+(ctx?.handoffCode?'_'+ctx.handoffCode:'')")],
  ['lead payload stores CTA placement',app.includes('ctaPlacement:ctx?.placement??null')],
  ['GAS exposes searchable handoff column',gas.includes("'handoff_code','cta_placement'")],
  ['GAS lead row stores handoff code',gas.includes("b.handoffCode||'',b.ctaPlacement||''")],
