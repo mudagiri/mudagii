@@ -14,6 +14,8 @@ const context=await browser.newContext({
   colorScheme:'dark',
 });
 const page=await context.newPage();
+page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
+page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
 const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
 
 const report=[];
