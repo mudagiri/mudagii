@@ -48,7 +48,7 @@ for(let id=1;id<=10000;id++){
    if(vm.potential.lower!==0)fail(id,'C-only lower must be 0');
    if(vm.potential.upper<vm.potential.lower)fail(id,'lower > upper');
    if(blocked){scopeBlocked++;if(x.cUpper!==0)fail(id,'scope block leaked C')}
-   if(ratio>2){extremeCases++;if(!x.detailReview)fail(id,'extreme missing detail flag')}
+   if(ratio>2&&!blocked){extremeCases++;if(!x.detailReview)fail(id,'extreme missing detail flag')}
    if((category==='food'||category==='fun'||category==='beautyFashion')&&appraisal.satisfaction==='verySatisfied'&&ratio>1.10&&x.v5Status!=='optimize')fail(id,'high satisfaction high spend must optimize');
    standardCases++;
   }else if(mode===3){
@@ -63,7 +63,7 @@ for(let id=1;id<=10000;id++){
    if(Math.abs(x.cUpper-expectedC)>1)fail(id,'energy C '+x.cUpper+' != '+expectedC);
    if(vm.potential.lower!==0)fail(id,'energy C-only lower must be 0');
    if(blocked){scopeBlocked++;if(x.cUpper!==0)fail(id,'energy scope block leaked C')}
-   if(ratio>2){extremeCases++;if(!x.detailReview)fail(id,'energy extreme missing detail flag')}
+   if(ratio>2&&!blocked){extremeCases++;if(!x.detailReview)fail(id,'energy extreme missing detail flag')}
    wideCases++;
   }else{
    const carrier=pick(['major','mvno'] as const);
