@@ -16,6 +16,8 @@ r=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'東�
 eq(r.food?.value,103384,'4-person food');
 eq(r.daily?.value,7469,'4-person daily');
 eq(r.fun?.value,11067,'4-person entertainment core');
+eq(r.beautyFashion?.value,21244,'multi beauty age model 40s');
+eq(r.beautyFashion?.confidence,'MODEL','multi beauty must stay model/reference');
 eq(r.energy?.confidence,'MODEL','multi utility model flag');
 eq(r.energy?.value,Math.round(25942*0.9689537157757496*1.2985757210518276),'multi utility model');
 
@@ -28,9 +30,17 @@ eq(r.rent?.value,null,'owned housing must not use private-rent benchmark');
 // Education stacks each child; benchmark gap is never interpreted here as saving.
 eq(educationBenchmarkV2([{stage:'publicElementary'},{stage:'privateJuniorHigh'}]),160580,'education child stack');
 
-// Audit-only categories remain null.
+// Insurance reference is scope-aware. Missing scope stays AUDIT; explicit scope activates a reference.
 eq(r.mobile?.value,null,'communication uses direct bands, not fake mean');
-eq(r.insurance?.value,null,'insurance audit only');
+eq(r.insurance?.value,null,'insurance without scope stays audit');
+const insPersonal=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'personal'});
+eq(insPersonal.insurance?.value,15830,'personal insurance 40s reference');
+eq(insPersonal.insurance?.confidence,'MODEL','personal insurance combined-age reference is model');
+const insHousehold=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'household'});
+eq(insHousehold.insurance?.value,29417,'multi household insurance average');
+eq(insHousehold.insurance?.confidence,'DIRECT','household insurance published mean');
+const insSingleHousehold=resolveComparableV2({household:'single',age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'household'});
+eq(insSingleHousehold.insurance?.value,12000,'single household insurance average');
 eq(r.sub?.value,null,'subscription audit only');
 eq(r.car?.value,null,'car structural audit only');
 eq(r.selfDevelopment?.value,null,'self-development audit only');
@@ -61,13 +71,13 @@ ok(age60.food?.value!==age59.food?.value,'age 60 must enter 60+ bucket');
 const inc499=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:4_999_999,prefecture:'東京都',month:2,housingType:'賃貸'});
 const inc500=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:5_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
 for(const c of ['energy','food','daily','fun'] as const)eq(inc499[c]?.value,baseMulti[c]?.value,'under 5m must stay neutral: '+c);
-for(const c of ['rent','mobile','insurance','sub','car','selfDevelopment'] as const)eq(inc500[c]?.value,baseMulti[c]?.value,'income must not affect '+c);
+for(const c of ['rent','mobile','insurance','sub','car','selfDevelopment','beautyFashion'] as const)eq(inc500[c]?.value,baseMulti[c]?.value,'income must not affect '+c);
 
 // Region/month isolation: only utility should move among core household-size comparables.
 const tokyoFeb=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'東京都',month:2,housingType:'賃貸'});
 const osakaAug=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'大阪府',month:8,housingType:'賃貸'});
 ok(tokyoFeb.energy?.value!==osakaAug.energy?.value,'region/month must affect energy');
-for(const c of ['food','daily','fun'] as const)eq(tokyoFeb[c]?.value,osakaAug[c]?.value,'region/month must not affect '+c);
+for(const c of ['food','daily','fun','beautyFashion'] as const)eq(tokyoFeb[c]?.value,osakaAug[c]?.value,'region/month must not affect '+c);
 
 // Same inputs must be deterministic.
 const detArgs={household:'multi' as const,householdSize:3,age:41,annualIncome:7_000_000,prefecture:'神奈川県',month:11,housingType:'賃貸'};
