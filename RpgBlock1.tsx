@@ -564,8 +564,10 @@ export default function RpgBlock1({
     setScene('scan');
   };
 
-  const nextQuestion = () => {
-    const steps=profileStepsV4(profileV4Draft);
+  const nextQuestion = (draftOverride?:ProfileDraftV4) => {
+    const activeDraft=draftOverride??profileV4Draft;
+    if(draftOverride)setProfileV4Draft(activeDraft);
+    const steps=profileStepsV4(activeDraft);
     const currentStep=steps[Math.min(questionIndex,Math.max(0,steps.length-1))];
     if(currentStep==='scope'){
       setQuestionIndex(1);
@@ -576,7 +578,7 @@ export default function RpgBlock1({
       setQuestionIndex(value=>value+1);
       return;
     }
-    const completed=finalizeProfileV4(profileV4Draft);
+    const completed=finalizeProfileV4(activeDraft);
     setProfileV4(completed);
     syncLegacyProfileFromV4(completed);
     if(shouldOfferAnnualIncomeCalibrationV4(completed)){
