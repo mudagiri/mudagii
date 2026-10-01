@@ -372,7 +372,7 @@ const CSS=`
 @keyframes v51detailin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
 .v51-status-help{margin-top:4px;color:#9fb7b5;font-size:8px;font-weight:800;line-height:1.35}
-.v51-battle-portraits>button{width:42px;height:42px;padding:0;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:#0b1c26;overflow:hidden;cursor:pointer;touch-action:manipulation;transition:transform .14s ease,border-color .14s ease}.v51-battle-portraits>button:active{transform:scale(.92)}.v51-battle-portraits>button img{width:100%;height:100%;object-fit:contain}
+.v51-battle-portraits>button{width:48px;height:48px;padding:0;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:#0b1c26;overflow:hidden;cursor:pointer;touch-action:manipulation;transition:transform .14s ease,border-color .14s ease}.v51-battle-portraits>button:active{transform:scale(.92)}.v51-battle-portraits>button img{width:100%;height:100%;object-fit:contain}
 .v51-money-hero{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:3px 5px;margin:20px auto 10px;color:#142332;font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.055em;line-height:.92;text-align:center;text-shadow:0 2px 0 rgba(255,255,255,.35)}
 .v51-money-prefix{flex-basis:100%;margin-bottom:7px;color:#604a05;font-family:system-ui,sans-serif;font-size:16px;font-weight:1000;letter-spacing:.06em;line-height:1}
 .v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}
