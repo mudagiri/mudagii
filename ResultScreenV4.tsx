@@ -87,6 +87,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
  const [open,setOpen]=useState<string|null>(null);
  const tone=resultTone(vm.toneMode);
  const [revealed,setRevealed]=useState(false);
+ const shareFileRef=useRef<File|null>(null);
  const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'result_bottom'>(null);
  const handoffCode=lineHandoffCode(vm.diagnosisId);
  const earlyLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'after_next_quest',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
@@ -97,6 +98,12 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    const id=window.setTimeout(()=>setRevealed(true),reduced?0:180);
    return()=>window.clearTimeout(id);
  },[]);
+ useEffect(()=>{
+  let active=true;
+  shareFileRef.current=null;
+  makeTypeShareFile(vm).then(file=>{if(active)shareFileRef.current=file});
+  return()=>{active=false};
+ },[vm.type.code]);
  async function nativeShare(platform:'instagram'|'threads'|'other'='other'){
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
   const shareUrl=new URL(window.location.origin+window.location.pathname);
@@ -107,7 +114,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   onEvent?.('share_clicked',{typeCode:vm.type.code,platform});
   onBeforeExternal?.();
   try{
-   const file=await makeTypeShareFile(vm);
+   const file=shareFileRef.current;
    if(file&&navigator.share&&navigator.canShare?.({files:[file]})){
     await navigator.share({title:'ムダギリ診断',text,files:[file]});
     onEvent?.('share_completed',{typeCode:vm.type.code,platform,format:'image'});
