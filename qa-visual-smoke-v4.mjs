@@ -150,14 +150,27 @@ await clickButton(/診断結果を見る/);
 await page.getByText('家計クエスト完了').waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
+const typeCard=page.locator('.rv3-type-card');
+await typeCard.scrollIntoViewIfNeeded();
+await shot('15a-result-type-card',{allowVertical:true});
+const socialShare=page.locator('.rv3-social-share');
+await socialShare.scrollIntoViewIfNeeded();
+await shot('15b-result-social-share',{allowVertical:true});
+const benchmark=page.locator('.rv3-benchmark');
+await benchmark.scrollIntoViewIfNeeded();
+await shot('15c-result-benchmark-horizons',{allowVertical:true});
+const topGap=page.locator('.rv3-top-gap');
+if(await topGap.count()){await topGap.scrollIntoViewIfNeeded();await shot('15d-result-top-gap',{allowVertical:true})}
+const moreComparisons=page.getByText(/ほかの比較項目も見る/).first();
+if(await moreComparisons.count()){await moreComparisons.scrollIntoViewIfNeeded();await moreComparisons.click();await shot('15e-result-more-comparisons',{allowVertical:true})}
 const earlyCta=page.locator('.rv3-line-early');
 await earlyCta.scrollIntoViewIfNeeded();
 await earlyCta.waitFor({state:'visible'});
-await shot('15b-result-line-cta',{allowVertical:true});
+await shot('15f-result-line-cta',{allowVertical:true});
 await clickButton(/無料でLINEへ引き継ぐ/);
 await page.getByRole('dialog').waitFor({state:'visible'});
 await page.getByRole('heading',{name:'LINEへ診断を引き継ぐ'}).waitFor();
-await shot('15c-line-handoff-modal',{allowVertical:true});
+await shot('15g-line-handoff-modal',{allowVertical:true});
 await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
