@@ -81,6 +81,22 @@ vm=build({mobile:cat('mobile',{amount:12000,benchmark:null,engineComparableAllow
 eq(row(vm,'mobile').positionAvailable,false,'combined telecom no one-line position');
 eq(row(vm,'mobile').cUpper,0,'combined telecom no C');
 
+
+// Insurance V5 reference overlay: personal uses age-based individual survey, structural gap never enters Potential.
+vm=build({insurance:cat('insurance',{amount:25000,benchmark:null,engineComparableAllowed:false,appraisal:{insurancePurpose:'unclear',insuranceLastReview:'over3y'}})});
+ok(row(vm,'insurance').positionAvailable,'insurance personal reference available');
+ok(row(vm,'insurance').comparable>0,'insurance personal comparator populated');
+eq(row(vm,'insurance').cUpper,0,'insurance reference must not create automatic C');
+eq(vm.potential.upper,0,'insurance gap must not inflate Potential');
+eq(row(vm,'insurance').v5Status,'optimize','unclear stale insurance should optimize');
+
+// Household insurance: age is primary and directly matching income bands appear only as a separate lens.
+const householdProfile:any={...profile,diagnosisScope:'household',householdSize:2,adultCount:2,relationships:['partner'],annualIncomeBand:'600_699'};
+const householdCats=ALL.map(c=>c==='insurance'?cat('insurance',{amount:40000,benchmark:null,engineComparableAllowed:false,amountScope:'household',appraisal:{insurancePurpose:'clear',insuranceLastReview:'within1y'}}):cat(c,{amount:0,benchmark:null,status:'safe'}));
+const hvm=buildResultViewModelV5({diagnosisId:'QA-H',toneMode:'serious',type,profile:householdProfile,annualIncomeBand:'600_699',finalCategories:householdCats as any});
+ok(row(hvm,'insurance').v5ReferenceSecondary.length===1,'household income lens available');
+eq(row(hvm,'insurance').cUpper,0,'household insurance remains structural');
+
 // Horizons are Potential-only simple accumulation.
 vm=build({food:cat('food',{amount:70000,benchmark:50000,appraisal:{satisfaction:'inertia'}})});
 eq(Math.round(vm.potential.oneYear.upper),180000,'1y potential');
