@@ -20,6 +20,19 @@ const checks=[
  ['consult uses teal treatment',result.includes('.rv3-consult-route .rv3-kicker{color:var(--rv-teal)')],
  ['LINE uses green treatment',result.includes('.rv3-line-early .rv3-primary')&&result.includes('var(--rv-green)')],
  ['friend quest uses violet treatment',result.includes('.rv3-viral-loop .rv3-kicker{color:#b9afff')],
+ ['benchmark groups carry directional color classes',
+  result.includes("g.differenceMonthly>0?'is-above':g.differenceMonthly<0?'is-below':'is-even'")],
+ ['largest comparison carries directional color class',
+  result.includes("topBenchmarkRow.comparisonDifference>0?'is-above':topBenchmarkRow.comparisonDifference<0?'is-below':'is-even'")],
+ ['comparison rows carry directional color classes',
+  result.includes("x.comparisonDifference>0?'is-above':x.comparisonDifference<0?'is-below':'is-even'")],
+ ['above benchmark stays warm',
+  result.includes('.rv3-benchmark-hero.is-above>strong{color:#ffd65f!important}')],
+ ['below benchmark uses cool neutral color',
+  result.includes('.rv3-benchmark-hero.is-below>strong{color:#79d9e8!important}')&&result.includes('.rv3-benchmark-hero.is-below .rv3-impact-grid .is-10y')],
+ ['even benchmark uses muted neutral color',
+  result.includes('.rv3-benchmark-hero.is-even>strong{color:#c7d4dc!important}')],
+
  ['diagnosis logic remains outside this visual file change',!result.includes('function buildFinalJudgementsV4')&&!result.includes('function resolveComparable')],
 ];
 for(const [name,ok] of checks){
