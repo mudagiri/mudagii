@@ -173,6 +173,16 @@ const save=page.getByRole('button',{name:/診断結果をLINEに保存する/}).
 await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('heading',{name:'診断結果をLINEに保存'}).waitFor();await shot('15m-line-save-modal',{allowVertical:true});await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
+// Cross-width Result regression: narrow and wide phones.
+for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,name:'430x932'}]){
+  await page.setViewportSize({width:vp.width,height:vp.height});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
+  await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
+}
+await page.setViewportSize({width:390,height:844});
+
+
 // Scenario B: common multi-adult PERSONAL flow + household-total follow-up.
 await clearJourney();
 await startPersonal();
