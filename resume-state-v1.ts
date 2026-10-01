@@ -13,9 +13,13 @@ export type JourneyDraftV1={
  questionIndex:number;
  householdSizePending:boolean;
  flow:any;
+ profileV4Draft?:any;
+ profileV4?:any;
  annualIncomeBand:any;
  scanIndex:number;
  rawExpenses:any;
+ expenseRecordsV4?:any;
+ scanScopeCategory?:any;
  scanTouched:any;
  appraisalIndex:number;
  appraisalAnswers:any;
@@ -33,11 +37,11 @@ export type ActiveResultV1={
 
 const parse=<T>(raw:string|null):T|null=>{try{return raw?JSON.parse(raw) as T:null}catch{return null}};
 
-const STABLE_DRAFT_SCENES=new Set(['profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']);
+const STABLE_DRAFT_SCENES=new Set(['mode','profile','incomeCalibration','scan','scanComplete','appraisal','appraisalComplete','typeQuiz','typeComplete','battleIntro']);
 export function readJourneyDraftV1(storage:Pick<Storage,'getItem'>=localStorage):JourneyDraftV1|null{
  const v=parse<JourneyDraftV1>(storage.getItem(JOURNEY_DRAFT_KEY));
  if(!v||v.schemaVersion!==JOURNEY_DRAFT_SCHEMA||!v.diagnosisId||!STABLE_DRAFT_SCENES.has(v.scene))return null;
- if(!Number.isInteger(v.questionIndex)||v.questionIndex<0||v.questionIndex>5)return null;
+ if(!Number.isInteger(v.questionIndex)||v.questionIndex<0||v.questionIndex>9)return null;
  if(!Number.isInteger(v.scanIndex)||v.scanIndex<0||v.scanIndex>11)return null;
  if(!Number.isInteger(v.appraisalIndex)||v.appraisalIndex<0)return null;
  if(!Number.isInteger(v.typeIndex)||v.typeIndex<0||v.typeIndex>7)return null;

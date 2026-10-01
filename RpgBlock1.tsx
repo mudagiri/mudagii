@@ -10,6 +10,14 @@ import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-dia
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 import type { EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
+import ProfileV4Scene from './ProfileV4Scene';
+import HouseholdTotalV4Scene from './HouseholdTotalV4Scene';
+import {emptyExpenseRecordsV4,type ExpenseRecordsV4} from './expense-record-v4';
+import {applyDiagnosisAmountV4,applyHouseholdTotalV4,requiresHouseholdTotalV4} from './scope-flow-v4';
+import {buildComparisonFactsV4,type ComparisonFactsV4} from './benchmark-router-v4';
+import {runDiagnosisAdapterV4} from './diagnosis-adapter-v4';
+import {buildFinalJudgementsV4,type FinalCategoryV4} from './final-judgement-v4';
+import {emptyProfileDraftV4,finalizeProfileV4,legacyFamilyProfileV4,profileStepsV4,resolverHousingTypeV4,shouldOfferAnnualIncomeCalibrationV4,type ProfileDraftV4,type ProfileV4} from './mudagiri-profile-v4';
 
 export type FamilyProfile = 'single' | 'couple' | 'children' | 'other';
 
@@ -18,7 +26,7 @@ type Props = {
   toneMode: ToneMode;
   onBegin: (mode: ToneMode) => void;
   onFamilySelect: (profile: FamilyProfile) => void;
-  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string}) => void;
+  onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string;scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null}}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
   resumeDraft?: JourneyDraftV1|null;
   diagnosisId?: string;
@@ -48,6 +56,7 @@ type AppraisalAnswer = {
   educationChildren?: {stage:EducationStageV2}[];
   educationChildCount?: number;
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
+  mobileScope?: 'mobileOnly'|'mobileInternet'|'familyOrMultiple'|'unknown';
   mobileCarrier?: 'major'|'mvno'|'unknown';
   energyPersistence?: 'persistent'|'temporary'|'unknown';
   dailyPersistence?: 'persistent'|'temporary'|'unknown';
@@ -60,7 +69,7 @@ type AppraisalQuestion = {
   maxAmount?: number;
   educationCount?: number;
   educationMaxCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileScope'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -251,9 +260,13 @@ export default function RpgBlock1({
   const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>((resumeDraft?.toneMode as ToneMode)||toneMode);
   const [questionIndex, setQuestionIndex] = useState(resumeDraft?.questionIndex??0);
   const [flow, setFlow] = useState<ProfileFlow>(()=>resumeDraft?.flow??INITIAL_FLOW);
-  const [householdSizePending,setHouseholdSizePending]=useState(resumeDraft?.householdSizePending??false);
+  const [profileV4Draft,setProfileV4Draft]=useState<ProfileDraftV4>(()=>resumeDraft?.profileV4Draft??emptyProfileDraftV4());
+  const [profileV4,setProfileV4]=useState<ProfileV4|null>(()=>resumeDraft?.profileV4??null);
+  const [householdSizePending,setHouseholdSizePending]=useState(false);
   const [scanIndex, setScanIndex] = useState(resumeDraft?.scanIndex??0);
   const [rawExpenses, setRawExpenses] = useState<RawExpenses>(()=>resumeDraft?.rawExpenses??emptyRawExpenses());
+  const [expenseRecordsV4,setExpenseRecordsV4]=useState<ExpenseRecordsV4>(()=>resumeDraft?.expenseRecordsV4??emptyExpenseRecordsV4());
+  const [scanScopeCategory,setScanScopeCategory]=useState<EnemyAssetCategory|null>(()=>resumeDraft?.scanScopeCategory??null);
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
   const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>(resumeDraft?.annualIncomeBand??'unknown');
   const [typeIndex, setTypeIndex] = useState(resumeDraft?.typeIndex??0);
@@ -265,11 +278,25 @@ export default function RpgBlock1({
   const diagnosisFinishLock=React.useRef(false);
 
   const question = QUESTIONS[questionIndex];
+  const profileV4Steps=useMemo(()=>profileStepsV4(profileV4Draft),[profileV4Draft]);
+  const profileV4Step=profileV4Steps[Math.min(questionIndex,Math.max(0,profileV4Steps.length-1))];
   const applicableScanCategories = useMemo(
     () => SCAN_CATEGORIES.filter((item) => item.category !== 'childEducation' || flow.household === 'children'),
     [flow.household],
   );
   const currentScan = applicableScanCategories[scanIndex];
+  const displayedScan=useMemo(()=>{
+    if(!currentScan)return currentScan;
+    if(profileV4?.householdContributionMode!=='bundled')return currentScan;
+    const direct:Partial<Record<EnemyAssetCategory,{question:string;helper:string}>>={
+      rent:{question:'家へのまとめ払いとは別に、住居費を直接払ってる？',helper:'別で払っている家賃・住宅費だけ。なければ0円'},
+      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'自分で直接払っている電気・ガス・水道だけ。なければ0円'},
+      food:{question:'まとめ払いとは別に、食費を月いくら払ってる？',helper:'自分で直接払う外食・自炊など。家に入れる生活費は含めない'},
+      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'自分で直接買う日用品だけ。家に入れる生活費は含めない'},
+    };
+    const copy=direct[currentScan.category];
+    return copy?{...currentScan,...copy}:currentScan;
+  },[currentScan,profileV4?.householdContributionMode]);
   useEffect(()=>{
     if(scene!=='scan')return;
     if(applicableScanCategories.length===0)return;
@@ -287,49 +314,116 @@ export default function RpgBlock1({
     educationStage,educationChildren:appraisalAnswers.childEducation?.educationChildren,
     beautySex:appraisalAnswers.beautyFashion?.beautySex
   }),[normalizedRaw,flow.household,flow.householdSize,flow.age,flow.prefecture,flow.housingType,annualIncomeBand,educationStage,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
-  const comparable=comparisonBundle.comparable;
+  const resolvedExpenseRecordsV4=useMemo<ExpenseRecordsV4>(()=>{
+    const next={...expenseRecordsV4};
+    next.childEducation={...next.childEducation,metadata:{...next.childEducation.metadata,educationChildren:appraisalAnswers.childEducation?.educationChildren}};
+    next.beautyFashion={...next.beautyFashion,metadata:{...next.beautyFashion.metadata,beautySex:appraisalAnswers.beautyFashion?.beautySex}};
+    return next;
+  },[expenseRecordsV4,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
+  const comparisonsV4=useMemo(()=>profileV4?buildComparisonFactsV4({profile:profileV4,records:resolvedExpenseRecordsV4,month:new Date().getMonth()+1}):null,[profileV4,resolvedExpenseRecordsV4]);
+  const diagnosisV4=useMemo(()=>profileV4&&comparisonsV4?runDiagnosisAdapterV4({profile:profileV4,records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,appraisalAnswers]);
+  const finalV4=useMemo(()=>profileV4&&comparisonsV4&&diagnosisV4?buildFinalJudgementsV4({records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,diagnosis:diagnosisV4.diagnosis,categoryResults:diagnosisV4.categoryResults,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,diagnosisV4,appraisalAnswers]);
+  const comparable=useMemo(()=>{
+    const base={...comparisonBundle.comparable};
+    if(profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2){
+      // Until a household-total follow-up is collected, never compare a personal burden
+      // against multi-household benchmarks. Missing comparison is safer than false precision.
+      for(const category of ['energy','food','daily','fun','beautyFashion','rent','childEducation'] as Category[])base[category]=null;
+    }
+    return base;
+  },[comparisonBundle.comparable,profileV4]);
 
   const actual=(c:EnemyAssetCategory)=>{const r=normalizedRaw[c];return r.known&&r.amount!==null?r.amount:0};
   const comp=(c:EnemyAssetCategory)=>comparable[c as Category]??null;
   const appraisalQuestions=useMemo<AppraisalQuestion[]>(()=>{
-    if(incomeNumber<=0)return [];
     const qs:AppraisalQuestion[]=[];
+    const fact=(category:EnemyAssetCategory)=>comparisonsV4?.[category as Category]??null;
+    const aboveReference=(category:EnemyAssetCategory)=>{
+      const f=fact(category);
+      if(profileV4)return f?.difference!==null&&f?.difference!==undefined&&f.difference>0;
+      const legacy=comp(category);
+      return legacy!==null&&actual(category)>legacy;
+    };
+    const noMatchedComparison=(category:EnemyAssetCategory)=>{
+      if(!profileV4)return false;
+      const f=fact(category);
+      return !f||f.quality==='none'||f.benchmark===null||f.amount===null;
+    };
+
     if(actual('mobile')>0){
-      qs.push({category:'mobile',kind:'mobileCarrier',reason:'通信費は、大手キャリアと格安SIMで基準帯が違います。平均額には変換せず、まず回線タイプだけ確認します。',question:'スマホ回線はどのタイプ？'});
+      qs.push({category:'mobile',kind:'mobileScope',reason:'通信費は、スマホ1回線と「スマホ＋自宅ネット・家族分」では比較単位が違います。',question:'この通信費、何が入ってる？'});
+      if(appraisalAnswers.mobile?.mobileScope==='mobileOnly'){
+        qs.push({category:'mobile',kind:'mobileCarrier',reason:'スマホ1回線だけなので、同じ回線タイプの料金帯を参考にします。',question:'スマホ回線はどのタイプ？'});
+      }
     }
-    if(actual('energy')>0&&comp('energy')!==null&&actual('energy')>(comp('energy')??0)){
+    if(actual('energy')>0&&aboveReference('energy')){
       qs.push({category:'energy',kind:'energyPersistence',reason:'光熱費は季節や水道の隔月請求で一時的に上がるため、1か月だけでは見直し判定しません。',question:'この金額、最近2〜3か月くらい続いてる？'});
     }
-    if(actual('daily')>0&&comp('daily')!==null&&actual('daily')>(comp('daily')??0)){
+    if(actual('daily')>0&&aboveReference('daily')){
       qs.push({category:'daily',kind:'dailyPersistence',reason:'日用品はまとめ買いなどで月ごとのブレがあるため、1か月の比較超過だけでは見直し判定しません。',question:'この日用品費、最近2〜3か月くらい続いてる？'});
     }
-    if(actual('sub')>0){qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});}
+    if(actual('sub')>0){
+      qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
+      if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});
+      if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});
+    }
+
     (['food','fun','beautyFashion'] as EnemyAssetCategory[]).forEach(category=>{
-      const c=comp(category);
-      const isBeautyAudit=category==='beautyFashion'&&comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT';
-      const beautyNeedsSex=category==='beautyFashion'&&flow.household==='single'&&actual(category)>0&&c!==null&&actual(category)>c&&!appraisalAnswers.beautyFashion?.beautySex;
+      const legacyComparable=comp(category);
+      const v4Fact=fact(category);
+      const isBeautyAudit=category==='beautyFashion'&&(profileV4?v4Fact?.quality==='none':comparisonBundle.benchmarkMeta.beautyFashion?.confidence==='AUDIT');
+      const beautySexAlreadyAsked=!!appraisalAnswers.beautyFashion?.beautySex;
+      const beautyNeedsSex=category==='beautyFashion'
+        &&(profileV4?profileV4.householdSize===1:flow.household==='single')
+        &&actual(category)>0
+        &&(profileV4?v4Fact?.benchmark!==null:legacyComparable!==null)
+        &&(aboveReference(category)||beautySexAlreadyAsked);
       if(beautyNeedsSex){
         qs.push({category:'beautyFashion',kind:'beautySex',reason:'美容・服飾費は男女差が大きいため、基準を超えた人だけ、より近い比較値に補正します。',question:'より近い基準で見るために教えてね'});
-        return;
+        if(!beautySexAlreadyAsked)return;
       }
-      if(actual(category)>0&&((c!==null&&actual(category)>c)||isBeautyAudit)){
-        const copy=category==='food'?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']:category==='fun'?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']:isBeautyAudit?['複数世帯の美容・服飾費は、根拠のない平均値を作らず価値判断で確認します。','今の美容・服飾費について、一番近いのは？']:['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
+      const scopeNeedsValueCheck=profileV4?.diagnosisScope==='personal'&&profileV4.householdSize>=2&&actual(category)>0&&noMatchedComparison(category);
+      if(actual(category)>0&&(aboveReference(category)||isBeautyAudit||scopeNeedsValueCheck)){
+        const copy=category==='food'
+          ?['食費は、高いだけではムダと判断できません。','今の食費について、一番近いのは？']
+          :category==='fun'
+            ?['遊びに使うお金は、人によって価値が違います。','今の娯楽費について、一番近いのは？']
+            :isBeautyAudit
+              ?['美容・服飾費は、条件が合わない平均値を作らずあなたの価値判断で確認します。','今の美容・服飾費について、一番近いのは？']
+              :['美容や服も、金額だけではムダと決められません。','今の美容・服飾費について、一番近いのは？'];
         qs.push({category,kind:'satisfaction',reason:copy[0],question:copy[1]});
       }
     });
+
     if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
+
     const rent=actual('rent');
-    const rentScreen=housingScreenV3(rent,comparisonBundle.benchmarkMeta.rent);
-    if(rent>0&&(rentScreen.band==='check'||rentScreen.band==='detail'||rentScreen.band==='audit'))qs.push({category:'rent',kind:'rent',reason:'住まいは、金額だけでなく「守りたい価値」と家計負担を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    const rentFact=fact('rent');
+    const rentComparisonAmount=profileV4?rentFact?.amount??null:rent;
+    const rentScreen=rentComparisonAmount!==null
+      ?housingScreenV3(rentComparisonAmount,profileV4?rentFact?.benchmarkMeta??undefined:comparisonBundle.benchmarkMeta.rent)
+      :null;
+    const rentBurdenHigh=incomeNumber>0&&rent/incomeNumber>.35;
+    const rentNeedsContext=profileV4
+      ?rentFact?.quality==='none'
+      :rentScreen?.band==='audit';
+    if(rent>0&&(rentBurdenHigh||rentNeedsContext||rentScreen?.band==='check'||rentScreen?.band==='detail')){
+      qs.push({category:'rent',kind:'rent',reason:'住まいは、本人負担と住まい全体の金額、そして「守りたい価値」を分けて見ます。',question:'今の住居費について、一番近いのは？'});
+    }
+
     if(actual('insurance')>0){
       qs.push({category:'insurance',kind:'insuranceOverview',reason:'保険料の高さだけではムダ判定しません。まず、今の保障をどれくらい把握しているかだけ確認します。',question:'今入ってる保険、内容ちゃんと把握してる？'});
       const purpose=appraisalAnswers.insurance?.insurancePurpose;
       if(purpose==='unclear'||purpose==='mostly')qs.push({category:'insurance',kind:'insuranceReview',reason:'内容が曖昧な場合だけ、見直し時期をもう1つ確認します。',question:'最後にちゃんと見直したのは？'});
     }
-    if(flow.household==='children'&&actual('childEducation')>0){qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:(Number(flow.householdSize)>=6?6:Math.max(1,(Number(flow.householdSize)||2)-1)),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});}
+    if(flow.household==='children'&&actual('childEducation')>0){
+      qs.push({category:'childEducation',kind:'educationChildCount',educationMaxCount:Math.max(1,Math.min(6,profileV4?.childCount??(Number(flow.householdSize)>=6?6:Math.max(1,(Number(flow.householdSize)||2)-1)))),reason:'教育費を正しく比較するため、実際に教育費がかかっているお子さんの人数だけ確認します。',question:'教育費がかかっているお子さんは何人？'});
+      if((appraisalAnswers.childEducation?.educationChildCount??0)>0)qs.push({category:'childEducation',kind:'educationChildren',educationCount:appraisalAnswers.childEducation?.educationChildCount,reason:'一人ずつ学校段階と公立・私立を合わせて、対応する文科省基準を合算します。',question:'お子さんごとの学校段階を教えて'});
+      qs.push({category:'childEducation',kind:'education',reason:'教育費は、家庭によって「守りたい支出」の優先順位が違います。',question:'今の教育費について、一番近いのは？'});
+    }
     if(actual('selfDevelopment')>0)qs.push({category:'selfDevelopment',kind:'selfDevelopment',reason:'自己投資は、金額より「何につながっているか」が重要です。',question:'その自己投資、目的や成果は見えてる？'});
     return qs;
-  },[incomeNumber,normalizedRaw,comparable,comparisonBundle.benchmarkMeta,flow.household]);
+  },[incomeNumber,normalizedRaw,comparable,comparisonBundle.benchmarkMeta,comparisonsV4,profileV4,flow.household,flow.householdSize,appraisalAnswers]);
 
   const diagnosisBundle=useMemo(()=>incomeNumber>0?runDiagnosisAdapterV3({
     raw:normalizedRaw,comparable,monthlyTakeHome:incomeNumber,appraisal:appraisalAnswers
@@ -352,14 +446,30 @@ export default function RpgBlock1({
   const finalJudgements=finalBundle.categories;
   const battleTargets=finalBundle.battleTargets;
   const encounterTargets=finalBundle.encounterTargets;
+  const v4VisualTargets=useMemo(()=>{
+    if(!finalV4)return null;
+    return finalV4.categories
+      .filter(x=>x.status==='cut'||(x.status==='review'&&x.attentionFlag))
+      .sort((a,b)=>{
+        const aRank=a.status==='cut'?2:1,bRank=b.status==='cut'?2:1;
+        if(aRank!==bRank)return bRank-aRank;
+        if(a.status==='cut')return b.confirmedSaving-a.confirmedSaving;
+        return (b.screeningDelta??0)-(a.screeningDelta??0);
+      })
+      .slice(0,3)
+      .map(x=>({category:x.category as EnemyAssetCategory}));
+  },[finalV4]);
+  const visibleBattleTargets=v4VisualTargets??encounterTargets;
+  const visibleReviewCount=finalV4?finalV4.categories.filter(x=>x.status==='review').length:finalJudgements.filter(x=>x.status==='review').length;
+  const visibleConfirmedCount=finalV4?finalV4.categories.filter(x=>x.status==='cut'&&x.confirmedSaving>0).length:battleTargets.length;
 
 
 
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
-    if(scene==='opening'||scene==='mode'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
-  },[scene,selectedToneMode,questionIndex,householdSizePending,flow,annualIncomeBand,scanIndex,rawExpenses,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
+    if(scene==='opening'||scene==='battle'||scene==='battleComplete')return;
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+  },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
     if (step === 'profile' && scene === 'opening') {
@@ -371,18 +481,18 @@ export default function RpgBlock1({
   useEffect(()=>{if(scene==='profile')preloadProfile(question?.sprite,QUESTIONS[questionIndex+1]?.sprite)},[scene,questionIndex,question]);
   useEffect(()=>{if(scene==='scan')preloadScan(currentScan?.category)},[scene,scanIndex,currentScan,applicableScanCategories]);
   useEffect(()=>{if(scene==='appraisal')preloadAppraisal(appraisalQuestions.slice(appraisalIndex,appraisalIndex+2).map(x=>x.category))},[scene,appraisalQuestions,appraisalIndex]);
-  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(encounterTargets.map(x=>x.category))},[scene,encounterTargets]);
+  useEffect(()=>{if(scene==='battleIntro'||scene==='battle')preloadBattle(visibleBattleTargets.map(x=>x.category))},[scene,visibleBattleTargets]);
 
   // Funnel observability only: no answers, amounts, or profile values are emitted here.
   useEffect(()=>{
     if(scene==='profile'){
       onEvent?.('profile_step_viewed',{
-        step:householdSizePending?'3+':String(question?.no??questionIndex+1),
+        step:profileV4Step??'profile',
         index:questionIndex+1,
-        total:QUESTIONS.length,
+        total:profileV4Steps.length,
       });
     }
-  },[scene,questionIndex,householdSizePending,question?.no,onEvent]);
+  },[scene,questionIndex,profileV4Step,profileV4Steps.length,onEvent]);
 
   useEffect(()=>{
     if(scene==='scan'&&currentScan){
@@ -416,48 +526,102 @@ export default function RpgBlock1({
     }
   },[scene,appraisalIndex,appraisalQuestions,onEvent]);
 
-  const beginAdventure = () => setScene('mode');
+  const beginAdventure = () => {
+    setQuestionIndex(0);
+    setProfileV4Draft(emptyProfileDraftV4());
+    setProfileV4(null);
+    setScene('profile');
+  };
   const chooseMode = (mode:ToneMode) => {
     setSelectedToneMode(mode);
-    setQuestionIndex(0);
     onBegin(mode);
     window.requestAnimationFrame(()=>setScene('profile'));
   };
 
-  const nextQuestion = (householdOverride?:FamilyProfile) => {
-    const effectiveHousehold=householdOverride??flow.household;
-    if(question?.no===3 && effectiveHousehold!=='single' && !householdSizePending){
-      setHouseholdSizePending(true);
-      return;
-    }
-    if(householdSizePending){
-      setHouseholdSizePending(false);
-      setQuestionIndex((value)=>value+1);
-      return;
-    }
-    if (questionIndex < QUESTIONS.length - 1) {
-      setQuestionIndex((value) => value + 1);
-      return;
-    }
+  const syncLegacyProfileFromV4=(p:ProfileV4)=>{
+    const household=legacyFamilyProfileV4(p);
+    setFlow({
+      prefecture:p.prefecture,
+      age:String(p.age),
+      household,
+      householdSize:String(p.householdSize),
+      workStyle:'',
+      housingType:resolverHousingTypeV4(p),
+      monthlyTakeHome:p.monthlyTakeHome===null?'':String(p.monthlyTakeHome),
+    });
+    onFamilySelect(household);
+  };
 
-    setScene('incomeCalibration');
+  const beginScanFromProfile=(p:ProfileV4,band:AnnualIncomeBand)=>{
+    const completed={...p,annualIncomeBand:band};
+    setProfileV4(completed);
+    if(completed.childCount===0)setExpenseRecordsV4(prev=>({...prev,childEducation:{...prev.childEducation,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
+    setProfileV4Draft(v=>({...v,annualIncomeBand:band}));
+    setAnnualIncomeBand(band);
+    syncLegacyProfileFromV4(completed);
+    onEvent?.('profile_completed',{diagnosisScope:completed.diagnosisScope,householdSize:completed.householdSize,hasChildren:completed.childCount>0,annualIncomeBand:band});
+    setScanIndex(0);
+    setScene('scan');
+  };
+
+  const nextQuestion = (draftOverride?:ProfileDraftV4) => {
+    const activeDraft=draftOverride??profileV4Draft;
+    if(draftOverride)setProfileV4Draft(activeDraft);
+    const steps=profileStepsV4(activeDraft);
+    const currentStep=steps[Math.min(questionIndex,Math.max(0,steps.length-1))];
+    if(currentStep==='scope'){
+      setQuestionIndex(1);
+      setScene('mode');
+      return;
+    }
+    if(questionIndex < steps.length - 1){
+      setQuestionIndex(value=>value+1);
+      return;
+    }
+    const completed=finalizeProfileV4(activeDraft);
+    setProfileV4(completed);
+    syncLegacyProfileFromV4(completed);
+    if(shouldOfferAnnualIncomeCalibrationV4(completed)){
+      setScene('incomeCalibration');
+      return;
+    }
+    beginScanFromProfile(completed,'unknown');
   };
 
   const previousQuestion = () => {
-    if(householdSizePending){setHouseholdSizePending(false);return;}
-    if (questionIndex === 0) return;
-    if(question?.no===4 && flow.household!=='single'){setQuestionIndex((value)=>value-1);setHouseholdSizePending(true);return;}
-    setQuestionIndex((value) => value - 1);
+    if(questionIndex===0){setScene('opening');return;}
+    if(questionIndex===1){setScene('mode');return;}
+    setQuestionIndex(value=>Math.max(1,value-1));
+  };
+
+  const advanceScanCategory=()=>{
+    if(scanIndex>=applicableScanCategories.length-1){
+      if(flow.household!=='children')setRawExpenses(prev=>({...prev,childEducation:{amount:null,known:false,applicability:'na'}}));
+      onEvent?.('scan_completed',{scanned:applicableScanCategories.length});
+      setScene('scanComplete');
+      return;
+    }
+    setScanIndex(index=>index+1);
+  };
+
+  const maybeAdvanceScanCategory=(category:EnemyAssetCategory)=>{
+    const record=expenseRecordsV4[category as Category];
+    if(profileV4&&record?.known&&Number(record.diagnosisAmount)>0&&requiresHouseholdTotalV4(profileV4,category as Category)&&profileV4.householdContributionMode!=='bundled'){
+      setScanScopeCategory(category);
+      return;
+    }
+    advanceScanCategory();
   };
 
   const finishDiagnosis=()=>{
     if(!onCompleteV3||diagnosisFinishLock.current)return;
     diagnosisFinishLock.current=true;
-    onEvent?.('battle_completed',{count:encounterTargets.length,confirmedCount:battleTargets.length});
+    onEvent?.('battle_completed',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
     onCompleteV3({
-      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber},
+      profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
-      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0'
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
+      scopeV4:profileV4&&comparisonsV4&&finalV4?{profile:profileV4,expenseRecords:resolvedExpenseRecordsV4,comparisons:comparisonsV4,finalJudgements:finalV4.categories,confirmedMonthly:finalV4.confirmedMonthly,diagnosisMethodology:diagnosisV4?.diagnosis?.methodologyVersion??null}:undefined
     });
   };
   return (
@@ -469,23 +633,31 @@ export default function RpgBlock1({
           {scene === 'opening' ? (
             <OpeningScene onStart={beginAdventure} />
           ) : scene === 'mode' ? (
-            <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>setScene('opening')} />
+            <ModeSelectScene value={selectedToneMode} onChange={chooseMode} onBack={()=>{setQuestionIndex(0);setScene('profile')}} />
           ) : scene === 'profile' ? (
-            <ProfileScene
-              question={question}
+            <ProfileV4Scene
+              draft={profileV4Draft}
               index={questionIndex}
-              householdSizePending={householdSizePending}
-              flow={flow}
-              setFlow={setFlow}
+              setDraft={setProfileV4Draft}
               onNext={nextQuestion}
               onBack={previousQuestion}
             />
           ) : scene === 'incomeCalibration' ? (
-            <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(QUESTIONS.length-1);setScene('profile')}} onPick={(band)=>{setAnnualIncomeBand(band);onFamilySelect(flow.household);onEvent?.('income_calibration_completed',{band});onEvent?.('profile_completed',{household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),annualIncomeBand:band});setScanIndex(0);setScene('scan')}} />
+            <IncomeCalibrationScene value={annualIncomeBand} onBack={()=>{setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene('profile')}} onPick={(band)=>{const completed=profileV4??finalizeProfileV4(profileV4Draft);onEvent?.('income_calibration_completed',{band});beginScanFromProfile(completed,band)}} />
+          ) : scene === 'scan' && scanScopeCategory && profileV4 ? (
+            <HouseholdTotalV4Scene
+              category={scanScopeCategory as Category}
+              value={expenseRecordsV4[scanScopeCategory as Category]?.householdTotal!==null&&expenseRecordsV4[scanScopeCategory as Category]?.householdTotal!==undefined?String(expenseRecordsV4[scanScopeCategory as Category].householdTotal):''}
+              unknown={expenseRecordsV4[scanScopeCategory as Category]?.metadata.householdTotalUnknown===true}
+              onChange={(value)=>setExpenseRecordsV4(prev=>({...prev,[scanScopeCategory]:{...applyHouseholdTotalV4(prev[scanScopeCategory as Category],Number(value||0)),metadata:{...prev[scanScopeCategory as Category].metadata,householdTotalUnknown:false}}}))}
+              onUnknown={()=>setExpenseRecordsV4(prev=>{const row=prev[scanScopeCategory as Category];const unknown=row.metadata.householdTotalUnknown===true;return {...prev,[scanScopeCategory]:{...applyHouseholdTotalV4(row,null),metadata:{...row.metadata,householdTotalUnknown:!unknown}}}})}
+              onDone={()=>{setScanScopeCategory(null);advanceScanCategory()}}
+              onBack={()=>setScanScopeCategory(null)}
+            />
           ) : scene === 'scan' && currentScan ? (
             <ScanScene
               key={currentScan.category}
-              config={currentScan}
+              config={displayedScan??currentScan}
               current={scanIndex + 1}
               total={applicableScanCategories.length}
               discoveredBefore={applicableScanCategories
@@ -493,18 +665,23 @@ export default function RpgBlock1({
                 .filter((item) => {const r=normalizedRaw[item.category];return r?.known&&Number(r.amount)>0}).length}
               value={rawExpenses[currentScan.category]?.known&&rawExpenses[currentScan.category]?.amount!==null?String(rawExpenses[currentScan.category].amount):''}
               unknown={!!scanTouched[currentScan.category]&&rawExpenses[currentScan.category]?.applicability==='applicable'&&!rawExpenses[currentScan.category]?.known}
-              onChange={(value) => {setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:Number(value||0),known:true,applicability:'applicable'}}))}}
-              onUnknown={()=>{setScanTouched(prev=>({...prev,[currentScan.category]:true}));setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:null,known:false,applicability:'applicable'}}))}}
-              onNA={currentScan.category==='car'?()=>{setScanTouched(prev=>({...prev,car:true}));setRawExpenses(prev=>({...prev,car:{amount:null,known:false,applicability:'na'}}))}:undefined}
-              onDone={() => {
-                if (scanIndex >= applicableScanCategories.length - 1) {
-                  if(flow.household!=='children')setRawExpenses(prev=>({...prev,childEducation:{amount:null,known:false,applicability:'na'}}));
-                  onEvent?.('scan_completed',{scanned:applicableScanCategories.length});
-                  setScene('scanComplete');
-                  return;
-                }
-                setScanIndex((index) => index + 1);
+              onChange={(value) => {
+                const amount=Number(value||0);
+                setScanTouched(prev=>({...prev,[currentScan.category]:true}));
+                setRawExpenses(prev=>({...prev,[currentScan.category]:{amount,known:true,applicability:'applicable'}}));
+                if(profileV4)setExpenseRecordsV4(prev=>({...prev,[currentScan.category]:applyDiagnosisAmountV4(profileV4,prev[currentScan.category as Category],amount)}));
               }}
+              onUnknown={()=>{
+                setScanTouched(prev=>({...prev,[currentScan.category]:true}));
+                setRawExpenses(prev=>({...prev,[currentScan.category]:{amount:null,known:false,applicability:'applicable'}}));
+                setExpenseRecordsV4(prev=>({...prev,[currentScan.category]:{...prev[currentScan.category as Category],diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'applicable'}}));
+              }}
+              onNA={currentScan.category==='car'?()=>{
+                setScanTouched(prev=>({...prev,car:true}));
+                setRawExpenses(prev=>({...prev,car:{amount:null,known:false,applicability:'na'}}));
+                setExpenseRecordsV4(prev=>({...prev,car:{...prev.car,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
+              }:undefined}
+              onDone={()=>maybeAdvanceScanCategory(currentScan.category)}
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
@@ -533,14 +710,24 @@ export default function RpgBlock1({
                     ...answer,
                   },
                 }));
-                if (appraisalIndex >= appraisalQuestions.length - 1) {onEvent?.('appraisal_completed',{count:appraisalQuestions.length});setScene('appraisalComplete');}
-                else setAppraisalIndex((i) => i + 1);
+                const spawnsFollowup =
+                  (currentItem.kind==='mobileScope'&&answer.mobileScope==='mobileOnly') ||
+                  (currentItem.kind==='subUsage'&&(answer.subUsage==='one'||answer.subUsage==='several')) ||
+                  (currentItem.kind==='subUnusedAmount'&&typeof answer.subUnusedAmount==='number'&&answer.subUnusedAmount>0) ||
+                  (currentItem.kind==='insuranceOverview'&&(answer.insurancePurpose==='mostly'||answer.insurancePurpose==='unclear')) ||
+                  currentItem.kind==='beautySex';
+                if (appraisalIndex >= appraisalQuestions.length - 1 && !spawnsFollowup) {
+                  onEvent?.('appraisal_completed',{count:appraisalQuestions.length});
+                  setScene('appraisalComplete');
+                } else {
+                  setAppraisalIndex((i) => i + 1);
+                }
               }}
             />
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
               toneMode={selectedToneMode}
-              judgements={finalJudgements}
+              judgements={finalV4?.categories??finalJudgements}
               onContinue={() => {
                 setTypeIndex(0);
                 setTypeAnswers({});
@@ -571,25 +758,25 @@ export default function RpgBlock1({
           ) : scene === 'battleIntro' ? (
             <BattleIntroScene
               toneMode={selectedToneMode}
-              targets={encounterTargets}
-              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              targets={visibleBattleTargets}
+              reviewCount={visibleReviewCount}
               onStart={() => {
                 setBattleIndex(0);
-                onEvent?.('battle_started',{count:encounterTargets.length,confirmedCount:battleTargets.length});
-                setScene(encounterTargets.length ? 'battle' : 'battleComplete');
+                onEvent?.('battle_started',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
+                setScene(visibleBattleTargets.length ? 'battle' : 'battleComplete');
               }}
             />
-          ) : scene === 'battle' && encounterTargets.length ? (
+          ) : scene === 'battle' && visibleBattleTargets.length ? (
             <ComboBattleScene
               toneMode={selectedToneMode}
-              targets={encounterTargets}
+              targets={visibleBattleTargets}
               onDone={() => setScene('battleComplete')}
             />
           ) : (
             <BattleCompleteScene
               toneMode={selectedToneMode}
-              battleCount={encounterTargets.length}
-              reviewCount={finalJudgements.filter((x) => x.status === 'review').length}
+              battleCount={visibleBattleTargets.length}
+              reviewCount={visibleReviewCount}
               onResult={finishDiagnosis}
             />
           )}
@@ -862,10 +1049,10 @@ function IncomeCalibrationScene({value,onPick,onBack}:{value:AnnualIncomeBand;on
  const opts:[AnnualIncomeBand,string][]=[['under500','〜499万円'],['500_599','500〜599万円'],['600_699','600〜699万円'],['700_799','700〜799万円'],['800_999','800〜999万円'],['1000plus','1,000万円〜'],['unknown','わからない']];
  const [draft,setDraft]=useState<AnnualIncomeBand>(value);
  return <div className="pre-profile pre-complete"><img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/><div className="pre-profile-overlay pre-complete-overlay"/>
-  <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>冒険準備</span><b>7 / 7</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
+  <header className="pre-profile-hud"><div className="pre-profile-hud-row"><span>比較設定</span><b>任意</b></div><div className="pre-progress-track" aria-hidden="true"><span style={{width:'100%'}}/></div></header>
   <section className="pre-panel pre-complete-panel" style={{paddingTop:18}}>
-  <div className="pre-complete-label">最後の調整だ！</div><h2 className="pre-complete-title">だいたいの年収は？</h2>
-  <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>税引前のおおよその年収でOK。近い条件で結果を見るために使うぞ。</p>
+  <div className="pre-complete-label">もっと近い家計と比べる？</div><h2 className="pre-complete-title">世帯年収はざっくりどれくらい？</h2>
+  <p style={{fontSize:12,opacity:.7,lineHeight:1.5}}>任意です。家全体の税引前年収を使うと、一部の比較をもう少し近い条件にできます。分からなければ「わからない」でOK。</p>
   <label className="pre-input-wrap"><span className="pre-sr-only">年収帯</span><select className="pre-select" value={draft} onChange={(e)=>setDraft(e.target.value as AnnualIncomeBand)}>{opts.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
   <button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onPick(draft)}>次へ ▶</button>
   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
@@ -1383,6 +1570,12 @@ function AdditionalAppraisalScene({
       {label:'今月だけ高い',sub:'季節要因・水道の隔月請求など',patch:{energyPersistence:'temporary'},kind:'safe',feedback:'単月だけではムダ判定しません'},
       {label:'分からない',sub:'無理に推測しない',patch:{energyPersistence:'unknown'},kind:'review',feedback:'まだ判定保留'},
     ],
+    mobileScope:[
+      {label:'スマホ1回線だけ',sub:'自分のスマホ料金だけ',patch:{mobileScope:'mobileOnly'},kind:'review',feedback:'同じ単位で料金帯を確認'},
+      {label:'スマホ＋自宅ネット',sub:'光回線・ホームルーターなどを含む',patch:{mobileScope:'mobileInternet'},kind:'review',feedback:'合算額として確認'},
+      {label:'家族分・複数回線も含む',sub:'家族のスマホや複数契約を含む',patch:{mobileScope:'familyOrMultiple'},kind:'review',feedback:'契約構成を確認'},
+      {label:'よく分からない',sub:'請求内訳から確認する',patch:{mobileScope:'unknown'},kind:'review',feedback:'比較は保留'},
+    ],
     mobileCarrier:[
       {label:'大手キャリア系',sub:'docomo・au・SoftBankなど',patch:{mobileCarrier:'major'},kind:'review',feedback:'価格帯を照合'},
       {label:'格安SIM系',sub:'MVNOなど',patch:{mobileCarrier:'mvno'},kind:'review',feedback:'価格帯を照合'},
@@ -1480,10 +1673,10 @@ function AdditionalAppraisalScene({
 function AppraisalCompleteScene({
   toneMode,judgements,onContinue,
 }:{
-  toneMode:ToneMode; judgements:FinalCategoryV3[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;
 }) {
   const counts = {
-    battle:judgements.filter(x=>x.status==='battle').length,
+    battle:judgements.filter(x=>x.status==='battle'||x.status==='cut').length,
     protect:judgements.filter(x=>x.status==='protect').length,
     safe:judgements.filter(x=>x.status==='safe').length,
     review:judgements.filter(x=>x.status==='review').length,
@@ -1516,7 +1709,7 @@ function AppraisalCompleteScene({
 function BattleIntroScene({
   toneMode,targets,reviewCount,onStart,
 }:{
-  toneMode:ToneMode; targets:FinalCategoryV3[]; reviewCount:number; onStart:()=>void;
+  toneMode:ToneMode; targets:{category:EnemyAssetCategory}[]; reviewCount:number; onStart:()=>void;
 }) {
   return (
     <div className="scan-scene battle-intro-scene">
@@ -1547,7 +1740,7 @@ function BattleIntroScene({
   );
 }
 
-function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targets:FinalCategoryV3[]; onDone:()=>void }) {
+function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targets:{category:EnemyAssetCategory}[]; onDone:()=>void }) {
   const [phase,setPhase]=useState<'ready'|'action'|'defeated'>('ready');
   const [pose,setPose]=useState<'ready'|'swing'|'follow'>('ready');
   const [hitIndex,setHitIndex]=useState(-1);
@@ -3447,7 +3640,7 @@ const CSS = String.raw`
 }
 .profile-choice,.income-band-option,.type-scale-option,.appraisal-option{min-height:52px!important}
 .pre-panel .profile-primary-cta{min-height:54px!important}
-.pre-panel .pre-back{min-height:38px!important}
+.pre-panel .pre-back{min-height:48px!important}
 
 /* Never let CTA/back overlap form content. */
 .pre-panel .profile-primary-cta{
@@ -3478,17 +3671,18 @@ const CSS = String.raw`
   .pre-panel{padding:12px 13px 9px!important}
   .profile-choice{min-height:44px!important}
   .pre-panel .profile-primary-cta{min-height:50px!important;margin-top:7px!important}
-  .pre-panel .pre-back{min-height:34px!important;margin-top:3px!important}
+  .pre-panel .pre-back{min-height:48px!important;margin-top:3px!important}
 }
 @media(max-height:660px){
   .pre-dialogue{display:none!important}
   .pre-helper{font-size:12px!important}
   .profile-choice-grid{gap:5px!important}
-  .profile-choice{min-height:42px!important}
+  .profile-choice{min-height:48px!important}
 }
 
 /* ===== MOBILE UX PHASE 0: interaction + collision contract ===== */
 button,.pre-select,.pre-age-input input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.profile-choice:active,.mode-option:active,.pre-primary:active,.pre-back:active,.appraisal-option:active,.income-band-option:active{filter:brightness(1.12);transition:filter .06s linear}
 .pre-profile-overlay,.pre-enemy-eyes,.pre-encounter-shadow,.pre-profile-mudagiri,.pre-bg,.scan-shade,.battle-bg{pointer-events:none}
 .profile-choice,.income-band-option,.type-scale-option,.appraisal-option,.pre-primary,.pre-back{min-height:48px}
 .mode-option{min-height:58px;touch-action:manipulation}.mode-back{min-width:48px;min-height:48px;touch-action:manipulation}
@@ -3597,7 +3791,7 @@ input,select,textarea{font-size:16px}
 .profile-choice-grid{margin-top:14px!important;gap:8px!important}
 .profile-choice{min-height:52px!important;padding:8px 7px!important;font-size:14px!important}
 .pre-panel .profile-primary-cta{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:100%!important;min-height:54px!important;margin:12px 0 0!important;font-size:17px!important}
-.pre-panel .pre-back{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:block!important;width:100%!important;min-height:34px!important;margin:6px 0 -4px!important;padding:5px 10px!important;text-align:center!important;font-size:12px!important}
+.pre-panel .pre-back{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:block!important;width:100%!important;min-height:48px!important;margin:6px 0 -4px!important;padding:5px 10px!important;text-align:center!important;font-size:12px!important}
 .pre-profile-footer{position:absolute!important;left:0!important;right:0!important;bottom:max(10px,env(safe-area-inset-bottom))!important;margin:0!important}
 .pre-profile-mudagiri{display:block!important;z-index:24!important;bottom:39.5%!important}
 .pre-checkpoint{top:23%!important}
@@ -3618,7 +3812,7 @@ input,select,textarea{font-size:16px}
  .profile-choice{min-height:44px!important;font-size:12px!important}
  .pre-input-wrap{margin-top:9px!important}
  .pre-panel .profile-primary-cta{min-height:48px!important;margin-top:7px!important}
- .pre-panel .pre-back{min-height:30px!important;margin-top:2px!important;padding:3px!important}
+ .pre-panel .pre-back{min-height:48px!important;margin-top:2px!important;padding:3px!important}
  .pre-profile-mudagiri{display:block!important;width:min(30vw,132px)!important;max-height:21dvh!important;bottom:38.5%!important}
 }
 @media(max-height:650px){
@@ -3645,14 +3839,14 @@ input,select,textarea{font-size:16px}
 .pre-profile .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:8px 0 0!important}
 .pre-profile .pre-select,.pre-profile .pre-age-input{height:56px!important;min-height:56px!important}
 .pre-profile .profile-primary-cta{flex:0 0 54px!important;height:54px!important;margin:10px 0 0!important}
-.pre-profile .pre-back{flex:0 0 30px!important;height:30px!important;min-height:30px!important;margin:4px 0 -3px!important}
+.pre-profile .pre-back{flex:0 0 48px!important;height:48px!important;min-height:48px!important;margin:4px 0 -3px!important}
 .pre-profile .pre-profile-mudagiri{display:block!important;bottom:calc(max(56px,calc(env(safe-area-inset-bottom) + 44px)) + 370px)!important;max-height:20dvh!important}
 .pre-complete .pre-complete-label{flex:0 0 24px!important}
 .pre-complete .pre-complete-title{flex:0 0 42px!important}
 .pre-complete .pre-panel>p{flex:0 0 42px!important;margin:2px 0 0!important}
 .pre-complete .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:12px 0 0!important}
 .pre-complete .profile-primary-cta{flex:0 0 54px!important;margin:12px 0 0!important}
-.pre-complete .pre-back{flex:0 0 30px!important;margin:5px 0 -3px!important}
+.pre-complete .pre-back{flex:0 0 48px!important;min-height:48px!important;margin:5px 0 -3px!important}
 @media(max-height:760px){
  .pre-profile .pre-panel,.pre-complete .pre-panel{height:344px!important;min-height:344px!important;max-height:344px!important;padding:11px 15px 8px!important}
  .pre-profile .pre-dialogue{flex-basis:44px!important;min-height:44px!important;max-height:44px!important;margin-bottom:7px!important}
@@ -3661,9 +3855,39 @@ input,select,textarea{font-size:16px}
  .pre-profile .pre-input-wrap{flex-basis:50px!important;height:50px!important;margin-top:6px!important}
  .pre-profile .pre-select,.pre-profile .pre-age-input{height:50px!important;min-height:50px!important}
  .pre-profile .profile-primary-cta{flex-basis:48px!important;height:48px!important;margin-top:7px!important}
- .pre-profile .pre-back{flex-basis:27px!important;height:27px!important;min-height:27px!important;margin-top:2px!important}
+ .pre-profile .pre-back{flex-basis:48px!important;height:48px!important;min-height:48px!important;margin-top:2px!important}
  .pre-profile .pre-profile-mudagiri{bottom:calc(max(45px,calc(env(safe-area-inset-bottom) + 34px)) + 326px)!important;max-height:18dvh!important}
  .pre-complete .pre-input-wrap{flex-basis:50px!important;height:50px!important}
+}
+
+
+/* SCAN secondary actions are real tap targets, not text links. */
+.scan-input-actions{display:flex;gap:8px;margin-top:6px}
+.scan-sub-action{flex:1;min-height:48px;border:1px solid rgba(255,255,255,.22);border-radius:9px;background:rgba(8,34,48,.76);color:rgba(255,255,255,.88);font:inherit;font-size:11px;font-weight:850;padding:6px 8px;touch-action:manipulation}
+
+/* PROFILE V4.1 compact branch layout: keep conditional choices inside the fixed frame. */
+.pre-profile-v4 .mode-options{display:grid;gap:8px;margin-top:10px}
+.pre-profile-v4.pre-step-scope .mode-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4.pre-step-scope .mode-option{min-height:72px!important;padding:9px!important}
+.pre-profile-v4.pre-step-composition .mode-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pre-profile-v4.pre-step-composition .mode-option{min-height:64px!important;padding:9px 9px!important}
+.pre-profile-v4.pre-step-composition .mode-option strong{font-size:13px;line-height:1.22}
+.pre-profile-v4.pre-step-composition .mode-option span{font-size:10px;line-height:1.25}
+.pre-profile-v4.pre-step-contribution .mode-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4.pre-step-contribution .mode-option{min-height:60px!important;padding:8px!important}
+.pre-profile-v4.pre-step-contribution .mode-option:last-child{grid-column:1/-1}
+.pre-profile-v4 .housing-main-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.pre-profile-v4 .housing-main-options .mode-option{min-height:60px!important;padding:7px 5px!important;text-align:center}
+.pre-profile-v4 .housing-main-options .mode-option strong{font-size:12px;line-height:1.2}
+.pre-profile-v4 .housing-subtype-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pre-profile-v4 .housing-subtype-options .mode-option{min-height:62px!important;padding:8px!important;text-align:center}
+.pre-profile-v4 .housing-owner-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4 .housing-reset{width:100%;min-height:48px;margin-top:8px;border:0;background:transparent;color:rgba(255,255,255,.76);font:inherit;font-size:12px;font-weight:850;touch-action:manipulation}
+@media(max-height:760px){
+ .pre-profile-v4.pre-step-scope .mode-option{min-height:60px!important}
+ .pre-profile-v4.pre-step-composition .mode-option{min-height:56px!important;padding:7px!important}
+ .pre-profile-v4.pre-step-contribution .mode-option{min-height:54px!important}
+ .pre-profile-v4 .housing-main-options .mode-option,.pre-profile-v4 .housing-subtype-options .mode-option{min-height:52px!important}
 }
 
 `;

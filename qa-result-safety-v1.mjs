@@ -17,7 +17,8 @@ const checks=[
  ['share URL limited to ref and type',share.includes("searchParams.set('ref','share')")&&share.includes("searchParams.set('type',vm.type.code)")&&!/searchParams\.set\([^)]*(prefecture|income|amount|saving|improvement)/i.test(share)],
  ['share image excludes sensitive fields',!sensitive.test(image)],
  ['share text excludes sensitive fields',!sensitive.test(share)],
- ['share analytics type only',result.includes("onEvent?.('share_clicked',{typeCode:vm.type.code})")]
+ ['share analytics type only',result.includes("onEvent?.('share_clicked',{typeCode:vm.type.code})")],
+ ['diagnosis analytics excludes financial amounts',(()=>{const line=app.split('\n').find(x=>x.includes("emit('diagnosis_completed'"))??'';return line.length>0&&!/(income|amount|expense|saving|improvement|benchmark|takeHome)/i.test(line)})()]
 ];
 for(const [name,ok] of checks){if(!ok)throw new Error('RESULT_SAFETY_QA_FAIL:'+name);console.log('PASS',name)}
 console.log('RESULT_SAFETY_QA_PASS',checks.length);

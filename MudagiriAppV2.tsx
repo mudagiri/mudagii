@@ -7,8 +7,14 @@ import {scoreTypeAnswersV31,type TypeAnswersV31} from './type-questionnaire-v3.1
 import {newDiagnosisId,getOrCreateAnonymousUserId,acquisitionFromLocation} from './persistence-v1';
 import {LocalPersistenceV3,productionPersistenceV3,eventV3,type PersistenceV3} from './persistence-v3';
 import {buildResultViewModelV3} from './result-view-model-v3';
+import {buildResultViewModelV4} from './result-view-model-v4';
 import {readActiveResultV1,writeActiveResultV1,readJourneyDraftV1,clearResumeStateV1,clearJourneyDraftV1} from './resume-state-v1';
 import type {AnnualIncomeBand,RawExpenses,FinalCategoryV3,AppraisalV3} from './mudagiri-integration-v3';
+import type {ProfileV4} from './mudagiri-profile-v4';
+import type {ExpenseRecordsV4} from './expense-record-v4';
+import type {ComparisonFactsV4} from './benchmark-router-v4';
+import type {FinalCategoryV4} from './final-judgement-v4';
+import {buildPersistencePayloadV4} from './persistence-v4';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -20,6 +26,7 @@ export type CompletedV3={
  finalJudgements:FinalCategoryV3[];
  methodologyVersion:string;
  resolverVersion:string;
+ scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null};
 };
 
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
@@ -54,10 +61,13 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    try{
      const scored=scoreTypeAnswersV31(v.typeAnswers);
      const content=TYPE_CONTENT_V31[scored.code];
-     const vm=buildResultViewModelV3({
+     const typeVm={code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle};
+     const vm=v.scopeV4?buildResultViewModelV4({
+       diagnosisId:restored.diagnosisId,toneMode:restored.completed.toneMode??'serious',profile:v.scopeV4.profile,
+       type:typeVm,finalCategories:v.scopeV4.finalJudgements,annualIncomeBand:v.annualIncomeBand
+     }):buildResultViewModelV3({
        diagnosisId:restored.diagnosisId,toneMode:restored.completed.toneMode??'serious',profile:v.profile,
-       type:{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle},
-       finalCategories:v.finalJudgements,monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
+       type:typeVm,finalCategories:v.finalJudgements,monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
      });
      setToneMode(restored.completed.toneMode??'serious');setResult(vm);
      emit('result_restored',{source:'reload_or_return'});
@@ -67,23 +77,32 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const complete=async(v:CompletedV3)=>{
    const scored=scoreTypeAnswersV31(v.typeAnswers);
    const content=TYPE_CONTENT_V31[scored.code];
-   const vm=buildResultViewModelV3({
-     diagnosisId,toneMode,profile:v.profile,
-     type:{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle},
-     finalCategories:v.finalJudgements,
-     monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),
-     annualIncomeBand:v.annualIncomeBand
+   const typeVm={code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle};
+   const vm=v.scopeV4?buildResultViewModelV4({
+     diagnosisId,toneMode,profile:v.scopeV4.profile,type:typeVm,finalCategories:v.scopeV4.finalJudgements,annualIncomeBand:v.annualIncomeBand
+   }):buildResultViewModelV3({
+     diagnosisId,toneMode,profile:v.profile,type:typeVm,finalCategories:v.finalJudgements,
+     monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
    });
+   const persistenceV4=v.scopeV4?buildPersistencePayloadV4({
+     diagnosisId,anonymousUserId,profile:v.scopeV4.profile,finalCategories:v.scopeV4.finalJudgements
+   }):null;
+   const savedFinalStatuses=v.scopeV4
+     ?Object.fromEntries(v.scopeV4.finalJudgements.map(x=>[x.category,{status:x.status==='cut'?'battle':x.status,attentionFlag:x.attentionFlag,reducible:x.confirmedSaving}]))
+     :Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}]));
+   const savedFinalDetails=v.scopeV4
+     ?Object.fromEntries(v.scopeV4.finalJudgements.map(x=>[x.category,{comparable:x.comparison.benchmark,comparisonAmount:x.comparison.amount,comparisonAmountScope:x.comparison.amountScope,comparisonQuality:x.comparison.quality,comparisonDifference:x.comparison.difference,confirmedSaving:x.confirmedSaving,battleBasis:x.status==='cut'?'confirmed':'none',sourceVersion:x.comparison.sourceVersion,benchmarkMeta:x.comparison.benchmarkMeta}]))
+     :Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}]));
    const snapshot={
      schemaVersion:'MUDAGIRI_SHEET_V3' as const,
      diagnosisId,anonymousUserId,createdAt:new Date().toISOString(),
      acquisition:typeof window!=='undefined'?acquisitionFromLocation():undefined,
-     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,
+     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,persistenceV4,
      rawExpenses:v.rawExpenses,typeAnswers:v.typeAnswers,appraisal:v.appraisal,
-     methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
+     methodology:{diagnosis:v.scopeV4?.diagnosisMethodology??v.methodologyVersion,resolver:v.resolverVersion,type:'TYPE_MODEL_V3_1_8'},
      result:{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle,counts:vm.counts,improvement:vm.improvement,
-       finalStatuses:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{status:x.status,attentionFlag:x.attentionFlag,reducible:x.reducible}])),
-       finalDetails:Object.fromEntries(v.finalJudgements.map(x=>[x.category,{comparable:x.comparable,comparisonDifference:x.comparisonDifference,confirmedSaving:x.reducible,battleBasis:x.battleBasis,sourceVersion:x.benchmarkMeta?.sourceVersion??null,benchmarkMeta:x.benchmarkMeta??null}])),
+       finalStatuses:savedFinalStatuses,
+       finalDetails:savedFinalDetails,
        battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category)}
    };
    // RESULT must feel instant. Persist the resumable result locally first, render,
@@ -95,7 +114,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    setResult(vm);
    if(typeof window!=='undefined')window.scrollTo({top:0,behavior:'auto'});
    queueMicrotask(()=>{
-     emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,monthlyImprovement:vm.improvement.monthly,toneMode});
+     emit('diagnosis_completed',{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,toneMode});
      void Promise.resolve(store?.saveDiagnosis(snapshot)).catch(()=>{});
    });
  };
