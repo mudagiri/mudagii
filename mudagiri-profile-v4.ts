@@ -23,6 +23,7 @@ export interface ProfileV4 {
  housingSubtype:HousingSubtypeV4;
  monthlyTakeHome:number|null;
  annualIncomeBand:AnnualIncomeBandV4;
+ compositionConfirmed:boolean;
 }
 
 export type LegacyFamilyProfileV4='single'|'couple'|'children'|'other';
@@ -45,7 +46,6 @@ export function assertProfileV4(p:ProfileV4){
  if(p.childCount>0&&!p.relationships.includes('children'))throw new Error('CHILD_RELATIONSHIP_REQUIRED');
  if(p.childCount===0&&p.relationships.includes('children'))throw new Error('CHILD_RELATIONSHIP_MISMATCH');
  if(p.householdSize===1&&p.relationships.length>0)throw new Error('SINGLE_MUST_NOT_HAVE_RELATIONSHIPS');
- if(p.diagnosisScope==='personal'&&p.householdSize>=2&&!p.expenseSharing)throw new Error('PERSONAL_MULTI_REQUIRES_EXPENSE_SHARING');
  if(!(p.diagnosisScope==='personal'&&p.relationships.includes('parents'))&&p.householdContributionMode!==null)throw new Error('CONTRIBUTION_MODE_NOT_APPLICABLE');
  if(p.diagnosisScope==='personal'&&p.relationships.includes('parents')&&p.householdContributionMode===null)throw new Error('PARENT_COHABIT_REQUIRES_CONTRIBUTION_MODE');
  if(p.householdContributionMode==='bundled'&&(p.bundledContributionAmount===null||!Number.isFinite(p.bundledContributionAmount)||p.bundledContributionAmount<0))throw new Error('BUNDLED_CONTRIBUTION_AMOUNT_REQUIRED');
@@ -85,10 +85,10 @@ export function resolverHousingTypeV4(p:ProfileV4){
  return 'その他';
 }
 
-export const PROFILE_V4_VERSION='MUDAGIRI_PROFILE_V4_0';
+export const PROFILE_V4_VERSION='MUDAGIRI_PROFILE_V4_1';
 
 
-export type ProfileStepV4='scope'|'householdSize'|'relationships'|'childCount'|'expenseSharing'|'contribution'|'contributionAmount'|'prefecture'|'age'|'housing'|'income';
+export type ProfileStepV4='scope'|'householdSize'|'composition'|'childCount'|'contribution'|'contributionAmount'|'prefecture'|'age'|'housing'|'income';
 
 export interface ProfileDraftV4 {
  diagnosisScope:DiagnosisScopeV4|'';
@@ -123,14 +123,14 @@ export function emptyProfileDraftV4():ProfileDraftV4{
   monthlyTakeHome:null,
   monthlyTakeHomeAnswered:false,
   annualIncomeBand:'unknown',
+  compositionConfirmed:false,
  };
 }
 
 export function profileStepsV4(d:ProfileDraftV4):ProfileStepV4[]{
  const steps:ProfileStepV4[]=['scope','householdSize'];
- if((d.householdSize??0)>=2)steps.push('relationships');
+ if((d.householdSize??0)>=2)steps.push('composition');
  if((d.householdSize??0)>=2&&d.relationships.includes('children'))steps.push('childCount');
- if(d.diagnosisScope==='personal'&&(d.householdSize??0)>=2)steps.push('expenseSharing');
  if(d.diagnosisScope==='personal'&&d.relationships.includes('parents'))steps.push('contribution');
  if(d.householdContributionMode==='bundled')steps.push('contributionAmount');
  steps.push('prefecture','age','housing','income');
@@ -140,9 +140,8 @@ export function profileStepsV4(d:ProfileDraftV4):ProfileStepV4[]{
 export function profileStepValidV4(step:ProfileStepV4,d:ProfileDraftV4){
  if(step==='scope')return d.diagnosisScope==='personal'||d.diagnosisScope==='household';
  if(step==='householdSize')return Number.isInteger(d.householdSize)&&Number(d.householdSize)>=1;
- if(step==='relationships')return d.relationships.length>0;
+ if(step==='composition')return d.compositionConfirmed;
  if(step==='childCount')return Number.isInteger(d.childCount)&&Number(d.childCount)>=1&&Number(d.childCount)<Number(d.householdSize);
- if(step==='expenseSharing')return d.expenseSharing!==null;
  if(step==='contribution')return d.householdContributionMode!==null;
  if(step==='contributionAmount')return d.bundledContributionAmount!==null&&Number.isFinite(d.bundledContributionAmount)&&d.bundledContributionAmount>=0;
  if(step==='prefecture')return d.prefecture.trim().length>0;
@@ -166,7 +165,7 @@ export function finalizeProfileV4(d:ProfileDraftV4):ProfileV4{
   adultCount:householdSize-childCount,
   childCount,
   relationships:householdSize===1?[]:[...d.relationships],
-  expenseSharing:d.diagnosisScope==='personal'&&householdSize>=2?d.expenseSharing:null,
+  expenseSharing:null,
   householdContributionMode:d.diagnosisScope==='personal'&&d.relationships.includes('parents')?d.householdContributionMode:null,
   bundledContributionAmount:d.householdContributionMode==='bundled'?d.bundledContributionAmount:null,
   prefecture:d.prefecture,
