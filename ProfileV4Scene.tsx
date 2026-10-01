@@ -99,10 +99,10 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
    </div>}
 
-   {step==='householdSize'&&<div className="pre-age-input" style={{justifyContent:'center'}}>
-    <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)-1)}>−</button>
-    <strong style={{minWidth:80,textAlign:'center',fontSize:24}}>{draft.householdSize??1}人</strong>
-    <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)+1)}>＋</button>
+   {step==='householdSize'&&<div className="profile-v4-stepper" style={{display:'grid',gridTemplateColumns:'56px minmax(0,1fr) 56px',gap:10,alignItems:'center',marginTop:10}}>
+    <button type="button" style={{height:48,minHeight:48,border:'1px solid rgba(255,255,255,.28)',borderRadius:10,background:'rgba(12,39,56,.96)',color:'#fff',fontSize:24,fontWeight:1000}} onClick={()=>setHouseholdSize((draft.householdSize??1)-1)}>−</button>
+    <strong style={{height:48,display:'grid',placeItems:'center',borderRadius:10,background:'#fff',color:'#15202a',fontSize:22,fontWeight:900}}>{draft.householdSize??1}人</strong>
+    <button type="button" style={{height:48,minHeight:48,border:'1px solid rgba(255,255,255,.28)',borderRadius:10,background:'rgba(12,39,56,.96)',color:'#fff',fontSize:24,fontWeight:1000}} onClick={()=>setHouseholdSize((draft.householdSize??1)+1)}>＋</button>
    </div>}
 
    {step==='composition'&&<div className="mode-options composition-options">
@@ -117,10 +117,10 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     </>}
    </div>}
 
-   {step==='childCount'&&<div className="pre-age-input" style={{justifyContent:'center'}}>
-    <button type="button" className="pre-back" onClick={()=>patch({childCount:Math.max(1,(draft.childCount??1)-1)})}>−</button>
-    <strong style={{minWidth:80,textAlign:'center',fontSize:24}}>{draft.childCount??1}人</strong>
-    <button type="button" className="pre-back" onClick={()=>patch({childCount:Math.min(Math.max(1,(draft.householdSize??2)-1),(draft.childCount??1)+1)})}>＋</button>
+   {step==='childCount'&&<div className="profile-v4-stepper" style={{display:'grid',gridTemplateColumns:'56px minmax(0,1fr) 56px',gap:10,alignItems:'center',marginTop:10}}>
+    <button type="button" style={{height:48,minHeight:48,border:'1px solid rgba(255,255,255,.28)',borderRadius:10,background:'rgba(12,39,56,.96)',color:'#fff',fontSize:24,fontWeight:1000}} onClick={()=>patch({childCount:Math.max(1,(draft.childCount??1)-1)})}>−</button>
+    <strong style={{height:48,display:'grid',placeItems:'center',borderRadius:10,background:'#fff',color:'#15202a',fontSize:22,fontWeight:900}}>{draft.childCount??1}人</strong>
+    <button type="button" style={{height:48,minHeight:48,border:'1px solid rgba(255,255,255,.28)',borderRadius:10,background:'rgba(12,39,56,.96)',color:'#fff',fontSize:24,fontWeight:1000}} onClick={()=>patch({childCount:Math.min(Math.max(1,(draft.householdSize??2)-1),(draft.childCount??1)+1)})}>＋</button>
    </div>}
 
    {step==='contribution'&&<div className="mode-options">
