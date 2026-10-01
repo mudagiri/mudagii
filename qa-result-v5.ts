@@ -97,6 +97,27 @@ const hvm=buildResultViewModelV5({diagnosisId:'QA-H',toneMode:'serious',type,pro
 ok(row(hvm,'insurance').v5ReferenceSecondary.length===1,'household income lens available');
 eq(row(hvm,'insurance').cUpper,0,'household insurance remains structural');
 
+// Owned housing structural reference: 2+ household with mortgage gets age-bucket reference, never Potential.
+const mortgageProfile:any={...profile,diagnosisScope:'household',householdSize:2,adultCount:2,relationships:['partner'],housingTenure:'owned',housingSubtype:'mortgage',age:42};
+const mortgageCats=ALL.map(c=>c==='rent'?cat('rent',{amount:150000,benchmark:null,engineComparableAllowed:false,amountScope:'property',appraisal:{rentPreference:'burdenSome'}}):cat(c,{amount:0,benchmark:null,status:'safe'}));
+const mvm=buildResultViewModelV5({diagnosisId:'QA-M',toneMode:'serious',type,profile:mortgageProfile,annualIncomeBand:'600_699',finalCategories:mortgageCats as any});
+eq(row(mvm,'rent').comparable,93705,'mortgage 40-44 reference');
+eq(row(mvm,'rent').cUpper,0,'mortgage reference must never create C');
+eq(mvm.potential.upper,0,'mortgage gap must not inflate Potential');
+
+// Single mortgage household is outside the official 3-10 population and must not get a fake comparator.
+const singleMortgageProfile:any={...profile,housingTenure:'owned',housingSubtype:'mortgage',householdSize:1,adultCount:1,relationships:[]};
+const smvm=buildResultViewModelV5({diagnosisId:'QA-SM',toneMode:'serious',type,profile:singleMortgageProfile,annualIncomeBand:'600_699',finalCategories:mortgageCats as any});
+eq(row(smvm,'rent').comparable,null,'single mortgage no 3-10 comparator');
+
+// Car comparison is available only when user confirms maintenance-only scope.
+vm=build({car:cat('car',{amount:30000,benchmark:null,engineComparableAllowed:false,metadata:{carScope:'maintenanceOnly'},appraisal:{carNeed:'burden'}})});
+eq(row(vm,'car').comparable,14100,'car maintenance reference');
+eq(row(vm,'car').cUpper,0,'car structural reference no C');
+eq(vm.potential.upper,0,'car gap must not inflate Potential');
+vm=build({car:cat('car',{amount:30000,benchmark:null,engineComparableAllowed:false,metadata:{carScope:'includesLoanOrTax'},appraisal:{carNeed:'burden'}})});
+eq(row(vm,'car').comparable,null,'car loan/tax scope must not compare to maintenance reference');
+
 // Horizons are Potential-only simple accumulation.
 vm=build({food:cat('food',{amount:70000,benchmark:50000,appraisal:{satisfaction:'inertia'}})});
 eq(Math.round(vm.potential.oneYear.upper),180000,'1y potential');
