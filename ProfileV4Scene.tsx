@@ -155,7 +155,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    </div>}
 
    {!['scope','composition','contribution','housing'].includes(step)&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
-   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
+   <button type="button" className="pre-back profile-v4-back" style={{minHeight:48,height:48,flex:'0 0 48px',display:'block'}} onClick={onBack}>← 戻る</button>
   </section>
  </div>;
 }
