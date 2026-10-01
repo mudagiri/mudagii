@@ -33,6 +33,7 @@ jobs:
       - run: npm run qa:profile-v4-ux
       - run: npm run qa:appraisal-flow
       - run: npm run qa:persona
+      - run: npm run qa:persona-v4
       - run: npm run qa:type
       - run: npm run qa:battle
       - run: npm run qa:resume
