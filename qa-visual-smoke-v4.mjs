@@ -61,17 +61,21 @@ async function clickButton(re){
   await b.waitFor({state:'visible'});
   await b.click();
 }
+async function waitHeading(name){
+  const h=page.getByRole('heading',{name}).first();
+  await h.waitFor({state:'visible'});
+}
 async function startPersonal(){
   await page.goto(base,{waitUntil:'networkidle'});
   await shot('01-opening');
   await clickButton(/無料で冒険をはじめる/);
-  await page.getByText('今回チェックするのは？').waitFor();
+  await waitHeading('今回チェックするのは？');
   await shot('02-scope-personal');
   await clickButton(/自分が払っている分/);
-  await page.getByText('どのムダギリに斬られる？').waitFor();
+  await waitHeading('どのムダギリに斬られる？');
   await shot('03-mode');
   await clickButton(/正論ムダギリ/);
-  await page.getByText('一緒に暮らしている人数は？').waitFor();
+  await waitHeading('一緒に暮らしている人数は？');
 }
 
 async function clearJourney(){
@@ -86,26 +90,26 @@ await startPersonal();
 await shot('04-single-household-size');
 await clickButton(/次へ/);
 
-await page.getByText('今住んでる都道府県は？').waitFor();
+await waitHeading('今住んでる都道府県は？');
 await page.getByRole('combobox').selectOption({label:'東京都'});
 await shot('05-single-prefecture');
 await clickButton(/次へ/);
 
-await page.getByText('年齢は？').waitFor();
+await waitHeading('年齢は？');
 await page.getByRole('textbox',{name:'年齢'}).fill('35');
 await clickButton(/次へ/);
 
-await page.getByText('今の住まいは？').waitFor();
+await waitHeading('今の住まいは？');
 await shot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
 
-await page.getByText('あなた自身の毎月の手取りは？').waitFor();
+await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
 await shot('07-single-income');
 await clickButton(/次へ/);
 
-await page.getByText('毎月の通信費はいくら？').waitFor();
+await waitHeading('毎月の通信費はいくら？');
 await shot('08-scan-first');
 for(let i=0;i<11;i++){
   const input=page.locator('.scan-money input').first();
@@ -154,7 +158,7 @@ await startPersonal();
 await page.getByRole('button',{name:'＋'}).click();
 await shot('20-multi-household-size');
 await clickButton(/次へ/);
-await page.getByText('子ども・親と一緒に暮らしてる？').waitFor();
+await waitHeading('子ども・親と一緒に暮らしてる？');
 await shot('21-multi-composition');
 await clickButton(/どちらもない/);
 
@@ -176,7 +180,7 @@ await page.locator('.scan-money input').fill('7000');
 await clickButton(/気配を探る/);
 await page.getByRole('button',{name:/次を探す/}).waitFor({state:'visible',timeout:2500});
 await page.getByRole('button',{name:/次を探す/}).click();
-await page.getByText('家全体では、光熱費はいくら？').waitFor();
+await waitHeading('家全体では、光熱費はいくら？');
 await shot('22-household-total-followup');
 
 // Scenario C: parent-family bundled contribution edge path.
@@ -187,10 +191,10 @@ await page.getByRole('button',{name:'＋'}).click();
 await clickButton(/次へ/);
 await page.getByText('子ども・親と一緒に暮らしてる？').waitFor();
 await clickButton(/親・家族と同居/);
-await page.getByText('家にお金を入れるときは？').waitFor();
+await waitHeading('家にお金を入れるときは？');
 await shot('30-parent-contribution-mode');
 await clickButton(/毎月まとめて払ってる/);
-await page.getByText('毎月、家にいくら入れてる？').waitFor();
+await waitHeading('毎月、家にいくら入れてる？');
 await shot('31-parent-bundled-amount');
 
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
