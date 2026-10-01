@@ -18,7 +18,7 @@ export interface ConsultRouteV1 {
 
 export function buildConsultRouteV1(a:{profile:ProfileV4;finalCategories:FinalCategoryV4[]}):ConsultRouteV1{
  const insurance=a.finalCategories.find(x=>x.category==='insurance')??null;
- const insuranceReview=!!insurance&&insurance.status==='review'&&insurance.reasonCode==='INSURANCE_CONTENT_REVIEW_REQUIRED';
+ const insuranceReview=!!insurance&&insurance.status==='review';
  const lifeplanSignals:string[]=[];
  if(a.profile.childCount>0)lifeplanSignals.push('children');
  if(a.profile.housingTenure==='owned')lifeplanSignals.push('homeowner');
