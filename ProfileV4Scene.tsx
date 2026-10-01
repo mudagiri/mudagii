@@ -3,7 +3,6 @@ import {
   type ProfileDraftV4,
   type ProfileStepV4,
   type RelationshipV4,
-  type ExpenseSharingV4,
   type HouseholdContributionModeV4,
   type HousingTenureV4,
   type HousingSubtypeV4,
@@ -31,9 +30,8 @@ type Props={
 const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;sprite:string}>={
  scope:{dialogue:'まずは、見る財布を決めよう。',question:'今回チェックするのは？',helper:'同じ金額でも、1人分と家全体では「普通」が変わるよ。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  householdSize:{dialogue:'次は生活パーティーだ！',question:'一緒に暮らしている人数は？',helper:'あなたを含めた人数。比較する家計サイズに使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
- relationships:{dialogue:'誰と暮らしてるかだけ教えて。',question:'誰と暮らしてる？',helper:'複数選べるよ。必要な分岐だけ出します。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q3.png`},
+ composition:{dialogue:'診断に必要なところだけ確認するぞ。',question:'子ども・親と一緒に暮らしてる？',helper:'夫婦・パートナーかどうかは聞きません。比較に必要な条件だけ使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q3.png`},
  childCount:{dialogue:'子どもの人数だけ確認！',question:'そのうち、子どもは何人？',helper:'教育費と世帯人数の比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q3.png`},
- expenseSharing:{dialogue:'財布の分け方も大事だ。',question:'家賃や生活費、どう払ってる？',helper:'正確な割合までは聞きません。必要な支出だけ後で確認します。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
  contribution:{dialogue:'実家・家族同居はここだけ追加確認。',question:'家にお金を入れるときは？',helper:'まとめ払いを家賃や食費に勝手に分解しないために使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
  contributionAmount:{dialogue:'まとめ払いは、そのまま1つの金額で見るぞ。',question:'毎月、家にいくら入れてる？',helper:'家賃・食費・光熱費へ勝手に分けません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q4.png`},
  prefecture:{dialogue:'比較相手をもう少し絞るぞ。',question:'今住んでる都道府県は？',helper:'地域差が出る支出だけ、比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
@@ -56,16 +54,21 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  const patch=(x:Partial<ProfileDraftV4>)=>setDraft(v=>({...v,...x}));
  const setHouseholdSize=(n:number)=>setDraft(v=>{
   const householdSize=Math.max(1,Math.min(10,n));
-  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null};
+  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,compositionConfirmed:false};
   const childCount=v.childCount===null?null:Math.min(v.childCount,householdSize-1);
   return {...v,householdSize,childCount};
  });
  const auto=(x:Partial<ProfileDraftV4>)=>{setDraft(v=>({...v,...x}));window.requestAnimationFrame(onNext);};
- const toggleRelationship=(r:RelationshipV4)=>setDraft(v=>{
-  const exists=v.relationships.includes(r);
-  const relationships=exists?v.relationships.filter(x=>x!==r):[...v.relationships,r];
-  return {...v,relationships,childCount:r==='children'?(exists?null:(v.childCount??1)):v.childCount,householdContributionMode:r==='parents'&&exists?null:v.householdContributionMode};
- });
+ const selectComposition=(kind:'none'|'children'|'parents'|'both')=>{
+  const relationships:RelationshipV4[]=kind==='both'?['children','parents']:kind==='children'?['children']:kind==='parents'?['parents']:[];
+  auto({
+    relationships,
+    compositionConfirmed:true,
+    childCount:relationships.includes('children')?(draft.childCount??1):null,
+    householdContributionMode:relationships.includes('parents')?draft.householdContributionMode:null,
+    bundledContributionAmount:relationships.includes('parents')?draft.bundledContributionAmount:null,
+  });
+ };
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
   <img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/>
@@ -82,8 +85,8 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    <p className="pre-helper">{meta.helper}</p>
 
    {step==='scope'&&<div className="mode-options">
-    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal'})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
-    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
+    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal',expenseSharing:null})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
+    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
    </div>}
 
    {step==='householdSize'&&<div className="pre-age-input" style={{justifyContent:'center'}}>
@@ -92,18 +95,22 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)+1)}>＋</button>
    </div>}
 
-   {step==='relationships'&&<div className="mode-options">
-    {([['partner','💑 パートナー・配偶者'],['children','👧 子ども'],['parents','🏠 親・家族'],['other','👥 その他']] as [RelationshipV4,string][]).map(([v,l])=><Choice key={v} active={draft.relationships.includes(v)} onClick={()=>toggleRelationship(v)}><strong>{l}</strong></Choice>)}
+   {step==='composition'&&<div className="mode-options">
+    {draft.diagnosisScope==='household' ? <>
+      <Choice active={draft.compositionConfirmed&&draft.relationships.includes('children')} onClick={()=>selectComposition('children')}><strong>👧 子どもと暮らしてる</strong></Choice>
+      <Choice active={draft.compositionConfirmed&&!draft.relationships.includes('children')} onClick={()=>selectComposition('none')}><strong>✓ 子どもはいない</strong></Choice>
+    </> : <>
+      <Choice active={draft.compositionConfirmed&&draft.relationships.length===0} onClick={()=>selectComposition('none')}><strong>✓ どちらもない</strong><span>パートナー・友人などとの同居はこちら</span></Choice>
+      <Choice active={draft.compositionConfirmed&&draft.relationships.length===1&&draft.relationships[0]==='children'} onClick={()=>selectComposition('children')}><strong>👧 子どもと暮らしてる</strong></Choice>
+      <Choice active={draft.compositionConfirmed&&draft.relationships.length===1&&draft.relationships[0]==='parents'} onClick={()=>selectComposition('parents')}><strong>🏠 親・家族と同居</strong></Choice>
+      <Choice active={draft.compositionConfirmed&&draft.relationships.includes('children')&&draft.relationships.includes('parents')} onClick={()=>selectComposition('both')}><strong>👨‍👩‍👧 子ども＋親・家族と同居</strong></Choice>
+    </>}
    </div>}
 
    {step==='childCount'&&<div className="pre-age-input" style={{justifyContent:'center'}}>
     <button type="button" className="pre-back" onClick={()=>patch({childCount:Math.max(1,(draft.childCount??1)-1)})}>−</button>
     <strong style={{minWidth:80,textAlign:'center',fontSize:24}}>{draft.childCount??1}人</strong>
     <button type="button" className="pre-back" onClick={()=>patch({childCount:Math.min(Math.max(1,(draft.householdSize??2)-1),(draft.childCount??1)+1)})}>＋</button>
-   </div>}
-
-   {step==='expenseSharing'&&<div className="mode-options">
-    {([['self_all','✨ 自分がほぼ全部'],['self_more','💰 自分が多め'],['split','🤝 だいたい分担'],['other_more','🏠 相手・家族が多め'],['varies','🔀 項目ごとに違う']] as [Exclude<ExpenseSharingV4,null>,string][]).map(([v,l])=><Choice key={v} active={draft.expenseSharing===v} onClick={()=>auto({expenseSharing:v})}><strong>{l}</strong></Choice>)}
    </div>}
 
    {step==='contribution'&&<div className="mode-options">
@@ -127,7 +134,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
    </div>}
 
-   {!['scope','expenseSharing','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onNext} disabled={!valid}>次へ ▶</button>}
+   {!['scope','composition','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onNext} disabled={!valid}>次へ ▶</button>}
    <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
   </section>
  </div>;
