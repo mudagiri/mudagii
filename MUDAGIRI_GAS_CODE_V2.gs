@@ -8,7 +8,7 @@ function setupMudagiriV3(){
  const ss=SpreadsheetApp.getActive();
  ensure_(ss,CFG.SHEETS.DIAG,DIAG_BASE_HEADERS.concat(HUMAN_HEADERS));
  ensure_(ss,CFG.SHEETS.EVENT,['event_id','anonymous_user_id','diagnosis_id','created_at','name','data_json']);
- ensure_(ss,CFG.SHEETS.LEAD,['lead_id','anonymous_user_id','diagnosis_id','created_at','stage','source','type_code','annual_income_band','needs_review_json','monthly_improvement','first_quest','raw_json']);
+ ensure_(ss,CFG.SHEETS.LEAD,['lead_id','anonymous_user_id','diagnosis_id','created_at','stage','source','type_code','annual_income_band','needs_review_json','monthly_improvement','first_quest','raw_json','handoff_code','cta_placement']);
  ensure_(ss,CFG.SHEETS.META,['key','value']);
  const m=ss.getSheetByName(CFG.SHEETS.META); upsertKV_(m,'schema_version',CFG.VERSION);upsertKV_(m,'updated_at',new Date().toISOString());
  return 'OK: '+CFG.VERSION;
@@ -73,7 +73,7 @@ function upsertKV_(s,k,v){const r=find_(s,1,k);if(r>1)s.getRange(r,2).setValue(v
 
 function saveLead_(b){
  const s=SpreadsheetApp.getActive().getSheetByName(CFG.SHEETS.LEAD),id=String(b.diagnosisId||'');if(!id)throw new Error('diagnosisId required');
- const row=[b.leadId||('lead_'+id),b.anonymousUserId||'',id,b.createdAt||new Date().toISOString(),b.stage||'anonymous',b.source||'',b.typeCode||'',b.annualIncomeBand||'',JSON.stringify(b.needsReview||[]),num_(b.monthlyImprovement),b.firstQuest||'',JSON.stringify(b)];
+ const row=[b.leadId||('lead_'+id),b.anonymousUserId||'',id,b.createdAt||new Date().toISOString(),b.stage||'anonymous',b.source||'',b.typeCode||'',b.annualIncomeBand||'',JSON.stringify(b.needsReview||[]),num_(b.monthlyImprovement),b.firstQuest||'',JSON.stringify(b),b.handoffCode||'',b.ctaPlacement||''];
  const r=find_(s,3,id);if(r>1)s.getRange(r,1,1,row.length).setValues([row]);else s.appendRow(row);
 }
 

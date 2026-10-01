@@ -12,6 +12,10 @@ const TYPE_ART_V31:Record<string,string>={
  VIA:'./assets/types/v31/TYPE_VIA.png',VIU:'./assets/types/v31/TYPE_VIU.png',
 };
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
+function lineHandoffCode(diagnosisId:string){
+ const clean=String(diagnosisId||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+ return 'MG-'+(clean.slice(-12)||'UNKNOWN');
+}
 function resultTone(mode:string){return mode==='hell'?{gap:'家計のクセ、数字に出てるぞ。',warning:'おっと、全部ムダ認定は早い。この差はあくまで基準との差だ。',confirmed:'で、本当に斬っていいと確認できたのはここ',verdict:'討伐結果、集計するぞ。',next:'次に斬り込むなら、ここだ。',save:'戦果は消える前に保存しとけ。'}:mode==='serious'?{gap:'まず、基準との差を確認。',warning:'差があるだけではムダとは判定しません。',confirmed:'その中で、削減可能と確認できた金額',verdict:'今回の家計判定',next:'次にやることは、1つだけ。',save:'診断結果を残しておきましょう。'}:{gap:'まずは、近い条件の基準と比べてみよう。',warning:'高くても、必要な支出までムダ扱いしないから安心してね。',confirmed:'その中で、無理なく見直せると確認できた金額',verdict:'今回の家計、こんな感じだったよ。',next:'まずはここから見てみよう。',save:'せっかくの診断、あとで見返せるようにしよう。'};}
 
 function TypeAxis({label,value,positive,positiveText,negativeText,middle}:{label:string;value:number;positive:boolean;positiveText:string;negativeText:string;middle?:boolean}){
@@ -74,6 +78,8 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
  const [open,setOpen]=useState<string|null>(null);
  const tone=resultTone(vm.toneMode);
  const [revealed,setRevealed]=useState(false);
+ const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'result_bottom'>(null);
+ const handoffCode=lineHandoffCode(vm.diagnosisId);
  const earlyLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'after_next_quest',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
  const bottomLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'result_bottom',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
  useEffect(()=>{
@@ -98,12 +104,33 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{typeCode:vm.type.code,fallback:'clipboard'})}catch{}
  }
  function lineHandoff(placement:'after_next_quest'|'result_bottom'){
-  onBeforeExternal?.();
   onEvent?.('line_clicked',{placement,typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
-  onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category,placement});
+  onEvent?.('line_handoff_prompted',{placement,typeCode:vm.type.code});
+  setLinePrompt(placement);
+ }
+ async function confirmLineHandoff(){
+  if(!linePrompt)return;
+  const placement=linePrompt;
+  const message=`ムダギリ診断 引き継ぎコード：${handoffCode}`;
+  let copied=false;
+  try{await navigator.clipboard?.writeText(message);copied=true}catch{}
+  onBeforeExternal?.();
+  onEvent?.('line_handoff_confirmed',{placement,typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null,copied});
+  onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category,placement,handoffCode});
  }
  return <>
  <style>{CSS}</style>
+ {linePrompt&&<div className="rv3-line-modal-backdrop" role="presentation">
+  <section className="rv3-line-modal" role="dialog" aria-modal="true" aria-labelledby="rv3-line-modal-title">
+   <div className="rv3-kicker">LINE HANDOFF</div>
+   <h2 id="rv3-line-modal-title">LINEへ診断を引き継ぐ</h2>
+   <p>友だち追加後、このコードをトークで送ってください。今回の診断と照合できます。</p>
+   <div className="rv3-handoff-code"><small>引き継ぎコード</small><strong>{handoffCode}</strong></div>
+   <p className="rv3-handoff-note">コード自体には収入・支出額は含まれません。</p>
+   <button className="rv3-primary" onClick={confirmLineHandoff}>コードをコピーしてLINEを開く ▶</button>
+   <button className="rv3-restart" onClick={()=>{onEvent?.('line_handoff_dismissed',{placement:linePrompt});setLinePrompt(null)}}>あとで</button>
+  </section>
+ </div>}
  <main className="rv3"><div className="rv3-inner">
   <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>家計クエスト完了</h1><p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p></section>
 
@@ -135,19 +162,20 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
 
   <section ref={earlyLineRef as any} className="rv3-line-early">
-   <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>と診断結果をLINEへ残せます。</>:<>今回の診断結果と、維持したい家計ポイントをLINEへ残せます。</>}</p></div>
-   <button className="rv3-primary" onClick={()=>lineHandoff('after_next_quest')}>無料でLINEに保存する ▶</button>
-   <small>✓ 無料　✓ あとで見返せる　✓ 登録しただけで相談予約にはなりません</small>
+   <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
+   <button className="rv3-primary" onClick={()=>lineHandoff('after_next_quest')}>無料でLINEへ引き継ぐ ▶</button>
+   <small>✓ 無料　✓ 診断コードを発行　✓ 登録しただけで相談予約にはなりません</small>
   </section>
 
   <section className="rv3-early-share"><div><div className="rv3-kicker">TYPE CARD</div><b>「{vm.type.name}」をシェア</b><small>金額・収入・都道府県は画像に入りません</small></div><button onClick={share}>タイプをシェア</button></section>
 
   <details className="rv3-section rv3-book-shell" onToggle={(e)=>{if((e.currentTarget as HTMLDetailsElement).open)onEvent?.('result_book_opened',{typeCode:vm.type.code})}}><summary><div><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">気になる項目だけ詳しく確認</p></div><span>見る⌄</span></summary><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>{x.diagnosisAmountLabel??'あなた'}：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>{x.householdTotal!==null&&x.householdTotal!==undefined&&x.householdTotal!==x.amount&&<div><b>家全体：</b>¥{yen(x.householdTotal)}/月</div>}{x.comparisonAmount!==null&&x.comparisonAmount!==undefined&&x.comparisonAmount!==x.amount&&x.comparisonAmount!==x.householdTotal&&<div><b>{x.comparisonAmountLabel??'比較対象'}：</b>¥{yen(x.comparisonAmount)}/月</div>}<div><b>{x.comparable!==null?'比較の目安':'判定の見方'}：</b>{x.evidenceLabel??x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.referenceDetail&&<div><b>料金の目安：</b>{x.referenceDetail}</div>}{x.comparisonContext?.criteria?.length>0&&<div><b>比較条件：</b>{x.comparisonContext.criteria.join(' × ')}</div>}{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.reviewPotential?.available&&x.reviewPotential.delta>0&&<div className={`rv3-potential is-${x.reviewPotential.level}`}><b>{x.reviewPotential.label}</b><small>基準との差から見た「見直した場合の家計インパクト」。確定した削減額ではありません。</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></details>
 
-  <section ref={bottomLineRef as any} className="rv3-next rv3-save"><div className="rv3-kicker">SAVE YOUR QUEST</div><h3>{tone.save}</h3><p>このページを閉じても困らないように、LINEへ<strong>今回の診断結果と「次にやる1つ」</strong>を残せます。</p><div className="rv3-save-preview"><span>LINEで受け取れるもの</span><b>🏷️ {vm.type.name}の診断結果</b><b>🎯 {vm.firstQuest ? "まず確認する「"+vm.firstQuest.label+"」" : "今の家計を維持するチェックポイント"}</b><b>🗺️ 12カテゴリの判定をあとで見返す導線</b><small>必要なら、その後に家計の見直し相談へ進めます。まずは結果保存だけでOKです。</small></div><button className="rv3-primary" onClick={()=>lineHandoff('result_bottom')}>無料で診断結果をLINEに残す ▶</button><small>✓ 無料　✓ あとで見返せる　✓ 登録しただけで相談予約にはなりません</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
+  <section ref={bottomLineRef as any} className="rv3-next rv3-save"><div className="rv3-kicker">SAVE YOUR QUEST</div><h3>{tone.save}</h3><p>このページを閉じても困らないように、LINEで<strong>今回の診断結果と「次にやる1つ」</strong>を照合できる引き継ぎコードを発行します。</p><div className="rv3-save-preview"><span>LINEへ引き継げる診断情報</span><b>🏷️ {vm.type.name}の診断結果</b><b>🎯 {vm.firstQuest ? "まず確認する「"+vm.firstQuest.label+"」" : "今の家計を維持するチェックポイント"}</b><b>🗺️ 12カテゴリの判定を照合する診断ID</b><small>必要なら、その後に家計の見直し相談へ進めます。まずは診断の引き継ぎだけでOKです。</small></div><button className="rv3-primary" onClick={()=>lineHandoff('result_bottom')}>LINEへ診断を引き継ぐ ▶</button><small>✓ 無料　✓ あとで見返せる　✓ 登録しただけで相談予約にはなりません</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
   </div></div></main></>
 }
 const CSS=`
+.rv3-line-modal-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(2,7,12,.82);backdrop-filter:blur(4px)}.rv3-line-modal{width:min(100%,390px);padding:22px 18px 18px;border:1px solid rgba(245,204,57,.65);border-radius:16px;background:#0b141e;color:#fff;box-shadow:0 24px 70px rgba(0,0,0,.55);font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif}.rv3-line-modal h2{margin:8px 0 0;font-size:22px;line-height:1.35}.rv3-line-modal p{margin:10px 0 0;color:#b7c1cb;font-size:13px;line-height:1.7}.rv3-handoff-code{margin-top:16px;padding:14px;border:1px solid #344454;border-radius:12px;background:#07111b;text-align:center}.rv3-handoff-code small{display:block;color:#87929d;font-size:10px;font-weight:900;letter-spacing:.08em}.rv3-handoff-code strong{display:block;margin-top:5px;color:#f5cc39;font-size:24px;letter-spacing:.08em}.rv3-line-modal .rv3-primary{min-height:56px}.rv3-line-modal .rv3-restart{min-height:48px}.rv3-handoff-note{text-align:center;font-size:10px!important;color:#87929d!important}
 .rv3{min-height:100svh;min-height:100dvh;background:#070d14;color:#fff;overflow-x:hidden;font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif}.rv3 *{box-sizing:border-box}.rv3 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.rv3 button:active{transform:translateY(1px) scale(.995)}.rv3-inner{width:min(100%,430px);margin:0 auto;padding-bottom:max(72px,env(safe-area-inset-bottom))}
 .rv3 section{padding:24px 20px}.rv3-clear{min-height:220px;display:grid;align-content:center;text-align:center}.rv3-clear h1{margin:18px 0 0;font-size:28px;line-height:1.25}.rv3-clear p{margin:10px 0 0;color:#aeb8c2;font-size:13px;line-height:1.6}.rv3-kicker{color:#f5cc39;font-size:12px;font-weight:1000;letter-spacing:.15em}.rv3-count{display:flex;justify-content:center;gap:8px;margin-top:18px;font-size:11px}.rv3-count span{padding:7px 9px;border:1px solid #293644;border-radius:999px;background:#0d1721}.rv3-count b{font-size:13px}
 .rv3-reveal{opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .35s ease,transform .35s ease}.rv3-reveal.is-visible{opacity:1;transform:none;pointer-events:auto}

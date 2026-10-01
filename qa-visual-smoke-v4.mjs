@@ -154,6 +154,11 @@ const earlyCta=page.locator('.rv3-line-early');
 await earlyCta.scrollIntoViewIfNeeded();
 await earlyCta.waitFor({state:'visible'});
 await shot('15b-result-line-cta',{allowVertical:true});
+await clickButton(/無料でLINEへ引き継ぐ/);
+await page.getByRole('dialog').waitFor({state:'visible'});
+await page.getByRole('heading',{name:'LINEへ診断を引き継ぐ'}).waitFor();
+await shot('15c-line-handoff-modal',{allowVertical:true});
+await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
 // Scenario B: common multi-adult PERSONAL flow + household-total follow-up.
