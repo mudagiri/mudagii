@@ -22,7 +22,8 @@
     "qa:line-handoff": "node qa-line-handoff-v1.mjs",
     "qa:result-experience": "node qa-result-experience-v2.mjs",
     "qa:result-viral": "node qa-result-viral-loop-v1.mjs",
-    "qa:consult-routing": "npx --yes tsx@4.20.6 qa-consult-routing-v1.ts"
+    "qa:consult-routing": "npx --yes tsx@4.20.6 qa-consult-routing-v1.ts",
+    "qa:result-polish": "node qa-result-polish-v3.mjs"
   },
   "dependencies": {
     "react": "19.1.1",
