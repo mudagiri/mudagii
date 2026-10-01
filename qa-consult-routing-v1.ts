@@ -61,7 +61,7 @@ const checks=[
  ['detached activates solar route',result.includes("homeStructure==='detached'")&&result.includes('太陽光・蓄電池も「入れる前提なし」で適性確認')],
  ['solar copy avoids guaranteed savings',result.includes('向き不向きが変わるため、設置ありきではなく')],
  ['consult CTA has dedicated placement',result.includes("lineHandoff('consult_route')")],
- ['lead stores consult route',app.includes("consultPrimary:ctx?.consultPrimary")&&app.includes("solarEligible:ctx?.solarEligible")),
+ ['lead stores consult route',app.includes("consultPrimary:ctx?.consultPrimary")&&app.includes("solarEligible:ctx?.solarEligible")],
  ['GAS stores consult routing columns',gas.includes("'consult_primary','insurance_review','home_structure','solar_eligible','consult_route_json'")],
  ['consult analytics contain no raw financial values',(()=>{
   const lines=result.split('\n').filter(x=>x.includes('consult_route_clicked')||x.includes('consult_home_structure_selected'));
