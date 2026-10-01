@@ -274,6 +274,7 @@ export default function RpgBlock1({
   const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(resumeDraft?.typeAnswers??{});
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>(resumeDraft?.appraisalAnswers??{});
   const [appraisalIndex, setAppraisalIndex] = useState(resumeDraft?.appraisalIndex??0);
+  const [appraisalHistory,setAppraisalHistory]=useState<{index:number;answers:AppraisalMap}[]>([]);
   const educationStage=appraisalAnswers.childEducation?.educationStage;
   const [battleIndex, setBattleIndex] = useState(0);
   const diagnosisFinishLock=React.useRef(false);
@@ -687,6 +688,7 @@ export default function RpgBlock1({
                 setExpenseRecordsV4(prev=>({...prev,car:{...prev.car,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
               }:undefined}
               onDone={()=>maybeAdvanceScanCategory(currentScan.category)}
+              onBack={()=>{if(scanIndex>0)setScanIndex(i=>Math.max(0,i-1));else setScene('incomeCalibration')}}
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
@@ -696,6 +698,7 @@ export default function RpgBlock1({
               onStartAppraisal={() => {
                 setAppraisalIndex(0);
                 setAppraisalAnswers({});
+                setAppraisalHistory([]);
                 if(!appraisalQuestions.length)onEvent?.('appraisal_completed',{count:0});
                 setScene(appraisalQuestions.length ? 'appraisal' : 'appraisalComplete');
               }}
@@ -706,8 +709,20 @@ export default function RpgBlock1({
               item={appraisalQuestions[appraisalIndex]}
               current={appraisalIndex + 1}
               total={appraisalQuestions.length}
+              onBack={()=>{
+                if(appraisalHistory.length){
+                  const prev=appraisalHistory[appraisalHistory.length-1];
+                  setAppraisalHistory(h=>h.slice(0,-1));
+                  setAppraisalAnswers(prev.answers);
+                  setAppraisalIndex(prev.index);
+                }else{
+                  setScene('scanComplete');
+                }
+              }}
               onAnswer={(answer) => {
                 const currentItem=appraisalQuestions[appraisalIndex];
+                const snapshot=Object.fromEntries(Object.entries(appraisalAnswers).map(([k,v])=>[k,{...(v as any)}])) as AppraisalMap;
+                setAppraisalHistory(h=>[...h,{index:appraisalIndex,answers:snapshot}]);
                 setAppraisalAnswers((prev) => ({
                   ...prev,
                   [currentItem.category]: {
@@ -745,6 +760,7 @@ export default function RpgBlock1({
               question={currentTypeQuestion}
               current={typeIndex + 1}
               total={TYPE_QUESTIONS_V31.length}
+              onBack={()=>{if(typeIndex>0)setTypeIndex(i=>Math.max(0,i-1));else setScene('appraisalComplete')}}
               onAnswer={(answer) => {
                 setTypeAnswers((prev) => ({ ...prev, [currentTypeQuestion.id]: answer }));
                 if (typeIndex >= TYPE_QUESTIONS_V31.length - 1) {
@@ -1082,6 +1098,7 @@ function ScanScene({
   onUnknown,
   onNA,
   onDone,
+  onBack,
 }: {
   config: ScanCategoryConfig;
   current: number;
@@ -1093,6 +1110,7 @@ function ScanScene({
   onUnknown: () => void;
   onNA?: () => void;
   onDone: () => void;
+  onBack: () => void;
 }) {
   const enemy = ENEMY_ASSETS[config.category];
   const layout = SCAN_ENEMY_LAYOUT[config.category];
@@ -1167,6 +1185,7 @@ function ScanScene({
     <div className={`scan-scene scan-phase-${phase}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
+      {isInput&&<button type="button" className="journey-back" onClick={onBack}>← 戻る</button>}
 
       <header className="scan-hud">
         <div className="scan-hud-top">
@@ -1341,11 +1360,13 @@ function TypeQuizScene({
   current,
   total,
   onAnswer,
+  onBack,
 }: {
   question: TypeQuestion;
   current: number;
   total: number;
   onAnswer: (answer: RawAnswerV31) => void;
+  onBack: () => void;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
 
@@ -1392,6 +1413,7 @@ function TypeQuizScene({
     <div className={`scan-scene type-quiz-scene type-quiz-q${current}`}>
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="type-quiz-shade" aria-hidden="true" />
+      <button type="button" className="journey-back" onClick={onBack}>← 戻る</button>
 
       <header className="type-quiz-hud">
         <div className="type-quiz-hud-row">
@@ -1507,10 +1529,11 @@ const SAT_OPTIONS: { label:string; sub:string; value:Satisfaction }[] = [
 ];
 
 function AdditionalAppraisalScene({
-  item,current,total,onAnswer,
+  item,current,total,onAnswer,onBack,
 }:{
   item:AppraisalQuestion; current:number; total:number;
   onAnswer:(answer:AppraisalAnswer)=>void;
+  onBack:()=>void;
 }) {
   const enemy = ENEMY_ASSETS[item.category];
   const [feedback,setFeedback] = useState<{label:string;detail:string;kind:AppraisalStatus}|null>(null);
@@ -1618,6 +1641,7 @@ function AdditionalAppraisalScene({
     <div className="scan-scene appraisal-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
       <div className="scan-shade" aria-hidden="true" />
+      {!answerLocked&&<button type="button" className="journey-back" onClick={onBack}>← 戻る</button>}
       <header className="appraisal-hud">
         <span>追加鑑定</span>
         <b>{current} / {total}</b>
@@ -3615,6 +3639,8 @@ const CSS = String.raw`
 }
 @media(prefers-reduced-motion:reduce){.combo-mudagiri.is-attacking,.combo-enemy-slot.is-hit,.combo-white-flash{animation:none!important}}
 
+
+.journey-back{position:absolute;z-index:40;left:14px;top:max(76px,calc(env(safe-area-inset-top) + 66px));min-width:72px;min-height:44px;padding:0 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,20,30,.76);color:#fff;font:inherit;font-size:12px;font-weight:1000;box-shadow:0 5px 14px rgba(0,0,0,.18);-webkit-tap-highlight-color:transparent}.journey-back:active{transform:translateY(1px)}.journey-back:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .mode-back{position:absolute;z-index:30;left:14px;top:max(16px,env(safe-area-inset-top));min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,20,30,.72);color:#fff;font-weight:900}.mode-card{position:absolute;z-index:20;left:16px;right:16px;top:50%;transform:translateY(-48%);padding:20px 16px;border:1.5px solid #f1c92f;border-radius:18px;background:rgba(0,27,35,.965);box-shadow:0 18px 38px rgba(0,0,0,.42);text-align:center}.mode-card h2{margin:6px 0;font-size:clamp(24px,6.8vw,30px)}.mode-card>p{margin:0 0 14px;color:rgba(255,255,255,.72);font-size:12px}.mode-list{display:grid;gap:9px}.mode-option{position:relative;min-height:76px;padding:12px;border:1px solid rgba(255,214,47,.42);border-radius:12px;background:rgba(15,48,66,.94);color:#fff;text-align:left;transition:.16s}.mode-option>small{position:absolute;right:9px;top:7px;color:#ffd42b;font-size:9px}.mode-option strong{display:block;font-size:16px}.mode-option span{display:block;margin-top:5px;color:rgba(255,255,255,.7);font-size:11px}.mode-option.is-picked{transform:scale(1.02);border-color:#ffd42b}.mode-option.is-dim{opacity:.35}.mode-reaction{margin-top:12px;padding:10px;border-radius:9px;background:rgba(20,53,73,.78);font-size:12px;font-weight:900}
 
 /* ===== MOBILE QA V1: real-device readability overrides ===== */

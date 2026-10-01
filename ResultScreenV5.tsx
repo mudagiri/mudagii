@@ -177,20 +177,20 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    <h2>{vm.type.name}</h2>
    <h3>{vm.type.catchphrase}</h3>
    <div className="v51-axis-badges">
-    <span>{vm.type.nearMiddle?.fv?'バランス型':(vm.type.axes.fv??0)>=0?'未来寄り':'今寄り'}</span>
-    <span>{vm.type.nearMiddle?.pi?'バランス型':(vm.type.axes.pi??0)>=0?'計画寄り':'直感寄り'}</span>
-    <span>{vm.type.nearMiddle?.au?'バランス型':(vm.type.axes.au??0)>=0?'普段から把握':'必要時に確認'}</span>
+    <span><small>時間軸</small>{vm.type.nearMiddle?.fv?'バランス':(vm.type.axes.fv??0)>=0?'未来寄り':'今寄り'}</span>
+    <span><small>決め方</small>{vm.type.nearMiddle?.pi?'バランス':(vm.type.axes.pi??0)>=0?'計画寄り':'直感寄り'}</span>
+    <span><small>把握</small>{vm.type.nearMiddle?.au?'バランス':(vm.type.axes.au??0)>=0?'普段から':'必要時'}</span>
    </div>
    <p className="v51-type-summary">{vm.type.description}</p>
-   <details className="v51-type-detail"><summary>タイプを詳しく見る⌄</summary>
+   <div className="v51-type-detail is-open">
     <div className="v5-axes">
      <TypeAxis label="時間軸" value={vm.type.axisStrength.fv} positive={(vm.type.axes.fv??0)>=0} positiveText="未来寄り" negativeText="今寄り" middle={vm.type.nearMiddle?.fv}/>
      <TypeAxis label="決め方" value={vm.type.axisStrength.pi} positive={(vm.type.axes.pi??0)>=0} positiveText="計画寄り" negativeText="直感寄り" middle={vm.type.nearMiddle?.pi}/>
      <TypeAxis label="把握" value={vm.type.axisStrength.au} positive={(vm.type.axes.au??0)>=0} positiveText="普段から把握" negativeText="必要時に確認" middle={vm.type.nearMiddle?.au}/>
     </div>
     <div className="v5-type-notes"><div><small>強み</small><b>{vm.type.strengthLabel}</b></div><div><small>死角</small><b>{vm.type.blindSpot}</b></div></div>
-   </details>
-   <button className="v5-small-share" onClick={()=>share('type_top')}>↗ この称号だけシェア</button>
+   </div>
+   <div className="v51-type-share"><b>この称号をシェア</b><div><button onClick={()=>share('x')}>𝕏</button><button onClick={()=>share('instagram')}>Instagram</button><button onClick={()=>share('threads')}>Threads</button><button onClick={()=>share('line')}>LINE</button></div><small>金額・収入・地域は共有されません</small></div>
   </section>
 
   <section className="v51-type-preview" aria-label="8タイプ図鑑">
@@ -377,6 +377,9 @@ const CSS=`
 .v51-money-prefix{flex-basis:100%;margin-bottom:7px;color:#604a05;font-family:system-ui,sans-serif;font-size:16px;font-weight:1000;letter-spacing:.06em;line-height:1}
 .v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}
 .v51-impact>h2{font-size:34px!important;line-height:1.08!important;letter-spacing:-.045em;font-weight:1000!important}.v51-impact .v5-impact-grid b{font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-weight:1000;letter-spacing:-.055em}.v51-impact .v5-impact-grid .is-10 b{font-size:clamp(38px,10vw,54px)!important;line-height:1!important;text-shadow:0 2px 0 rgba(255,255,255,.55)}
+
+.v51-axis-badges span{display:grid!important;grid-template-rows:auto auto;gap:1px;text-align:center;min-width:82px}.v51-axis-badges span small{display:block;color:#aa9fd1;font-size:8px;font-weight:800;letter-spacing:.04em}.v51-type-detail.is-open{padding:10px 10px 11px}.v51-type-detail.is-open .v5-axes{margin-top:0}
+.v51-type-share{position:relative;z-index:2;margin-top:14px;padding-top:12px;border-top:1px solid rgba(196,174,255,.22)}.v51-type-share>b{display:block;color:#f4d76b;font-size:11px;letter-spacing:.04em}.v51-type-share>div{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.v51-type-share button{min-height:48px;padding:0 4px;border:1px solid #665d98;border-radius:9px;background:#151d3b;color:#fff;font-size:10px;font-weight:900}.v51-type-share>small{display:block;margin-top:7px;color:#8f9ab5;font-size:8px}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
 `;
