@@ -133,10 +133,20 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
 
    {step==='age'&&<label className="pre-input-wrap pre-age-wrap"><span className="pre-sr-only">年齢</span><div className="pre-age-input"><input inputMode="numeric" pattern="[0-9]*" maxLength={3} value={draft.age??''} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,3);patch({age:x===''?null:Number(x)})}} aria-label="年齢"/><span>歳</span></div></label>}
 
-   {step==='housing'&&<div className="mode-options">
-    {([['rental','🏢 賃貸'],['owned','🏠 持ち家'],['family_home','👪 実家・親族宅'],['company_housing','🏢 社宅・寮'],['other','その他']] as [HousingTenureV4,string][]).map(([v,l])=><Choice key={v} active={draft.housingTenure===v} onClick={()=>{if(v==='rental'||v==='owned')patch({housingTenure:v,housingSubtype:null});else auto({housingTenure:v,housingSubtype:null})}}><strong>{l}</strong></Choice>)}
-    {draft.housingTenure==='rental'&&<div className="mode-options">{([['private_rental','民間賃貸'],['public_rental','公営住宅'],['unknown_rental','わからない']] as [HousingSubtypeV4,string][]).map(([v,l])=><Choice key={String(v)} active={draft.housingSubtype===v} onClick={()=>auto({housingSubtype:v})}><strong>{l}</strong></Choice>)}</div>}
-    {draft.housingTenure==='owned'&&<div className="mode-options">{([['mortgage','住宅ローンあり'],['no_mortgage','ローンなし']] as [HousingSubtypeV4,string][]).map(([v,l])=><Choice key={String(v)} active={draft.housingSubtype===v} onClick={()=>auto({housingSubtype:v})}><strong>{l}</strong></Choice>)}</div>}
+   {step==='housing'&&<div className="housing-choice-wrap">
+    {draft.housingTenure==='rental' ? <>
+      <div className="mode-options housing-subtype-options">
+        {([['private_rental','民間賃貸'],['public_rental','公営住宅'],['unknown_rental','わからない']] as [HousingSubtypeV4,string][]).map(([v,l])=><Choice key={String(v)} active={draft.housingSubtype===v} onClick={()=>auto({housingSubtype:v})}><strong>{l}</strong></Choice>)}
+      </div>
+      <button type="button" className="housing-reset" onClick={()=>patch({housingTenure:null,housingSubtype:null})}>← 住まいタイプを選び直す</button>
+    </> : draft.housingTenure==='owned' ? <>
+      <div className="mode-options housing-subtype-options housing-owner-options">
+        {([['mortgage','住宅ローンあり'],['no_mortgage','ローンなし']] as [HousingSubtypeV4,string][]).map(([v,l])=><Choice key={String(v)} active={draft.housingSubtype===v} onClick={()=>auto({housingSubtype:v})}><strong>{l}</strong></Choice>)}
+      </div>
+      <button type="button" className="housing-reset" onClick={()=>patch({housingTenure:null,housingSubtype:null})}>← 住まいタイプを選び直す</button>
+    </> : <div className="mode-options housing-main-options">
+      {([['rental','🏢 賃貸'],['owned','🏠 持ち家'],['family_home','👪 実家・親族宅'],['company_housing','🏢 社宅・寮'],['other','その他']] as [HousingTenureV4,string][]).map(([v,l])=><Choice key={v} active={draft.housingTenure===v} onClick={()=>{if(v==='rental'||v==='owned')patch({housingTenure:v,housingSubtype:null});else auto({housingTenure:v,housingSubtype:null})}}><strong>{l}</strong></Choice>)}
+    </div>}
    </div>}
 
    {step==='income'&&<div>
@@ -144,7 +154,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
    </div>}
 
-   {!['scope','composition','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
+   {!['scope','composition','contribution','housing'].includes(step)&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
    <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
   </section>
  </div>;
