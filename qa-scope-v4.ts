@@ -153,22 +153,23 @@ console.log('SCOPE_V4_QA PASS');
  const d=emptyProfileDraftV4();
  d.diagnosisScope='personal';
  d.householdSize=2;
- d.relationships=['partner'];
- d.expenseSharing='split';
+ d.compositionConfirmed=true;
+ d.relationships=[];
  d.prefecture='東京都';
  d.age=35;
  d.housingTenure='rental';
  d.housingSubtype='private_rental';
  d.monthlyTakeHome=350000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','prefecture','age','housing','income']);
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','prefecture','age','housing','income']);
 }
 
 {
  const d=emptyProfileDraftV4();
  d.diagnosisScope='household';
  d.householdSize=4;
- d.relationships=['partner','children'];
+ d.compositionConfirmed=true;
+ d.relationships=['children'];
  d.childCount=2;
  d.prefecture='東京都';
  d.age=40;
@@ -176,7 +177,7 @@ console.log('SCOPE_V4_QA PASS');
  d.housingSubtype='mortgage';
  d.monthlyTakeHome=600000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','childCount','prefecture','age','housing','income']);
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','childCount','prefecture','age','housing','income']);
  const p=finalizeProfileV4(d);
  A.equal(p.adultCount,2);
  A.equal(p.childCount,2);
@@ -186,8 +187,8 @@ console.log('SCOPE_V4_QA PASS');
  const d=emptyProfileDraftV4();
  d.diagnosisScope='personal';
  d.householdSize=3;
+ d.compositionConfirmed=true;
  d.relationships=['parents'];
- d.expenseSharing='other_more';
  d.householdContributionMode='bundled';
  d.bundledContributionAmount=50000;
  d.prefecture='東京都';
@@ -195,7 +196,7 @@ console.log('SCOPE_V4_QA PASS');
  d.housingTenure='family_home';
  d.monthlyTakeHome=250000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','relationships','expenseSharing','contribution','contributionAmount','prefecture','age','housing','income']);
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','contribution','contributionAmount','prefecture','age','housing','income']);
 }
 
 
@@ -311,8 +312,8 @@ console.log('SCOPE_V4_QA PASS');
  const d=emptyProfileDraftV4();
  d.diagnosisScope='personal';
  d.householdSize=3;
+ d.compositionConfirmed=true;
  d.relationships=['parents'];
- d.expenseSharing='other_more';
  d.householdContributionMode='bundled';
  d.bundledContributionAmount=50000;
  d.prefecture='東京都';
@@ -329,4 +330,20 @@ console.log('SCOPE_V4_QA PASS');
  const final=buildFinalJudgementsV4({records,comparisons:facts,diagnosis:dx.diagnosis,categoryResults:dx.categoryResults});
  const vm=buildResultViewModelV4({profile,finalCategories:final.categories});
  A.equal(vm.bundledContribution?.amount,50000);
+}
+
+
+{
+ const single=emptyProfileDraftV4();
+ single.diagnosisScope='personal'; single.householdSize=1;
+ A.equal(profileStepsV4(single).length,6);
+
+ const couple=emptyProfileDraftV4();
+ couple.diagnosisScope='personal'; couple.householdSize=2; couple.compositionConfirmed=true;
+ A.deepEqual(profileStepsV4(couple),['scope','householdSize','composition','prefecture','age','housing','income']);
+ A.equal(profileStepsV4(couple).includes('expenseSharing' as any),false);
+
+ const householdNoChildren=emptyProfileDraftV4();
+ householdNoChildren.diagnosisScope='household'; householdNoChildren.householdSize=2; householdNoChildren.compositionConfirmed=true;
+ A.equal(profileStepsV4(householdNoChildren).length,7);
 }
