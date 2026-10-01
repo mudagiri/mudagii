@@ -170,14 +170,13 @@ for(const [name,selector] of [
   ['15f-result-next','.v5-next'],
   ['15g-result-save','.v5-save'],
   ['15h-result-life','.v5-life'],
-  ['15i-result-codex','.v5-codex'],
   ['15j-result-friend','.v5-friend'],
 ]){
   const el=page.locator(selector);await el.scrollIntoViewIfNeeded();await el.waitFor({state:'visible'});await shot(name,{allowVertical:true});
 }
 const goal=page.getByRole('button',{name:/住まい/}).first();
 if(await goal.count()){await goal.click();await shot('15k-result-goal-selected',{allowVertical:true})}
-const codex=page.locator('.v5-codex');await codex.locator('summary').click();await shot('15l-result-codex-open',{allowVertical:true});
+const atlasMore=page.getByRole('button',{name:/残りの敵も見る/}).first();if(await atlasMore.count()){await atlasMore.click();const mini=page.locator('.v51-enemy-mini').first();if(await mini.count()){await mini.click();await page.locator('.v51-atlas-detail').first().waitFor({state:'visible'});await shot('15l-result-atlas-detail-open',{allowVertical:true})}}
 const save=page.getByRole('button',{name:/結果をLINEに保存/}).first();await save.scrollIntoViewIfNeeded();await save.click();
 await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('heading',{name:'診断結果をLINEに保存'}).waitFor();await shot('15m-line-save-modal',{allowVertical:true});await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});

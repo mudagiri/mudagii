@@ -126,11 +126,13 @@ eq(Math.round(vm.potential.tenYear.upper),1800000,'10y potential');
 
 // Screen privacy/order static guards.
 const screen=fs.readFileSync('./ResultScreenV5.tsx','utf8');
-const order=['MONEY TYPE UNLOCKED','HOUSEHOLD POSITION','MUDAGIRI VERDICT','FUTURE MONEY','GOAL QUEST','NEXT QUEST','SAVE QUEST','LIFE PLAN QUEST','12 CATEGORY CODEX','FRIEND QUEST'];
+const order=['MONEY TYPE UNLOCKED','HOUSEHOLD POSITION','MUDAGIRI VERDICT','FUTURE MONEY','GOAL QUEST','NEXT QUEST','SAVE QUEST','LIFE PLAN QUEST','FRIEND QUEST'];
 let last=-1;for(const token of order){const i=screen.indexOf(token);ok(i>last,'screen order: '+token);last=i}
 const shareBlock=screen.slice(screen.indexOf('async function makeTypeShareFile'),screen.indexOf('export default function ResultScreenV5'));
 ok(!/(monthlyTakeHome|annualIncomeBand|prefecture|potential\.upper|comparisonDifference)/.test(shareBlock),'share image must exclude sensitive financial/profile fields');
 ok(screen.includes('この差額＝ムダ額ではありません。'),'comparison semantics copy');
+ok(screen.includes('enemyDetail(x)'),'enemy atlas owns detailed category disclosure');
+ok(!screen.includes('12 CATEGORY CODEX'),'standalone codex removed after atlas integration');
 ok(screen.includes('運用益は含みません'),'future horizon note');
 
 console.log('RESULT_V5_QA_PASS');
