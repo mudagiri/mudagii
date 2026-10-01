@@ -11,11 +11,11 @@ STATUS: CURRENT SOT
 - Visual正本: RESULT_V5_1_VISUAL_MASTER.md
 - Version: MUDAGIRI_RESULT_V5_1_VISUAL_MASTER_1_0
 - Visual design commit: 54d99989e27453ef80c13669b27f6f106c6183a5
-- 目的: V5の意味論・比較・Potential・Goal・NEXT QUEST・Life Planは維持したまま、Resultを「家計ダッシュボード」から「ムダギリRPGの戦果画面」へ戻す。
+- 目的: V5の意味論・比較・Potential・Goal・NEXT QUEST・Life Planは維持したまま、Resultを「家計ダッシュボード」から「ムダギリRPGの戦果画面」へ戻す。**Runtime実装済み。**
 - 8タイプは削除されていません。現行V5ではFRIEND QUEST最下部の折りたたみに残っていますが、V5.1では主タイプ直下に8タイプ図鑑previewを復活し、最下部にもフル図鑑を開いた状態で表示します。
 - 12敵のcanonical normal画像をResultへ再利用し、Positionは敵図鑑、Verdictは戦果画面、NEXT QUESTはNEXT TARGETとして再構成します。
 - 新規画像生成は初期実装では不要。既存48敵素材、ムダギリくん差分、TYPE 8枚、既存背景/FXを優先利用します。
-- Visual実装中も診断コア・reference data・Potential formulaは変更しません。
+- 診断コア・reference data・Potential formulaは変更していません。Visual QA baseline: `0459ad77eb40aa9f7c1418da5cfabd457d6776d4`。Validate / Deploy / V5 Visual Smoke / 375・390・430幅はSUCCESS。残るのは実端末の手動UX確認です。
 
 ## 0.A Result V5 Runtime SOT — IMPLEMENTED / AUTOMATED QA GREEN
 

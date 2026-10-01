@@ -1,6 +1,6 @@
 # MUDAGIRI RESULT V5.1 — VISUAL MASTER
 
-Status: VISUAL DESIGN SOT / implementation pending
+Status: VISUAL DESIGN SOT / runtime implemented / automated visual QA passed
 Updated: 2026-10-02
 Scope: presentation only. Result V5 diagnosis logic, Position, Potential, Goal semantics, Next Quest priority, reference data and privacy contracts are frozen and MUST NOT change.
 
@@ -711,3 +711,37 @@ V5.1 Visual work MUST NOT change:
 Any such change is a methodology revision, not a Visual V5.1 change.
 
 Version: MUDAGIRI_RESULT_V5_1_VISUAL_MASTER_1_0
+
+---
+
+## 25. Implementation baseline
+
+Result V5.1 visual redesign is implemented in runtime without changing V5 diagnostic semantics.
+
+QA baseline commit: `0459ad77eb40aa9f7c1418da5cfabd457d6776d4`
+
+Automated gates on this baseline:
+- Validate Diagnosis V2.1: SUCCESS
+- Result V5 contract QA: SUCCESS
+- Calibration 10,000: SUCCESS
+- existing Fuzz 10,000: SUCCESS
+- GitHub Pages Deploy: SUCCESS
+- V5 Visual Smoke: SUCCESS
+- Result widths 375 / 390 / 430: PASS
+- positive-Potential scenario: PASS
+
+Manual screenshot audit confirmed:
+- QUEST COMPLETE full-scene reward
+- SSR-style type result
+- early 8-type collection preview
+- enemy atlas position view
+- battle-result classification view
+- Future Money / 1y-5y-10y hierarchy
+- CSS goal emblems
+- NEXT TARGET enemy panel
+- compact Save Point
+- Next Chapter Life Plan
+- enemy-image CODEX
+- open full 8-type collection at Friend Quest
+
+Remaining release gate: real-device user touch/scroll/readability feedback only.
