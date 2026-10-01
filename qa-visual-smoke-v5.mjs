@@ -178,7 +178,7 @@ for(const [name,selector] of [
 const goal=page.getByRole('button',{name:/住まい/}).first();
 if(await goal.count()){await goal.click();await shot('15k-result-goal-selected',{allowVertical:true})}
 const codex=page.locator('.v5-codex');await codex.locator('summary').click();await shot('15l-result-codex-open',{allowVertical:true});
-const save=page.getByRole('button',{name:/診断結果をLINEに保存する/}).first();await save.scrollIntoViewIfNeeded();await save.click();
+const save=page.getByRole('button',{name:/結果をLINEに保存/}).first();await save.scrollIntoViewIfNeeded();await save.click();
 await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('heading',{name:'診断結果をLINEに保存'}).waitFor();await shot('15m-line-save-modal',{allowVertical:true});await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
