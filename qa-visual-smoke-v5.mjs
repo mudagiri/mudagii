@@ -158,7 +158,7 @@ await page.getByText(/家計防衛成功|見直しクエスト完了/).waitFor()
 await shot('14-battle-complete');
 await clickButton(/診断結果を見る/);
 
-await page.getByText('家計クエスト、クリア！').waitFor();
+await page.getByText(/家計クエスト/).first().waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
 for(const [name,selector] of [
