@@ -23,7 +23,6 @@ export interface ProfileV4 {
  housingSubtype:HousingSubtypeV4;
  monthlyTakeHome:number|null;
  annualIncomeBand:AnnualIncomeBandV4;
- compositionConfirmed:boolean;
 }
 
 export type LegacyFamilyProfileV4='single'|'couple'|'children'|'other';
@@ -105,6 +104,7 @@ export interface ProfileDraftV4 {
  monthlyTakeHome:number|null;
  monthlyTakeHomeAnswered:boolean;
  annualIncomeBand:AnnualIncomeBandV4;
+ compositionConfirmed:boolean;
 }
 
 export function emptyProfileDraftV4():ProfileDraftV4{
