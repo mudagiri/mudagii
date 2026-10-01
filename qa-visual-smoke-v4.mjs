@@ -166,6 +166,9 @@ if(await moreComparisons.count()){await moreComparisons.scrollIntoViewIfNeeded()
 const verdictSummary=page.locator('.rv3-verdict-open');
 await verdictSummary.scrollIntoViewIfNeeded();
 await shot('15e2-result-verdict-summary',{allowVertical:true});
+const nextQuest=page.locator('.rv3-next').first();
+await nextQuest.scrollIntoViewIfNeeded();
+await shot('15e3-result-next-quest',{allowVertical:true});
 const consultRoute=page.locator('.rv3-consult-route');
 await consultRoute.scrollIntoViewIfNeeded();
 await consultRoute.waitFor({state:'visible'});
