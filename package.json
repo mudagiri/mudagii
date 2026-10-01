@@ -24,7 +24,8 @@
     "qa:result-viral": "node qa-result-viral-loop-v1.mjs",
     "qa:consult-routing": "npx --yes tsx@4.20.6 qa-consult-routing-v1.ts",
     "qa:result-polish": "node qa-result-polish-v3.mjs",
-    "qa:result-visual": "node qa-result-visual-polish-v4.mjs"
+    "qa:result-visual": "node qa-result-visual-polish-v4.mjs",
+    "qa:result-v5": "npx --yes tsx@4.20.6 qa-result-v5.ts"
   },
   "dependencies": {
     "react": "19.1.1",
