@@ -150,6 +150,10 @@ await clickButton(/診断結果を見る/);
 await page.getByText('家計クエスト完了').waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
+const earlyCta=page.locator('.rv3-line-early');
+await earlyCta.scrollIntoViewIfNeeded();
+await earlyCta.waitFor({state:'visible'});
+await shot('15b-result-line-cta',{allowVertical:true});
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
 // Scenario B: common multi-adult PERSONAL flow + household-total follow-up.
