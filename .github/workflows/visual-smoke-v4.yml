@@ -3,7 +3,7 @@ name: V4 Visual Smoke
 
 on:
   push:
-    branches: ["v4-scope-contract", "result-cv-v1", "line-handoff-v1", "result-experience-v2", "result-viral-loop-v1", "consult-routing-v1", "result-polish-v3"]
+    branches: ["v4-scope-contract", "result-cv-v1", "line-handoff-v1", "result-experience-v2", "result-viral-loop-v1", "consult-routing-v1", "result-polish-v3", "result-visual-polish-v4"]
   workflow_dispatch:
 
 permissions:
