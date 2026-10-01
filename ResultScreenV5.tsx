@@ -1,5 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
+import {ENEMY_ASSETS} from './enemy-assets-v1';
 
 const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const signedYen=(n:number)=>n>0?'+¥'+yen(n):n<0?'-¥'+yen(Math.abs(n)):'±¥0';
@@ -85,6 +86,7 @@ async function makeTypeShareFile(vm:any){
 export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExternal}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void;onRestart?:()=>void;onBeforeExternal?:()=>void}){
  const [goal,setGoal]=useState<string|null>(null);
  const [selectedTypeCode,setSelectedTypeCode]=useState<string|null>(null);
+ const [atlasOpen,setAtlasOpen]=useState(false);
  const [open,setOpen]=useState<string|null>(null);
  const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'consult_route'>(null);
  const [precisionOpen,setPrecisionOpen]=useState(false);
@@ -123,6 +125,16 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
  }
  const activeRows=vm.rows.filter((x:any)=>x.v5Status!=='ok'&&x.v5Status!=='na');
  const positionRows=vm.positionRows.filter((x:any)=>x.known&&Number(x.amount)>0);
+ const positionRank=(label:string|null)=>label==='かなり高め'?5:label==='やや高め'?4:label==='標準圏'?3:label==='やや低め'?2:label==='かなり低め'?1:0;
+ const atlasRows=[...positionRows].map((x:any,i:number)=>({...x,_displayIndex:i})).sort((a:any,b:any)=>{
+  const action=(x:any)=>x.v5Status==='cut'||x.v5Status==='optimize'||x.v5Status==='inspect'?1:0;
+  const byPosition=positionRank(b.positionLabel)-positionRank(a.positionLabel);if(byPosition)return byPosition;
+  const byAction=action(b)-action(a);if(byAction)return byAction;
+  const byGap=Math.max(0,b.comparisonDifference??0)-Math.max(0,a.comparisonDifference??0);if(byGap)return byGap;
+  return a._displayIndex-b._displayIndex;
+ });
+ const atlasTop=atlasRows.slice(0,3),atlasRest=atlasRows.slice(3);
+ const statusRows=(status:string)=>vm.rows.filter((x:any)=>x.v5Status===status&&x.known&&Number(x.amount)>0);
  const topRows=activeRows.slice(0,6);
  const future5=adjusted.upper*60;
  return <>
@@ -173,23 +185,42 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    </div>
   </section>
 
-  <section className="v5-card v5-position">
-   <div className="v5-head"><div><div className="v5-kicker">HOUSEHOLD POSITION</div><h2>あなたの家計、近い条件と比べてどう？</h2></div><img src={ART.guide} alt="" aria-hidden="true"/></div>
-   <p>あなたの条件に合わせて、比較できる項目だけを見ています。</p>
-   <div className="v5-position-list">
-    {positionRows.map((x:any)=><div className="v5-position-row" key={x.category}>
-     <div><b>{x.label}</b><small>あなた ¥{yen(x.amount)}/月{x.comparable!==null?` / 目安 ¥${yen(x.comparable)}`:''}</small><small className="v5-position-criteria">{x.comparisonContext?.criteria?.join(' × ')||x.evidenceLabel}</small></div>
-     <div className="v5-position-value">{x.comparisonDifference!==null?<strong>{signedYen(x.comparisonDifference)}<em>/月</em></strong>:<strong>料金帯比較</strong>}<span className={"is-"+String(x.positionLabel).replace(/[^ぁ-んァ-ヶ一-龠]/g,'')}>{x.positionLabel??'比較条件を確認'}</span></div>
-    </div>)}
+  <section className="v5-card v5-position v51-atlas" data-section="HOUSEHOLD POSITION">
+   <div className="v51-atlas-head">
+    <div><div className="v51-jp-kicker">敵図鑑</div><h2>近い条件と比べて、<br/>目立った敵はこいつらだ。</h2><p>比較できる支出だけを、現在地として見ています。</p></div>
+    <img src={ART.guide} alt="" aria-hidden="true"/>
    </div>
-   <div className="v5-note"><b>この差額＝ムダ額ではありません。</b><span>あなたに近い条件の比較目安との差です。</span></div>
+   <div className="v51-enemy-deck">
+    {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);return <button type="button" key={x.category} className={"v51-enemy-card is-"+x.v5Status} onClick={()=>setOpen(open===x.category?null:x.category)}>
+      <div className="v51-enemy-portrait"><img src={enemy.normal} alt={enemy.name}/><span>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</span></div>
+      <div className="v51-enemy-copy"><small>{x.label}</small><h3>{enemy.name}</h3><div className="v51-position-badge">{x.positionLabel??'比較条件を確認'}</div>
+       <div className="v51-position-gauge" aria-label={"比較ポジション "+(x.positionLabel??'')}><i/><i/><i/><i/><i/><b style={{width:(level*20)+'%'}}/></div>
+       <div className="v51-enemy-money"><span>あなた <strong>¥{yen(x.amount)}</strong></span>{x.comparable!==null&&<span>比較目安 <strong>¥{yen(x.comparable)}</strong></span>}</div>
+       {x.comparisonDifference!==null&&<div className={"v51-gap "+(x.comparisonDifference>0?'is-plus':'is-minus')}>{signedYen(x.comparisonDifference)}<small>/月</small></div>}
+       <small className="v51-enemy-criteria">{x.comparisonContext?.criteria?.join(' × ')||x.evidenceLabel}</small>
+      </div>
+     </button>})}
+   </div>
+   {atlasRest.length>0&&<><button type="button" className="v51-atlas-more" onClick={()=>setAtlasOpen(v=>!v)}>{atlasOpen?'閉じる':'残りの敵も見る（'+atlasRest.length+'体）'} <span>{atlasOpen?'↑':'↓'}</span></button>
+    {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <div key={x.category} className={"v51-enemy-mini is-"+x.v5Status}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??'比較保留'}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong></div>})}</div>}</>}
+   <div className="v5-note v51-atlas-note"><b>この差額＝ムダ額ではありません。</b><span>あなたに近い条件の比較目安との差です。</span></div>
   </section>
 
-  <section className="v5-card v5-verdict">
-   <div className="v5-kicker">MUDAGIRI VERDICT</div><h2>高いから斬るんじゃない。</h2>
-   <div className="v5-talk">{toneLine(vm.toneMode)}</div>
-   <div className="v5-counts"><div><b>⚔️ {vm.v5Counts.cut}</b><span>斬る</span></div><div><b>✨ {vm.v5Counts.optimize}</b><span>整える</span></div><div><b>🛡️ {vm.v5Counts.protect}</b><span>守る</span></div><div><b>🔍 {vm.v5Counts.inspect}</b><span>見極める</span></div></div>
-   {topRows.length>0&&<div className="v5-verdict-list">{topRows.map((x:any)=><div key={x.category} className={"v5-verdict-row is-"+x.v5Status}><span>{STATUS_META[x.v5Status].mark}</span><div><b>{x.label}</b><small>{x.positionLabel?x.positionLabel+' / ':''}{x.appraisalSummary??x.reason}</small></div><strong>{STATUS_META[x.v5Status].label}</strong></div>)}</div>}
+  <section className="v5-card v5-verdict v51-verdict" data-section="MUDAGIRI VERDICT">
+   <div className="v51-verdict-title"><div><div className="v51-jp-kicker">今回の戦果</div><h2>12体を仕分けた。</h2></div><img src={ART.quest} alt="" aria-hidden="true"/></div>
+   <div className="v51-verdict-talk">ムダギリくん「{toneLine(vm.toneMode)}」</div>
+   <div className="v51-battle-groups">
+    {[
+      ['cut','討伐候補',vm.v5Counts.cut],
+      ['optimize','整えられる敵',vm.v5Counts.optimize],
+      ['protect','守る支出',vm.v5Counts.protect],
+      ['inspect','見極める敵',vm.v5Counts.inspect],
+    ].map(([status,label,count]:any)=><div key={status} className={"v51-battle-group is-"+status}>
+      <div className="v51-battle-group-head"><span>{STATUS_META[status].mark}</span><b>{label}</b><strong>{count}体</strong></div>
+      <div className="v51-battle-portraits">{statusRows(status).slice(0,6).map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <span key={x.category} title={enemy.name}><img src={enemy.normal} alt={enemy.name}/></span>})}{Number(count)>6&&<em>+{Number(count)-6}</em>}{Number(count)===0&&<small>なし</small>}</div>
+     </div>)}
+   </div>
+   <div className="v51-verdict-foot">詳細な理由は下の「12体の鑑定記録」で確認できます。</div>
   </section>
 
   <section className="v5-card v5-future">
@@ -286,6 +317,13 @@ const CSS=`
 .v51-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:11px}.v51-type-grid button{min-width:0;min-height:112px;padding:7px 4px;border:1px solid #39496b;border-radius:10px;background:#111b31;color:#fff;touch-action:manipulation}.v51-type-grid button.is-mine{border-color:#f4d76b;box-shadow:0 0 0 2px rgba(244,215,107,.14),0 0 14px rgba(244,215,107,.12)}
 .v51-type-thumb{display:block;width:58px;height:58px;margin:auto;border-radius:50%;background:radial-gradient(circle,#313a6c,#121a31 70%);overflow:hidden}.v51-type-thumb img{width:100%;height:100%;object-fit:contain}.v51-type-grid small{margin-top:4px;font-size:8px;color:#aeb8d2}.v51-type-grid b{display:block;margin-top:2px;font-size:9px;line-height:1.25;word-break:keep-all}
 .v51-type-modal{text-align:center;position:relative}.v51-type-modal>img{width:150px;height:150px;object-fit:contain}.v51-type-modal>strong{display:block;margin-top:7px;color:#f4d76b;font-size:14px}.v51-type-modal .v51-modal-notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px;text-align:left}.v51-modal-notes>div{padding:9px;border:1px solid #425978;border-radius:9px;background:#0d1d2c}.v51-modal-notes span,.v51-modal-notes b{display:block}.v51-modal-notes span{color:#9fb0bf;font-size:9px}.v51-modal-notes b{margin-top:3px;font-size:11px;line-height:1.5}.v51-modal-close{position:absolute;right:10px;top:8px;width:48px;height:48px;border:0;background:transparent;color:#fff;font-size:28px}
+
+.v51-jp-kicker{color:#f4d76b;font-size:12px;font-weight:1000;letter-spacing:.08em}.v51-atlas{padding:18px 14px!important;background:linear-gradient(160deg,#14394d,#10283a 58%,#0d2030)!important;border-color:#4f9cbb!important}.v51-atlas-head{display:flex;gap:10px;align-items:flex-start}.v51-atlas-head>div{flex:1;min-width:0}.v51-atlas-head h2{font-size:27px!important;line-height:1.18!important}.v51-atlas-head>img{width:86px;height:86px;object-fit:contain;filter:drop-shadow(0 7px 7px rgba(0,0,0,.35))}
+.v51-enemy-deck{display:grid;gap:11px;margin-top:15px}.v51-enemy-card{position:relative;display:grid;grid-template-columns:112px 1fr;gap:10px;width:100%;min-height:150px;padding:10px;border:1px solid #42687c;border-radius:14px;background:linear-gradient(145deg,#0d2231,#153447);color:#fff;text-align:left;overflow:hidden;touch-action:manipulation}.v51-enemy-card::after{content:"";position:absolute;inset:auto 0 0;height:3px;background:#8094a2}.v51-enemy-card.is-cut::after{background:#e8675f}.v51-enemy-card.is-optimize::after{background:#f4d76b}.v51-enemy-card.is-protect::after{background:#65cbb8}.v51-enemy-card.is-inspect::after{background:#a991ea}
+.v51-enemy-portrait{position:relative;display:grid;place-items:center;border-radius:11px;background:radial-gradient(circle at 50% 40%,rgba(79,151,181,.24),rgba(5,17,27,.78) 70%)}.v51-enemy-portrait img{width:104px;height:104px;object-fit:contain;filter:drop-shadow(0 8px 7px rgba(0,0,0,.42))}.v51-enemy-portrait>span{position:absolute;left:4px;right:4px;bottom:4px;padding:4px 3px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(5,14,23,.86);text-align:center;font-size:9px;font-weight:1000}
+.v51-enemy-copy>small{color:#8faabc;font-size:9px}.v51-enemy-copy h3{margin:1px 0 0!important;font-size:18px!important;line-height:1.2!important}.v51-position-badge{display:inline-block;margin-top:5px;padding:3px 7px;border:1px solid rgba(255,224,112,.35);border-radius:999px;color:#ffe27b;font-size:10px;font-weight:1000}.v51-position-gauge{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;height:5px;margin-top:8px;overflow:hidden}.v51-position-gauge i{background:#29465a;border-radius:3px}.v51-position-gauge b{position:absolute;left:0;top:0;bottom:0;max-width:100%;border-radius:3px;background:linear-gradient(90deg,#54c8da,#f0d06e,#ef845e)}
+.v51-enemy-money{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.v51-enemy-money span{font-size:9px;color:#9fb3c1}.v51-enemy-money strong{display:block;margin-top:1px;color:#f5f8fa;font-size:11px}.v51-gap{margin-top:6px;color:#ffe27b;font-size:17px;font-weight:1000}.v51-gap.is-minus{color:#8fe0c4}.v51-gap small{display:inline!important;margin-left:2px;font-size:9px;color:inherit}.v51-enemy-criteria{margin-top:4px!important;font-size:8px!important;color:#7793a5!important}.v51-atlas-more{width:100%;min-height:50px;margin-top:12px;border:1px solid #3d6478;border-radius:11px;background:#0c2131;color:#dce8ee;font-weight:900}.v51-atlas-rest{margin-top:8px;border-top:1px solid rgba(255,255,255,.1)}.v51-enemy-mini{display:flex;align-items:center;gap:9px;min-height:62px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.08)}.v51-enemy-mini img{width:48px;height:48px;object-fit:contain}.v51-enemy-mini>div{flex:1;min-width:0}.v51-enemy-mini b,.v51-enemy-mini small{display:block}.v51-enemy-mini b{font-size:12px}.v51-enemy-mini small{font-size:9px}.v51-enemy-mini>strong{font-size:18px}.v51-atlas-note{margin-top:12px!important}
+.v51-verdict{padding:18px 14px!important;background:linear-gradient(160deg,#173d3d,#102d33 56%,#0d222b)!important;border-color:#4d8f86!important}.v51-verdict-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.v51-verdict-title h2{font-size:29px!important}.v51-verdict-title img{width:94px;height:94px;object-fit:contain;filter:drop-shadow(0 8px 7px rgba(0,0,0,.35))}.v51-verdict-talk{margin-top:8px;padding:11px 12px;border:1px solid rgba(244,215,107,.32);border-radius:10px;background:rgba(5,18,24,.56);font-size:11px;font-weight:900;line-height:1.6}.v51-battle-groups{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.v51-battle-group{min-height:118px;padding:9px;border:1px solid #35565a;border-radius:11px;background:rgba(7,26,31,.58)}.v51-battle-group.is-cut{border-color:rgba(232,103,95,.45)}.v51-battle-group.is-optimize{border-color:rgba(244,215,107,.48)}.v51-battle-group.is-protect{border-color:rgba(101,203,184,.42)}.v51-battle-group.is-inspect{border-color:rgba(169,145,234,.42)}.v51-battle-group-head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px}.v51-battle-group-head span{font-size:16px}.v51-battle-group-head b{font-size:10px}.v51-battle-group-head strong{font-size:14px;color:#fff}.v51-battle-portraits{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-top:7px;min-height:50px}.v51-battle-portraits>span{width:38px;height:38px;border-radius:50%;background:#0b1c26;overflow:hidden;border:1px solid rgba(255,255,255,.12)}.v51-battle-portraits img{width:100%;height:100%;object-fit:contain}.v51-battle-portraits em{font-style:normal;font-size:10px;color:#dce7e9}.v51-battle-portraits small{font-size:9px}.v51-verdict-foot{margin-top:11px;text-align:center;color:#86a3a8;font-size:9px}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
 `;
