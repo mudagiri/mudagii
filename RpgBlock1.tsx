@@ -55,6 +55,7 @@ type AppraisalAnswer = {
   educationStage?: EducationStage;
   educationChildren?: {stage:EducationStageV2}[];
   educationChildCount?: number;
+  carScope?: 'maintenanceOnly'|'includesLoanOrTax'|'unknown';
   carNeed?: 'essential'|'useful'|'burden'|'notNeeded';
   mobileScope?: 'mobileOnly'|'mobileInternet'|'familyOrMultiple'|'unknown';
   mobileCarrier?: 'major'|'mvno'|'unknown';
@@ -69,7 +70,7 @@ type AppraisalQuestion = {
   maxAmount?: number;
   educationCount?: number;
   educationMaxCount?: number;
-  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carNeed'|'mobileScope'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
+  kind: 'satisfaction'|'rent'|'insuranceOverview'|'insuranceReview'|'education'|'selfDevelopment'|'subUsage'|'subUnusedAmount'|'subCancellation'|'educationChildCount'|'educationChildren'|'carScope'|'carNeed'|'mobileScope'|'mobileCarrier'|'energyPersistence'|'dailyPersistence'|'beautySex';
 };
 type FinalEnemyJudgement = {
   category: EnemyAssetCategory;
@@ -318,8 +319,9 @@ export default function RpgBlock1({
     const next={...expenseRecordsV4};
     next.childEducation={...next.childEducation,metadata:{...next.childEducation.metadata,educationChildren:appraisalAnswers.childEducation?.educationChildren}};
     next.beautyFashion={...next.beautyFashion,metadata:{...next.beautyFashion.metadata,beautySex:appraisalAnswers.beautyFashion?.beautySex}};
+    next.car={...next.car,metadata:{...next.car.metadata,carScope:appraisalAnswers.car?.carScope}};
     return next;
-  },[expenseRecordsV4,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex]);
+  },[expenseRecordsV4,appraisalAnswers.childEducation?.educationChildren,appraisalAnswers.beautyFashion?.beautySex,appraisalAnswers.car?.carScope]);
   const comparisonsV4=useMemo(()=>profileV4?buildComparisonFactsV4({profile:profileV4,records:resolvedExpenseRecordsV4,month:new Date().getMonth()+1}):null,[profileV4,resolvedExpenseRecordsV4]);
   const diagnosisV4=useMemo(()=>profileV4&&comparisonsV4?runDiagnosisAdapterV4({profile:profileV4,records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,appraisalAnswers]);
   const finalV4=useMemo(()=>profileV4&&comparisonsV4&&diagnosisV4?buildFinalJudgementsV4({records:resolvedExpenseRecordsV4,comparisons:comparisonsV4,diagnosis:diagnosisV4.diagnosis,categoryResults:diagnosisV4.categoryResults,appraisal:appraisalAnswers as any}):null,[profileV4,resolvedExpenseRecordsV4,comparisonsV4,diagnosisV4,appraisalAnswers]);
@@ -395,7 +397,10 @@ export default function RpgBlock1({
       }
     });
 
-    if(actual('car')>0)qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
+    if(actual('car')>0){
+      qs.push({category:'car',kind:'carScope',reason:'車関連費は、ローンや税金を含むかで比較単位が大きく変わります。',question:'この車関連費、どこまで入ってる？'});
+      qs.push({category:'car',kind:'carNeed',reason:'車は金額だけではムダ判定できません。生活上の必要性を確認します。',question:'今の車、生活にどれくらい必要？'});
+    }
 
     const rent=actual('rent');
     const rentFact=fact('rent');
@@ -1529,6 +1534,11 @@ function AdditionalAppraisalScene({
       {label:'男性',sub:'男性×年齢の基準がある場合に使用',patch:{beautySex:'male'},kind:'review',feedback:'基準を更新'},
       {label:'女性',sub:'女性×年齢の基準がある場合に使用',patch:{beautySex:'female'},kind:'review',feedback:'基準を更新'},
       {label:'回答しない',sub:'男女計×年齢の基準で続ける',patch:{beautySex:'preferNot'},kind:'review',feedback:'男女計で診断'},
+    ],
+    carScope:[
+      {label:'維持費中心',sub:'ガソリン・保険・駐車場・修理など',patch:{carScope:'maintenanceOnly'},kind:'review',feedback:'維持費の参考と比較'},
+      {label:'ローンや税金も含む',sub:'車両ローン・自動車税なども入っている',patch:{carScope:'includesLoanOrTax'},kind:'review',feedback:'単純比較しません'},
+      {label:'よく分からない',sub:'内訳は把握していない',patch:{carScope:'unknown'},kind:'review',feedback:'内訳確認を優先'},
     ],
     carNeed:[
       {label:'生活・仕事に必須',sub:'ないと日常に支障がある',patch:{carNeed:'essential'},kind:'protect',feedback:'守る支出'},
