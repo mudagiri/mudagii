@@ -282,8 +282,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section className="rv3-benchmark">
-   <div className="rv3-kicker">HOUSEHOLD BENCHMARK</div>
-   <h3>{tone.gap}</h3>
+   <div className="rv3-section-guide">
+    <div><div className="rv3-kicker">HOUSEHOLD BENCHMARK</div><h3>{tone.gap}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.benchmark} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。比較単位が違う支出は合算しません。</p>
 
    <div className="rv3-scope-groups">
@@ -291,9 +293,9 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
      <small>{comparisonGroupLabel(g.scopeLabel)}・{g.categoryCount}項目</small>
      <strong>{signedYen(g.differenceMonthly)}<em>/月</em></strong>
      <div className="rv3-impact-grid">
-      <div><span>1年</span><b>{signedYen(g.differenceMonthly*12)}</b></div>
-      <div><span>5年</span><b>{signedYen(g.differenceMonthly*60)}</b></div>
-      <div><span>10年</span><b>{signedYen(g.differenceMonthly*120)}</b></div>
+      <div className="is-1y"><span>1年なら</span><b>{approxImpactYen(g.differenceMonthly*12)}</b></div>
+      <div className="is-5y"><span>5年なら</span><b>{approxImpactYen(g.differenceMonthly*60)}</b></div>
+      <div className="is-10y"><span>10年なら</span><b>{approxImpactYen(g.differenceMonthly*120)}</b></div>
      </div>
      <small>現在の基準差が同じまま続いた場合の単純累計。削減可能額ではありません。</small>
     </div>)}
@@ -324,10 +326,19 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
   {vm.bundledContribution&&<section className="rv3-bundled"><div className="rv3-kicker">LIVING COST BUNDLE</div><h3>{vm.bundledContribution.label}</h3><strong>月 ¥{yen(vm.bundledContribution.amount)}</strong><p>{vm.bundledContribution.note}</p></section>}
 
-  <details className="rv3-verdict rv3-verdict-details"><summary><div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div><span>内訳⌄</span></summary>
-   <div className="rv3-verdict-grid"><div><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div><div><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div><div><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div></div>
+  <section className="rv3-verdict rv3-verdict-open">
+   <div className="rv3-section-guide">
+    <div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.verdict} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   <div className="rv3-verdict-grid">
+    <div className="is-cut"><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div>
+    <div className="is-review"><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div>
+    <div className="is-protect"><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div>
+   </div>
+   {vm.battleTargets.length===0&&vm.encounterTargets.length>0&&<p className="rv3-verdict-message">削減確定が0でも、見直し余地がないわけではありません。今回は<strong>{vm.encounterTargets.length}項目</strong>が「確認する価値あり」でした。</p>}
    <p className="rv3-note">高い支出＝ムダとは判定していません。必要性や満足度が確認できた支出は「守る支出」として扱います。</p>
-  </details>
+  </section>
 
 
 
