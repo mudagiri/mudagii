@@ -9,6 +9,7 @@ export type ComparableV2={value:number|null;confidence:BenchmarkConfidence;sourc
 
 const ageBand=(age:number)=>age<=34?0:age<=59?1:2;
 const sizeBand=(n:number)=>Math.max(2,Math.min(6,Math.floor(n||2)))-2;
+const multiBeautyAgeBand=(age:number)=>age<=29?0:age<=39?1:age<=49?2:age<=59?3:age<=69?4:5;
 
 const SINGLE={
  energy:[8291,13299,15380],
@@ -23,6 +24,20 @@ const MULTI={
  daily:[5139,6621,7469,8014,8320],
  fun:[9324,9604,11067,9956,9043]
 } as const;
+
+// Frozen lineage restored for household-scope beauty/fashion.
+// This is an age-band PRODUCT MODEL, not a household-size or exact official cross.
+// Current category scope excludes daily-consumable hygiene items to avoid double counting with 日用品.
+const MULTI_BEAUTY_AGE=[14345,19507,21244,20039,16523,11401] as const;
+
+// 2025 JILI individual survey, annual premium (all life insurers incl. individual annuity)
+// publishes sex x age means and N. Because insurance sex is not a core profile input,
+// V5 uses N-weighted combined age references (monthly yen) and marks them MODEL.
+// 20s..70s combined: 11.81 / 15.833 / 18.997 / 20.025 / 17.076 / 14.539万円/year.
+const INSURANCE_PERSONAL_MONTHLY_2025=[9842,13194,15830,16687,14230,12116] as const;
+const insurancePersonalAgeBand=(age:number)=>age<20?-1:age<=29?0:age<=39?1:age<=49?2:age<=59?3:age<=69?4:age<=79?5:-1;
+const INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024=12000; // 14.4万円/year
+const INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024=Math.round(353000/12); // 35.3万円/year
 
 const REGION:Record<string,number>={
  '北海道':1.285772490221643,'青森県':1.274405149934811,'岩手県':1.274405149934811,'宮城県':1.274405149934811,'秋田県':1.274405149934811,'山形県':1.274405149934811,'福島県':1.274405149934811,
@@ -99,7 +114,7 @@ export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
  return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
 }
 
-export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot'}):Partial<Record<Category,ComparableV2>>{
+export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'}):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
  // Restore the frozen V1 income correction only for multi-person households >= ¥5m.
@@ -127,7 +142,8 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   out.food={value:Math.round(MULTI.food[si]*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_MULTI_2025'};
   out.daily={value:Math.round(MULTI.daily[si]*incomeFactor('daily')),confidence:'DIRECT',sourceVersion:'DAILY_V1.0_MULTI_2025'};
   out.fun={value:Math.round(MULTI.fun[si]*incomeFactor('fun')),confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_MULTI_CORE_2025'};
-  out.beautyFashion={value:null,confidence:'AUDIT',sourceVersion:'BEAUTY_FASHION_V1.0_NO_FABRICATED_MULTI_CROSS'};
+  const mbi=multiBeautyAgeBand(a.age);
+  out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
  }
  const edu=educationBenchmarkV2(a.educationChildren);
  out.childEducation={value:edu,confidence:edu===null?'AUDIT':'DIRECT',sourceVersion:'CHILD_EDUCATION_V1.1_CORRECTED'};
@@ -135,9 +151,21 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
  const isPrivateRent=a.housingType==='賃貸';
  out.rent={value:isPrivateRent&&housing.meanPaid?housing.meanPaid:null,confidence:isPrivateRent&&housing.meanPaid?'DIRECT':'AUDIT',sourceVersion:'HOUSING_V2.0_PRIVATE_RENT_2023',meta:{p50Band:isPrivateRent?housing.p50:'',p75Band:isPrivateRent?housing.p75:'',p90Band:isPrivateRent?housing.p90:'',housingType:a.housingType,reason:isPrivateRent?'PRIVATE_RENT_DISTRIBUTION':'NON_RENT_AUDIT_ONLY'}};
  out.mobile={value:null,confidence:'AUDIT',sourceVersion:'COMMUNICATION_V1.0_DIRECT_BANDS',meta:{majorP50:'4,000-4,999',majorP75:'6,000-7,999',majorP90:'10,000+',mvnoP50:'2,000-2,999',mvnoP75:'3,000-3,999',mvnoP90:'5,000-5,999'}};
- for(const c of ['insurance','sub','car','selfDevelopment'] as Category[]) out[c]={value:null,confidence:'AUDIT',sourceVersion:'AUDIT_ONLY_V2.1'};
+
+ if(a.insuranceScope==='personal'){
+  const ii=insurancePersonalAgeBand(a.age);
+  out.insurance=ii>=0
+   ?{value:INSURANCE_PERSONAL_MONTHLY_2025[ii],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{scope:'personal',ageBand:['20s','30s','40s','50s','60s','70s'][ii],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}}
+   :{value:null,confidence:'AUDIT',sourceVersion:'INSURANCE_V1.0_JILI_2025_OUTSIDE_SURVEY_AGE',meta:{scope:'personal',surveyAgeRange:'18-79'}};
+ }else if(a.insuranceScope==='household'){
+  const v=a.household==='single'?INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024:INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024;
+  out.insurance={value:v,confidence:'DIRECT',sourceVersion:a.household==='single'?'INSURANCE_V1.0_JILI_2024_SINGLE_HOUSEHOLD':'INSURANCE_V1.0_JILI_2024_MULTI_HOUSEHOLD',meta:{scope:'household',household:a.household,annualYen:a.household==='single'?144000:353000,includesIndividualAnnuity:true}};
+ }else{
+  out.insurance={value:null,confidence:'AUDIT',sourceVersion:'INSURANCE_V1.0_SCOPE_REQUIRED'};
+ }
+ for(const c of ['sub','car','selfDevelopment'] as Category[]) out[c]={value:null,confidence:'AUDIT',sourceVersion:'AUDIT_ONLY_V2.2'};
  return out;
 }
 
-export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_0';
-export const __resolverV2Audit={SINGLE,MULTI,REGION,MONTH,EDU,H};
+export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_2';
+export const __resolverV2Audit={SINGLE,MULTI,MULTI_BEAUTY_AGE,INSURANCE_PERSONAL_MONTHLY_2025,INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024,INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024,REGION,MONTH,EDU,H};
