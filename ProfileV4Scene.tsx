@@ -23,7 +23,7 @@ type Props={
  draft:ProfileDraftV4;
  index:number;
  setDraft:React.Dispatch<React.SetStateAction<ProfileDraftV4>>;
- onNext:()=>void;
+ onNext:(draftOverride?:ProfileDraftV4)=>void;
  onBack:()=>void;
 };
 
@@ -58,7 +58,13 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   const childCount=v.childCount===null?null:Math.min(v.childCount,householdSize-1);
   return {...v,householdSize,childCount};
  });
- const auto=(x:Partial<ProfileDraftV4>)=>{setDraft(v=>({...v,...x}));window.requestAnimationFrame(onNext);};
+ const auto=(x:Partial<ProfileDraftV4>)=>{
+  setDraft(v=>{
+   const next={...v,...x};
+   window.requestAnimationFrame(()=>onNext(next));
+   return next;
+  });
+ };
  const selectComposition=(kind:'none'|'children'|'parents'|'both')=>{
   const relationships:RelationshipV4[]=kind==='both'?['children','parents']:kind==='children'?['children']:kind==='parents'?['parents']:[];
   auto({
