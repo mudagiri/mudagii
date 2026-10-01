@@ -17,7 +17,7 @@
     "qa:scope": "npx --yes tsx@4.20.6 qa-scope-v4.ts",
     "qa:appraisal-flow": "node qa-appraisal-flow-v4.mjs",
     "qa:profile-v4-ux": "node qa-profile-v4-ux.mjs",
-    "qa:persona-v4": "tsx qa-persona-v4-e2e.ts"
+    "qa:persona-v4": "npx --yes tsx@4.20.6 qa-persona-v4-e2e.ts"
   },
   "dependencies": {
     "react": "19.1.1",
