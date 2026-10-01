@@ -3861,6 +3861,10 @@ input,select,textarea{font-size:16px}
 }
 
 
+/* SCAN secondary actions are real tap targets, not text links. */
+.scan-input-actions{display:flex;gap:8px;margin-top:6px}
+.scan-sub-action{flex:1;min-height:48px;border:1px solid rgba(255,255,255,.22);border-radius:9px;background:rgba(8,34,48,.76);color:rgba(255,255,255,.88);font:inherit;font-size:11px;font-weight:850;padding:6px 8px;touch-action:manipulation}
+
 /* PROFILE V4.1 compact branch layout: keep conditional choices inside the fixed frame. */
 .pre-profile-v4 .mode-options{display:grid;gap:8px;margin-top:10px}
 .pre-profile-v4.pre-step-scope .mode-options{grid-template-columns:repeat(2,minmax(0,1fr))}
