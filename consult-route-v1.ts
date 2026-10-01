@@ -2,6 +2,7 @@ import type { ProfileV4 } from './mudagiri-profile-v4';
 import type { FinalCategoryV4 } from './final-judgement-v4';
 
 export type ConsultPrimaryRouteV1='insurance'|'lifeplan';
+export type ConsultTopicV1='insurance'|'lifeplan'|'investment';
 export type HomeStructureV1='detached'|'other'|null;
 
 export interface ConsultRouteV1 {
@@ -41,6 +42,30 @@ export function buildConsultRouteV1(a:{profile:ProfileV4;finalCategories:FinalCa
   homeowner:a.profile.housingTenure==='owned',
   homeStructureRequired:a.profile.housingTenure==='owned',
  };
+}
+
+export function consultTopicCopyV1(topic:ConsultTopicV1){
+ if(topic==='insurance')return {
+  label:'保障整理',
+  title:'保険・保障をいまの家族に合わせて整理',
+  body:'保険料を下げることを前提にせず、必要な保障・重複・不足がないかを家計と一緒に確認します。',
+  button:'保障と家計を無料で整理する ▶',
+  note:'売り替え前提ではありません。今の保障内容の確認から。'
+ } as const;
+ if(topic==='investment')return {
+  label:'資産形成',
+  title:'資産形成のゴールと進め方を整理',
+  body:'いきなり商品を決めず、いつまでに何のためにいくら必要かを整理してから運用方針を考えます。',
+  button:'資産形成のゴールを無料で整理する ▶',
+  note:'商品選びより先に、目的・期間・家計とのバランスを確認します。'
+ } as const;
+ return {
+  label:'ライフプラン',
+  title:'将来のお金を一枚の地図にする',
+  body:'教育・住宅・老後・貯蓄・投資まで、今の家計から将来のお金の流れをまとめて整理します。',
+  button:'無料でライフプランを整理する ▶',
+  note:'商品を決める前に、まず家計と将来資金の全体像を確認します。'
+ } as const;
 }
 
 export function consultRouteCopyV1(route:ConsultRouteV1){
