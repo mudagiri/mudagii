@@ -1,6 +1,7 @@
 import type { Category } from './mudagiri-diagnosis-v2';
 import type { ProfileV4 } from './mudagiri-profile-v4';
 import type { FinalCategoryV4, FinalStatusV4 } from './final-judgement-v4';
+import { buildConsultRouteV1 } from './consult-route-v1';
 
 const LABEL:Record<Category,string>={
  mobile:'通信費',energy:'光熱費',sub:'サブスク',car:'車関連費',food:'食費',daily:'日用品',
@@ -145,6 +146,7 @@ export function buildResultViewModelV4(a:{
  const encounterTargets=rows.filter(x=>x.status==='review'&&x.attentionFlag).sort((x,y)=>(y.reviewPotential.delta??0)-(x.reviewPotential.delta??0)).slice(0,3);
  const secondaryReviewTargets=rows.filter(x=>x.status==='review'&&!x.attentionFlag);
  const firstQuest=battleTargets[0]??encounterTargets[0]??secondaryReviewTargets[0]??null;
+ const consultRoute=buildConsultRouteV1({profile:a.profile,finalCategories:a.finalCategories});
  return {
   version:'MUDAGIRI_RESULT_VM_V4_1' as const,
   diagnosisId:a.diagnosisId??'',
@@ -159,7 +161,7 @@ export function buildResultViewModelV4(a:{
   }:null,
   counts,
   improvement:{monthly:confirmedMonthly,annual:confirmedMonthly*12,fiveYear:confirmedMonthly*60},
-  rows,battleTargets,encounterTargets,secondaryReviewTargets,firstQuest,
+  rows,battleTargets,encounterTargets,secondaryReviewTargets,firstQuest,consultRoute,
   comparisonGroups:groups,
   comparisonAggregationRule:'NEVER_MIX_AMOUNT_SCOPES' as const,
   benchmarkSummary:singleGroup?{available:true,scope:'single_scope_group',label:`${singleGroup.scopeLabel}の基準との差`,userMonthly:singleGroup.userMonthly,benchmarkMonthly:singleGroup.benchmarkMonthly,deltaMonthly:singleGroup.differenceMonthly,deltaAnnual:singleGroup.differenceAnnual,categoryCount:singleGroup.categoryCount,excludedCount:rows.length-singleGroup.categoryCount,categories:singleGroup.categories}:{available:false,scope:'mixed_or_none',label:'比較scope別に表示',userMonthly:0,benchmarkMonthly:0,deltaMonthly:0,deltaAnnual:0,categoryCount:0,excludedCount:rows.length,categories:[]},
