@@ -285,6 +285,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">SHARE YOUR TYPE</div><h3>このタイプ、友だちにも見せる？</h3><p>金額・収入・都道府県はシェア画像に入りません。</p></div>
     <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.shareHint} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「金額は出さない。タイプだけ見せてやれ。」</span></div>
    <div className="rv3-social-grid">
     <button type="button" className="is-x" onClick={shareX}><b>𝕏</b><span>X</span></button>
     <button type="button" className="is-instagram" onClick={()=>nativeShare('instagram')}><b>◎</b><span>Instagram</span></button>
@@ -300,6 +301,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">HOUSEHOLD BENCHMARK</div><h3>{tone.gap}</h3></div>
     <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.benchmark} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「お、差が出てるぞ。でもまだムダ認定は早い。」</span></div>
    <p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。比較単位が違う支出は合算しません。</p>
 
    <div className="rv3-scope-groups">
@@ -345,6 +347,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div>
     <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.verdict} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「削る・見る・守る。ちゃんと分けたぞ。」</span></div>
    <div className="rv3-verdict-grid">
     <div className="is-cut"><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div>
     <div className="is-review"><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div>
@@ -361,6 +364,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3></div>
     <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.quest} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>{vm.firstQuest?'「次はここだけ見ればOKだ。」':'「今は大きく斬るところなし。維持でいこう。」'}</span></div>
    {vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}
   </section>
 
@@ -369,6 +373,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">PROFESSIONAL QUEST</div><h3>プロと整理するなら、どこから？</h3></div>
     <img className="rv3-mudagiri rv3-mudagiri-guide" src={MUDAGIRI_RESULT_ART.guide} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「もっと深掘りするなら、こっちだ。」</span></div>
    <p>診断上のNEXT QUESTとは別に、家計をプロと深掘りする入口です。</p>
 
    <div className="rv3-consult-tabs" role="group" aria-label="相談テーマ">
@@ -421,6 +426,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">SAVE NEXT QUEST</div><h3>この結果、あとで見返せるようにする？</h3><p>{vm.firstQuest?<>まず確認する<strong>「{vm.firstQuest.label}」</strong>を含む今回の診断を、LINEで照合できる引き継ぎコードを発行できます。</>:<>今回の診断をLINEで照合できる引き継ぎコードを発行できます。</>}</p></div>
     <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.save} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「戦果、消える前に残しとけ。」</span></div>
    <button className="rv3-primary" onClick={()=>lineHandoff('after_next_quest')}>無料でLINEへ引き継ぐ ▶</button>
    <small>✓ 無料　✓ 診断コードを発行　✓ 登録しただけで相談予約にはなりません</small>
   </section>
@@ -432,6 +438,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <div><div className="rv3-kicker">FRIEND QUEST</div><h3>友達は何タイプ？</h3><p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p></div>
     <img className="rv3-mudagiri rv3-mudagiri-cameo" src={MUDAGIRI_RESULT_ART.friend} alt="" aria-hidden="true" decoding="async"/>
    </div>
+   <div className="rv3-mudagiri-talk"><b>ムダギリくん</b><span>「友達は何タイプだろうな？」</span></div>
    <details className="rv3-type-gallery">
     <summary>8タイプ全部を見る <span>⌄</span></summary>
     <div className="rv3-type-gallery-grid">
@@ -536,6 +543,24 @@ const CSS=`
  .rv3-mudagiri-guide{width:76px;height:76px;flex-basis:76px}
 }
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
+
+.rv3-mudagiri-talk{position:relative;margin:4px 54px 14px 0;padding:9px 11px;border:1px solid rgba(255,255,255,.20);border-radius:11px;background:rgba(8,19,28,.86);box-shadow:0 7px 18px rgba(0,0,0,.16);text-align:left}
+.rv3-mudagiri-talk:after{content:"";position:absolute;right:-6px;top:12px;width:10px;height:10px;border-top:1px solid rgba(255,255,255,.20);border-right:1px solid rgba(255,255,255,.20);background:#0b1721;transform:rotate(45deg)}
+.rv3-mudagiri-talk b,.rv3-mudagiri-talk span{display:block}
+.rv3-mudagiri-talk b{font-size:8px;font-weight:1000;letter-spacing:.08em;opacity:.78}
+.rv3-mudagiri-talk span{margin-top:3px;color:#f4f7f9;font-size:11px;font-weight:850;line-height:1.55}
+.rv3-social-share .rv3-mudagiri-talk,.rv3-viral-loop .rv3-mudagiri-talk{border-color:rgba(154,140,255,.50)}
+.rv3-social-share .rv3-mudagiri-talk b,.rv3-viral-loop .rv3-mudagiri-talk b{color:#c3bbff}
+.rv3-benchmark .rv3-mudagiri-talk{border-color:rgba(98,200,236,.48)}
+.rv3-benchmark .rv3-mudagiri-talk b{color:#8fd9f2}
+.rv3-verdict-open .rv3-mudagiri-talk,.rv3-consult-route .rv3-mudagiri-talk{border-color:rgba(104,210,189,.48)}
+.rv3-verdict-open .rv3-mudagiri-talk b,.rv3-consult-route .rv3-mudagiri-talk b{color:#8ce1d1}
+.rv3-next .rv3-mudagiri-talk{border-color:rgba(246,200,75,.50)}
+.rv3-next .rv3-mudagiri-talk b{color:#ffe07b}
+.rv3-line-early .rv3-mudagiri-talk{border-color:rgba(79,215,120,.50)}
+.rv3-line-early .rv3-mudagiri-talk b{color:#7be693}
+@media(max-width:390px){.rv3-mudagiri-talk{margin-right:44px}.rv3-mudagiri-talk span{font-size:10.5px}}
+
 .rv3 details>summary{min-height:48px;display:flex;align-items:center;touch-action:manipulation}
 
 .rv3-verdict-saving{margin:16px auto 0;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;background:#0d1721;text-align:center}.rv3-verdict-saving small,.rv3-verdict-saving span{display:block;color:#aeb8c2}.rv3-verdict-saving strong{display:block;margin:4px 0;color:#f5cc39;font-size:24px}.rv3-verdict-saving.is-safe strong{color:#dce4eb;font-size:19px}
