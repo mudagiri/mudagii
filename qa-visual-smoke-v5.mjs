@@ -116,7 +116,9 @@ await shot('08-scan-first');
 for(let i=0;i<11;i++){
   const input=page.locator('.scan-money input').first();
   await input.waitFor({state:'visible'});
-  await input.fill('0');
+  // single-person scan order: mobile, energy, sub, food...
+  // Keep one realistic above-reference category so Result V5 money/horizon UI is exercised.
+  await input.fill(i===3?'70000':'0');
   await clickButton(/気配を探る/);
   const next=page.getByRole('button',{name:/次を探す|探索結果へ/}).first();
   await next.waitFor({state:'visible'});
@@ -126,6 +128,13 @@ await page.getByText(/ここから、必要な支出をちゃんと守ろう。|
 await shot('09-scan-complete');
 await clickButton(/ムダ鑑定を始める/);
 
+// Food is above the comparison guide. Choose a value-preserving answer:
+// V4 can still protect it, while V5 must surface price-efficiency C potential.
+const foodAppraisal=page.getByText('今の食費について、一番近いのは？');
+if(await foodAppraisal.count()){
+  await foodAppraisal.waitFor({state:'visible'});
+  await clickButton(/今くらいでいい/);
+}
 await page.getByText(/鑑定完了。|仕分けできたよ。|仕分け終了。/).waitFor();
 await shot('10-appraisal-complete');
 await clickButton(/お金タイプを解析する/);
