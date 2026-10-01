@@ -154,9 +154,13 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
 
  if(a.insuranceScope==='personal'){
   const ii=insurancePersonalAgeBand(a.age);
-  out.insurance=ii>=0
-   ?{value:INSURANCE_PERSONAL_MONTHLY_2025[ii],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{scope:'personal',ageBand:['20s','30s','40s','50s','60s','70s'][ii],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}}
-   :{value:null,confidence:'AUDIT',sourceVersion:'INSURANCE_V1.0_JILI_2025_OUTSIDE_SURVEY_AGE',meta:{scope:'personal',surveyAgeRange:'18-79'}};
+  if(ii<0){
+   out.insurance={value:null,confidence:'AUDIT',sourceVersion:'INSURANCE_V1.0_JILI_2025_OUTSIDE_SURVEY_AGE',meta:{scope:'personal',surveyAgeRange:'20-79'}};
+  }else{
+   const safeIndex=ii as 0|1|2|3|4|5;
+   const ageLabels=['20s','30s','40s','50s','60s','70s'] as const;
+   out.insurance={value:INSURANCE_PERSONAL_MONTHLY_2025[safeIndex],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{scope:'personal',ageBand:ageLabels[safeIndex],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}};
+  }
  }else if(a.insuranceScope==='household'){
   const v=a.household==='single'?INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024:INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024;
   out.insurance={value:v,confidence:'DIRECT',sourceVersion:a.household==='single'?'INSURANCE_V1.0_JILI_2024_SINGLE_HOUSEHOLD':'INSURANCE_V1.0_JILI_2024_MULTI_HOUSEHOLD',meta:{scope:'household',household:a.household,annualYen:a.household==='single'?144000:353000,includesIndividualAnnuity:true}};
