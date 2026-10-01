@@ -366,7 +366,7 @@ export default function RpgBlock1({
     }
     if(actual('sub')>0){
       qs.push({category:'sub',kind:'subUsage',reason:'使っていない契約ほど、金額まで覚えていないことがあります。',question:'使ってない・ほぼ使ってないサブスク、ありそう？'});
-      if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'まず未使用額を確認します。改善額の確定は、次の解約・停止確認まで終わってからです。',question:'使っていない分は、月いくらくらい？'});
+      if(appraisalAnswers.sub?.subUsage==='one'||appraisalAnswers.sub?.subUsage==='several')qs.push({category:'sub',kind:'subUnusedAmount',maxAmount:actual('sub'),reason:'使っていない契約があっても、月額まで覚えていないのが普通です。分かる場合だけ金額を確認します。',question:'その未使用分、月額まで分かる？'});
       if((appraisalAnswers.sub?.subUnusedAmount??0)>0)qs.push({category:'sub',kind:'subCancellation',reason:'未使用でも、停止できると確認できるまでは改善額に含めません。',question:'その未使用分、解約・停止できる？'});
     }
 
@@ -1604,6 +1604,7 @@ function AdditionalAppraisalScene({
   };
 
   const [amountText,setAmountText]=useState('');
+  const [showSubAmountEntry,setShowSubAmountEntry]=useState(false);
   const educationCount=Math.max(1,Math.min(6,item.educationCount??1));
   const [educationChildren,setEducationChildren]=useState<{stage:EducationStageV2}[]>(()=>Array.from({length:educationCount},()=>({stage:'publicElementary' as EducationStageV2})));
   const amountNumber=Number(amountText||0);
@@ -1643,10 +1644,19 @@ function AdditionalAppraisalScene({
           </div>
         ) : item.kind==='subUnusedAmount' ? (
           <div className="appraisal-options">
-            <label className="appraisal-amount-input"><span>月額</span><input inputMode="numeric" pattern="[0-9]*" value={amountText} onChange={e=>setAmountText(e.target.value.replace(/[^0-9]/g,''))} placeholder="例 1200" /><b>円</b></label>
-            {typeof item.maxAmount==='number'&&<div className={`appraisal-amount-limit ${amountTooHigh?'is-error':''}`}>{amountTooHigh?`サブスク総額 ¥${item.maxAmount.toLocaleString()} を超えています`:`サブスク総額 ¥${item.maxAmount.toLocaleString()} 以下で入力`}</div>}
-            <button type="button" className="appraisal-option" disabled={!amountText||amountNumber<=0||amountTooHigh} onClick={()=>commit({subUnusedAmount:amountNumber,subCancellationConfirmed:undefined},'review','未使用額を確認',`月¥${amountNumber.toLocaleString()}。停止可否を確認してから改善額を確定します`)}><strong>この金額で次へ</strong><span>次に解約・停止できるか確認</span></button>
-            <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined},'review','金額は未確定','推測額は改善額に含めません')}><strong>金額は分からない</strong><span>あとで明細を確認する</span></button>
+            {!showSubAmountEntry ? (
+              <>
+                <button type="button" className="appraisal-option" onClick={()=>setShowSubAmountEntry(true)}><strong>月額まで分かる</strong><span>分かる範囲で金額を入力する</span></button>
+                <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined,subCancellationConfirmed:undefined},'review','金額は未確定','明細を見ないと分からなくてOK。推測額は改善額に含めません')}><strong>分からない</strong><span>明細を見ないと分からない</span></button>
+              </>
+            ) : (
+              <>
+                <label className="appraisal-amount-input"><span>月額</span><input inputMode="numeric" pattern="[0-9]*" value={amountText} onChange={e=>setAmountText(e.target.value.replace(/[^0-9]/g,''))} placeholder="例 1200" /><b>円</b></label>
+                {typeof item.maxAmount==='number'&&<div className={`appraisal-amount-limit ${amountTooHigh?'is-error':''}`}>{amountTooHigh?`サブスク総額 ¥${item.maxAmount.toLocaleString()} を超えています`:`分かる範囲でOK / 最大 ¥${item.maxAmount.toLocaleString()}`}</div>}
+                <button type="button" className="appraisal-option" disabled={!amountText||amountNumber<=0||amountTooHigh} onClick={()=>commit({subUnusedAmount:amountNumber,subCancellationConfirmed:undefined},'review','未使用額を確認',`月¥${amountNumber.toLocaleString()}。停止可否を確認してから改善額を確定します`)}><strong>この金額で次へ</strong><span>次に解約・停止できるか確認</span></button>
+                <button type="button" className="appraisal-option" onClick={()=>commit({subUnusedAmount:undefined,subCancellationConfirmed:undefined},'review','金額は未確定','明細を見ないと分からなくてOK。推測額は改善額に含めません')}><strong>やっぱり分からない</strong><span>あとで明細を確認する</span></button>
+              </>
+            )}
           </div>
         ) : (
           <div className="appraisal-options">
