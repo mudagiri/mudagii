@@ -11,7 +11,7 @@ const next=result.indexOf('className="rv3-next"');
 const checks=[
  ['type result is before benchmark',clear>=0&&type>clear&&social>type&&benchmark>social],
  ['benchmark remains before verdict and next quest',benchmark>=0&&verdict>benchmark&&next>verdict],
- ['1 5 10 year horizons are shown',result.includes('<span>1年</span>')&&result.includes('<span>5年</span>')&&result.includes('<span>10年</span>')],
+ ['1 5 10 year horizons are shown',result.includes('<span>1年なら</span>')&&result.includes('<span>5年なら</span>')&&result.includes('<span>10年なら</span>')],
  ['horizon copy says simple accumulation not savings',result.includes('単純累計。削減可能額ではありません')],
  ['largest benchmark row is preselected',result.includes('いちばん差が大きかった項目')&&result.includes('topBenchmarkRow')],
  ['remaining comparisons use clear disclosure',result.includes('ほかの比較項目も見る')&&result.includes('otherBenchmarkRows.length')],

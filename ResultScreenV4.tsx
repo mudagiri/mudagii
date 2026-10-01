@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
-import {consultRouteCopyV1} from './consult-route-v1';
+import {consultTopicCopyV1,type ConsultTopicV1} from './consult-route-v1';
 
 const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
@@ -14,6 +14,13 @@ const TYPE_ART_V31:Record<string,string>={
  VIA:'./assets/types/v31/TYPE_VIA.png',VIU:'./assets/types/v31/TYPE_VIU.png',
 };
 const TYPE_ORDER_V31=['FPA','FPU','FIA','FIU','VPA','VPU','VIA','VIU'] as const;
+const MUDAGIRI_RESULT_ART={
+ clear:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+ benchmark:'./assets/battle1/MUDAGIRI_BATTLE_READY.png',
+ verdict:'./assets/battle1/MUDAGIRI_BATTLE.png',
+ guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
+ share:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+} as const;
 
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
 function lineHandoffCode(diagnosisId:string){
@@ -47,6 +54,13 @@ function signedYen(n:number){
  if(n<0)return '-¥'+yen(Math.abs(n));
  return '±¥0';
 }
+function approxImpactYen(n:number){
+ const sign=n>0?'+':n<0?'-':'±';
+ const a=Math.abs(n);
+ if(a===0)return '±0円';
+ if(a>=10000)return sign+'約'+new Intl.NumberFormat('ja-JP').format(Math.round(a/10000))+'万円';
+ return sign+'約'+new Intl.NumberFormat('ja-JP').format(Math.round(a/1000)*1000)+'円';
+}
 function comparisonGroupLabel(label:string){
  return label==='あなたの支出'?'日常の支出':label;
 }
@@ -78,8 +92,10 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);
  x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
  x.textAlign='center';
- x.fillStyle='#f5cc39';x.font='900 32px system-ui,sans-serif';x.fillText('MONEY TYPE UNLOCKED',540,120);
- x.fillStyle='#87929d';x.font='800 21px system-ui,sans-serif';x.fillText('ムダギリ診断',540,160);
+ x.fillStyle='#f5cc39';x.fillRect(72,70,230,52);
+ x.fillStyle='#07111b';x.font='1000 23px system-ui,sans-serif';x.fillText('ムダギリ診断',187,104);
+ x.fillStyle='#f5cc39';x.font='900 32px system-ui,sans-serif';x.fillText('MONEY TYPE UNLOCKED',540,150);
+ x.fillStyle='#87929d';x.font='800 19px system-ui,sans-serif';x.fillText('家計RPG診断',540,184);
  x.fillStyle='#101c27';x.fillRect(420,188,240,54);x.strokeStyle='#344454';x.lineWidth=2;x.strokeRect(420,188,240,54);
  x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';x.fillText('TYPE '+vm.type.code,540,224);
  const art=await loadCanvasImage(typeArt(vm.type.code));
@@ -109,8 +125,15 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#87929d';x.font='800 19px system-ui,sans-serif';x.fillText('気をつけたいところ',540,1070);
  x.fillStyle='#dce4eb';x.font='800 23px system-ui,sans-serif';
  drawCenteredWrapped(x,vm.type.blindSpot??'',540,1110,820,32,2);
- x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('友達は何タイプ？',540,1215);
- x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1260);
+ const mascot=await loadCanvasImage(MUDAGIRI_RESULT_ART.share);
+ if(mascot){
+  const maxW=118,maxH=118,scale=Math.min(maxW/mascot.naturalWidth,maxH/mascot.naturalHeight);
+  const w=mascot.naturalWidth*scale,h=mascot.naturalHeight*scale;
+  x.imageSmoothingEnabled=false;
+  x.drawImage(mascot,875-w/2,1135-h/2,w,h);
+ }
+ x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('友達は何タイプ？',460,1215);
+ x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',460,1260);
  x.fillStyle='#87929d';x.font='700 18px system-ui,sans-serif';x.fillText('収入・支出金額・都道府県は画像に含まれません',540,1300);
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));
  return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
@@ -123,7 +146,9 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
  const shareFileRef=useRef<File|null>(null);
  const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'result_bottom'|'consult_route'>(null);
  const [homeStructure,setHomeStructure]=useState<'detached'|'other'|null>(null);
- const consultCopy=consultRouteCopyV1(vm.consultRoute);
+ const recommendedConsultTopic:ConsultTopicV1=vm.consultRoute?.primary??'lifeplan';
+ const [consultTopic,setConsultTopic]=useState<ConsultTopicV1>(recommendedConsultTopic);
+ const consultCopy=consultTopicCopyV1(consultTopic);
  const handoffCode=lineHandoffCode(vm.diagnosisId);
  const earlyLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'after_next_quest',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
  const bottomLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'result_bottom',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
@@ -204,6 +229,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    placement,
    handoffCode,
    consultPrimary:vm.consultRoute?.primary??'lifeplan',
+   consultSelectedTopic:consultTopic,
    insuranceReview:!!vm.consultRoute?.insuranceReview,
    homeStructure,
    solarEligible:homeStructure==='detached'
@@ -228,7 +254,13 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
  </div>}
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>家計クエスト完了</h1><p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p></section>
+  <section className="rv3-clear">
+   <img className="rv3-mudagiri rv3-mudagiri-clear" src={MUDAGIRI_RESULT_ART.clear} alt="" aria-hidden="true" decoding="async"/>
+   <div className="rv3-kicker">MUDAGIRI QUEST CLEAR!</div>
+   <h1>ムダギリ家計クエスト、完了！</h1>
+   <p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p>
+   <div className="rv3-mudagiri-speech">ムダギリくん「おつかれ！ここから戦果を見ていくぞ。」</div>
+  </section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title rv3-type-card">
@@ -259,8 +291,10 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
 
   <section className="rv3-benchmark">
-   <div className="rv3-kicker">HOUSEHOLD BENCHMARK</div>
-   <h3>{tone.gap}</h3>
+   <div className="rv3-section-guide">
+    <div><div className="rv3-kicker">HOUSEHOLD BENCHMARK</div><h3>{tone.gap}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.benchmark} alt="" aria-hidden="true" decoding="async"/>
+   </div>
    <p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。比較単位が違う支出は合算しません。</p>
 
    <div className="rv3-scope-groups">
@@ -268,9 +302,9 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
      <small>{comparisonGroupLabel(g.scopeLabel)}・{g.categoryCount}項目</small>
      <strong>{signedYen(g.differenceMonthly)}<em>/月</em></strong>
      <div className="rv3-impact-grid">
-      <div><span>1年</span><b>{signedYen(g.differenceMonthly*12)}</b></div>
-      <div><span>5年</span><b>{signedYen(g.differenceMonthly*60)}</b></div>
-      <div><span>10年</span><b>{signedYen(g.differenceMonthly*120)}</b></div>
+      <div className="is-1y"><span>1年なら</span><b>{approxImpactYen(g.differenceMonthly*12)}</b></div>
+      <div className="is-5y"><span>5年なら</span><b>{approxImpactYen(g.differenceMonthly*60)}</b></div>
+      <div className="is-10y"><span>10年なら</span><b>{approxImpactYen(g.differenceMonthly*120)}</b></div>
      </div>
      <small>現在の基準差が同じまま続いた場合の単純累計。削減可能額ではありません。</small>
     </div>)}
@@ -301,35 +335,65 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
   {vm.bundledContribution&&<section className="rv3-bundled"><div className="rv3-kicker">LIVING COST BUNDLE</div><h3>{vm.bundledContribution.label}</h3><strong>月 ¥{yen(vm.bundledContribution.amount)}</strong><p>{vm.bundledContribution.note}</p></section>}
 
-  <details className="rv3-verdict rv3-verdict-details"><summary><div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div><span>内訳⌄</span></summary>
-   <div className="rv3-verdict-grid"><div><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div><div><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div><div><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div></div>
+  <section className="rv3-verdict rv3-verdict-open">
+   <div className="rv3-section-guide">
+    <div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-small" src={MUDAGIRI_RESULT_ART.verdict} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   <div className="rv3-verdict-grid">
+    <div className="is-cut"><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div>
+    <div className="is-review"><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div>
+    <div className="is-protect"><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div>
+   </div>
+   {vm.battleTargets.length===0&&vm.encounterTargets.length>0&&<p className="rv3-verdict-message">削減確定が0でも、見直し余地がないわけではありません。今回は<strong>{vm.encounterTargets.length}項目</strong>が「確認する価値あり」でした。</p>}
    <p className="rv3-note">高い支出＝ムダとは判定していません。必要性や満足度が確認できた支出は「守る支出」として扱います。</p>
-  </details>
+  </section>
 
 
 
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
 
   <section className="rv3-consult-route">
-   <div className="rv3-kicker">{consultCopy.kicker}</div>
-   <h3>{consultCopy.title}</h3>
-   <p>{consultCopy.body}</p>
-   {vm.consultRoute?.primary==='insurance'&&<div className="rv3-consult-reason">
+   <div className="rv3-consult-head">
+    <div><div className="rv3-kicker">PROFESSIONAL QUEST</div><h3>プロと整理するなら、どこから？</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-guide" src={MUDAGIRI_RESULT_ART.guide} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   <p>診断上のNEXT QUESTとは別に、家計をプロと深掘りする入口です。</p>
+
+   <div className="rv3-consult-tabs" role="group" aria-label="相談テーマ">
+    {(['insurance','lifeplan','investment'] as ConsultTopicV1[]).map(topic=>{
+     const item=consultTopicCopyV1(topic);
+     const recommended=topic===recommendedConsultTopic;
+     return <button type="button" key={topic} className={(consultTopic===topic?'is-active ':'')+(recommended?'is-recommended':'')} onClick={()=>{setConsultTopic(topic);onEvent?.('consult_topic_selected',{topic,recommended})}}>
+      {recommended&&<small>今回のおすすめ</small>}
+      <b>{item.label}</b>
+     </button>;
+    })}
+   </div>
+
+   <div className="rv3-consult-copy">
+    <small>{consultTopic===recommendedConsultTopic?'今回の診断からおすすめ':'選んだ相談テーマ'}</small>
+    <b>{consultCopy.title}</b>
+    <p>{consultCopy.body}</p>
+   </div>
+
+   {consultTopic==='insurance'&&vm.consultRoute?.insuranceReview&&<div className="rv3-consult-reason">
     <span>今回の診断では</span>
     <b>保険内容を一度確認する価値あり</b>
     <small>保険料の高さだけではなく、保障目的や見直し状況から案内しています。</small>
    </div>}
-   {vm.consultRoute?.primary==='lifeplan'&&<div className="rv3-consult-reason">
-    <span>今回の診断では</span>
-    <b>家計全体を将来までつなげて整理するのが先</b>
-    <small>教育・住宅・老後・貯蓄・投資を一枚のライフプランで確認できます。</small>
+   {consultTopic==='insurance'&&!vm.consultRoute?.insuranceReview&&<div className="rv3-consult-reason is-neutral">
+    <span>保険は最優先判定ではありません</span>
+    <b>それでも保障内容だけ確認することはできます</b>
+    <small>診断結果を曲げず、希望があれば整理する入口として表示しています。</small>
    </div>}
+
    {vm.consultRoute?.homeStructureRequired&&<div className="rv3-home-qualifier">
     <span>持ち家の方だけ、もう1つ</span>
     <b>今のお住まいは？</b>
     <div>
-     <button type="button" className={homeStructure==='detached'?'is-active':''} onClick={()=>{setHomeStructure('detached');onEvent?.('consult_home_structure_selected',{value:'detached',primary:vm.consultRoute?.primary})}}>🏠 戸建て</button>
-     <button type="button" className={homeStructure==='other'?'is-active':''} onClick={()=>{setHomeStructure('other');onEvent?.('consult_home_structure_selected',{value:'other',primary:vm.consultRoute?.primary})}}>🏢 マンション等</button>
+     <button type="button" className={homeStructure==='detached'?'is-active':''} onClick={()=>{setHomeStructure('detached');onEvent?.('consult_home_structure_selected',{value:'detached',primary:recommendedConsultTopic})}}>🏠 戸建て</button>
+     <button type="button" className={homeStructure==='other'?'is-active':''} onClick={()=>{setHomeStructure('other');onEvent?.('consult_home_structure_selected',{value:'other',primary:recommendedConsultTopic})}}>🏢 マンション等</button>
     </div>
    </div>}
    {homeStructure==='detached'&&<div className="rv3-solar-route">
@@ -337,7 +401,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <b>太陽光・蓄電池も「入れる前提なし」で適性確認</b>
     <p>屋根条件・電気使用量・既存設備で向き不向きが変わるため、設置ありきではなく住宅固定費として確認します。</p>
    </div>}
-   <button className="rv3-primary" onClick={()=>{onEvent?.('consult_route_clicked',{primary:vm.consultRoute?.primary??'lifeplan',solarEligible:homeStructure==='detached'});lineHandoff('consult_route')}}>{consultCopy.button}</button>
+   <button className="rv3-primary" onClick={()=>{onEvent?.('consult_route_clicked',{recommended:recommendedConsultTopic,selected:consultTopic,solarEligible:homeStructure==='detached'});lineHandoff('consult_route')}}>{consultCopy.button}</button>
    <small>{consultCopy.note}{homeStructure==='detached'?'　戸建ての住宅固定費チェックも一緒に引き継ぎます。':''}</small>
   </section>
 
@@ -398,6 +462,64 @@ const CSS=`
 
 @media(max-width:390px){.rv3-inner{width:100%}.rv3 section{padding-left:16px;padding-right:16px}.rv3-type-card{margin-left:10px;margin-right:10px;padding-left:14px!important;padding-right:14px!important}.rv3-next{margin-left:14px;margin-right:14px;padding:18px!important}.rv3-line-early{margin-left:14px;margin-right:14px;padding:16px!important}.rv3-early-share{padding-left:16px!important;padding-right:16px!important}.rv3-early-share b{font-size:12px}.rv3-early-share button{padding:0 12px;font-size:12px}.rv3-type-notes{grid-template-columns:1fr}.rv3-social-grid{gap:5px}.rv3-social-grid button{min-height:60px}.rv3-impact-grid b{font-size:11px}.rv3-benchmark-row{gap:8px}.rv3-benchmark-values{font-size:9px}}
 @media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}.rv3-type-art{width:112px;height:112px;margin-top:8px}}
+
+/* Result polish V3: reward light, Mudagiri guide roles, readable long-horizon impact */
+.rv3{background:
+ radial-gradient(circle at 50% 0,rgba(35,73,103,.42) 0,rgba(10,24,36,.16) 32%,transparent 55%),
+ linear-gradient(180deg,#0a1722 0%,#07111a 46%,#060c12 100%)}
+.rv3-clear{position:relative;min-height:300px;padding-top:28px!important;overflow:hidden;background:linear-gradient(180deg,rgba(29,57,79,.76),rgba(10,23,34,.35) 72%,transparent)}
+.rv3-clear:before{content:"";position:absolute;inset:-80px -30px auto;height:250px;background:radial-gradient(circle,rgba(245,204,57,.16),transparent 66%);pointer-events:none}
+.rv3-clear h1{position:relative;margin:8px 0 0;font-size:30px}
+.rv3-clear p{position:relative}
+.rv3-mudagiri{display:block;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 10px 18px rgba(0,0,0,.28))}
+.rv3-mudagiri-clear{position:relative;width:112px;height:112px;margin:0 auto 8px}
+.rv3-mudagiri-small{width:76px;height:76px;flex:0 0 76px}
+.rv3-mudagiri-guide{width:88px;height:88px;flex:0 0 88px}
+.rv3-mudagiri-speech{position:relative;width:max-content;max-width:92%;margin:14px auto 0;padding:8px 11px;border:1px solid rgba(245,204,57,.38);border-radius:10px;background:rgba(9,20,29,.78);color:#d9e1e8;font-size:11px;font-weight:800}
+.rv3-section-guide,.rv3-consult-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.rv3-section-guide>div,.rv3-consult-head>div{min-width:0;flex:1}
+.rv3-benchmark{background:linear-gradient(180deg,rgba(18,37,53,.55),rgba(7,17,26,0))}
+.rv3-benchmark-hero{background:linear-gradient(180deg,#142536,#0d1b28)!important;box-shadow:0 10px 24px rgba(0,0,0,.16)}
+.rv3-impact-grid{grid-template-columns:1fr 1fr!important;gap:8px!important}
+.rv3-impact-grid>div{padding:12px 6px!important;background:#0b1722!important}
+.rv3-impact-grid span{font-size:10px!important;font-weight:900;letter-spacing:.03em}
+.rv3-impact-grid b{margin-top:5px!important;font-size:19px!important;line-height:1.15}
+.rv3-impact-grid .is-10y{grid-column:1/-1;padding:15px 8px!important;border-color:rgba(245,204,57,.62)!important;background:linear-gradient(180deg,rgba(245,204,57,.10),#0c1823)!important}
+.rv3-impact-grid .is-10y span{color:#f5cc39!important;font-size:11px!important}
+.rv3-impact-grid .is-10y b{color:#f5cc39!important;font-size:clamp(30px,8vw,36px)!important;letter-spacing:-.02em}
+.rv3-verdict-open{background:linear-gradient(180deg,rgba(15,31,45,.72),rgba(8,18,27,.35))}
+.rv3-verdict-open .rv3-verdict-grid{margin-top:12px}
+.rv3-verdict-grid>div{padding:15px 3px!important;background:#0d1a26!important}
+.rv3-verdict-grid .is-cut{border-color:rgba(238,113,75,.45)}
+.rv3-verdict-grid .is-review{border-color:rgba(245,204,57,.58)}
+.rv3-verdict-grid .is-protect{border-color:rgba(73,190,177,.42)}
+.rv3-verdict-grid .is-cut b{color:#ef8b68}
+.rv3-verdict-grid .is-review b{color:#f5cc39}
+.rv3-verdict-grid .is-protect b{color:#68cfc2}
+.rv3-verdict-message{margin:12px 0 0;padding:10px 12px;border:1px solid rgba(245,204,57,.34);border-radius:10px;background:rgba(245,204,57,.055);color:#cbd4dc;font-size:11px;line-height:1.65}
+.rv3-verdict-message strong{color:#f5cc39}
+.rv3-consult-route{background:linear-gradient(180deg,#15283a,#0c1925)!important}
+.rv3-consult-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.rv3-consult-tabs button{position:relative;min-width:0;min-height:58px;padding:13px 5px 7px;border:1px solid #405164;border-radius:10px;background:#0a151f;color:#d9e2e9;font-size:11px;font-weight:1000}
+.rv3-consult-tabs button b{display:block;line-height:1.25}
+.rv3-consult-tabs button small{position:absolute;top:-8px;left:50%;width:max-content;margin:0!important;padding:2px 5px;border-radius:999px;background:#f5cc39;color:#07111b;font-size:7px;transform:translateX(-50%)}
+.rv3-consult-tabs button.is-active{border-color:#f5cc39;background:rgba(245,204,57,.09);color:#f5cc39}
+.rv3-consult-tabs button.is-recommended:not(.is-active){border-color:rgba(245,204,57,.42)}
+.rv3-consult-copy{margin-top:11px;padding:12px;border:1px solid #334557;border-radius:11px;background:#0b1722}
+.rv3-consult-copy>small,.rv3-consult-copy>b{display:block}
+.rv3-consult-copy>small{margin:0!important;color:#f5cc39!important;font-size:8px!important;font-weight:1000}
+.rv3-consult-copy>b{margin-top:4px;font-size:14px;line-height:1.45}
+.rv3-consult-copy>p{margin:6px 0 0;color:#aebbc6;font-size:11px;line-height:1.6}
+.rv3-consult-reason.is-neutral{border-style:dashed;background:rgba(255,255,255,.015)}
+
+@media(max-width:390px){
+ .rv3-impact-grid b{font-size:18px!important}
+ .rv3-impact-grid .is-10y b{font-size:32px!important}
+ .rv3-consult-tabs{gap:5px}
+ .rv3-consult-tabs button{font-size:10px;padding-left:3px;padding-right:3px}
+ .rv3-mudagiri-small{width:68px;height:68px;flex-basis:68px}
+ .rv3-mudagiri-guide{width:76px;height:76px;flex-basis:76px}
+}
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
 .rv3 details>summary{min-height:48px;display:flex;align-items:center;touch-action:manipulation}
 
