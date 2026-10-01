@@ -112,4 +112,39 @@ export function insuranceReferenceV5(profile:ProfileV4):InsuranceReferenceV5{
  };
 }
 
-export const RESULT_REFERENCE_V5_VERSION='MUDAGIRI_RESULT_REFERENCE_V5_1';
+const MORTGAGE_MONTHLY_BY_HOH_AGE_2025=[
+ {max:34,value:99357,label:'34歳以下'},
+ {max:39,value:96307,label:'35〜39歳'},
+ {max:44,value:93705,label:'40〜44歳'},
+ {max:49,value:88378,label:'45〜49歳'},
+ {max:54,value:88269,label:'50〜54歳'},
+ {max:59,value:97046,label:'55〜59歳'},
+ {max:64,value:96646,label:'60〜64歳'},
+ {max:69,value:93869,label:'65〜69歳'},
+ {max:Infinity,value:88125,label:'70歳以上'},
+] as const;
+
+export function mortgageReferenceV5(profile:ProfileV4):ReferenceLensV5|null{
+ if(profile.housingTenure!=='owned'||profile.housingSubtype!=='mortgage'||profile.householdSize<2)return null;
+ const row=MORTGAGE_MONTHLY_BY_HOH_AGE_2025.find(x=>profile.age<=x.max)!;
+ return {
+  label:'同年代の住宅ローン返済世帯',
+  monthly:row.value,
+  criteria:[row.label,'2人以上世帯','世帯主年齢ベース'],
+  sourceVersion:'STAT_GO_JP_FIES_2025_TABLE_3_10_MORTGAGE_HOH_AGE',
+  note:'総務省2025年家計調査 第3-10表「住宅ローン返済世帯－世帯主の年齢階級別」の土地家屋借金返済。二人以上の勤労者世帯が対象。プロフィール年齢を世帯主年齢の近似として使うため構造REFERENCE扱い。Potentialには自動算入しません。',
+ };
+}
+
+export function carMaintenanceReferenceV5(profile:ProfileV4,scope:unknown):ReferenceLensV5|null{
+ if(scope!=='maintenanceOnly'||profile.age>59)return null;
+ return {
+  label:'車の維持費参考',
+  monthly:14100,
+  criteria:['維持費中心','18〜59歳の自家用車ユーザー'],
+  sourceVersion:'SONY_SONPO_2025_CAR_LIFE_MAINTENANCE',
+  note:'ソニー損保2025年全国カーライフ実態調査。保険料・燃料代・駐車場代・修理代等を含み、税金・ローン返済・有料道路通行料は除外。Potentialには自動算入しません。',
+ };
+}
+
+export const RESULT_REFERENCE_V5_VERSION='MUDAGIRI_RESULT_REFERENCE_V5_2';
