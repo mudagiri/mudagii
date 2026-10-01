@@ -92,8 +92,10 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);
  x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
  x.textAlign='center';
- x.fillStyle='#f5cc39';x.font='900 32px system-ui,sans-serif';x.fillText('MONEY TYPE UNLOCKED',540,120);
- x.fillStyle='#87929d';x.font='800 21px system-ui,sans-serif';x.fillText('ムダギリ診断',540,160);
+ x.fillStyle='#f5cc39';x.fillRect(72,70,230,52);
+ x.fillStyle='#07111b';x.font='1000 23px system-ui,sans-serif';x.fillText('ムダギリ診断',187,104);
+ x.fillStyle='#f5cc39';x.font='900 32px system-ui,sans-serif';x.fillText('MONEY TYPE UNLOCKED',540,150);
+ x.fillStyle='#87929d';x.font='800 19px system-ui,sans-serif';x.fillText('家計RPG診断',540,184);
  x.fillStyle='#101c27';x.fillRect(420,188,240,54);x.strokeStyle='#344454';x.lineWidth=2;x.strokeRect(420,188,240,54);
  x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';x.fillText('TYPE '+vm.type.code,540,224);
  const art=await loadCanvasImage(typeArt(vm.type.code));
@@ -123,8 +125,15 @@ async function makeTypeShareFile(vm:any){
  x.fillStyle='#87929d';x.font='800 19px system-ui,sans-serif';x.fillText('気をつけたいところ',540,1070);
  x.fillStyle='#dce4eb';x.font='800 23px system-ui,sans-serif';
  drawCenteredWrapped(x,vm.type.blindSpot??'',540,1110,820,32,2);
- x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('友達は何タイプ？',540,1215);
- x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1260);
+ const mascot=await loadCanvasImage(MUDAGIRI_RESULT_ART.share);
+ if(mascot){
+  const maxW=118,maxH=118,scale=Math.min(maxW/mascot.naturalWidth,maxH/mascot.naturalHeight);
+  const w=mascot.naturalWidth*scale,h=mascot.naturalHeight*scale;
+  x.imageSmoothingEnabled=false;
+  x.drawImage(mascot,875-w/2,1135-h/2,w,h);
+ }
+ x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('友達は何タイプ？',460,1215);
+ x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',460,1260);
  x.fillStyle='#87929d';x.font='700 18px system-ui,sans-serif';x.fillText('収入・支出金額・都道府県は画像に含まれません',540,1300);
  const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));
  return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
