@@ -19,7 +19,8 @@
     "qa:profile-v4-ux": "node qa-profile-v4-ux.mjs",
     "qa:persona-v4": "npx --yes tsx@4.20.6 qa-persona-v4-e2e.ts",
     "qa:result-cv": "node qa-result-cv-v1.mjs",
-    "qa:line-handoff": "node qa-line-handoff-v1.mjs"
+    "qa:line-handoff": "node qa-line-handoff-v1.mjs",
+    "qa:result-experience": "node qa-result-experience-v2.mjs"
   },
   "dependencies": {
     "react": "19.1.1",

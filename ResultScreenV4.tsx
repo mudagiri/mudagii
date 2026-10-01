@@ -38,6 +38,15 @@ function drawCenteredWrapped(x:CanvasRenderingContext2D,text:string,cx:number,y:
  lines.forEach((v,i)=>x.fillText(v,cx,y+i*lineHeight));return lines.length;
 }
 function loadCanvasImage(src:string){return new Promise<HTMLImageElement|null>(resolve=>{if(!src){resolve(null);return}const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src})}
+function signedYen(n:number){
+ if(n>0)return '+¥'+yen(n);
+ if(n<0)return '-¥'+yen(Math.abs(n));
+ return '±¥0';
+}
+function comparisonGroupLabel(label:string){
+ return label==='あなたの支出'?'日常の支出':label;
+}
+
 
 function useOnceVisible(onEvent:((n:string,p?:any)=>void)|undefined,eventName:string,payload:any){
  const ref=useRef<HTMLElement|null>(null);
@@ -78,6 +87,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
  const [open,setOpen]=useState<string|null>(null);
  const tone=resultTone(vm.toneMode);
  const [revealed,setRevealed]=useState(false);
+ const shareFileRef=useRef<File|null>(null);
  const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'result_bottom'>(null);
  const handoffCode=lineHandoffCode(vm.diagnosisId);
  const earlyLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'after_next_quest',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
@@ -88,20 +98,57 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    const id=window.setTimeout(()=>setRevealed(true),reduced?0:180);
    return()=>window.clearTimeout(id);
  },[]);
- async function share(){
-  onBeforeExternal?.();
+ useEffect(()=>{
+  let active=true;
+  shareFileRef.current=null;
+  makeTypeShareFile(vm).then(file=>{if(active)shareFileRef.current=file});
+  return()=>{active=false};
+ },[vm.type.code]);
+ async function nativeShare(platform:'instagram'|'threads'|'other'='other'){
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
-  const shareUrl=new URL(window.location.origin+window.location.pathname);shareUrl.searchParams.set('ref','share');shareUrl.searchParams.set('type',vm.type.code);
+  const shareUrl=new URL(window.location.origin+window.location.pathname);
+  shareUrl.searchParams.set('ref','share');
+  shareUrl.searchParams.set('type',vm.type.code);
+  shareUrl.searchParams.set('src',platform);
   const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n${shareUrl.toString()}\n#ムダギリ診断`;
-  onEvent?.('share_clicked',{typeCode:vm.type.code});
+  onEvent?.('share_clicked',{typeCode:vm.type.code,platform});
+  onBeforeExternal?.();
   try{
-   const file=await makeTypeShareFile(vm);
-   if(file&&navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'ムダギリ診断',text,files:[file]});onEvent?.('share_completed',{typeCode:vm.type.code,format:'image'});return}
-   if(navigator.share){await navigator.share({title:'ムダギリ診断',text});onEvent?.('share_completed',{typeCode:vm.type.code,format:'text'});return}
+   const file=shareFileRef.current;
+   if(file&&navigator.share&&navigator.canShare?.({files:[file]})){
+    await navigator.share({title:'ムダギリ診断',text,files:[file]});
+    onEvent?.('share_completed',{typeCode:vm.type.code,platform,format:'image'});
+    return;
+   }
+   if(navigator.share){
+    await navigator.share({title:'ムダギリ診断',text});
+    onEvent?.('share_completed',{typeCode:vm.type.code,platform,format:'text'});
+    return;
+   }
   }catch(err){
    if(err instanceof DOMException&&err.name==='AbortError')return;
   }
-  try{await navigator.clipboard?.writeText(text);onEvent?.('share_completed',{typeCode:vm.type.code,fallback:'clipboard'})}catch{}
+  try{
+   await navigator.clipboard?.writeText(text);
+   onEvent?.('share_completed',{typeCode:vm.type.code,platform,fallback:'clipboard'});
+  }catch{}
+ }
+ function shareX(){
+  const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
+  const shareUrl=new URL(window.location.origin+window.location.pathname);
+  shareUrl.searchParams.set('ref','share');shareUrl.searchParams.set('type',vm.type.code);shareUrl.searchParams.set('src','x');
+  const text=`${hook}\n\nムダギリ診断 →「${vm.type.name}」\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n#ムダギリ診断`;
+  onEvent?.('share_clicked',{typeCode:vm.type.code,platform:'x'});
+  onBeforeExternal?.();
+  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(shareUrl.toString()),'_blank','noopener,noreferrer');
+ }
+ function shareLineFriend(){
+  const shareUrl=new URL(window.location.origin+window.location.pathname);
+  shareUrl.searchParams.set('ref','share');shareUrl.searchParams.set('type',vm.type.code);shareUrl.searchParams.set('src','line_friend');
+  const text=`ムダギリ診断で「${vm.type.name}」だった！\n${vm.type.catchphrase??''}\n\nあなたは何タイプ？\n${shareUrl.toString()}\n#ムダギリ診断`;
+  onEvent?.('share_clicked',{typeCode:vm.type.code,platform:'line_friend'});
+  onBeforeExternal?.();
+  window.location.href='https://line.me/R/share?text='+encodeURIComponent(text);
  }
  function lineHandoff(placement:'after_next_quest'|'result_bottom'){
   onEvent?.('line_clicked',{placement,typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
@@ -118,6 +165,11 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   onEvent?.('line_handoff_confirmed',{placement,typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null,copied});
   onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category,placement,handoffCode});
  }
+
+ const comparableRows=(vm.rows??[]).filter((x:any)=>x.known&&x.comparable!==null&&x.comparisonDifference!==null);
+ const positiveComparableRows=comparableRows.filter((x:any)=>x.comparisonDifference>0).sort((a:any,b:any)=>b.comparisonDifference-a.comparisonDifference);
+ const topBenchmarkRow=positiveComparableRows[0]??[...comparableRows].sort((a:any,b:any)=>Math.abs(b.comparisonDifference)-Math.abs(a.comparisonDifference))[0]??null;
+ const otherBenchmarkRows=topBenchmarkRow?comparableRows.filter((x:any)=>x.category!==topBenchmarkRow.category):comparableRows;
  return <>
  <style>{CSS}</style>
  {linePrompt&&<div className="rv3-line-modal-backdrop" role="presentation">
@@ -135,10 +187,6 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>家計クエスト完了</h1><p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p></section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
-  <section className="rv3-benchmark"><div className="rv3-kicker">HOUSEHOLD BENCHMARK</div><h3>{tone.gap}</h3>{vm.benchmarkSummary?.available&&<div className="rv3-benchmark-hero"><small>{vm.benchmarkSummary.categoryCount}項目を比較</small><strong>{vm.benchmarkSummary.deltaMonthly>0?`+¥${yen(vm.benchmarkSummary.deltaMonthly)}`:vm.benchmarkSummary.deltaMonthly<0?`-¥${yen(Math.abs(vm.benchmarkSummary.deltaMonthly))}`:'±¥0'}<em>/月</em></strong><span>年間換算 {vm.benchmarkSummary.deltaAnnual>0?'+':''}¥{yen(vm.benchmarkSummary.deltaAnnual)}</span><small>※家計全体の平均差ではなく、数値比較できる項目だけの合計です。</small></div>}{vm.comparisonGroups?.length>1&&<div className="rv3-scope-groups">{vm.comparisonGroups.map((g:any)=><div className="rv3-benchmark-hero" key={g.scopeLabel}><small>{g.scopeLabel}・{g.categoryCount}項目</small><strong>{g.differenceMonthly>0?`+¥${yen(g.differenceMonthly)}`:g.differenceMonthly<0?`-¥${yen(Math.abs(g.differenceMonthly))}`:'±¥0'}<em>/月</em></strong><span>基準との差を比較単位別に表示</span></div>)}</div>}<p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。</p><details className="rv3-benchmark-details"><summary>比較した項目と基準を見る <span>⌄</span></summary><div className="rv3-benchmark-list">{vm.rows.filter((x:any)=>x.known&&x.comparable!==null).map((x:any)=><div className="rv3-benchmark-row" key={`b-${x.category}`}><div><b>{x.label}</b><small>{x.comparisonContext?.criteria?.join(' × ')||x.comparator.label}</small></div><div className="rv3-benchmark-values"><span>{x.comparisonAmountLabel??'あなた'} ¥{yen(x.comparisonAmount??x.amount)}</span><span>基準 ¥{yen(x.comparable)}</span><strong>{x.comparisonDifference===null?'':x.comparisonDifference>0?`+¥${yen(x.comparisonDifference)}`:x.comparisonDifference<0?`-¥${yen(Math.abs(x.comparisonDifference))}`:'±¥0'}</strong></div></div>)}</div></details><p className="rv3-benchmark-warning"><b>{tone.warning}</b><br/>これはあくまで基準との差。必要性や満足度も確認して、本当に見直せる金額は下で別に判定しています。</p><div className={`rv3-confirmed-gap ${vm.improvement.monthly>0?'':'is-zero'}`}><small>{tone.confirmed}</small>{vm.improvement.monthly>0?<><strong>月 ¥{yen(vm.improvement.monthly)}</strong><span>年間 ¥{yen(vm.improvement.annual)}</span></>:<><strong>月 ¥0</strong><span>比較差だけを理由に、無理にムダ認定していません</span></>}</div></section>
-
-  {vm.bundledContribution&&<section className="rv3-bundled"><div className="rv3-kicker">LIVING COST BUNDLE</div><h3>{vm.bundledContribution.label}</h3><strong>月 ¥{yen(vm.bundledContribution.amount)}</strong><p>{vm.bundledContribution.note}</p></section>}
-
   <section className="rv3-title rv3-type-card">
    <div className="rv3-kicker">MONEY TYPE UNLOCKED</div><div className="rv3-muted">あなたのお金の使い方は――</div>
    {typeArt(vm.type.code)&&<img className="rv3-type-art" src={typeArt(vm.type.code)} alt="" aria-hidden="true" decoding="async"/>}
@@ -151,6 +199,63 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    <div className="rv3-type-notes">{vm.type.strengthLabel&&<div><small>強み</small><b>{vm.type.strengthLabel}</b></div>}{vm.type.blindSpot&&<div><small>死角</small><b>{vm.type.blindSpot}</b></div>}</div>
    <div className="rv3-type-stamp"><span>TYPE {vm.type.code}</span><span>{modeName[vm.toneMode]??vm.toneMode} MODE</span></div><small>8問から見えた、あなたのお金の使い方の傾向です</small>
   </section>
+
+  <section className="rv3-social-share">
+   <div className="rv3-kicker">SHARE YOUR TYPE</div>
+   <h3>このタイプ、友だちにも見せる？</h3>
+   <p>金額・収入・都道府県はシェア画像に入りません。</p>
+   <div className="rv3-social-grid">
+    <button type="button" className="is-x" onClick={shareX}><b>𝕏</b><span>X</span></button>
+    <button type="button" className="is-instagram" onClick={()=>nativeShare('instagram')}><b>◎</b><span>Instagram</span></button>
+    <button type="button" className="is-threads" onClick={()=>nativeShare('threads')}><b>@</b><span>Threads</span></button>
+    <button type="button" className="is-line" onClick={shareLineFriend}><b>LINE</b><span>友だちへ</span></button>
+    <button type="button" className="is-more" onClick={()=>nativeShare('other')}><b>↗</b><span>その他</span></button>
+   </div>
+   <small>X・友だちLINEは投稿/送信画面へ。Instagram・Threadsはタイプ画像付きの共有メニューを開きます。</small>
+  </section>
+
+  <section className="rv3-benchmark">
+   <div className="rv3-kicker">HOUSEHOLD BENCHMARK</div>
+   <h3>{tone.gap}</h3>
+   <p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。比較単位が違う支出は合算しません。</p>
+
+   <div className="rv3-scope-groups">
+    {(vm.comparisonGroups??[]).map((g:any)=><div className="rv3-benchmark-hero" key={g.scopeLabel}>
+     <small>{comparisonGroupLabel(g.scopeLabel)}・{g.categoryCount}項目</small>
+     <strong>{signedYen(g.differenceMonthly)}<em>/月</em></strong>
+     <div className="rv3-impact-grid">
+      <div><span>1年</span><b>{signedYen(g.differenceMonthly*12)}</b></div>
+      <div><span>5年</span><b>{signedYen(g.differenceMonthly*60)}</b></div>
+      <div><span>10年</span><b>{signedYen(g.differenceMonthly*120)}</b></div>
+     </div>
+     <small>現在の基準差が同じまま続いた場合の単純累計。削減可能額ではありません。</small>
+    </div>)}
+   </div>
+
+   {topBenchmarkRow&&<div className="rv3-top-gap">
+    <div className="rv3-top-gap-head"><span>いちばん差が大きかった項目</span><b>{topBenchmarkRow.label}</b></div>
+    <div className="rv3-top-gap-values">
+     <div><small>{topBenchmarkRow.comparisonAmountLabel??'あなた'}</small><b>¥{yen(topBenchmarkRow.comparisonAmount??topBenchmarkRow.amount)}<em>/月</em></b></div>
+     <div><small>基準</small><b>¥{yen(topBenchmarkRow.comparable)}<em>/月</em></b></div>
+    </div>
+    <div className="rv3-top-gap-diff"><span>基準との差</span><strong>{signedYen(topBenchmarkRow.comparisonDifference)}<em>/月</em></strong></div>
+    <small>{topBenchmarkRow.comparisonContext?.criteria?.join(' × ')||topBenchmarkRow.comparator.label}</small>
+    <p>この差をそのままムダとは判定していません。必要性や満足度を含めて、下の鑑定結果で判断しています。</p>
+   </div>}
+
+   {otherBenchmarkRows.length>0&&<details className="rv3-benchmark-details">
+    <summary>ほかの比較項目も見る <strong>{otherBenchmarkRows.length}件</strong><span>⌄</span></summary>
+    <div className="rv3-benchmark-list">{otherBenchmarkRows.map((x:any)=><div className="rv3-benchmark-row" key={`b-${x.category}`}>
+     <div><b>{x.label}</b><small>{x.comparisonContext?.criteria?.join(' × ')||x.comparator.label}</small></div>
+     <div className="rv3-benchmark-values"><span>{x.comparisonAmountLabel??'あなた'} ¥{yen(x.comparisonAmount??x.amount)}</span><span>基準 ¥{yen(x.comparable)}</span><strong>{signedYen(x.comparisonDifference)}</strong></div>
+    </div>)}</div>
+   </details>}
+
+   <p className="rv3-benchmark-warning"><b>{tone.warning}</b><br/>これはあくまで基準との差。必要性や満足度も確認して、本当に見直せる金額は下で別に判定しています。</p>
+   <div className={`rv3-confirmed-gap ${vm.improvement.monthly>0?'':'is-zero'}`}><small>{tone.confirmed}</small>{vm.improvement.monthly>0?<><strong>月 ¥{yen(vm.improvement.monthly)}</strong><span>年間 ¥{yen(vm.improvement.annual)}</span></>:<><strong>月 ¥0</strong><span>比較差だけを理由に、無理にムダ認定していません</span></>}</div>
+  </section>
+
+  {vm.bundledContribution&&<section className="rv3-bundled"><div className="rv3-kicker">LIVING COST BUNDLE</div><h3>{vm.bundledContribution.label}</h3><strong>月 ¥{yen(vm.bundledContribution.amount)}</strong><p>{vm.bundledContribution.note}</p></section>}
 
   <details className="rv3-verdict rv3-verdict-details"><summary><div><div className="rv3-kicker">HOUSEHOLD VERDICT</div><h3>{tone.verdict}</h3></div><span>内訳⌄</span></summary>
    <div className="rv3-verdict-grid"><div><b>{vm.battleTargets.length}</b><span>⚔️ 削減確定</span></div><div><b>{vm.encounterTargets.length}</b><span>🎯 優先チェック</span></div><div><b>{vm.counts.protect}</b><span>🛡️ 守る支出</span></div></div>
@@ -167,8 +272,6 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    <small>✓ 無料　✓ 診断コードを発行　✓ 登録しただけで相談予約にはなりません</small>
   </section>
 
-  <section className="rv3-early-share"><div><div className="rv3-kicker">TYPE CARD</div><b>「{vm.type.name}」をシェア</b><small>金額・収入・都道府県は画像に入りません</small></div><button onClick={share}>タイプをシェア</button></section>
-
   <details className="rv3-section rv3-book-shell" onToggle={(e)=>{if((e.currentTarget as HTMLDetailsElement).open)onEvent?.('result_book_opened',{typeCode:vm.type.code})}}><summary><div><h3>📖 12カテゴリ鑑定図鑑</h3><p className="rv3-muted">気になる項目だけ詳しく確認</p></div><span>見る⌄</span></summary><div className="rv3-book">{vm.rows.map((x:any)=><div className="rv3-book-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span>{mark[x.status]} <b>{x.label}</b></span><span className="rv3-muted">{x.status==='battle'?'削減確定':x.status==='protect'?'守る':x.status==='review'?'要確認':x.status==='safe'?'優先なし':'対象外'}　⌄</span></button>{open===x.category&&<div className="rv3-detail"><div><b>{x.diagnosisAmountLabel??'あなた'}：</b>{x.known?`¥${yen(x.amount)}/月`:'金額未把握'}</div>{x.householdTotal!==null&&x.householdTotal!==undefined&&x.householdTotal!==x.amount&&<div><b>家全体：</b>¥{yen(x.householdTotal)}/月</div>}{x.comparisonAmount!==null&&x.comparisonAmount!==undefined&&x.comparisonAmount!==x.amount&&x.comparisonAmount!==x.householdTotal&&<div><b>{x.comparisonAmountLabel??'比較対象'}：</b>¥{yen(x.comparisonAmount)}/月</div>}<div><b>{x.comparable!==null?'比較の目安':'判定の見方'}：</b>{x.evidenceLabel??x.comparator.label}{x.comparable!==null?` ¥${yen(x.comparable)}/月`:''}</div>{x.referenceDetail&&<div><b>料金の目安：</b>{x.referenceDetail}</div>}{x.comparisonContext?.criteria?.length>0&&<div><b>比較条件：</b>{x.comparisonContext.criteria.join(' × ')}</div>}{x.comparisonDifference!==null&&x.comparisonDifference>0&&<div><b>比較差：</b>+¥{yen(x.comparisonDifference)} <small>※ムダ額・削減可能額ではありません</small></div>}{x.reviewPotential?.available&&x.reviewPotential.delta>0&&<div className={`rv3-potential is-${x.reviewPotential.level}`}><b>{x.reviewPotential.label}</b><small>基準との差から見た「見直した場合の家計インパクト」。確定した削減額ではありません。</small></div>}{x.appraisalSummary&&<div><b>あなたの回答：</b>{x.appraisalSummary}</div>}<div><b>判定理由：</b>{x.reason}</div><div><b>次に確認：</b>{x.nextCheck}</div></div>}</div>)}</div></details>
 
   <section ref={bottomLineRef as any} className="rv3-next rv3-save"><div className="rv3-kicker">SAVE YOUR QUEST</div><h3>{tone.save}</h3><p>このページを閉じても困らないように、LINEで<strong>今回の診断結果と「次にやる1つ」</strong>を照合できる引き継ぎコードを発行します。</p><div className="rv3-save-preview"><span>LINEへ引き継げる診断情報</span><b>🏷️ {vm.type.name}の診断結果</b><b>🎯 {vm.firstQuest ? "まず確認する「"+vm.firstQuest.label+"」" : "今の家計を維持するチェックポイント"}</b><b>🗺️ 12カテゴリの判定を照合する診断ID</b><small>必要なら、その後に家計の見直し相談へ進めます。まずは診断の引き継ぎだけでOKです。</small></div><button className="rv3-primary" onClick={()=>lineHandoff('result_bottom')}>LINEへ診断を引き継ぐ ▶</button><small>✓ 無料　✓ あとで見返せる　✓ 登録しただけで相談予約にはなりません</small><button className="rv3-restart" onClick={onRestart}>診断をやり直す</button></section>
@@ -181,7 +284,10 @@ const CSS=`
 .rv3-reveal{opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .35s ease,transform .35s ease}.rv3-reveal.is-visible{opacity:1;transform:none;pointer-events:auto}
 .rv3-bundled{border-top:1px solid #17212b;background:#0d1721}.rv3-bundled h3{margin:8px 0}.rv3-bundled strong{display:block;color:#f5cc39;font-size:28px}.rv3-bundled p{margin:8px 0 0;color:#aeb8c2;font-size:12px;line-height:1.6}.rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3-catch{margin:8px 0 0;font-size:15px}.rv3-axes{display:grid;gap:10px;margin:20px 0 12px;padding:14px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-axis>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;color:#87929d}.rv3-axis b{color:#dce4eb;font-size:12px;text-align:right}.rv3-axis-track{position:relative;height:6px;margin-top:6px;border-radius:999px;background:#24303c}.rv3-axis-track i{position:absolute;top:50%;width:12px;height:12px;border:2px solid #07111b;border-radius:50%;background:#f5cc39;transform:translate(-50%,-50%)}.rv3-type-notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}.rv3-type-notes>div{padding:10px;border:1px solid #293644;border-radius:9px;background:#0d1721}.rv3-type-notes small{margin:0}.rv3-type-notes b{display:block;margin-top:3px;font-size:11px;line-height:1.45}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
 .rv3-primary{width:100%;min-height:56px;margin-top:20px;border:1px solid #fff;border-radius:12px;background:#f5cc39;color:#07111b;font-weight:1000;font-size:15px;box-shadow:0 7px 0 #9d7e0e}.rv3-primary:active{transform:translateY(3px);box-shadow:0 4px 0 #9d7e0e}.rv3-restart{display:block;min-height:48px;margin:22px auto 0;padding:8px 12px;border:0;background:transparent;color:#87929d;text-decoration:underline;font-size:12px}
-.rv3-benchmark{border-top:1px solid #17212b}.rv3-benchmark h3{margin:8px 0 0;font-size:22px}.rv3-benchmark-hero{margin:16px 0;padding:18px 14px;border:1px solid rgba(245,204,57,.5);border-radius:14px;text-align:center;background:#101c27}.rv3-benchmark-hero strong{display:block;margin:5px 0;color:#f5cc39;font-size:34px;line-height:1}.rv3-benchmark-hero strong em{font-size:12px;font-style:normal}.rv3-benchmark-hero span,.rv3-benchmark-hero small{display:block}.rv3-scope-groups{display:grid;gap:8px}.rv3-scope-groups .rv3-benchmark-hero{margin:8px 0}.rv3-benchmark-hero span{font-size:13px}.rv3-benchmark-hero small{margin-top:6px;color:#9da8b3;font-size:10px;line-height:1.5}.rv3-benchmark-details{margin:12px 0}.rv3-benchmark-details>summary{cursor:pointer;list-style:none;padding:12px 14px;border:1px solid #2a3946;border-radius:12px;background:#0d1721;font-weight:800;font-size:13px}.rv3-benchmark-details>summary::-webkit-details-marker{display:none}.rv3-benchmark-details>summary span{float:right;color:#f5cc39}.rv3-benchmark-details[open]>summary{border-radius:12px 12px 0 0}.rv3-benchmark-list{margin-top:10px;border-top:1px solid #293644}.rv3-benchmark-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid #293644}.rv3-benchmark-row b{font-size:13px}.rv3-benchmark-row small{margin-top:3px}.rv3-benchmark-values{display:grid;text-align:right;font-size:10px;color:#9da8b3}.rv3-benchmark-values strong{margin-top:3px;color:#f5cc39;font-size:16px}.rv3-benchmark-warning{margin-top:16px;padding:12px;border:1px solid #344454;border-radius:10px;background:#101c27;color:#aeb8c2;font-size:11px;line-height:1.7}.rv3-benchmark-warning b{color:#fff}.rv3-confirmed-gap{margin-top:14px;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;text-align:center}.rv3-confirmed-gap strong,.rv3-confirmed-gap span{display:block}.rv3-confirmed-gap strong{margin-top:4px;color:#f5cc39;font-size:26px}.rv3-confirmed-gap span{margin-top:3px;font-size:12px}.rv3-verdict{border-top:1px solid #17212b;text-align:center}.rv3-verdict h3{margin:8px 0 0;font-size:22px}.rv3-verdict-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}.rv3-verdict-details>summary::-webkit-details-marker{display:none}.rv3-verdict-details>summary>span{font-size:11px;color:#f5cc39;white-space:nowrap}.rv3-verdict-details>summary h3{margin-bottom:0}.rv3-verdict-details[open]>summary{margin-bottom:14px}.rv3-verdict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.rv3-verdict-grid>div{padding:14px 4px;border:1px solid #293644;border-radius:10px;background:#0d1721}.rv3-verdict-grid b{display:block;font-size:26px;color:#f5cc39}.rv3-verdict-grid span{display:block;margin-top:4px;font-size:10px;color:#c7d0d9}.rv3-reward{text-align:center}.rv3-money{margin-top:10px;font-size:46px;font-weight:1000;line-height:1}.rv3-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;padding:14px 0;border-block:1px solid #24303c}.rv3-grid>div+div{border-left:1px solid #24303c}.rv3-note{color:#87929d;font-size:11px;line-height:1.7}
+.rv3-social-share{margin:0 12px 14px;padding:18px 16px!important;border:1px solid #293644;border-radius:16px;background:#0b141d}.rv3-social-share h3{margin:7px 0 0;font-size:18px}.rv3-social-share p{margin:7px 0 0;color:#9da8b3;font-size:11px;line-height:1.6}.rv3-social-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.rv3-social-grid button{min-width:0;min-height:64px;padding:7px 3px;border:1px solid #334252;border-radius:11px;background:#101c27;color:#fff;font-weight:900}.rv3-social-grid button b,.rv3-social-grid button span{display:block}.rv3-social-grid button b{font-size:16px}.rv3-social-grid button span{margin-top:4px;font-size:9px;line-height:1.1}.rv3-social-grid .is-line{border-color:rgba(61,214,91,.55)}.rv3-social-grid .is-x{border-color:#596775}.rv3-social-grid .is-instagram,.rv3-social-grid .is-threads{border-color:rgba(245,204,57,.38)}
+.rv3-benchmark{border-top:1px solid #17212b}.rv3-benchmark h3{margin:8px 0 0;font-size:22px}.rv3-benchmark-hero{margin:16px 0;padding:18px 14px;border:1px solid rgba(245,204,57,.5);border-radius:14px;text-align:center;background:#101c27}.rv3-benchmark-hero strong{display:block;margin:5px 0;color:#f5cc39;font-size:34px;line-height:1}.rv3-benchmark-hero strong em{font-size:12px;font-style:normal}.rv3-benchmark-hero span,.rv3-benchmark-hero small{display:block}.rv3-scope-groups{display:grid;gap:8px}.rv3-scope-groups .rv3-benchmark-hero{margin:8px 0}.rv3-impact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}.rv3-impact-grid>div{padding:9px 4px;border:1px solid #2a3946;border-radius:9px;background:#0b151f}.rv3-impact-grid span,.rv3-impact-grid b{display:block}.rv3-impact-grid span{color:#87929d;font-size:9px}.rv3-impact-grid b{margin-top:3px;color:#fff;font-size:13px}
+.rv3-benchmark-hero span{font-size:13px}.rv3-benchmark-hero small{margin-top:6px;color:#9da8b3;font-size:10px;line-height:1.5}.rv3-benchmark-details{margin:12px 0}.rv3-top-gap{margin:18px 0 14px;padding:16px;border:1px solid rgba(245,204,57,.48);border-radius:14px;background:#0d1721}.rv3-top-gap-head span{display:block;color:#87929d;font-size:10px;font-weight:900}.rv3-top-gap-head b{display:block;margin-top:4px;font-size:20px}.rv3-top-gap-values{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.rv3-top-gap-values>div{padding:10px;border:1px solid #2c3946;border-radius:10px;background:#09131d}.rv3-top-gap-values small{margin:0}.rv3-top-gap-values b{display:block;margin-top:3px;font-size:16px}.rv3-top-gap-values em,.rv3-top-gap-diff em{font-size:10px;font-style:normal}.rv3-top-gap-diff{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 0;border-top:1px solid #293644}.rv3-top-gap-diff span{font-size:11px;color:#aeb8c2}.rv3-top-gap-diff strong{color:#f5cc39;font-size:22px}.rv3-top-gap p{margin:10px 0 0;color:#9da8b3;font-size:11px;line-height:1.65}
+.rv3-benchmark-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:14px 15px;border:1px solid #2a3946;border-radius:12px;background:#0d1721;font-weight:900;font-size:17px}.rv3-benchmark-details>summary::-webkit-details-marker{display:none}.rv3-benchmark-details>summary strong{margin-left:auto;color:#f5cc39;font-size:13px}.rv3-benchmark-details>summary span{color:#f5cc39}.rv3-benchmark-details[open]>summary{border-radius:12px 12px 0 0}.rv3-benchmark-list{margin-top:10px;border-top:1px solid #293644}.rv3-benchmark-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid #293644}.rv3-benchmark-row b{font-size:13px}.rv3-benchmark-row small{margin-top:3px}.rv3-benchmark-values{display:grid;text-align:right;font-size:10px;color:#9da8b3}.rv3-benchmark-values strong{margin-top:3px;color:#f5cc39;font-size:16px}.rv3-benchmark-warning{margin-top:16px;padding:12px;border:1px solid #344454;border-radius:10px;background:#101c27;color:#aeb8c2;font-size:11px;line-height:1.7}.rv3-benchmark-warning b{color:#fff}.rv3-confirmed-gap{margin-top:14px;padding:14px;border:1px solid rgba(245,204,57,.45);border-radius:12px;text-align:center}.rv3-confirmed-gap strong,.rv3-confirmed-gap span{display:block}.rv3-confirmed-gap strong{margin-top:4px;color:#f5cc39;font-size:26px}.rv3-confirmed-gap span{margin-top:3px;font-size:12px}.rv3-verdict{border-top:1px solid #17212b;text-align:center}.rv3-verdict h3{margin:8px 0 0;font-size:22px}.rv3-verdict-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}.rv3-verdict-details>summary::-webkit-details-marker{display:none}.rv3-verdict-details>summary>span{font-size:11px;color:#f5cc39;white-space:nowrap}.rv3-verdict-details>summary h3{margin-bottom:0}.rv3-verdict-details[open]>summary{margin-bottom:14px}.rv3-verdict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.rv3-verdict-grid>div{padding:14px 4px;border:1px solid #293644;border-radius:10px;background:#0d1721}.rv3-verdict-grid b{display:block;font-size:26px;color:#f5cc39}.rv3-verdict-grid span{display:block;margin-top:4px;font-size:10px;color:#c7d0d9}.rv3-reward{text-align:center}.rv3-money{margin-top:10px;font-size:46px;font-weight:1000;line-height:1}.rv3-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;padding:14px 0;border-block:1px solid #24303c}.rv3-grid>div+div{border-left:1px solid #24303c}.rv3-note{color:#87929d;font-size:11px;line-height:1.7}
 .rv3-section{border-top:1px solid #17212b}.rv3-section h3,.rv3-message h3,.rv3-next h3{margin:0;font-size:20px}.rv3-card{margin-top:14px;padding:15px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-row{display:flex;justify-content:space-between;gap:12px}.rv3-diff{margin-top:8px;padding:8px 10px;border:1px solid #344454;border-radius:8px;background:#101c27;font-size:12px;font-weight:900}.rv3-diff small{margin-top:2px}.rv3-answer{margin-top:9px;padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;color:#dce4eb;font-size:12px;line-height:1.55}.rv3-muted{color:#87929d;font-size:12px;line-height:1.6}
 .rv3-book-shell>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}.rv3-book-shell>summary::-webkit-details-marker{display:none}.rv3-book-shell>summary h3{margin:0}.rv3-book-shell>summary p{margin:4px 0 0}.rv3-book-shell>summary>span{font-size:11px;color:#f5cc39;white-space:nowrap}.rv3-book-shell[open]>summary{margin-bottom:14px}.rv3-book{margin-top:14px;border-top:1px solid #293644}.rv3-book-row{border-bottom:1px solid #293644}.rv3-book-row>button{display:flex;width:100%;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:0;border:0;background:transparent;color:#fff;text-align:left;touch-action:manipulation}.rv3-potential{margin-top:8px;padding:9px 10px;border:1px solid #2d3a47;border-radius:10px;background:#0b151f;display:grid;gap:3px}.rv3-potential b{font-size:12px}.rv3-potential small{font-size:10px;line-height:1.45;color:#9eabb7}.rv3-potential.is-high b{color:#f5cc39}.rv3-potential.is-medium b{color:#d9e1e8}
 .rv3-detail{padding:0 0 15px;color:#aeb8c2;font-size:12px;line-height:1.7}
@@ -189,7 +295,7 @@ const CSS=`
 .rv3-next{margin:0 20px;padding:20px!important;border:2px solid #f5cc39;border-radius:14px;background:#0b141e}.rv3-quest{margin-top:10px;padding:15px;background:#111e2b;font-weight:1000}.rv3-next-answer{padding:9px 10px;border-left:3px solid #f5cc39;background:#111e2b;font-size:12px!important}
 .rv3-line-early{margin:14px 20px 0;padding:18px 18px 20px!important;border:1px solid rgba(245,204,57,.55);border-radius:14px;background:linear-gradient(180deg,#111d28,#0b141d);box-shadow:0 12px 28px rgba(0,0,0,.2)}.rv3-line-early h3{margin:7px 0 0;font-size:18px;line-height:1.4}.rv3-line-early p{margin:8px 0 0;color:#aeb8c2;font-size:12px;line-height:1.7}.rv3-line-early p strong{color:#fff}.rv3-line-early .rv3-primary{margin-top:14px}.rv3-line-early>small{text-align:center}
 
-@media(max-width:390px){.rv3-inner{width:100%}.rv3 section{padding-left:16px;padding-right:16px}.rv3-type-card{margin-left:10px;margin-right:10px;padding-left:14px!important;padding-right:14px!important}.rv3-next{margin-left:14px;margin-right:14px;padding:18px!important}.rv3-line-early{margin-left:14px;margin-right:14px;padding:16px!important}.rv3-early-share{padding-left:16px!important;padding-right:16px!important}.rv3-early-share b{font-size:12px}.rv3-early-share button{padding:0 12px;font-size:12px}.rv3-type-notes{grid-template-columns:1fr}.rv3-benchmark-row{gap:8px}.rv3-benchmark-values{font-size:9px}}
+@media(max-width:390px){.rv3-inner{width:100%}.rv3 section{padding-left:16px;padding-right:16px}.rv3-type-card{margin-left:10px;margin-right:10px;padding-left:14px!important;padding-right:14px!important}.rv3-next{margin-left:14px;margin-right:14px;padding:18px!important}.rv3-line-early{margin-left:14px;margin-right:14px;padding:16px!important}.rv3-early-share{padding-left:16px!important;padding-right:16px!important}.rv3-early-share b{font-size:12px}.rv3-early-share button{padding:0 12px;font-size:12px}.rv3-type-notes{grid-template-columns:1fr}.rv3-social-grid{gap:5px}.rv3-social-grid button{min-height:60px}.rv3-impact-grid b{font-size:11px}.rv3-benchmark-row{gap:8px}.rv3-benchmark-values{font-size:9px}}
 @media(max-height:700px){.rv3 section{padding-top:22px;padding-bottom:22px}.rv3-clear{min-height:190px}.rv3-clear h1{font-size:24px}.rv3-title h2{font-size:27px}.rv3-money{font-size:40px}.rv3-type-art{width:112px;height:112px;margin-top:8px}}
 @media(prefers-reduced-motion:reduce){.rv3-primary,.rv3-reveal{transition:none}}
 .rv3 details>summary{min-height:48px;display:flex;align-items:center;touch-action:manipulation}
