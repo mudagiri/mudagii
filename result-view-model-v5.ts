@@ -2,6 +2,7 @@ import type {Category} from './mudagiri-diagnosis-v2';
 import type {ProfileV4} from './mudagiri-profile-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildResultViewModelV4} from './result-view-model-v4';
+import {insuranceReferenceV5} from './result-reference-v5';
 
 export type PositionLabelV5='かなり低め'|'やや低め'|'標準圏'|'やや高め'|'かなり高め';
 export type V5Status='cut'|'optimize'|'protect'|'inspect'|'ok'|'na';
@@ -221,25 +222,25 @@ export function buildResultViewModelV5(a:{
 }){
  const base=buildResultViewModelV4(a);
  const byCat=new Map(a.finalCategories.map(x=>[x.category,x]));
+ const insuranceRef=insuranceReferenceV5(a.profile);
  const rows=(base.rows as any[]).map(row=>{
-  const x=byCat.get(row.category as Category)!;
+  const original=byCat.get(row.category as Category)!;
+  const ref=row.category==='insurance'?insuranceRef:null;
+  const referenceMonthly=ref?.primary?.monthly??null;
+  const canOverlay=row.category==='insurance'&&referenceMonthly!==null&&original.record.known&&original.record.diagnosisAmount!==null;
+  const x:FinalCategoryV4=canOverlay?{...original,comparison:{...original.comparison,amount:original.record.diagnosisAmount,benchmark:referenceMonthly,quality:'reference',amountScope:a.profile.diagnosisScope,sourceVersion:ref!.primary!.sourceVersion,difference:original.record.diagnosisAmount!-referenceMonthly!,engineComparableAllowed:false,autoSavingAllowed:false,benchmarkMeta:null,reason:'V5_INSURANCE_REFERENCE_OVERLAY'}}:original;
   const position=positionFor(x);
   const v5Status=v5StatusFor(x,position);
   const c=cUpperFor(x,position);
   const aAmount=x.category==='sub'?Math.max(0,x.confirmedSaving):0;
   return {
    ...row,
-   positionAvailable:position.available,
-   positionLabel:position.label,
-   positionMethod:position.method,
-   positionRatio:position.ratio,
-   v5Status,
-   v5StatusLabel:V5_STATUS_LABEL[v5Status],
-   cUpper:c.amount,
-   cEligible:c.eligible,
-   detailReview:c.detailReview,
-   cMethod:c.method,
-   aAmount,
+   ...(canOverlay?{comparable:referenceMonthly,comparisonDifference:x.comparison.difference,evidenceLabel:ref!.primary!.label,comparisonContext:{criteria:ref!.primary!.criteria}}:{}),
+   v5ReferencePrimary:ref?.primary??null,
+   v5ReferenceSecondary:ref?.secondary??[],
+   positionAvailable:position.available,positionLabel:position.label,positionMethod:position.method,positionRatio:position.ratio,
+   v5Status,v5StatusLabel:V5_STATUS_LABEL[v5Status],
+   cUpper:c.amount,cEligible:c.eligible,detailReview:c.detailReview,cMethod:c.method,aAmount,
    nextAction:nextAction(x.category,v5Status),
   };
  });
@@ -278,7 +279,7 @@ export function buildResultViewModelV5(a:{
 
  return {
   ...base,
-  version:'MUDAGIRI_RESULT_VM_V5_0' as const,
+  version:'MUDAGIRI_RESULT_VM_V5_1' as const,
   rows,
   v5Counts,
   positionRows,
@@ -292,4 +293,4 @@ export function buildResultViewModelV5(a:{
  };
 }
 
-export const RESULT_VM_V5_VERSION='MUDAGIRI_RESULT_VM_V5_0';
+export const RESULT_VM_V5_VERSION='MUDAGIRI_RESULT_VM_V5_1';
