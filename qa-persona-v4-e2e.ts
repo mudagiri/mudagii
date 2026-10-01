@@ -141,6 +141,7 @@ const run=(profile:ProfileV4, records:ExpenseRecordsV4, appraisal:FinalAppraisal
   A.equal(x.saved.bundledContributionAmount,50000);
   A.equal(records.food.diagnosisAmount,12000);
   A.equal(records.food.householdTotal,null);
+  A.equal(x.dx.input?.freeCashFlow,288000); // 350k - 50k bundled - 12k direct spend; bundle counted exactly once.
 }
 
 // 7) 親同居・項目別 PERSONAL: ordinary shared-category total follow-up still works.
