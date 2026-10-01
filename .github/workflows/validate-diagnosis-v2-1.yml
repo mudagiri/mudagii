@@ -39,4 +39,5 @@ jobs:
       - run: npm run qa:resume
       - run: npm run qa:result-safety
       - run: npm run qa:result-cv
+      - run: npm run qa:line-handoff
       - run: npm run qa:10k
