@@ -144,7 +144,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
    </div>}
 
-   {!['scope','composition','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={onNext} disabled={!valid}>次へ ▶</button>}
+   {!['scope','composition','contribution'].includes(step)&&!(step==='housing'&&draft.housingTenure!==null&&draft.housingTenure!=='rental'&&draft.housingTenure!=='owned')&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
    <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
   </section>
  </div>;
