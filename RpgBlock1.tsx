@@ -3863,12 +3863,27 @@ input,select,textarea{font-size:16px}
 
 /* PROFILE V4.1 compact branch layout: keep conditional choices inside the fixed frame. */
 .pre-profile-v4 .mode-options{display:grid;gap:8px;margin-top:10px}
+.pre-profile-v4.pre-step-scope .mode-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4.pre-step-scope .mode-option{min-height:72px!important;padding:9px!important}
 .pre-profile-v4.pre-step-composition .mode-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .pre-profile-v4.pre-step-composition .mode-option{min-height:64px!important;padding:9px 9px!important}
 .pre-profile-v4.pre-step-composition .mode-option strong{font-size:13px;line-height:1.22}
 .pre-profile-v4.pre-step-composition .mode-option span{font-size:10px;line-height:1.25}
+.pre-profile-v4.pre-step-contribution .mode-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4.pre-step-contribution .mode-option{min-height:60px!important;padding:8px!important}
+.pre-profile-v4.pre-step-contribution .mode-option:last-child{grid-column:1/-1}
+.pre-profile-v4 .housing-main-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.pre-profile-v4 .housing-main-options .mode-option{min-height:60px!important;padding:7px 5px!important;text-align:center}
+.pre-profile-v4 .housing-main-options .mode-option strong{font-size:12px;line-height:1.2}
+.pre-profile-v4 .housing-subtype-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pre-profile-v4 .housing-subtype-options .mode-option{min-height:62px!important;padding:8px!important;text-align:center}
+.pre-profile-v4 .housing-owner-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pre-profile-v4 .housing-reset{width:100%;min-height:48px;margin-top:8px;border:0;background:transparent;color:rgba(255,255,255,.76);font:inherit;font-size:12px;font-weight:850;touch-action:manipulation}
 @media(max-height:760px){
+ .pre-profile-v4.pre-step-scope .mode-option{min-height:60px!important}
  .pre-profile-v4.pre-step-composition .mode-option{min-height:56px!important;padding:7px!important}
+ .pre-profile-v4.pre-step-contribution .mode-option{min-height:54px!important}
+ .pre-profile-v4 .housing-main-options .mode-option,.pre-profile-v4 .housing-subtype-options .mode-option{min-height:52px!important}
 }
 
 `;
