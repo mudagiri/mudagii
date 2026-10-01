@@ -1,18 +1,28 @@
 # ムダギリ診断 — START HERE / CURRENT SOURCE OF TRUTH
 
-更新: 2026-09-30  
+更新: 2026-10-01  
 STATUS: CURRENT SOT
 
 > このファイルの CURRENT SOT セクションが、歴史資料・旧V1/V2ファイルより優先です。  
 > `HANDOFF_MASTER_2026-09-23.md` は historical reference です。16タイプ/4軸など、現行と衝突する記述を正本として使わないでください。
+
+## 0.A Result V5 Design SOT — FROZEN / implementation pending
+
+- Result V5の意味論・画面順・Position/Potential仕様の正本: `RESULT_V5_MASTER_SPEC.md`
+- Version: `MUDAGIRI_RESULT_V5_MASTER_SPEC_V1_0_FROZEN`
+- Design freeze commit: `f44b24ccb169e72e7680a243b35c2ba55ea9e87c`
+- **重要:** V5は設計FROZENであり、現行Runtimeへはまだ実装していません。Runtimeの挙動は下記「現行Runtime正本」を優先します。
+- V5実装ではDiagnosis Core V1の真実を変更せず、Result意味レイヤーとして Position / Potential / Goal / NEXT QUEST を追加・再構成します。
+- V5の比較差額は表示できますが、比較差額を自動で削減可能額へ変換しません。
+- 保険REFERENCE、複数世帯美容・服飾、持ち家住宅ローンpeer reference、車scope確認はV5実装要件であり、現行resolverに未実装のものは現行AUDITを優先します。
 
 ## 0. 現行Runtime正本
 - entry: `src/main.tsx`
 - app: `MudagiriAppV2.tsx`
 - journey/input: `RpgBlock1.tsx`
 - integration: `mudagiri-integration-v3.ts`
-- result VM: `result-view-model-v3.ts`
-- result/share UI: `ResultScreenV3.tsx`
+- result VM: `result-view-model-v4.ts`（V4 payloadがある場合。legacy fallbackはV3）
+- result/share UI: `ResultScreenV4.tsx`
 - persistence: `persistence-v3.ts`
 - Type scoring: `type-questionnaire-v3.1.ts`
 - Type content: `type-content-v3.1.ts`
@@ -57,7 +67,7 @@ STATUS: CURRENT SOT
 strengthは軸スコアの大きさであり、診断精度/confidenceではありません。
 
 ## 0.4 Result / Share / LINE
-- 現行Resultは `ResultScreenV3.tsx`。
+- 現行Resultは `ResultScreenV4.tsx`。Result V5は `RESULT_V5_MASTER_SPEC.md` で設計FROZEN済みですが、Runtime実装前です。
 - Typeをidentity/share rewardとして先に見せ、LINEは後段のoptional utility CTA。
 - Share画像/本文に収入・支出金額・地域を含めない。
 - Type share流入はacquisitionへ保存し、完走との接続を可能にする。
