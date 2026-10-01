@@ -10,6 +10,7 @@ export default function HouseholdTotalV4Scene({category,value,unknown,onChange,o
  const display=value===''?'':Number(digits||'0').toLocaleString('ja-JP');
  const canDone=value!==''||unknown;
  return <div className="scan-scene scan-phase-input">
+  <button type="button" className="mode-back" onClick={onBack}>← 戻る</button>
   <img className="battle-bg" src="./assets/battle1/BG-003_SCAN_BATTLE.png" alt="" aria-hidden="true"/>
   <header className="scan-hud"><div><small>追加鑑定</small><strong>比較単位を合わせる</strong></div></header>
   <div className="scan-enemy-stage">{enemy?.encounter&&<img className="scan-enemy" src={enemy.encounter} alt=""/>}</div>
@@ -20,7 +21,6 @@ export default function HouseholdTotalV4Scene({category,value,unknown,onChange,o
    {!unknown&&<label className="scan-money"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" value={display} onChange={e=>onChange(e.target.value.replace(/\D/g,''))} placeholder="0" aria-label={copy.question}/><span>/月</span></label>}
    <button type="button" className="pre-back" onClick={onUnknown}>{unknown?'金額を入力する':'分からない'}</button>
    <button type="button" className="pre-primary pre-next" disabled={!canDone} onClick={onDone}>この条件で鑑定 ▶</button>
-   <button type="button" className="pre-back" onClick={onBack}>← 戻る</button>
   </section>
  </div>;
 }
