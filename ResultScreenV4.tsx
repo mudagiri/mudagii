@@ -345,25 +345,46 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="rv3-next"><div className="rv3-kicker">NEXT QUEST</div><h3>{vm.firstQuest?tone.next:'今の家計を維持するために。'}</h3>{vm.firstQuest?<><div className="rv3-quest">{vm.firstQuest.status==='battle'?'⚔️':vm.firstQuest.encounterStrength==='strong'?'🎯':'🔍'} {vm.firstQuest.label}</div><p><b>{vm.firstQuest.nextCheck}</b></p>{vm.firstQuest.appraisalSummary&&<p className="rv3-next-answer">「{vm.firstQuest.appraisalSummary}」という回答をもとに選びました。</p>}<small>まずはこれだけでOK。ほかの項目は下で確認できます。</small></>:<p>現在の回答では、強く優先する見直し項目はありません。定期的に明細を確認して今の状態を維持しましょう。</p>}</section>
 
   <section className="rv3-consult-route">
-   <div className="rv3-kicker">{consultCopy.kicker}</div>
-   <h3>{consultCopy.title}</h3>
-   <p>{consultCopy.body}</p>
-   {vm.consultRoute?.primary==='insurance'&&<div className="rv3-consult-reason">
+   <div className="rv3-consult-head">
+    <div><div className="rv3-kicker">PROFESSIONAL QUEST</div><h3>プロと整理するなら、どこから？</h3></div>
+    <img className="rv3-mudagiri rv3-mudagiri-guide" src={MUDAGIRI_RESULT_ART.guide} alt="" aria-hidden="true" decoding="async"/>
+   </div>
+   <p>診断上のNEXT QUESTとは別に、家計をプロと深掘りする入口です。</p>
+
+   <div className="rv3-consult-tabs" role="group" aria-label="相談テーマ">
+    {(['insurance','lifeplan','investment'] as ConsultTopicV1[]).map(topic=>{
+     const item=consultTopicCopyV1(topic);
+     const recommended=topic===recommendedConsultTopic;
+     return <button type="button" key={topic} className={(consultTopic===topic?'is-active ':'')+(recommended?'is-recommended':'')} onClick={()=>{setConsultTopic(topic);onEvent?.('consult_topic_selected',{topic,recommended})}}>
+      {recommended&&<small>今回のおすすめ</small>}
+      <b>{item.label}</b>
+     </button>;
+    })}
+   </div>
+
+   <div className="rv3-consult-copy">
+    <small>{consultTopic===recommendedConsultTopic?'今回の診断からおすすめ':'選んだ相談テーマ'}</small>
+    <b>{consultCopy.title}</b>
+    <p>{consultCopy.body}</p>
+   </div>
+
+   {consultTopic==='insurance'&&vm.consultRoute?.insuranceReview&&<div className="rv3-consult-reason">
     <span>今回の診断では</span>
     <b>保険内容を一度確認する価値あり</b>
     <small>保険料の高さだけではなく、保障目的や見直し状況から案内しています。</small>
    </div>}
-   {vm.consultRoute?.primary==='lifeplan'&&<div className="rv3-consult-reason">
-    <span>今回の診断では</span>
-    <b>家計全体を将来までつなげて整理するのが先</b>
-    <small>教育・住宅・老後・貯蓄・投資を一枚のライフプランで確認できます。</small>
+   {consultTopic==='insurance'&&!vm.consultRoute?.insuranceReview&&<div className="rv3-consult-reason is-neutral">
+    <span>保険は最優先判定ではありません</span>
+    <b>それでも保障内容だけ確認することはできます</b>
+    <small>診断結果を曲げず、希望があれば整理する入口として表示しています。</small>
    </div>}
+
    {vm.consultRoute?.homeStructureRequired&&<div className="rv3-home-qualifier">
     <span>持ち家の方だけ、もう1つ</span>
     <b>今のお住まいは？</b>
     <div>
-     <button type="button" className={homeStructure==='detached'?'is-active':''} onClick={()=>{setHomeStructure('detached');onEvent?.('consult_home_structure_selected',{value:'detached',primary:vm.consultRoute?.primary})}}>🏠 戸建て</button>
-     <button type="button" className={homeStructure==='other'?'is-active':''} onClick={()=>{setHomeStructure('other');onEvent?.('consult_home_structure_selected',{value:'other',primary:vm.consultRoute?.primary})}}>🏢 マンション等</button>
+     <button type="button" className={homeStructure==='detached'?'is-active':''} onClick={()=>{setHomeStructure('detached');onEvent?.('consult_home_structure_selected',{value:'detached',primary:recommendedConsultTopic})}}>🏠 戸建て</button>
+     <button type="button" className={homeStructure==='other'?'is-active':''} onClick={()=>{setHomeStructure('other');onEvent?.('consult_home_structure_selected',{value:'other',primary:recommendedConsultTopic})}}>🏢 マンション等</button>
     </div>
    </div>}
    {homeStructure==='detached'&&<div className="rv3-solar-route">
@@ -371,7 +392,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     <b>太陽光・蓄電池も「入れる前提なし」で適性確認</b>
     <p>屋根条件・電気使用量・既存設備で向き不向きが変わるため、設置ありきではなく住宅固定費として確認します。</p>
    </div>}
-   <button className="rv3-primary" onClick={()=>{onEvent?.('consult_route_clicked',{primary:vm.consultRoute?.primary??'lifeplan',solarEligible:homeStructure==='detached'});lineHandoff('consult_route')}}>{consultCopy.button}</button>
+   <button className="rv3-primary" onClick={()=>{onEvent?.('consult_route_clicked',{recommended:recommendedConsultTopic,selected:consultTopic,solarEligible:homeStructure==='detached'});lineHandoff('consult_route')}}>{consultCopy.button}</button>
    <small>{consultCopy.note}{homeStructure==='detached'?'　戸建ての住宅固定費チェックも一緒に引き継ぎます。':''}</small>
   </section>
 
