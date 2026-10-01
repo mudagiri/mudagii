@@ -12,6 +12,7 @@ on:
       - result-polish-v3
       - result-visual-polish-v4
       - result-gap-color-v1
+      - result-mudagiri-dialogue-v1
   pull_request:
     branches:
       - main
