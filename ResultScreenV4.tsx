@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
-import {consultRouteCopyV1} from './consult-route-v1';
+import {consultTopicCopyV1,type ConsultTopicV1} from './consult-route-v1';
 
 const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
@@ -14,6 +14,13 @@ const TYPE_ART_V31:Record<string,string>={
  VIA:'./assets/types/v31/TYPE_VIA.png',VIU:'./assets/types/v31/TYPE_VIU.png',
 };
 const TYPE_ORDER_V31=['FPA','FPU','FIA','FIU','VPA','VPU','VIA','VIU'] as const;
+const MUDAGIRI_RESULT_ART={
+ clear:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+ benchmark:'./assets/battle1/MUDAGIRI_BATTLE_READY.png',
+ verdict:'./assets/battle1/MUDAGIRI_BATTLE.png',
+ guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
+ share:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+} as const;
 
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
 function lineHandoffCode(diagnosisId:string){
@@ -46,6 +53,13 @@ function signedYen(n:number){
  if(n>0)return '+¥'+yen(n);
  if(n<0)return '-¥'+yen(Math.abs(n));
  return '±¥0';
+}
+function approxImpactYen(n:number){
+ const sign=n>0?'+':n<0?'-':'±';
+ const a=Math.abs(n);
+ if(a===0)return '±0円';
+ if(a>=10000)return sign+'約'+new Intl.NumberFormat('ja-JP').format(Math.round(a/10000))+'万円';
+ return sign+'約'+new Intl.NumberFormat('ja-JP').format(Math.round(a/1000)*1000)+'円';
 }
 function comparisonGroupLabel(label:string){
  return label==='あなたの支出'?'日常の支出':label;
@@ -123,7 +137,9 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
  const shareFileRef=useRef<File|null>(null);
  const [linePrompt,setLinePrompt]=useState<null|'after_next_quest'|'result_bottom'|'consult_route'>(null);
  const [homeStructure,setHomeStructure]=useState<'detached'|'other'|null>(null);
- const consultCopy=consultRouteCopyV1(vm.consultRoute);
+ const recommendedConsultTopic:ConsultTopicV1=vm.consultRoute?.primary??'lifeplan';
+ const [consultTopic,setConsultTopic]=useState<ConsultTopicV1>(recommendedConsultTopic);
+ const consultCopy=consultTopicCopyV1(consultTopic);
  const handoffCode=lineHandoffCode(vm.diagnosisId);
  const earlyLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'after_next_quest',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
  const bottomLineRef=useOnceVisible(onEvent,'line_cta_viewed',{placement:'result_bottom',typeCode:vm.type.code,firstQuest:vm.firstQuest?.category??null});
@@ -204,6 +220,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    placement,
    handoffCode,
    consultPrimary:vm.consultRoute?.primary??'lifeplan',
+   consultSelectedTopic:consultTopic,
    insuranceReview:!!vm.consultRoute?.insuranceReview,
    homeStructure,
    solarEligible:homeStructure==='detached'
@@ -228,7 +245,13 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   </section>
  </div>}
  <main className="rv3"><div className="rv3-inner">
-  <section className="rv3-clear"><div className="rv3-kicker">QUEST CLEAR!</div><h1>家計クエスト完了</h1><p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p></section>
+  <section className="rv3-clear">
+   <img className="rv3-mudagiri rv3-mudagiri-clear" src={MUDAGIRI_RESULT_ART.clear} alt="" aria-hidden="true" decoding="async"/>
+   <div className="rv3-kicker">MUDAGIRI QUEST CLEAR!</div>
+   <h1>ムダギリ家計クエスト、完了！</h1>
+   <p>金額だけでなく、「必要か」「満足しているか」まで含めて12項目を鑑定しました。</p>
+   <div className="rv3-mudagiri-speech">ムダギリくん「おつかれ！ここから戦果を見ていくぞ。」</div>
+  </section>
 
   <div className={`rv3-reveal ${revealed?'is-visible':''}`} aria-hidden={!revealed}>
   <section className="rv3-title rv3-type-card">
