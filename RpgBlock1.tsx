@@ -3791,7 +3791,7 @@ input,select,textarea{font-size:16px}
 .profile-choice-grid{margin-top:14px!important;gap:8px!important}
 .profile-choice{min-height:52px!important;padding:8px 7px!important;font-size:14px!important}
 .pre-panel .profile-primary-cta{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:100%!important;min-height:54px!important;margin:12px 0 0!important;font-size:17px!important}
-.pre-panel .pre-back{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:block!important;width:100%!important;min-height:34px!important;margin:6px 0 -4px!important;padding:5px 10px!important;text-align:center!important;font-size:12px!important}
+.pre-panel .pre-back{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;display:block!important;width:100%!important;min-height:48px!important;margin:6px 0 -4px!important;padding:5px 10px!important;text-align:center!important;font-size:12px!important}
 .pre-profile-footer{position:absolute!important;left:0!important;right:0!important;bottom:max(10px,env(safe-area-inset-bottom))!important;margin:0!important}
 .pre-profile-mudagiri{display:block!important;z-index:24!important;bottom:39.5%!important}
 .pre-checkpoint{top:23%!important}
@@ -3812,7 +3812,7 @@ input,select,textarea{font-size:16px}
  .profile-choice{min-height:44px!important;font-size:12px!important}
  .pre-input-wrap{margin-top:9px!important}
  .pre-panel .profile-primary-cta{min-height:48px!important;margin-top:7px!important}
- .pre-panel .pre-back{min-height:30px!important;margin-top:2px!important;padding:3px!important}
+ .pre-panel .pre-back{min-height:48px!important;margin-top:2px!important;padding:3px!important}
  .pre-profile-mudagiri{display:block!important;width:min(30vw,132px)!important;max-height:21dvh!important;bottom:38.5%!important}
 }
 @media(max-height:650px){
@@ -3839,14 +3839,14 @@ input,select,textarea{font-size:16px}
 .pre-profile .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:8px 0 0!important}
 .pre-profile .pre-select,.pre-profile .pre-age-input{height:56px!important;min-height:56px!important}
 .pre-profile .profile-primary-cta{flex:0 0 54px!important;height:54px!important;margin:10px 0 0!important}
-.pre-profile .pre-back{flex:0 0 30px!important;height:30px!important;min-height:30px!important;margin:4px 0 -3px!important}
+.pre-profile .pre-back{flex:0 0 48px!important;height:48px!important;min-height:48px!important;margin:4px 0 -3px!important}
 .pre-profile .pre-profile-mudagiri{display:block!important;bottom:calc(max(56px,calc(env(safe-area-inset-bottom) + 44px)) + 370px)!important;max-height:20dvh!important}
 .pre-complete .pre-complete-label{flex:0 0 24px!important}
 .pre-complete .pre-complete-title{flex:0 0 42px!important}
 .pre-complete .pre-panel>p{flex:0 0 42px!important;margin:2px 0 0!important}
 .pre-complete .pre-input-wrap{flex:0 0 56px!important;height:56px!important;margin:12px 0 0!important}
 .pre-complete .profile-primary-cta{flex:0 0 54px!important;margin:12px 0 0!important}
-.pre-complete .pre-back{flex:0 0 30px!important;margin:5px 0 -3px!important}
+.pre-complete .pre-back{flex:0 0 48px!important;min-height:48px!important;margin:5px 0 -3px!important}
 @media(max-height:760px){
  .pre-profile .pre-panel,.pre-complete .pre-panel{height:344px!important;min-height:344px!important;max-height:344px!important;padding:11px 15px 8px!important}
  .pre-profile .pre-dialogue{flex-basis:44px!important;min-height:44px!important;max-height:44px!important;margin-bottom:7px!important}
@@ -3855,9 +3855,20 @@ input,select,textarea{font-size:16px}
  .pre-profile .pre-input-wrap{flex-basis:50px!important;height:50px!important;margin-top:6px!important}
  .pre-profile .pre-select,.pre-profile .pre-age-input{height:50px!important;min-height:50px!important}
  .pre-profile .profile-primary-cta{flex-basis:48px!important;height:48px!important;margin-top:7px!important}
- .pre-profile .pre-back{flex-basis:27px!important;height:27px!important;min-height:27px!important;margin-top:2px!important}
+ .pre-profile .pre-back{flex-basis:48px!important;height:48px!important;min-height:48px!important;margin-top:2px!important}
  .pre-profile .pre-profile-mudagiri{bottom:calc(max(45px,calc(env(safe-area-inset-bottom) + 34px)) + 326px)!important;max-height:18dvh!important}
  .pre-complete .pre-input-wrap{flex-basis:50px!important;height:50px!important}
+}
+
+
+/* PROFILE V4.1 compact branch layout: keep conditional choices inside the fixed frame. */
+.pre-profile-v4 .mode-options{display:grid;gap:8px;margin-top:10px}
+.pre-profile-v4.pre-step-composition .mode-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pre-profile-v4.pre-step-composition .mode-option{min-height:64px!important;padding:9px 9px!important}
+.pre-profile-v4.pre-step-composition .mode-option strong{font-size:13px;line-height:1.22}
+.pre-profile-v4.pre-step-composition .mode-option span{font-size:10px;line-height:1.25}
+@media(max-height:760px){
+ .pre-profile-v4.pre-step-composition .mode-option{min-height:56px!important;padding:7px!important}
 }
 
 `;
