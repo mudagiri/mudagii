@@ -147,7 +147,7 @@ await page.getByText(/家計防衛成功|見直しクエスト完了/).waitFor()
 await shot('14-battle-complete');
 await clickButton(/診断結果を見る/);
 
-await page.getByText('家計クエスト完了').waitFor();
+await page.getByText('ムダギリ家計クエスト、完了！').waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
 const typeCard=page.locator('.rv3-type-card');
@@ -163,10 +163,15 @@ const topGap=page.locator('.rv3-top-gap');
 if(await topGap.count()){await topGap.scrollIntoViewIfNeeded();await shot('15d-result-top-gap',{allowVertical:true})}
 const moreComparisons=page.getByText(/ほかの比較項目も見る/).first();
 if(await moreComparisons.count()){await moreComparisons.scrollIntoViewIfNeeded();await moreComparisons.click();await shot('15e-result-more-comparisons',{allowVertical:true})}
+const verdictSummary=page.locator('.rv3-verdict-open');
+await verdictSummary.scrollIntoViewIfNeeded();
+await shot('15e2-result-verdict-summary',{allowVertical:true});
 const consultRoute=page.locator('.rv3-consult-route');
 await consultRoute.scrollIntoViewIfNeeded();
 await consultRoute.waitFor({state:'visible'});
 await shot('15f-result-consult-route',{allowVertical:true});
+const insuranceTopic=page.getByRole('button',{name:/保障整理/}).first();
+if(await insuranceTopic.count()){await insuranceTopic.click();await shot('15f2-result-consult-insurance',{allowVertical:true})}
 const earlyCta=page.locator('.rv3-line-early');
 await earlyCta.scrollIntoViewIfNeeded();
 await earlyCta.waitFor({state:'visible'});
