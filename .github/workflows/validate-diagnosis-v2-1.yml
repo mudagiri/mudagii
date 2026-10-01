@@ -8,7 +8,7 @@ on:
       - qa-mobile-ui-v1
       - diagnosis-result-v3-2
       - v4-scope-contract
-      - v4-scope-contract
+      - analysis-v4-10k-distribution
   pull_request:
     branches:
       - main
@@ -41,3 +41,4 @@ jobs:
       - run: npm run qa:result-cv
       - run: npm run qa:line-handoff
       - run: npm run qa:10k
+      - run: npm run qa:v4-dist
