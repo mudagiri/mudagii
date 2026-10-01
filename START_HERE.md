@@ -12,7 +12,7 @@ STATUS: CURRENT SOT
 - Referenceの出典・対象母集団・使用可否: `RESULT_V5_REFERENCE_AUDIT.md`
 - Design version: `MUDAGIRI_RESULT_V5_MASTER_SPEC_V1_0_FROZEN`
 - Runtime methodology: `MUDAGIRI_RESULT_VM_V5_2`
-- 2026-10-01 implementation/QA baseline: `9016f8628b6f3d8f581854f8be457c7d0cdd00e8`
+- 2026-10-01 implementation/QA baseline: `df5af8d0f35053cbf4ef79d4763d11c92e5079a4`
 - **V4 scope付きの新規診断はResult V5へ接続済み。legacy保存データはV4へフォールバックします。**
 - Diagnosis Core V1の「benchmark gap ≠ ムダ / 改善額」「confirmed savingのみ確定改善額」という真実は変更していません。
 - Result V5は Position / Value / Efficiency / Evidence を分離し、比較差額を自動で削減可能額へ変換しません。
