@@ -1,8 +1,9 @@
 name: V4 Visual Smoke
+# result-viral-loop-v1 visual gate
 
 on:
   push:
-    branches: ["v4-scope-contract", "result-cv-v1", "line-handoff-v1", "result-experience-v2"]
+    branches: ["v4-scope-contract", "result-cv-v1", "line-handoff-v1", "result-experience-v2", "result-viral-loop-v1"]
   workflow_dispatch:
 
 permissions:

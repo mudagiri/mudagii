@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {TYPE_CONTENT_V31} from './type-content-v3.1';
 
 const yen=(n:number|null)=>n===null?'未把握':new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const mark:Record<string,string>={battle:'⚔️',protect:'🛡️',safe:'✓',review:'🔍',na:'⚪'};
@@ -11,6 +12,8 @@ const TYPE_ART_V31:Record<string,string>={
  VPA:'./assets/types/v31/TYPE_VPA.png',VPU:'./assets/types/v31/TYPE_VPU.png',
  VIA:'./assets/types/v31/TYPE_VIA.png',VIU:'./assets/types/v31/TYPE_VIU.png',
 };
+const TYPE_ORDER_V31=['FPA','FPU','FIA','FIU','VPA','VPU','VIA','VIU'] as const;
+
 function typeArt(code:string){return TYPE_ART_V31[code]??'';}
 function lineHandoffCode(diagnosisId:string){
  const clean=String(diagnosisId||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
@@ -69,18 +72,47 @@ function useOnceVisible(onEvent:((n:string,p?:any)=>void)|undefined,eventName:st
 }
 
 async function makeTypeShareFile(vm:any){
- const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const x=canvas.getContext('2d');if(!x)return null;
- x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
- x.textAlign='center';x.fillStyle='#f5cc39';x.font='900 34px system-ui,sans-serif';x.fillText('ムダギリ診断',540,150);
- x.fillStyle='#87929d';x.font='800 26px system-ui,sans-serif';x.fillText('MY MONEY TYPE',540,225);
- const art=await loadCanvasImage(typeArt(vm.type.code));if(art){const maxW=330,maxH=300,scale=Math.min(maxW/art.naturalWidth,maxH/art.naturalHeight);const w=art.naturalWidth*scale,h=art.naturalHeight*scale;x.imageSmoothingEnabled=false;x.drawImage(art,(1080-w)/2,255-h/2,w,h)}
- x.fillStyle='#fff';x.font='900 62px system-ui,sans-serif';const nameLines=drawCenteredWrapped(x,vm.type.name,540,455,900,72,2);
- x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?600:545,860,42,2);
- const rows=[['時間軸',axisTendency(vm,'fv')],['決め方',axisTendency(vm,'pi')],['把握',axisTendency(vm,'au')]];
- rows.forEach((r,i)=>{const y=680+i*105;x.fillStyle='#0d1721';x.fillRect(150,y-55,780,88);x.textAlign='left';x.fillStyle='#87929d';x.font='800 24px system-ui,sans-serif';x.fillText(r[0],190,y);x.textAlign='right';x.fillStyle='#fff';x.font='900 31px system-ui,sans-serif';x.fillText(r[1],890,y);});
- x.textAlign='center';x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('強み',300,1025);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.strengthLabel??'',300,1065,360,32,2);x.fillStyle='#87929d';x.font='800 23px system-ui,sans-serif';x.fillText('死角',780,1025);x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';drawCenteredWrapped(x,vm.type.blindSpot??'',780,1065,360,32,2);x.fillStyle='#fff';x.font='900 30px system-ui,sans-serif';x.fillText('あなたは何タイプ？',540,1175);x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1223);
- x.fillStyle='#87929d';x.font='700 20px system-ui,sans-serif';x.fillText('収入・支出金額は画像に含まれません',540,1270);
- const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
+ const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+ const x=canvas.getContext('2d');if(!x)return null;
+ x.fillStyle='#07111b';x.fillRect(0,0,1080,1350);
+ x.strokeStyle='#f5cc39';x.lineWidth=8;x.strokeRect(44,44,992,1262);
+ x.textAlign='center';
+ x.fillStyle='#f5cc39';x.font='900 32px system-ui,sans-serif';x.fillText('MONEY TYPE UNLOCKED',540,120);
+ x.fillStyle='#87929d';x.font='800 21px system-ui,sans-serif';x.fillText('ムダギリ診断',540,160);
+ x.fillStyle='#101c27';x.fillRect(420,188,240,54);x.strokeStyle='#344454';x.lineWidth=2;x.strokeRect(420,188,240,54);
+ x.fillStyle='#fff';x.font='900 25px system-ui,sans-serif';x.fillText('TYPE '+vm.type.code,540,224);
+ const art=await loadCanvasImage(typeArt(vm.type.code));
+ if(art){
+  const maxW=360,maxH=330,scale=Math.min(maxW/art.naturalWidth,maxH/art.naturalHeight);
+  const w=art.naturalWidth*scale,h=art.naturalHeight*scale;
+  x.imageSmoothingEnabled=false;x.drawImage(art,(1080-w)/2,285-h/2,w,h);
+ }
+ x.fillStyle='#fff';x.font='900 64px system-ui,sans-serif';
+ const nameLines=drawCenteredWrapped(x,vm.type.name,540,500,900,72,2);
+ x.fillStyle='#f5cc39';x.font='900 31px system-ui,sans-serif';
+ drawCenteredWrapped(x,vm.type.catchphrase??'',540,nameLines>1?635:590,880,42,2);
+
+ x.fillStyle='#87929d';x.font='900 20px system-ui,sans-serif';x.fillText('YOUR STRENGTH',540,730);
+ x.fillStyle='#0d1721';x.fillRect(125,755,830,128);
+ x.strokeStyle='rgba(245,204,57,.55)';x.lineWidth=2;x.strokeRect(125,755,830,128);
+ x.fillStyle='#fff';x.font='900 30px system-ui,sans-serif';
+ drawCenteredWrapped(x,vm.type.strengthLabel??'',540,810,760,38,2);
+
+ const traits=[axisTendency(vm,'fv'),axisTendency(vm,'pi'),axisTendency(vm,'au')];
+ traits.forEach((v,i)=>{
+  const left=120+i*285;
+  x.fillStyle='#101c27';x.fillRect(left,930,270,78);
+  x.strokeStyle='#344454';x.strokeRect(left,930,270,78);
+  x.fillStyle='#fff';x.font='900 24px system-ui,sans-serif';x.fillText(v,left+135,978);
+ });
+ x.fillStyle='#87929d';x.font='800 19px system-ui,sans-serif';x.fillText('気をつけたいところ',540,1070);
+ x.fillStyle='#dce4eb';x.font='800 23px system-ui,sans-serif';
+ drawCenteredWrapped(x,vm.type.blindSpot??'',540,1110,820,32,2);
+ x.fillStyle='#fff';x.font='900 34px system-ui,sans-serif';x.fillText('友達は何タイプ？',540,1215);
+ x.fillStyle='#f5cc39';x.font='900 28px system-ui,sans-serif';x.fillText('#ムダギリ診断',540,1260);
+ x.fillStyle='#87929d';x.font='700 18px system-ui,sans-serif';x.fillText('収入・支出金額・都道府県は画像に含まれません',540,1300);
+ const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,'image/png'));
+ return blob?new File([blob],`mudagiri-${vm.type.code}.png`,{type:'image/png'}):null;
 }
 
 export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExternal}:{vm:any;onLine?:(x:any)=>void;onEvent?:(n:string,p?:any)=>void;onRestart?:()=>void;onBeforeExternal?:()=>void}){
@@ -104,7 +136,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
   makeTypeShareFile(vm).then(file=>{if(active)shareFileRef.current=file});
   return()=>{active=false};
  },[vm.type.code]);
- async function nativeShare(platform:'instagram'|'threads'|'other'='other'){
+ async function nativeShare(platform:'instagram'|'threads'|'other'|'challenge'='other'){
   const hook=vm.type.shareHook??vm.type.catchphrase??vm.type.description??'';
   const shareUrl=new URL(window.location.origin+window.location.pathname);
   shareUrl.searchParams.set('ref','share');
@@ -214,6 +246,29 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    <small>X・友だちLINEは投稿/送信画面へ。Instagram・Threadsはタイプ画像付きの共有メニューを開きます。</small>
   </section>
 
+  <section className="rv3-viral-loop">
+   <div className="rv3-kicker">FRIEND QUEST</div>
+   <h3>友達は何タイプ？</h3>
+   <p>8タイプを見比べると、「あの人これっぽい」が見つかるかも。</p>
+   <details className="rv3-type-gallery">
+    <summary>8タイプ全部を見る <span>⌄</span></summary>
+    <div className="rv3-type-gallery-grid">
+     {TYPE_ORDER_V31.map((code)=>{
+      const item=(TYPE_CONTENT_V31 as Record<string,any>)[code];
+      const mine=code===vm.type.code;
+      return <div className={`rv3-mini-type ${mine?'is-mine':''}`} key={code}>
+       <div className="rv3-mini-type-head">{mine&&<span>あなた</span>}<small>TYPE {code}</small></div>
+       <img src={typeArt(code)} alt="" aria-hidden="true" decoding="async"/>
+       <b>{item.name}</b>
+       <p>{item.catchphrase}</p>
+      </div>;
+     })}
+    </div>
+   </details>
+   <button type="button" className="rv3-friend-invite" onClick={()=>nativeShare('challenge')}>友達にも診断させる ▶</button>
+   <small>診断リンクとあなたのタイプカードを共有します。金額は共有されません。</small>
+  </section>
+
   <section className="rv3-benchmark">
    <div className="rv3-kicker">HOUSEHOLD BENCHMARK</div>
    <h3>{tone.gap}</h3>
@@ -282,8 +337,9 @@ const CSS=`
 .rv3{min-height:100svh;min-height:100dvh;background:#070d14;color:#fff;overflow-x:hidden;font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans JP",sans-serif}.rv3 *{box-sizing:border-box}.rv3 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.rv3 button:active{transform:translateY(1px) scale(.995)}.rv3-inner{width:min(100%,430px);margin:0 auto;padding-bottom:max(72px,env(safe-area-inset-bottom))}
 .rv3 section{padding:24px 20px}.rv3-clear{min-height:220px;display:grid;align-content:center;text-align:center}.rv3-clear h1{margin:18px 0 0;font-size:28px;line-height:1.25}.rv3-clear p{margin:10px 0 0;color:#aeb8c2;font-size:13px;line-height:1.6}.rv3-kicker{color:#f5cc39;font-size:12px;font-weight:1000;letter-spacing:.15em}.rv3-count{display:flex;justify-content:center;gap:8px;margin-top:18px;font-size:11px}.rv3-count span{padding:7px 9px;border:1px solid #293644;border-radius:999px;background:#0d1721}.rv3-count b{font-size:13px}
 .rv3-reveal{opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .35s ease,transform .35s ease}.rv3-reveal.is-visible{opacity:1;transform:none;pointer-events:auto}
-.rv3-bundled{border-top:1px solid #17212b;background:#0d1721}.rv3-bundled h3{margin:8px 0}.rv3-bundled strong{display:block;color:#f5cc39;font-size:28px}.rv3-bundled p{margin:8px 0 0;color:#aeb8c2;font-size:12px;line-height:1.6}.rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3-catch{margin:8px 0 0;font-size:15px}.rv3-axes{display:grid;gap:10px;margin:20px 0 12px;padding:14px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-axis>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;color:#87929d}.rv3-axis b{color:#dce4eb;font-size:12px;text-align:right}.rv3-axis-track{position:relative;height:6px;margin-top:6px;border-radius:999px;background:#24303c}.rv3-axis-track i{position:absolute;top:50%;width:12px;height:12px;border:2px solid #07111b;border-radius:50%;background:#f5cc39;transform:translate(-50%,-50%)}.rv3-type-notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}.rv3-type-notes>div{padding:10px;border:1px solid #293644;border-radius:9px;background:#0d1721}.rv3-type-notes small{margin:0}.rv3-type-notes b{display:block;margin-top:3px;font-size:11px;line-height:1.45}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
+.rv3-bundled{border-top:1px solid #17212b;background:#0d1721}.rv3-bundled h3{margin:8px 0}.rv3-bundled strong{display:block;color:#f5cc39;font-size:28px}.rv3-bundled p{margin:8px 0 0;color:#aeb8c2;font-size:12px;line-height:1.6}.rv3-title{border-block:1px solid #24303c;text-align:center}.rv3-title h2{margin:9px 0 4px;color:#f5cc39;font-size:30px;line-height:1.15}.rv3-title p,.rv3-card p{font-size:13px;line-height:1.65;color:#c7d0d9}.rv3-catch{margin:8px 0 0;font-size:15px}.rv3-axes{display:grid;gap:10px;margin:20px 0 12px;padding:14px;border:1px solid #293644;border-radius:12px;background:#0d1721}.rv3-axis>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;color:#87929d}.rv3-axis b{color:#dce4eb;font-size:12px;text-align:right}.rv3-axis-track{position:relative;height:6px;margin-top:6px;border-radius:999px;background:#24303c}.rv3-axis-track i{position:absolute;top:50%;width:12px;height:12px;border:2px solid #07111b;border-radius:50%;background:#f5cc39;transform:translate(-50%,-50%)}.rv3-type-notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}.rv3-type-notes>div:first-child{border-color:rgba(245,204,57,.58)!important;background:rgba(245,204,57,.06)!important}.rv3-type-notes>div:first-child small{color:#f5cc39}.rv3-type-notes>div:first-child b{font-size:13px!important}.rv3-type-notes>div{padding:10px;border:1px solid #293644;border-radius:9px;background:#0d1721}.rv3-type-notes small{margin:0}.rv3-type-notes b{display:block;margin-top:3px;font-size:11px;line-height:1.45}.rv3 small{display:block;margin-top:8px;color:#87929d;font-size:11px;line-height:1.6}.rv3-mode{margin-top:8px;color:#9da8b3;font-size:12px}
 .rv3-primary{width:100%;min-height:56px;margin-top:20px;border:1px solid #fff;border-radius:12px;background:#f5cc39;color:#07111b;font-weight:1000;font-size:15px;box-shadow:0 7px 0 #9d7e0e}.rv3-primary:active{transform:translateY(3px);box-shadow:0 4px 0 #9d7e0e}.rv3-restart{display:block;min-height:48px;margin:22px auto 0;padding:8px 12px;border:0;background:transparent;color:#87929d;text-decoration:underline;font-size:12px}
+.rv3-viral-loop{margin:0 12px 18px;padding:18px 16px!important;border:1px solid rgba(245,204,57,.34);border-radius:16px;background:linear-gradient(180deg,#0d1823,#09121b)}.rv3-viral-loop h3{margin:7px 0 0;font-size:20px}.rv3-viral-loop>p{margin:7px 0 0;color:#aeb8c2;font-size:12px;line-height:1.65}.rv3-type-gallery{margin-top:14px}.rv3-type-gallery>summary{min-height:52px!important;padding:0 14px;border:1px solid #344454;border-radius:11px;background:#101c27;font-size:15px;font-weight:1000;cursor:pointer;list-style:none}.rv3-type-gallery>summary::-webkit-details-marker{display:none}.rv3-type-gallery>summary span{margin-left:auto;color:#f5cc39}.rv3-type-gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rv3-mini-type{position:relative;min-width:0;padding:10px;border:1px solid #293644;border-radius:12px;background:#0b141d;text-align:center}.rv3-mini-type.is-mine{border-color:#f5cc39;box-shadow:inset 0 0 0 1px rgba(245,204,57,.32)}.rv3-mini-type-head{display:flex;align-items:center;justify-content:space-between;min-height:18px}.rv3-mini-type-head span{padding:2px 5px;border-radius:999px;background:#f5cc39;color:#07111b;font-size:8px;font-weight:1000}.rv3-mini-type-head small{margin:0 0 0 auto!important;font-size:8px!important}.rv3-mini-type img{display:block;width:74px;height:74px;margin:5px auto 2px;object-fit:contain;image-rendering:pixelated}.rv3-mini-type>b{display:block;font-size:11px;line-height:1.35}.rv3-mini-type p{margin:4px 0 0;color:#87929d;font-size:8px;line-height:1.4}.rv3-friend-invite{width:100%;min-height:54px;margin-top:14px;border:1px solid #fff;border-radius:11px;background:#fff;color:#07111b;font-size:14px;font-weight:1000}
 .rv3-social-share{margin:0 12px 14px;padding:18px 16px!important;border:1px solid #293644;border-radius:16px;background:#0b141d}.rv3-social-share h3{margin:7px 0 0;font-size:18px}.rv3-social-share p{margin:7px 0 0;color:#9da8b3;font-size:11px;line-height:1.6}.rv3-social-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.rv3-social-grid button{min-width:0;min-height:64px;padding:7px 3px;border:1px solid #334252;border-radius:11px;background:#101c27;color:#fff;font-weight:900}.rv3-social-grid button b,.rv3-social-grid button span{display:block}.rv3-social-grid button b{font-size:16px}.rv3-social-grid button span{margin-top:4px;font-size:9px;line-height:1.1}.rv3-social-grid .is-line{border-color:rgba(61,214,91,.55)}.rv3-social-grid .is-x{border-color:#596775}.rv3-social-grid .is-instagram,.rv3-social-grid .is-threads{border-color:rgba(245,204,57,.38)}
 .rv3-benchmark{border-top:1px solid #17212b}.rv3-benchmark h3{margin:8px 0 0;font-size:22px}.rv3-benchmark-hero{margin:16px 0;padding:18px 14px;border:1px solid rgba(245,204,57,.5);border-radius:14px;text-align:center;background:#101c27}.rv3-benchmark-hero strong{display:block;margin:5px 0;color:#f5cc39;font-size:34px;line-height:1}.rv3-benchmark-hero strong em{font-size:12px;font-style:normal}.rv3-benchmark-hero span,.rv3-benchmark-hero small{display:block}.rv3-scope-groups{display:grid;gap:8px}.rv3-scope-groups .rv3-benchmark-hero{margin:8px 0}.rv3-impact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}.rv3-impact-grid>div{padding:9px 4px;border:1px solid #2a3946;border-radius:9px;background:#0b151f}.rv3-impact-grid span,.rv3-impact-grid b{display:block}.rv3-impact-grid span{color:#87929d;font-size:9px}.rv3-impact-grid b{margin-top:3px;color:#fff;font-size:13px}
 .rv3-benchmark-hero span{font-size:13px}.rv3-benchmark-hero small{margin-top:6px;color:#9da8b3;font-size:10px;line-height:1.5}.rv3-benchmark-details{margin:12px 0}.rv3-top-gap{margin:18px 0 14px;padding:16px;border:1px solid rgba(245,204,57,.48);border-radius:14px;background:#0d1721}.rv3-top-gap-head span{display:block;color:#87929d;font-size:10px;font-weight:900}.rv3-top-gap-head b{display:block;margin-top:4px;font-size:20px}.rv3-top-gap-values{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.rv3-top-gap-values>div{padding:10px;border:1px solid #2c3946;border-radius:10px;background:#09131d}.rv3-top-gap-values small{margin:0}.rv3-top-gap-values b{display:block;margin-top:3px;font-size:16px}.rv3-top-gap-values em,.rv3-top-gap-diff em{font-size:10px;font-style:normal}.rv3-top-gap-diff{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 0;border-top:1px solid #293644}.rv3-top-gap-diff span{font-size:11px;color:#aeb8c2}.rv3-top-gap-diff strong{color:#f5cc39;font-size:22px}.rv3-top-gap p{margin:10px 0 0;color:#9da8b3;font-size:11px;line-height:1.65}
