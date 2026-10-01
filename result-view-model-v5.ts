@@ -279,7 +279,8 @@ export function buildResultViewModelV5(a:{
 
  return {
   ...base,
-  version:'MUDAGIRI_RESULT_VM_V5_1' as const,
+  version:'MUDAGIRI_RESULT_VM_V5_0' as const,
+  methodologyVersion:'MUDAGIRI_RESULT_VM_V5_1' as const,
   rows,
   v5Counts,
   positionRows,
