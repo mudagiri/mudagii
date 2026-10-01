@@ -9,6 +9,9 @@ const checks=[
  ['unused amount can spawn cancellation check',src.includes("currentItem.kind==='subUnusedAmount'&&typeof answer.subUnusedAmount==='number'&&answer.subUnusedAmount>0")],
  ['insurance overview can spawn review timing',src.includes("currentItem.kind==='insuranceOverview'&&(answer.insurancePurpose==='mostly'||answer.insurancePurpose==='unclear')")],
  ['beauty sex can spawn satisfaction',src.includes("currentItem.kind==='beautySex'")&&src.includes('beautySexAlreadyAsked')],
+ ['scan has back control',src.includes('onBack={()=>{if(scanIndex>0)setScanIndex')&&src.includes('className="journey-back"')],
+ ['type quiz has back control',src.includes("onBack={()=>{if(typeIndex>0)setTypeIndex")&&src.includes('function TypeQuizScene')],
+ ['appraisal uses history stack for safe back',src.includes('appraisalHistory')&&src.includes('setAppraisalHistory(h=>[...h')&&src.includes('setAppraisalAnswers(prev.answers)')],
 ];
 for(const [name,ok] of checks){if(!ok)throw new Error('APPRAISAL_FLOW_V4_QA_FAIL:'+name);console.log('PASS',name)}
 console.log('APPRAISAL_FLOW_V4_QA_PASS',checks.length);

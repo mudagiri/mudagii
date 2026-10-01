@@ -134,5 +134,10 @@ ok(screen.includes('この差額＝ムダ額ではありません。'),'comparis
 ok(screen.includes('enemyDetail(x)'),'enemy atlas owns detailed category disclosure');
 ok(!screen.includes('12 CATEGORY CODEX'),'standalone codex removed after atlas integration');
 ok(screen.includes('運用益は含みません'),'future horizon note');
+ok(!screen.includes('<details className="v51-type-detail"'),'type detail is visible without extra tap');
+ok(screen.includes('この称号をシェア'),'type share is visible at reward moment');
+ok(screen.includes("share('x')")&&screen.includes("share('instagram')")&&screen.includes("share('threads')")&&screen.includes("share('line')"),'type share exposes four destinations');
+ok(screen.includes("help:'今すぐ止めやすい'")&&screen.includes("help:'価値は残して見直せそう'")&&screen.includes("help:'大事なので今は維持'")&&screen.includes("help:'まず中身の確認が必要'"),'verdict meanings are explained');
+ok(screen.includes('この支出の見直し余地'),'internal Potential wording is hidden from users');
 
 console.log('RESULT_V5_QA_PASS');
