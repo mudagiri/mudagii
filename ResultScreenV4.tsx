@@ -303,7 +303,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
    <p className="rv3-muted">あなたの条件に合わせて、比較できる項目だけを比べています。比較単位が違う支出は合算しません。</p>
 
    <div className="rv3-scope-groups">
-    {(vm.comparisonGroups??[]).map((g:any)=><div className="rv3-benchmark-hero" key={g.scopeLabel}>
+    {(vm.comparisonGroups??[]).map((g:any)=><div className={"rv3-benchmark-hero "+(g.differenceMonthly>0?'is-above':g.differenceMonthly<0?'is-below':'is-even')} key={g.scopeLabel}>
      <small>{comparisonGroupLabel(g.scopeLabel)}・{g.categoryCount}項目</small>
      <strong>{signedYen(g.differenceMonthly)}<em>/月</em></strong>
      <div className="rv3-impact-grid">
@@ -315,7 +315,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
     </div>)}
    </div>
 
-   {topBenchmarkRow&&<div className="rv3-top-gap">
+   {topBenchmarkRow&&<div className={"rv3-top-gap "+(topBenchmarkRow.comparisonDifference>0?'is-above':topBenchmarkRow.comparisonDifference<0?'is-below':'is-even')}>
     <div className="rv3-top-gap-head"><span>いちばん差が大きかった項目</span><b>{topBenchmarkRow.label}</b></div>
     <div className="rv3-top-gap-values">
      <div><small>{topBenchmarkRow.comparisonAmountLabel??'あなた'}</small><b>¥{yen(topBenchmarkRow.comparisonAmount??topBenchmarkRow.amount)}<em>/月</em></b></div>
@@ -328,7 +328,7 @@ export default function ResultScreenV4({vm,onLine,onEvent,onRestart,onBeforeExte
 
    {otherBenchmarkRows.length>0&&<details className="rv3-benchmark-details">
     <summary>ほかの比較項目も見る <strong>{otherBenchmarkRows.length}件</strong><span>⌄</span></summary>
-    <div className="rv3-benchmark-list">{otherBenchmarkRows.map((x:any)=><div className="rv3-benchmark-row" key={`b-${x.category}`}>
+    <div className="rv3-benchmark-list">{otherBenchmarkRows.map((x:any)=><div className={"rv3-benchmark-row "+(x.comparisonDifference>0?'is-above':x.comparisonDifference<0?'is-below':'is-even')} key={`b-${x.category}`}>
      <div><b>{x.label}</b><small>{x.comparisonContext?.criteria?.join(' × ')||x.comparator.label}</small></div>
      <div className="rv3-benchmark-values"><span>{x.comparisonAmountLabel??'あなた'} ¥{yen(x.comparisonAmount??x.amount)}</span><span>基準 ¥{yen(x.comparable)}</span><strong>{signedYen(x.comparisonDifference)}</strong></div>
     </div>)}</div>
@@ -622,6 +622,35 @@ const CSS=`
 }
 .rv3-top-gap-head span{color:#8fd9f2!important}
 .rv3-benchmark-details>summary{border-color:rgba(98,200,236,.36)!important;background:#11293a!important}
+/* Benchmark direction semantics: above=warm attention, below=cool neutral, even=muted. */
+.rv3-benchmark-hero.is-above>strong{color:#ffd65f!important}
+.rv3-benchmark-hero.is-below>strong{color:#79d9e8!important}
+.rv3-benchmark-hero.is-even>strong{color:#c7d4dc!important}
+.rv3-benchmark-hero.is-above .rv3-impact-grid .is-10y{
+ border-color:rgba(246,200,75,.68)!important;
+ background:linear-gradient(180deg,rgba(246,200,75,.12),#122638)!important;
+}
+.rv3-benchmark-hero.is-above .rv3-impact-grid .is-10y span,
+.rv3-benchmark-hero.is-above .rv3-impact-grid .is-10y b{color:#ffd65f!important}
+.rv3-benchmark-hero.is-below .rv3-impact-grid .is-10y{
+ border-color:rgba(98,200,236,.64)!important;
+ background:linear-gradient(180deg,rgba(98,200,236,.10),#10293a)!important;
+}
+.rv3-benchmark-hero.is-below .rv3-impact-grid .is-10y span,
+.rv3-benchmark-hero.is-below .rv3-impact-grid .is-10y b{color:#79d9e8!important}
+.rv3-benchmark-hero.is-even .rv3-impact-grid .is-10y{
+ border-color:rgba(170,187,199,.34)!important;
+ background:#132330!important;
+}
+.rv3-benchmark-hero.is-even .rv3-impact-grid .is-10y span,
+.rv3-benchmark-hero.is-even .rv3-impact-grid .is-10y b{color:#c7d4dc!important}
+.rv3-top-gap.is-above .rv3-top-gap-diff strong,
+.rv3-benchmark-row.is-above .rv3-benchmark-values strong{color:#ffd65f!important}
+.rv3-top-gap.is-below .rv3-top-gap-diff strong,
+.rv3-benchmark-row.is-below .rv3-benchmark-values strong{color:#79d9e8!important}
+.rv3-top-gap.is-even .rv3-top-gap-diff strong,
+.rv3-benchmark-row.is-even .rv3-benchmark-values strong{color:#c7d4dc!important}
+
 
 .rv3-verdict-open{
  border-top:1px solid rgba(104,210,189,.22)!important;
