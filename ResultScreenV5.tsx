@@ -19,12 +19,12 @@ const ART={
  friend:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
 } as const;
 const STATUS_META:any={
- cut:{mark:'⚔️',label:'斬る'},
- optimize:{mark:'✨',label:'整える'},
- protect:{mark:'🛡️',label:'守る'},
- inspect:{mark:'🔍',label:'見極める'},
- ok:{mark:'○',label:'今はそのままでOK'},
- na:{mark:'⚪',label:'対象外'},
+ cut:{mark:'⚔️',label:'斬る',help:'今すぐ止めやすい'},
+ optimize:{mark:'✨',label:'整える',help:'価値は残して見直せそう'},
+ protect:{mark:'🛡️',label:'守る',help:'大事なので今は維持'},
+ inspect:{mark:'🔍',label:'見極める',help:'まず中身の確認が必要'},
+ ok:{mark:'○',label:'今はそのままでOK',help:'今は触らなくてOK'},
+ na:{mark:'⚪',label:'対象外',help:'比較対象外'},
 };
 const GOALS=[
  ['home','住まい'],['family','家族・教育'],['travel','旅行・趣味'],['invest','資産形成'],
@@ -134,6 +134,10 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
  });
  const atlasTop=atlasRows.slice(0,3),atlasRest=atlasRows.slice(3);
  const statusRows=(status:string)=>vm.rows.filter((x:any)=>x.v5Status===status&&x.known&&Number(x.amount)>0);
+ const openEnemyDetail=(category:string)=>{
+  setAtlasOpen(true);setOpen(category);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById('enemy-'+category)?.scrollIntoView({behavior:'smooth',block:'center'})));
+ };
  const future5=adjusted.upper*60;
  const enemyDetail=(x:any)=> <div className="v5-detail v51-atlas-detail">
   <p><b>あなた：</b>{x.known?'¥'+yen(x.amount)+'/月':'未把握'}</p>
@@ -145,7 +149,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
   <p><b>判定：</b>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</p>
   <p><b>理由：</b>{x.reason}</p>
   <p><b>次に確認：</b>{x.nextAction}</p>
-  {x.cUpper>0&&<p><b>Potential算入：</b>最大 ¥{yen(x.cUpper)}/月 <small>※比較差額そのものではありません</small></p>}
+  {x.cUpper>0&&<p><b>この支出の見直し余地：</b>最大 ¥{yen(x.cUpper)}/月 <small>※比較差額をそのまま削れるという意味ではありません</small></p>}
   {x.detailReview&&<p className="is-warn">差が大きいため、内訳確認を推奨します。</p>}
  </div>;
  return <>
@@ -202,7 +206,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
     <img src={ART.guide} alt="" aria-hidden="true"/>
    </div>
    <div className="v51-enemy-deck">
-    {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);const isOpen=open===x.category;return <div key={x.category} className="v51-atlas-entry">
+    {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);const isOpen=open===x.category;return <div key={x.category} id={"enemy-"+x.category} className="v51-atlas-entry">
      <button type="button" className={"v51-enemy-card is-"+x.v5Status+(isOpen?' is-open':'')} onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}>
       <div className="v51-enemy-portrait"><img src={enemy.normal} alt={enemy.name}/><span>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</span></div>
       <div className="v51-enemy-copy"><small>{x.label}</small><h3>{enemy.name}</h3><div className="v51-position-badge">{x.positionLabel??'比較条件を確認'}</div>
@@ -217,7 +221,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
     </div>})}
    </div>
    {atlasRest.length>0&&<><button type="button" className="v51-atlas-more" onClick={()=>setAtlasOpen(v=>!v)}>{atlasOpen?'閉じる':'残りの敵も見る（'+atlasRest.length+'体）'} <span>{atlasOpen?'↑':'↓'}</span></button>
-    {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const isOpen=open===x.category;return <div key={x.category} className={"v51-atlas-mini-entry is-"+x.v5Status}>
+    {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const isOpen=open===x.category;return <div key={x.category} id={"enemy-"+x.category} className={"v51-atlas-mini-entry is-"+x.v5Status}>
      <button type="button" className="v51-enemy-mini" onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??'比較保留'}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong><span>{isOpen?'↑':'⌄'}</span></button>
      {isOpen&&enemyDetail(x)}
     </div>})}</div>}</>}
@@ -235,7 +239,8 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
       ['inspect','見極める敵',vm.v5Counts.inspect],
     ].map(([status,label,count]:any)=><div key={status} className={"v51-battle-group is-"+status}>
       <div className="v51-battle-group-head"><span>{STATUS_META[status].mark}</span><b>{label}</b><strong>{count}体</strong></div>
-      <div className="v51-battle-portraits">{statusRows(status).slice(0,6).map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <span key={x.category} title={enemy.name}><img src={enemy.normal} alt={enemy.name}/></span>})}{Number(count)>6&&<em>+{Number(count)-6}</em>}{Number(count)===0&&<small>なし</small>}</div>
+      <div className="v51-status-help">{STATUS_META[status].help}</div>
+      <div className="v51-battle-portraits">{statusRows(status).slice(0,6).map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <button type="button" key={x.category} title={enemy.name+"の詳細を見る"} aria-label={enemy.name+"の詳細を見る"} onClick={()=>openEnemyDetail(x.category)}><img src={enemy.normal} alt=""/></button>})}{Number(count)>6&&<em>+{Number(count)-6}</em>}{Number(count)===0&&<small>なし</small>}</div>
      </div>)}
    </div>
    <div className="v51-verdict-foot">敵をタップすると、その場で鑑定理由まで確認できます。</div>
@@ -243,13 +248,17 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
 
   <section className="v5-card v5-future v51-future" data-section="FUTURE MONEY">
    <div className="v51-future-head"><div><div className="v51-jp-kicker is-dark">未来の戦利品</div><h2>未来に回せる可能性</h2></div><img src={ART.guide} alt="" aria-hidden="true"/></div>
-   {adjusted.upper>0?<><strong className="v5-money">{monthlyText(adjusted.lower,adjusted.upper)}</strong>
+   {adjusted.upper>0?<><div className="v51-money-hero" aria-label={monthlyText(adjusted.lower,adjusted.upper)}>
+    <span className="v51-money-prefix">{adjusted.lower>0?'毎月':'毎月 最大'}</span>
+    {adjusted.lower>0&&roundHero(adjusted.upper)>roundHero(adjusted.lower)?<><strong>{yen(roundHero(adjusted.lower))}</strong><i>〜</i><strong>{yen(roundHero(adjusted.upper))}</strong></>:<strong>{yen(roundHero(adjusted.upper))}</strong>}
+    <span className="v51-money-unit">円</span>
+   </div>
    <div className="v51-future-talk">ムダギリくん「全部削る金額じゃないぞ。ここから“本当に整えられる分”を見つけるんだ。」</div>
    <details className="v5-evidence"><summary>この数字の内訳を見る⌄</summary><div><span>確認できている金額</span><b>¥{yen(vm.potential.confirmedA)}/月</b></div><div><span>比較から見える追加余地</span><b>最大 ¥{yen(vm.potential.cUpper)}/月</b></div>{precisionApplied!==null&&<div><span>精度UPで本人確認した金額</span><b>¥{yen(precisionApplied)}/月</b></div>}<small>比較差額をそのまま足しているわけではありません。</small></details></>:vm.potential.reviewCount>0?<><strong className="v5-money is-text">見直しポイント {vm.potential.reviewCount}件</strong><div className="v51-future-talk">ムダギリくん「金額はまだ決めつけない。中身を見れば、次に整える場所が見えてくるぞ。」</div></>:<><strong className="v5-money is-text">今は大きく整えるところなし</strong><div className="v51-future-talk">ムダギリくん「無理にムダを作る必要はない。今の状態を守りながら未来を決めよう。」</div></>}
   </section>
 
   {adjusted.upper>0&&<section className="v5-card v5-impact v51-impact">
-   <div className="v51-jp-kicker is-dark">積み重ねた戦利品</div><h2>時間を味方につけると、これくらい。</h2>
+   <div className="v51-jp-kicker is-dark">積み重ねた戦利品</div><h2>積み重ねると、ここまで変わる。</h2>
    <div className="v5-impact-grid"><div><span>1年</span><b>{rangeText(adjusted.lower*12,adjusted.upper*12)}</b></div><div><span>5年</span><b>{rangeText(adjusted.lower*60,adjusted.upper*60)}</b></div><div className="is-10"><span>10年</span><b>{rangeText(adjusted.lower*120,adjusted.upper*120)}</b><i aria-hidden="true"/></div></div>
    <small>※今と同じ状態が続いた場合の単純累計です。運用益は含みません。</small>
   </section>}
@@ -361,6 +370,13 @@ const CSS=`
 .v51-atlas-detail{margin:7px 2px 12px;padding:12px 13px;border:1px solid #41647a;border-radius:11px;background:rgba(6,20,30,.78);animation:v51detailin .16s ease-out}.v51-atlas-detail p{margin:0!important;font-size:11px!important;line-height:1.65!important;color:#dce5ea!important}.v51-atlas-detail p+p{margin-top:7px!important}.v51-atlas-detail small{display:inline!important;font-size:9px!important}.v51-atlas-detail .is-warn{color:#f1cb78!important}
 .v51-atlas-mini-entry{border-bottom:1px solid rgba(255,255,255,.08)}.v51-atlas-mini-entry:last-child{border-bottom:0}.v51-enemy-mini{width:100%;border:0!important;background:transparent!important;color:#fff;text-align:left}.v51-enemy-mini>span{width:22px;text-align:center;color:#9db5c3;font-weight:900}.v51-atlas-mini-entry .v51-atlas-detail{margin:0 0 10px}
 @keyframes v51detailin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+.v51-status-help{margin-top:4px;color:#9fb7b5;font-size:8px;font-weight:800;line-height:1.35}
+.v51-battle-portraits>button{width:42px;height:42px;padding:0;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:#0b1c26;overflow:hidden;cursor:pointer;touch-action:manipulation;transition:transform .14s ease,border-color .14s ease}.v51-battle-portraits>button:active{transform:scale(.92)}.v51-battle-portraits>button img{width:100%;height:100%;object-fit:contain}
+.v51-money-hero{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:3px 5px;margin:20px auto 10px;color:#142332;font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.055em;line-height:.92;text-align:center;text-shadow:0 2px 0 rgba(255,255,255,.35)}
+.v51-money-prefix{flex-basis:100%;margin-bottom:7px;color:#604a05;font-family:system-ui,sans-serif;font-size:16px;font-weight:1000;letter-spacing:.06em;line-height:1}
+.v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}
+.v51-impact>h2{font-size:34px!important;line-height:1.08!important;letter-spacing:-.045em;font-weight:1000!important}.v51-impact .v5-impact-grid b{font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-weight:1000;letter-spacing:-.055em}.v51-impact .v5-impact-grid .is-10 b{font-size:clamp(38px,10vw,54px)!important;line-height:1!important;text-shadow:0 2px 0 rgba(255,255,255,.55)}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
 `;
