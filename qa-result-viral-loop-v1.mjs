@@ -15,7 +15,7 @@ const checks=[
  ['share card privacy statement includes location',result.includes('収入・支出金額・都道府県は画像に含まれません')],
  ['friend loop has no financial fields',(()=>{
    const a=result.indexOf('className="rv3-viral-loop"');
-   const b=result.indexOf('className="rv3-benchmark"',a);
+   const b=result.indexOf('className="rv3-next rv3-save"',a);
    const block=result.slice(a,b);
    return a>=0&&b>a&&!/(monthlyTakeHome|comparisonDifference|confirmedSaving|improvement|income|expense)/.test(block);
  })()],
