@@ -114,6 +114,18 @@ await clickButton(/次へ/);
 await waitHeading('毎月の通信費はいくら？');
 await shot('08-scan-first');
 for(let i=0;i<11;i++){
+  if(i===1){
+    const back=page.getByRole('button',{name:/戻る/}).first();
+    await back.waitFor({state:'visible'});
+    await back.click();
+    const previousInput=page.locator('.scan-money input').first();
+    await previousInput.waitFor({state:'visible'});
+    if((await previousInput.inputValue()).replace(/,/g,'')!=='0')throw new Error('SCAN_BACK_DID_NOT_PRESERVE_VALUE');
+    await clickButton(/気配を探る/);
+    const previousNext=page.getByRole('button',{name:/次を探す|探索結果へ/}).first();
+    await previousNext.waitFor({state:'visible'});
+    await previousNext.click();
+  }
   const input=page.locator('.scan-money input').first();
   await input.waitFor({state:'visible'});
   // single-person scan order: mobile, energy, sub, food...
@@ -142,6 +154,15 @@ await clickButton(/お金タイプを解析する/);
 await page.getByText('MONEY STYLE ANALYSIS').waitFor();
 await shot('11-type-quiz');
 for(let i=0;i<8;i++){
+  if(i===1){
+    const back=page.getByRole('button',{name:/戻る/}).first();
+    await back.waitFor({state:'visible'});
+    await back.click();
+    const previous=page.getByRole('radio',{name:/かなり A 寄り/}).first();
+    await previous.waitFor({state:'visible'});
+    await previous.click();
+    await page.waitForTimeout(80);
+  }
   const opt=page.getByRole('radio',{name:/かなり A 寄り/}).first();
   await opt.waitFor({state:'visible'});
   await opt.click();
@@ -161,6 +182,7 @@ await clickButton(/診断結果を見る/);
 await page.getByText(/家計クエスト/).first().waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
+for(const label of ['𝕏','Instagram','Threads','LINE']){const btn=page.locator('.v51-type-share button',{hasText:label}).first();await btn.waitFor({state:'visible'})}
 for(const [name,selector] of [
   ['15a-result-type','.v5-type'],
   ['15b-result-position','.v5-position'],
