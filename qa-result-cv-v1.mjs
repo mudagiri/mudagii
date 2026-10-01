@@ -4,13 +4,13 @@ const result=fs.readFileSync('./ResultScreenV4.tsx','utf8');
 const app=fs.readFileSync('./MudagiriAppV2.tsx','utf8');
 
 const early=result.indexOf('className="rv3-line-early"');
-const share=result.indexOf('className="rv3-early-share"');
+const share=result.indexOf('className="rv3-social-share"');
 const bottom=result.indexOf('className="rv3-next rv3-save"');
 
 const checks=[
  ['early LINE CTA exists',early>=0],
- ['early CTA is before share and book',early>=0&&share>early],
- ['bottom LINE CTA remains',bottom>share],
+ ['type share is before early LINE CTA',share>=0&&early>share],
+ ['bottom LINE CTA remains',bottom>early],
  ['CTA view events are placement-specific',result.includes("'line_cta_viewed',{placement:'after_next_quest'")&&result.includes("'line_cta_viewed',{placement:'result_bottom'")],
  ['CTA click events are placement-specific',result.includes("lineHandoff('after_next_quest')")&&result.includes("lineHandoff('result_bottom')")&&result.includes("onEvent?.('line_clicked',{placement,typeCode:vm.type.code")],
  ['LINE CTA copy is handoff-first, not forced consultation',result.includes('無料でLINEへ引き継ぐ')&&result.includes('登録しただけで相談予約にはなりません')],
