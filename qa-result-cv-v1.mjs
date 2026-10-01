@@ -13,7 +13,7 @@ const checks=[
  ['bottom LINE CTA remains',bottom>share],
  ['CTA view events are placement-specific',result.includes("'line_cta_viewed',{placement:'after_next_quest'")&&result.includes("'line_cta_viewed',{placement:'result_bottom'")],
  ['CTA click events are placement-specific',result.includes("lineHandoff('after_next_quest')")&&result.includes("lineHandoff('result_bottom')")&&result.includes("onEvent?.('line_clicked',{placement,typeCode:vm.type.code")],
- ['LINE CTA copy is save-first, not forced consultation',result.includes('無料でLINEに保存する')&&result.includes('登録しただけで相談予約にはなりません')],
+ ['LINE CTA copy is handoff-first, not forced consultation',result.includes('無料でLINEへ引き継ぐ')&&result.includes('登録しただけで相談予約にはなりません')],
  ['book open is tracked',result.includes("'result_book_opened'")],
  ['lead stores CTA placement',app.includes('ctaPlacement:ctx?.placement??null')],
  ['analytics CTA events contain no raw financial fields',(()=>{
