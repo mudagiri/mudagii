@@ -6,23 +6,27 @@ STATUS: CURRENT SOT
 > このファイルの CURRENT SOT セクションが、歴史資料・旧V1/V2ファイルより優先です。  
 > `HANDOFF_MASTER_2026-09-23.md` は historical reference です。16タイプ/4軸など、現行と衝突する記述を正本として使わないでください。
 
-## 0.A Result V5 Design SOT — FROZEN / implementation pending
+## 0.A Result V5 Runtime SOT — IMPLEMENTED / AUTOMATED QA GREEN
 
 - Result V5の意味論・画面順・Position/Potential仕様の正本: `RESULT_V5_MASTER_SPEC.md`
-- Version: `MUDAGIRI_RESULT_V5_MASTER_SPEC_V1_0_FROZEN`
-- Design freeze commit: `f44b24ccb169e72e7680a243b35c2ba55ea9e87c`
-- **重要:** V5は設計FROZENであり、現行Runtimeへはまだ実装していません。Runtimeの挙動は下記「現行Runtime正本」を優先します。
-- V5実装ではDiagnosis Core V1の真実を変更せず、Result意味レイヤーとして Position / Potential / Goal / NEXT QUEST を追加・再構成します。
-- V5の比較差額は表示できますが、比較差額を自動で削減可能額へ変換しません。
-- 保険REFERENCE、複数世帯美容・服飾、持ち家住宅ローンpeer reference、車scope確認はV5実装要件であり、現行resolverに未実装のものは現行AUDITを優先します。
+- Referenceの出典・対象母集団・使用可否: `RESULT_V5_REFERENCE_AUDIT.md`
+- Design version: `MUDAGIRI_RESULT_V5_MASTER_SPEC_V1_0_FROZEN`
+- Runtime methodology: `MUDAGIRI_RESULT_VM_V5_2`
+- 2026-10-01 implementation/QA baseline: `9016f8628b6f3d8f581854f8be457c7d0cdd00e8`
+- **V4 scope付きの新規診断はResult V5へ接続済み。legacy保存データはV4へフォールバックします。**
+- Diagnosis Core V1の「benchmark gap ≠ ムダ / 改善額」「confirmed savingのみ確定改善額」という真実は変更していません。
+- Result V5は Position / Value / Efficiency / Evidence を分離し、比較差額を自動で削減可能額へ変換しません。
+- 保険REFERENCE、複数世帯美容・服飾MODEL、持ち家住宅ローンREFERENCE、車scope確認は実装・自動QA済みです。
+- 残る公開前ゲートは、実端末での最終UX確認と、その結果必要になった表示調整です。
+
 
 ## 0. 現行Runtime正本
 - entry: `src/main.tsx`
 - app: `MudagiriAppV2.tsx`
 - journey/input: `RpgBlock1.tsx`
 - integration: `mudagiri-integration-v3.ts`
-- result VM: `result-view-model-v4.ts`（V4 payloadがある場合。legacy fallbackはV3）
-- result/share UI: `ResultScreenV4.tsx`
+- result VM: `result-view-model-v5.ts`（V4 scope付き新規診断。legacy保存結果はV4へフォールバック）
+- result/share UI: `ResultScreenV5.tsx`（legacy fallback: `ResultScreenV4.tsx`）
 - persistence: `persistence-v3.ts`
 - Type scoring: `type-questionnaire-v3.1.ts`
 - Type content: `type-content-v3.1.ts`
@@ -67,7 +71,7 @@ STATUS: CURRENT SOT
 strengthは軸スコアの大きさであり、診断精度/confidenceではありません。
 
 ## 0.4 Result / Share / LINE
-- 現行Resultは `ResultScreenV4.tsx`。Result V5は `RESULT_V5_MASTER_SPEC.md` で設計FROZEN済みですが、Runtime実装前です。
+- 現行のV4 scope付き新規診断Resultは `ResultScreenV5.tsx`。legacy保存結果のみ `ResultScreenV4.tsx` へフォールバックします。
 - Typeをidentity/share rewardとして先に見せ、LINEは後段のoptional utility CTA。
 - Share画像/本文に収入・支出金額・地域を含めない。
 - Type share流入はacquisitionへ保存し、完走との接続を可能にする。
@@ -78,10 +82,13 @@ strengthは軸スコアの大きさであり、診断精度/confidenceではあ�
 
 FROZEN/release判定は同一HEADで以下を通す:
 - `npm run build`
-- `npm run qa:persona`
-- `npm run qa:type`
-- `npm run qa:10k`
+- 既存 diagnosis / scope / profile / type / battle / resume / Result QA
+- `npm run qa:result-v5`
+- `npm run qa:result-v5-calibration`（10,000件）
+- `npm run qa:10k`（既存Fuzz 10,000件）
+- 390×844 V5 Visual Smoke
 - GitHub Pages Deploy
+- 公開前に実端末で最終UX確認
 
 ## 0.6 OP-01 公開約束
 Opening/公開metadataで伝えるのは **家計診断 / RPGとして楽しめる / 約3分 / 無料**。

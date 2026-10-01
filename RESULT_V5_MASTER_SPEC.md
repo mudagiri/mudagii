@@ -1,8 +1,8 @@
 # MUDAGIRI RESULT V5 — MASTER SPEC V1.0 FROZEN
 
-Status: **DESIGN / MEANING FROZEN — implementation pending**  
+Status: **DESIGN / MEANING FROZEN — runtime implemented / automated QA passed**  
 Frozen: 2026-10-01  
-Runtime note: this document does **not** change the current diagnosis runtime. Diagnosis Core V1 / Profile / Type / benchmark contracts remain frozen unless explicitly versioned.
+Runtime note: Result V5 is implemented for V4-scoped new diagnoses. Diagnosis Core V1 / Profile / Type contracts remain frozen; reference expansions are explicitly versioned and remain subject to the scope rules in this document.
 
 ## 0. Purpose
 
@@ -472,25 +472,34 @@ All numeric results, evidence classes, verdict meaning, Position, Potential, Goa
 
 ---
 
-## 10. Implementation requirements not yet present in the current resolver
+## 10. Runtime implementation status — 2026-10-01
 
-V5 implementation must version and integrate these before claiming runtime parity with this spec:
+The five implementation requirements identified at design freeze are now implemented and automated-QA covered:
 
-1. insurance REFERENCE matched to input scope (personal vs household) with clear provenance;
-2. multi-household beauty/fashion comparator using the approved category scope without double-counting daily consumables;
-3. owned-housing / mortgage-repayment peer position reference, kept structural and excluded from automatic Potential;
-4. car comparison-scope question or equivalent metadata so total car cost is never compared to maintenance-only reference;
-5. V5 Position / Potential view-model layer without modifying Diagnosis Core V1 truth.
+1. **insurance REFERENCE** — implemented with scope-aware personal/household references. Result V5 can additionally show household age and compatible household-income lenses without blending them into a fabricated cross-average.
+2. **multi-household beauty/fashion** — implemented as an age-band **MODEL/reference**, with category scope limited to clothing/footwear + beauty services + cosmetics and daily-consumable hygiene excluded.
+3. **owned-housing / mortgage repayment** — implemented as a structural age reference for 2+ person mortgage households using 2025 Family Income and Expenditure Survey Table 3-10. It is excluded from automatic Potential.
+4. **car comparison scope** — implemented with a conditional appraisal question. Only confirmed maintenance-focused amounts may be compared with the car-maintenance reference; loan/tax-inclusive or unknown scope remains non-comparable.
+5. **V5 Position / Potential view-model layer** — implemented separately from Diagnosis Core truth.
 
-Until these are implemented and QA-passed, current runtime AUDIT behavior remains authoritative.
+### 10.1 Deliberate remaining reference limits
+
+These are **not defects** and must not be filled with guessed averages:
+
+- single-person mortgage households: no Table 3-10 mortgage comparator is shown because the source population is 2+ person employed households;
+- car users older than the Sony Assurance 18–59 survey population: no Sony maintenance comparator is shown;
+- multi-household beauty/fashion remains MODEL/reference, not an “official average”;
+- insurance age and income lenses are shown separately when both exist; they are never mathematically blended into a synthetic age×income average;
+- rent/housing, insurance, car and education structural comparison gaps never enter automatic Potential C.
+
+Detailed provenance and allowed usage are maintained in `RESULT_V5_REFERENCE_AUDIT.md`.
 
 ---
-
 ## 11. Release / QA gates for Result V5
 
-V5 is not runtime-FROZEN merely because this design document is FROZEN.
+Automated runtime gates passed on the 2026-10-01 implementation baseline. A real-device manual UX pass is still required before treating presentation QA as fully closed.
 
-Before production:
+Release gates:
 - current diagnosis/core QA remains green;
 - Position boundary tests pass;
 - Potential lower <= upper in every case;
@@ -503,8 +512,9 @@ Before production:
 - Goal does not mutate diagnosis/Potential;
 - share privacy QA remains green;
 - result restore / external return remains green;
-- mobile touch/tap/scroll/render/device QA passes;
-- build and deploy succeed on the same implementation HEAD.
+- 390×844 browser touch/tap/scroll/render visual smoke passes;
+- build and deploy succeed on the same implementation HEAD;
+- **manual real-device UX check remains required before public-launch sign-off.**
 
 ---
 
