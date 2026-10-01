@@ -105,7 +105,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <button type="button" className="pre-back" onClick={()=>setHouseholdSize((draft.householdSize??1)+1)}>＋</button>
    </div>}
 
-   {step==='composition'&&<div className="mode-options">
+   {step==='composition'&&<div className="mode-options composition-options">
     {draft.diagnosisScope==='household' ? <>
       <Choice active={draft.compositionConfirmed&&draft.relationships.includes('children')} onClick={()=>selectComposition('children')}><strong>👧 子どもと暮らしてる</strong></Choice>
       <Choice active={draft.compositionConfirmed&&!draft.relationships.includes('children')} onClick={()=>selectComposition('none')}><strong>✓ 子どもはいない</strong></Choice>
