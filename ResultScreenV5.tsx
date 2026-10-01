@@ -135,6 +135,19 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
  const atlasTop=atlasRows.slice(0,3),atlasRest=atlasRows.slice(3);
  const statusRows=(status:string)=>vm.rows.filter((x:any)=>x.v5Status===status&&x.known&&Number(x.amount)>0);
  const future5=adjusted.upper*60;
+ const enemyDetail=(x:any)=> <div className="v5-detail v51-atlas-detail">
+  <p><b>あなた：</b>{x.known?'¥'+yen(x.amount)+'/月':'未把握'}</p>
+  {x.comparable!==null&&<p><b>比較目安：</b>¥{yen(x.comparable)}/月</p>}
+  {x.comparisonDifference!==null&&<p><b>比較差額：</b>{signedYen(x.comparisonDifference)}/月 <small>※ムダ額ではありません</small></p>}
+  {x.v5ReferenceSecondary?.map((r:any)=><p key={r.sourceVersion}><b>{r.label}：</b>¥{yen(r.monthly)}/月 <small>※別の比較レンズ。主比較とは合成しません</small></p>)}
+  {x.positionLabel&&<p><b>家計ポジション：</b>{x.positionLabel}</p>}
+  {x.appraisalSummary&&<p><b>あなたの回答：</b>{x.appraisalSummary}</p>}
+  <p><b>判定：</b>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</p>
+  <p><b>理由：</b>{x.reason}</p>
+  <p><b>次に確認：</b>{x.nextAction}</p>
+  {x.cUpper>0&&<p><b>Potential算入：</b>最大 ¥{yen(x.cUpper)}/月 <small>※比較差額そのものではありません</small></p>}
+  {x.detailReview&&<p className="is-warn">差が大きいため、内訳確認を推奨します。</p>}
+ </div>;
  return <>
  <style>{CSS}</style>
  {linePrompt&&<div className="v5-modal-bg"><section className="v5-modal" role="dialog" aria-modal="true"><div className="v5-kicker">LINE SAVE</div><h2>診断結果をLINEに保存</h2><p>今回の診断と照合するコードをコピーしてLINEを開きます。</p><strong className="v5-code">{handoffCode(vm.diagnosisId)}</strong><small>コード自体に収入・支出額は含まれません。</small><button className="v5-primary" onClick={confirmLine}>コードをコピーしてLINEを開く ▶</button><button className="v5-link" onClick={()=>setLinePrompt(null)}>あとで</button></section></div>}
@@ -189,18 +202,25 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
     <img src={ART.guide} alt="" aria-hidden="true"/>
    </div>
    <div className="v51-enemy-deck">
-    {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);return <button type="button" key={x.category} className={"v51-enemy-card is-"+x.v5Status} onClick={()=>setOpen(open===x.category?null:x.category)}>
+    {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);const isOpen=open===x.category;return <div key={x.category} className="v51-atlas-entry">
+     <button type="button" className={"v51-enemy-card is-"+x.v5Status+(isOpen?' is-open':'')} onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}>
       <div className="v51-enemy-portrait"><img src={enemy.normal} alt={enemy.name}/><span>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</span></div>
       <div className="v51-enemy-copy"><small>{x.label}</small><h3>{enemy.name}</h3><div className="v51-position-badge">{x.positionLabel??'比較条件を確認'}</div>
        <div className="v51-position-gauge" aria-label={"比較ポジション "+(x.positionLabel??'')}><i/><i/><i/><i/><i/><b style={{width:(level*20)+'%'}}/></div>
        <div className="v51-enemy-money"><span>あなた <strong>¥{yen(x.amount)}</strong></span>{x.comparable!==null&&<span>比較目安 <strong>¥{yen(x.comparable)}</strong></span>}</div>
        {x.comparisonDifference!==null&&<div className={"v51-gap "+(x.comparisonDifference>0?'is-plus':'is-minus')}>{signedYen(x.comparisonDifference)}<small>/月</small></div>}
        <small className="v51-enemy-criteria">{x.comparisonContext?.criteria?.join(' × ')||x.evidenceLabel}</small>
+       <span className="v51-tap-detail">{isOpen?'詳細を閉じる ↑':'タップで詳細を見る ↓'}</span>
       </div>
-     </button>})}
+     </button>
+     {isOpen&&enemyDetail(x)}
+    </div>})}
    </div>
    {atlasRest.length>0&&<><button type="button" className="v51-atlas-more" onClick={()=>setAtlasOpen(v=>!v)}>{atlasOpen?'閉じる':'残りの敵も見る（'+atlasRest.length+'体）'} <span>{atlasOpen?'↑':'↓'}</span></button>
-    {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <div key={x.category} className={"v51-enemy-mini is-"+x.v5Status}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??'比較保留'}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong></div>})}</div>}</>}
+    {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const isOpen=open===x.category;return <div key={x.category} className={"v51-atlas-mini-entry is-"+x.v5Status}>
+     <button type="button" className="v51-enemy-mini" onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??'比較保留'}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong><span>{isOpen?'↑':'⌄'}</span></button>
+     {isOpen&&enemyDetail(x)}
+    </div>})}</div>}</>}
    <div className="v5-note v51-atlas-note"><b>この差額＝ムダ額ではありません。</b><span>あなたに近い条件の比較目安との差です。</span></div>
   </section>
 
@@ -218,7 +238,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
       <div className="v51-battle-portraits">{statusRows(status).slice(0,6).map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <span key={x.category} title={enemy.name}><img src={enemy.normal} alt={enemy.name}/></span>})}{Number(count)>6&&<em>+{Number(count)-6}</em>}{Number(count)===0&&<small>なし</small>}</div>
      </div>)}
    </div>
-   <div className="v51-verdict-foot">詳細な理由は下の「12体の鑑定記録」で確認できます。</div>
+   <div className="v51-verdict-foot">敵をタップすると、その場で鑑定理由まで確認できます。</div>
   </section>
 
   <section className="v5-card v5-future v51-future" data-section="FUTURE MONEY">
@@ -270,10 +290,6 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    {vm.consultRoute?.insuranceReview&&<div className="v5-life-signal">保険は保障内容まで確認すると、必要な支出か整えられる支出かを判断できます。</div>}
    <button className="v5-primary is-life" onClick={()=>openLine('consult_route')}>未来のお金を整理してみる ▶</button>
   </section>
-
-  <details className="v5-card v5-codex v51-codex" data-section="12 CATEGORY CODEX"><summary><div><div className="v51-jp-kicker">敵図鑑</div><h2>12体の鑑定記録を見る</h2></div><span>⌄</span></summary>
-   <div className="v5-codex-list">{vm.rows.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];return <div className="v5-codex-row v51-codex-row" key={x.category}><button onClick={()=>setOpen(open===x.category?null:x.category)}><span className="v51-codex-name"><img src={enemy.normal} alt=""/><span>{STATUS_META[x.v5Status].mark} <b>{enemy.name}</b><small>{x.label}</small></span></span><span>{x.v5StatusLabel}　⌄</span></button>{open===x.category&&<div className="v5-detail"><p><b>あなた：</b>{x.known?'¥'+yen(x.amount)+'/月':'未把握'}</p>{x.comparable!==null&&<p><b>比較目安：</b>¥{yen(x.comparable)}/月</p>}{x.comparisonDifference!==null&&<p><b>比較差額：</b>{signedYen(x.comparisonDifference)}/月 <small>※ムダ額ではありません</small></p>}{x.v5ReferenceSecondary?.map((r:any)=><p key={r.sourceVersion}><b>{r.label}：</b>¥{yen(r.monthly)}/月 <small>※別の比較レンズ。主比較とは合成しません</small></p>)}{x.positionLabel&&<p><b>家計ポジション：</b>{x.positionLabel}</p>}{x.appraisalSummary&&<p><b>あなたの回答：</b>{x.appraisalSummary}</p>}<p><b>判定：</b>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</p><p><b>理由：</b>{x.reason}</p><p><b>次に確認：</b>{x.nextAction}</p>{x.cUpper>0&&<p><b>Potential算入：</b>最大 ¥{yen(x.cUpper)}/月 <small>※比較差額そのものではありません</small></p>}{x.detailReview&&<p className="is-warn">差が大きいため、内訳確認を推奨します。</p>}</div>}</div>})}</div>
-  </details>
 
   <section className="v5-card v5-friend v51-friend" data-section="FRIEND QUEST">
    <div className="v51-friend-head"><div><div className="v51-jp-kicker">8タイプ図鑑</div><h2>友達は何タイプ？</h2></div><img src={ART.friend} alt="" aria-hidden="true"/></div>
@@ -339,6 +355,12 @@ const CSS=`
 .v51-life{position:relative;overflow:hidden;padding:18px 16px!important;background:linear-gradient(155deg,#174451,#15323f 64%,#102732)!important}.v51-life-head{display:flex;justify-content:space-between;gap:10px}.v51-life-head h2{font-size:29px!important}.v51-life-head img{width:92px;height:92px;object-fit:contain}.v51-life-path{position:absolute;right:14px;bottom:18px;width:120px;height:80px;opacity:.13}.v51-life-path::before{content:"";position:absolute;left:6px;right:8px;top:38px;border-top:2px dashed #9fe3d2;transform:rotate(-12deg)}.v51-life-path i{position:absolute;width:9px;height:9px;border:2px solid #9fe3d2;border-radius:50%}.v51-life-path i:nth-child(1){left:5px;top:43px}.v51-life-path i:nth-child(2){left:55px;top:28px}.v51-life-path i:nth-child(3){right:6px;top:12px}
 .v51-codex{background:#142b3f!important}.v51-codex-row>button{min-height:64px!important;padding:5px 12px!important}.v51-codex-name{display:flex!important;align-items:center!important;gap:8px!important}.v51-codex-name>img{width:46px;height:46px;object-fit:contain}.v51-codex-name>span{display:block}.v51-codex-name b,.v51-codex-name small{display:block}.v51-codex-name b{font-size:11px}.v51-codex-name small{font-size:8px;color:#8fa5b4}
 .v51-friend{padding:18px 14px!important;background:linear-gradient(155deg,#2b2856,#171f3d 62%,#11192f)!important}.v51-friend-head{display:flex;justify-content:space-between;gap:10px}.v51-friend-head h2{font-size:26px!important;white-space:nowrap}.v51-friend-head img{width:92px;height:92px;object-fit:contain}.v51-friend-talk{margin-top:8px;padding:10px;border:1px solid rgba(244,215,107,.28);border-radius:9px;background:#11182d;font-size:10px;font-weight:900}.v51-full-type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.v51-full-type-grid button{min-height:158px;padding:8px;border:1px solid #454e75;border-radius:11px;background:#121b34;color:#fff;text-align:center}.v51-full-type-grid button.is-mine{border-color:#f4d76b;box-shadow:0 0 0 2px rgba(244,215,107,.13)}.v51-full-type-grid img{width:86px;height:86px;object-fit:contain}.v51-full-type-grid small,.v51-full-type-grid b,.v51-full-type-grid span{display:block}.v51-full-type-grid small{font-size:8px;color:#9facce}.v51-full-type-grid b{margin-top:2px;font-size:11px}.v51-full-type-grid span{margin-top:3px;color:#aab4cc;font-size:8px;line-height:1.35}.v51-share-grid{margin-top:13px}
+
+.v51-enemy-card.is-open{border-color:#e6c969;box-shadow:0 0 0 2px rgba(230,201,105,.10)}
+.v51-tap-detail{display:block;margin-top:7px;color:#9ec6d8;font-size:9px;font-weight:900}
+.v51-atlas-detail{margin:7px 2px 12px;padding:12px 13px;border:1px solid #41647a;border-radius:11px;background:rgba(6,20,30,.78);animation:v51detailin .16s ease-out}.v51-atlas-detail p{margin:0!important;font-size:11px!important;line-height:1.65!important;color:#dce5ea!important}.v51-atlas-detail p+p{margin-top:7px!important}.v51-atlas-detail small{display:inline!important;font-size:9px!important}.v51-atlas-detail .is-warn{color:#f1cb78!important}
+.v51-atlas-mini-entry{border-bottom:1px solid rgba(255,255,255,.08)}.v51-atlas-mini-entry:last-child{border-bottom:0}.v51-enemy-mini{width:100%;border:0!important;background:transparent!important;color:#fff;text-align:left}.v51-enemy-mini>span{width:22px;text-align:center;color:#9db5c3;font-weight:900}.v51-atlas-mini-entry .v51-atlas-detail{margin:0 0 10px}
+@keyframes v51detailin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
 `;
