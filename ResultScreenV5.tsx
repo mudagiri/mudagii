@@ -294,6 +294,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
   <section className="v5-card v5-life v51-life" data-section="LIFE PLAN QUEST">
    <div className="v51-life-path" aria-hidden="true"><i/><i/><i/></div>
    <div className="v51-life-head"><div><div className="v51-jp-kicker">次の章へ</div><h2>今の家計で、<br/>やりたい未来に届く？</h2></div><img src={ART.guide} alt="" aria-hidden="true"/></div>
+   <div className="v51-chapter-route"><div className="is-done"><small>CHAPTER 1</small><b>今のお金を知る</b><span>✓ COMPLETE</span></div><i>→</i><div><small>CHAPTER 2</small><b>{goalMeta&&goalMeta[0]!=='undecided'?goalMeta[1]+'までの地図':'未来のお金の地図'}</b><span>NEXT</span></div></div>
    <p>今回分かったのは「今のお金の使い方」。貯蓄・保険・住宅・教育・投資・将来収入までつなげると、<b>何を削るかではなく、何にいくら使えるか</b>が見えてきます。</p>
    {goalMeta&&goalMeta[0]!=='undecided'&&<div className="v5-life-goal">今回選んだ未来：<b>{goalMeta[1]}</b></div>}
    {vm.consultRoute?.insuranceReview&&<div className="v5-life-signal">保険は保障内容まで確認すると、必要な支出か整えられる支出かを判断できます。</div>}
@@ -380,6 +381,8 @@ const CSS=`
 
 .v51-axis-badges span{display:grid!important;grid-template-rows:auto auto;gap:1px;text-align:center;min-width:82px}.v51-axis-badges span small{display:block;color:#aa9fd1;font-size:8px;font-weight:800;letter-spacing:.04em}.v51-type-detail.is-open{padding:10px 10px 11px}.v51-type-detail.is-open .v5-axes{margin-top:0}
 .v51-type-share{position:relative;z-index:2;margin-top:14px;padding-top:12px;border-top:1px solid rgba(196,174,255,.22)}.v51-type-share>b{display:block;color:#f4d76b;font-size:11px;letter-spacing:.04em}.v51-type-share>div{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.v51-type-share button{min-height:48px;padding:0 4px;border:1px solid #665d98;border-radius:9px;background:#151d3b;color:#fff;font-size:10px;font-weight:900}.v51-type-share>small{display:block;margin-top:7px;color:#8f9ab5;font-size:8px}
+
+.v51-chapter-route{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0 13px;padding:10px;border:1px solid rgba(136,217,205,.22);border-radius:11px;background:rgba(5,24,31,.35)}.v51-chapter-route>div{min-width:0;padding:8px;border:1px solid #366474;border-radius:8px;background:#102a34}.v51-chapter-route>div.is-done{opacity:.75}.v51-chapter-route small,.v51-chapter-route b,.v51-chapter-route span{display:block}.v51-chapter-route small{color:#8fb5bd;font-size:7px;letter-spacing:.08em}.v51-chapter-route b{margin-top:3px;font-size:10px;line-height:1.35}.v51-chapter-route span{margin-top:4px;color:#78d9c7;font-size:7px;font-weight:1000}.v51-chapter-route>i{color:#76d8c7;font-style:normal;font-weight:1000}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
 `;
