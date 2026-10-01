@@ -745,3 +745,23 @@ Manual screenshot audit confirmed:
 - open full 8-type collection at Friend Quest
 
 Remaining release gate: real-device user touch/scroll/readability feedback only.
+
+---
+
+## 26. UX final polish baseline
+
+QA baseline: `fab65262f478b3fb0fe7462a48cce382675ae042`
+
+Additional V5.1 UX rules now implemented and frozen for release candidate:
+- primary Result content is vertically scrollable; no forced Next-page gating;
+- type detail is immediately visible;
+- type share destinations are visible at the identity-reward moment;
+- enemy atlas owns category detail disclosure; no duplicate standalone CODEX;
+- verdict status names always include plain-language meaning;
+- verdict portraits are interactive and open the corresponding enemy detail;
+- internal term “Potential算入” is never user-facing;
+- scan/type/appraisal input journeys have Back controls; appraisal Back restores answer snapshots;
+- Future Money and 1/5/10-year figures use stronger reward-oriented type hierarchy;
+- Life Plan is framed as the next chapter rather than a product menu.
+
+Automated gates: Validate / Calibration 10k / Fuzz 10k / Deploy / V5 Visual Smoke SUCCESS. Final remaining gate: real-device manual UX pass.

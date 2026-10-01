@@ -6,6 +6,42 @@ STATUS: CURRENT SOT
 > このファイルの CURRENT SOT セクションが、歴史資料・旧V1/V2ファイルより優先です。  
 > `HANDOFF_MASTER_2026-09-23.md` は historical reference です。16タイプ/4軸など、現行と衝突する記述を正本として使わないでください。
 
+
+## 0.C Result V5.1 UX Final Polish — 2026-10-02
+
+- QA baseline HEAD: `fab65262f478b3fb0fe7462a48cce382675ae042`
+- Runtime polish baseline: `3fdb525fc81db9c73fe06226f904f4dd2d2b2b87`
+- Validate Diagnosis V2.1: SUCCESS
+- Result V5 contract QA: SUCCESS
+- Calibration 10,000: SUCCESS
+- Fuzz 10,000: SUCCESS
+- GitHub Pages Deploy: SUCCESS
+- V5 Visual Smoke: SUCCESS
+- 375 / 390 / 430 Result widths: PASS
+- Scan back navigation + amount retention: PASS
+- Type-question back navigation + re-answer: PASS
+- Type share destinations visible: PASS
+
+Completed UX polish:
+- 敵図鑑と旧CODEXを統合。上位3体＋残りの敵は同じ場所でタップ詳細表示。
+- 今回の戦果4判定に意味説明を追加。敵ミニ画像はタップで該当敵詳細へ移動・自動展開。
+- ユーザー向け表示から内部語「Potential算入」を廃止し、「この支出の見直し余地」へ変更。
+- Future Money / 1年・5年・10年の数値タイポを強化。
+- タイプ詳細は折りたたまず初期表示。3軸ラベルを明示。
+- タイプ直下に X / Instagram / Threads / LINE 共有を常時表示。
+- 支出スキャン・タイプ質問・追加鑑定に戻る導線を復活。
+- 追加鑑定の戻るは回答履歴スナップショット方式で、条件分岐質問を壊さない。
+- Life Planは「CHAPTER 1 → CHAPTER 2」の次章表現へ変更。
+- Result本編は縦スクロールを維持。重要結果を見るための強制「次へ」は使用しない。
+
+Design rationale:
+- 行動経済学: 選択負荷を抑え、重要結果は隠さず、1つのNEXT TARGETへ収束。
+- 心理学: 高い支出を悪と決めず、「守る / 整える / 見極める」で防御反応を下げる。
+- マーケティング: タイプ獲得直後の共有、戦果保存、Life Planへの次章導線を自然な体験継続として設計。
+
+Remaining release gate:
+- 実スマホでの最終手動UX確認のみ。
+
 ## 0.B Result V5.1 Visual Redesign — SOT
 
 - Visual正本: RESULT_V5_1_VISUAL_MASTER.md
