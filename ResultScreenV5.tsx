@@ -338,7 +338,7 @@ const CSS=`
 .v51-deco-kicker{opacity:.72;margin-top:5px}.v51-type-art-frame{position:relative;width:210px;height:210px;margin:6px auto 0;display:grid;place-items:center}
 .v51-type-art-frame::before{content:"";position:absolute;inset:18px;border:1px solid rgba(244,215,107,.6);transform:rotate(45deg);background:radial-gradient(circle,rgba(194,164,255,.20),transparent 62%);box-shadow:0 0 30px rgba(198,161,255,.25)}
 .v51-type .v5-type-art{position:relative;z-index:2;width:190px!important;height:190px!important;filter:drop-shadow(0 12px 14px rgba(0,0,0,.42))}
-.v51-type h2{position:relative;z-index:2;margin-top:2px!important;font-size:36px!important;line-height:1.12!important;text-shadow:0 2px 0 rgba(80,50,5,.55),0 0 14px rgba(246,218,122,.20)}
+.v51-type h2{position:relative;z-index:2;margin-top:2px!important;font-size:clamp(30px,8.2vw,36px)!important;line-height:1.12!important;word-break:keep-all;overflow-wrap:normal;text-shadow:0 2px 0 rgba(80,50,5,.55),0 0 14px rgba(246,218,122,.20)}
 .v51-type h3{font-size:16px!important}.v51-type-summary{font-size:13px!important;color:#ced8e4!important}
 .v51-axis-badges{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:14px}.v51-axis-badges span{padding:6px 9px;border:1px solid rgba(190,171,255,.48);border-radius:999px;background:rgba(10,24,43,.72);font-size:10px;font-weight:900;color:#f5f1ff}
 .v51-type-detail{margin-top:14px;border:1px solid rgba(177,159,225,.32);border-radius:12px;background:rgba(8,21,37,.55);text-align:left}.v51-type-detail summary{min-height:48px;display:flex;align-items:center;justify-content:center;color:#d8cef8;font-size:11px;font-weight:900;cursor:pointer}
