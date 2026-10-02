@@ -236,7 +236,7 @@ const subDetailText=(await subDetail.innerText()).replace(/\s+/g,'');
 if(!subDetailText.includes('確認できた改善額：¥1,800/月'))throw new Error('SUBSCRIPTION_CONFIRMED_SAVING_DETAIL_MISSING:'+subDetailText);
 await shot('15l-result-sub-verdict-jump',{allowVertical:true});
 // Return atlas to a neutral collapsed state, then exercise a normal remaining-enemy disclosure too.
-await subEntry.locator('.v51-enemy-mini').click();
+await subEntry.locator('button').first().click();
 const atlasClose=page.locator('.v51-atlas-more').first();
 if(await atlasClose.count()&&((await atlasClose.innerText()).includes('閉じる')))await atlasClose.click();
 const atlasMore=page.getByRole('button',{name:/残りの敵も見る/}).first();if(await atlasMore.count()){await atlasMore.click();const mini=page.locator('.v51-enemy-mini').first();if(await mini.count()){await mini.click();await page.locator('.v51-atlas-detail').first().waitFor({state:'visible'});await shot('15m-result-atlas-detail-open',{allowVertical:true})}}
