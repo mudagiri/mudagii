@@ -132,6 +132,8 @@ const shareBlock=screen.slice(screen.indexOf('async function makeTypeShareFile')
 ok(!/(monthlyTakeHome|annualIncomeBand|prefecture|potential\.upper|comparisonDifference)/.test(shareBlock),'share image must exclude sensitive financial/profile fields');
 ok(screen.includes('この差額＝ムダ額ではありません。'),'comparison semantics copy');
 ok(screen.includes('enemyDetail(x)'),'enemy atlas owns detailed category disclosure');
+ok(screen.includes('const atlasSourceRows=vm.rows.filter'),'enemy atlas includes known paid non-comparable categories such as subscriptions');
+ok(screen.includes('確認できた改善額'),'confirmed subscription saving is visible in enemy detail');
 ok(!screen.includes('12 CATEGORY CODEX'),'standalone codex removed after atlas integration');
 ok(screen.includes('運用益は含みません'),'future horizon note');
 ok(!screen.includes('<details className="v51-type-detail"'),'type detail is visible without extra tap');

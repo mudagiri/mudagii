@@ -124,8 +124,9 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
   onBeforeExternal?.();onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category??null,placement:linePrompt,handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',insuranceReview:!!vm.consultRoute?.insuranceReview});
  }
  const positionRows=vm.positionRows.filter((x:any)=>x.known&&Number(x.amount)>0);
+ const atlasSourceRows=vm.rows.filter((x:any)=>x.known&&Number(x.amount)>0);
  const positionRank=(label:string|null)=>label==='かなり高め'?5:label==='やや高め'?4:label==='標準圏'?3:label==='やや低め'?2:label==='かなり低め'?1:0;
- const atlasRows=[...positionRows].map((x:any,i:number)=>({...x,_displayIndex:i})).sort((a:any,b:any)=>{
+ const atlasRows=[...atlasSourceRows].map((x:any,i:number)=>({...x,_displayIndex:i})).sort((a:any,b:any)=>{
   const action=(x:any)=>x.v5Status==='cut'||x.v5Status==='optimize'||x.v5Status==='inspect'?1:0;
   const byPosition=positionRank(b.positionLabel)-positionRank(a.positionLabel);if(byPosition)return byPosition;
   const byAction=action(b)-action(a);if(byAction)return byAction;
@@ -149,6 +150,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
   <p><b>判定：</b>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</p>
   <p><b>理由：</b>{x.reason}</p>
   <p><b>次に確認：</b>{x.nextAction}</p>
+  {x.aAmount>0&&<p><b>確認できた改善額：</b>¥{yen(x.aAmount)}/月 <small>※回答内容から停止・削減できると確認できた金額です</small></p>}
   {x.cUpper>0&&<p><b>この支出の見直し余地：</b>最大 ¥{yen(x.cUpper)}/月 <small>※比較差額をそのまま削れるという意味ではありません</small></p>}
   {x.detailReview&&<p className="is-warn">差が大きいため、内訳確認を推奨します。</p>}
  </div>;
@@ -202,18 +204,18 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
 
   <section className="v5-card v5-position v51-atlas" data-section="HOUSEHOLD POSITION">
    <div className="v51-atlas-head">
-    <div><div className="v51-jp-kicker">敵図鑑</div><h2>目立った敵は、<br/>こいつらだ。</h2><p>比較できる支出だけを、現在地として見ています。</p></div>
+    <div><div className="v51-jp-kicker">敵図鑑</div><h2>目立った敵は、<br/>こいつらだ。</h2><p>今回鑑定した支出を、比較データとあなたの回答から仕分けています。</p></div>
     <img src={ART.guide} alt="" aria-hidden="true"/>
    </div>
    <div className="v51-enemy-deck">
     {atlasTop.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const level=positionRank(x.positionLabel);const isOpen=open===x.category;return <div key={x.category} id={"enemy-"+x.category} className="v51-atlas-entry">
      <button type="button" className={"v51-enemy-card is-"+x.v5Status+(isOpen?' is-open':'')} onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}>
       <div className="v51-enemy-portrait"><img src={enemy.normal} alt={enemy.name}/><span>{STATUS_META[x.v5Status].mark} {x.v5StatusLabel}</span></div>
-      <div className="v51-enemy-copy"><small>{x.label}</small><h3>{enemy.name}</h3><div className="v51-position-badge">{x.positionLabel??'比較条件を確認'}</div>
-       <div className="v51-position-gauge" aria-label={"比較ポジション "+(x.positionLabel??'')}><i/><i/><i/><i/><i/><b style={{width:(level*20)+'%'}}/></div>
+      <div className="v51-enemy-copy"><small>{x.label}</small><h3>{enemy.name}</h3><div className="v51-position-badge">{x.positionLabel??(x.v5Status==='cut'?'回答から討伐候補':'回答ベースで判定')}</div>
+       {x.positionLabel&&<div className="v51-position-gauge" aria-label={"比較ポジション "+x.positionLabel}><i/><i/><i/><i/><i/><b style={{width:(level*20)+'%'}}/></div>}
        <div className="v51-enemy-money"><span>あなた <strong>¥{yen(x.amount)}</strong></span>{x.comparable!==null&&<span>比較目安 <strong>¥{yen(x.comparable)}</strong></span>}</div>
        {x.comparisonDifference!==null&&<div className={"v51-gap "+(x.comparisonDifference>0?'is-plus':'is-minus')}>{signedYen(x.comparisonDifference)}<small>/月</small></div>}
-       <small className="v51-enemy-criteria">{x.comparisonContext?.criteria?.join(' × ')||x.evidenceLabel}</small>
+       <small className="v51-enemy-criteria">{x.comparisonContext?.criteria?.join(' × ')||x.evidenceLabel||(x.aAmount>0?'未使用額・停止可否を確認':'回答内容から判定')}</small>
        <span className="v51-tap-detail">{isOpen?'詳細を閉じる ↑':'タップで詳細を見る ↓'}</span>
       </div>
      </button>
@@ -222,10 +224,10 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    </div>
    {atlasRest.length>0&&<><button type="button" className="v51-atlas-more" onClick={()=>setAtlasOpen(v=>!v)}>{atlasOpen?'閉じる':'残りの敵も見る（'+atlasRest.length+'体）'} <span>{atlasOpen?'↑':'↓'}</span></button>
     {atlasOpen&&<div className="v51-atlas-rest">{atlasRest.map((x:any)=>{const enemy=(ENEMY_ASSETS as any)[x.category];const isOpen=open===x.category;return <div key={x.category} id={"enemy-"+x.category} className={"v51-atlas-mini-entry is-"+x.v5Status}>
-     <button type="button" className="v51-enemy-mini" onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??'比較保留'}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong><span>{isOpen?'↑':'⌄'}</span></button>
+     <button type="button" className="v51-enemy-mini" onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??(x.v5Status==='cut'?'回答から討伐候補':'回答ベース')}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong><span>{isOpen?'↑':'⌄'}</span></button>
      {isOpen&&enemyDetail(x)}
     </div>})}</div>}</>}
-   <div className="v5-note v51-atlas-note"><b>この差額＝ムダ額ではありません。</b><span>あなたに近い条件の比較目安との差です。</span></div>
+   <div className="v5-note v51-atlas-note"><b>比較差額＝ムダ額ではありません。</b><span>比較できない支出は、あなたの回答内容を使って判定しています。</span></div>
   </section>
 
   <section className="v5-card v5-verdict v51-verdict" data-section="MUDAGIRI VERDICT">
