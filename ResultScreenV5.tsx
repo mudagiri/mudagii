@@ -227,7 +227,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
      <button type="button" className="v51-enemy-mini" onClick={()=>setOpen(isOpen?null:x.category)} aria-expanded={isOpen}><img src={enemy.normal} alt=""/><div><b>{enemy.name}</b><small>{x.label} / {x.positionLabel??(x.v5Status==='cut'?'回答から討伐候補':'回答ベース')}</small></div><strong>{STATUS_META[x.v5Status].mark}</strong><span>{isOpen?'↑':'⌄'}</span></button>
      {isOpen&&enemyDetail(x)}
     </div>})}</div>}</>}
-   <div className="v5-note v51-atlas-note"><b>比較差額＝ムダ額ではありません。</b><span>比較できない支出は、あなたの回答内容を使って判定しています。</span></div>
+   <div className="v5-note v51-atlas-note"><b>この差額＝ムダ額ではありません。</b><span>比較できない支出は、あなたの回答内容を使って判定しています。</span></div>
   </section>
 
   <section className="v5-card v5-verdict v51-verdict" data-section="MUDAGIRI VERDICT">
