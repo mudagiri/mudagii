@@ -93,7 +93,7 @@ function validOrder(order:PilotItem[]){
 
 export function buildPilotOrder(form:PilotFormId,participantId:string){
   const pool=assignedPilotItems(form);
-  const rng=mulberry32(hashString(form+'|'+participantId+'|MUDAGIRI_V4_3'));
+  const rng=mulberry32(hashString(form+'|'+participantId+'|MUDAGIRI_V4_4'));
   for(let i=0;i<10000;i++){
     const order=shuffled(pool,rng);
     if(validOrder(order))return order;
