@@ -4,8 +4,8 @@ const app=fs.readFileSync('./MudagiriAppV2.tsx','utf8');
 const gas=fs.readFileSync('./MUDAGIRI_GAS_CODE_V3.gs','utf8');
 
 const checks=[
- ['snapshot persists Result V5 analytics',app.includes('analyticsV5:v.scopeV4?{')&&app.includes('resultVmVersion:vm.methodologyVersion')&&app.includes('firstQuest:vm.firstQuest?.category??null')],
- ['snapshot persists V5 rows by category',app.includes('rows:Object.fromEntries(vm.rows.map')&&app.includes('v5Status:x.v5Status??null')&&app.includes('cUpper:x.cUpper??0')],
+ ['snapshot persists Result V5 analytics',app.includes('analyticsV5:v.scopeV4?{')&&app.includes('resultVmVersion:vmV5.methodologyVersion')&&app.includes('firstQuest:vmV5.firstQuest?.category??null')],
+ ['snapshot persists V5 rows by category',app.includes('rows:Object.fromEntries(vmV5.rows.map')&&app.includes('v5Status:x.v5Status??null')&&app.includes('cUpper:x.cUpper??0')],
  ['LINE lead carries potential values',app.includes('confirmedMonthly:result.potential?.confirmedA')&&app.includes('potentialLower:result.potential?.lower')&&app.includes('potentialUpper:result.potential?.upper')],
  ['GAS creates normalized category sheet',gas.includes("CAT:'03_Categories'")&&gas.includes("const CAT_HEADERS=")&&gas.includes('saveCategories_(b)')],
  ['GAS category key is diagnosis plus category',gas.includes('String(vals[i][0])===String(obj.diagnosis_id)')&&gas.includes('String(vals[i][1])===String(obj.category_code)')],
