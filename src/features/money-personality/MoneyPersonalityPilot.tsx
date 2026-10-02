@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {PILOT_VERSION} from './pilotData';
+import {CORE_SCALE_LABELS,PILOT_VERSION} from './pilotData';
 import {assignPilotForm,behaviorOptions,buildPilotOrder,getOrCreatePilotParticipantId,newPilotSessionId,parseSwitchItem,type PilotItem} from './pilotLogic';
 import './pilot.css';
 
@@ -18,6 +18,8 @@ type PilotResponse={
   changed:boolean;
   responseTimeMs:number;
   cognitiveFlags:string[];
+  scaleType?:string;
+  similarityContext:string[];
 };
 
 type PilotPayload={
@@ -39,14 +41,6 @@ type PilotPayload={
     sourceUrl:string;
   };
 };
-
-const CORE_OPTIONS=[
-  {value:1,label:'まったく当てはまらない'},
-  {value:2,label:'あまり当てはまらない'},
-  {value:3,label:'どちらともいえない'},
-  {value:4,label:'やや当てはまる'},
-  {value:5,label:'かなり当てはまる'},
-] as const;
 
 function nowIso(){return new Date().toISOString()}
 
@@ -149,7 +143,9 @@ export default function MoneyPersonalityPilot(){
       answerLabel:selected.label,
       changed:changeCount>0,
       responseTimeMs:Math.max(0,Math.round(performance.now()-shownPerf.current)),
-      cognitiveFlags:flags.slice()
+      cognitiveFlags:flags.slice(),
+      scaleType:question.family==='CORE'?question.scale_type:undefined,
+      similarityContext:flags.includes('similar_to_previous')?[...questions.slice(Math.max(0,index-10),index).map(q=>q.item_id),question.item_id]:[]
     };
     const nextResponses=[...responses,record];
     if(index<questions.length-1){
@@ -265,6 +261,7 @@ export default function MoneyPersonalityPilot(){
         <span>開発メモ（任意）</span>
         <button className={flags.includes('hard_to_understand')?'active':''} onClick={()=>toggleFlag('hard_to_understand')}>わかりにくい</button>
         <button className={flags.includes('neither_fits')?'active':''} onClick={()=>toggleFlag('neither_fits')}>どちらも違う</button>
+        <button className={flags.includes('similar_to_previous')?'active':''} onClick={()=>toggleFlag('similar_to_previous')}>さっきと似ている</button>
       </div>}
 
       <button className="mp-primary mp-next" disabled={!selected} onClick={next}>
@@ -276,12 +273,17 @@ export default function MoneyPersonalityPilot(){
 }
 
 function CoreQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
+  const labels=CORE_SCALE_LABELS[item.scale_type as 'A'|'B'];
   return <>
-    <h2>{item.text}</h2>
+    <div className="mp-scenario">{item.scenario}</div>
+    <h2>{item.prompt}</h2>
     <div className="mp-answer-list">
-      {CORE_OPTIONS.map(x=><button key={x.value} className={selected?.value===x.value?'selected':''} onClick={()=>onChoose({value:x.value,label:x.label})}>
-        <b>{x.value}</b><span>{x.label}</span>
-      </button>)}
+      {labels.map((label,i)=>{
+        const value=i+1;
+        return <button key={value} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}>
+          <b>{value}</b><span>{label}</span>
+        </button>;
+      })}
     </div>
   </>;
 }
