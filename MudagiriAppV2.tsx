@@ -85,6 +85,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      diagnosisId,toneMode,profile:v.profile,type:typeVm,finalCategories:v.finalJudgements,
      monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
    });
+   const vmV5:any=v.scopeV4?vm:null;
    const persistenceV4=v.scopeV4?buildPersistencePayloadV4({
      diagnosisId,anonymousUserId,profile:v.scopeV4.profile,finalCategories:v.scopeV4.finalJudgements
    }):null;
@@ -106,11 +107,11 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
        finalDetails:savedFinalDetails,
        battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category),
        analyticsV5:v.scopeV4?{
-         resultVmVersion:vm.methodologyVersion,
-         potential:vm.potential,
-         v5Counts:vm.v5Counts,
-         firstQuest:vm.firstQuest?.category??null,
-         rows:Object.fromEntries(vm.rows.map((x:any)=>[x.category,{
+         resultVmVersion:vmV5.methodologyVersion,
+         potential:vmV5.potential,
+         v5Counts:vmV5.v5Counts,
+         firstQuest:vmV5.firstQuest?.category??null,
+         rows:Object.fromEntries(vmV5.rows.map((x:any)=>[x.category,{
            positionAvailable:x.positionAvailable??false,positionLabel:x.positionLabel??null,positionMethod:x.positionMethod??null,positionRatio:x.positionRatio??null,
            v5Status:x.v5Status??null,v5StatusLabel:x.v5StatusLabel??null,cUpper:x.cUpper??0,cEligible:x.cEligible??false,detailReview:x.detailReview??false,cMethod:x.cMethod??null,
            aAmount:x.aAmount??0,nextAction:x.nextAction??null,appraisalSummary:x.appraisalSummary??null
