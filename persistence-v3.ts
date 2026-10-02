@@ -17,7 +17,13 @@ class GasPersistenceV3 implements PersistenceV3{
  private send(body:any){return fetch(this.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),keepalive:true,mode:'no-cors'})}
  async saveDiagnosis(v:any){await this.fallback.saveDiagnosis(v);try{await this.send({kind:'diagnosis_v3',...v})}catch{}}
  async appendEvent(v:any){await this.fallback.appendEvent(v);try{await this.send({kind:'event_v3',...v})}catch{}}
- async saveLead(v:any){await this.fallback.saveLead?.(v);try{await this.send({kind:'lead_v3',...v})}catch{}}
+ async saveLead(v:any){
+   const local=this.fallback.saveLead?.(v);
+   let remote:Promise<Response>|undefined;
+   try{remote=this.send({kind:'lead_v3',...v})}catch{}
+   try{await local}catch{}
+   try{await remote}catch{}
+ }
 }
 export function productionPersistenceV3(fallback:PersistenceV3){const url=(import.meta as any).env?.VITE_MUDAGIRI_GAS_URL as string|undefined;return url?new GasPersistenceV3(url,fallback):fallback}
 export function eventV3(anonymousUserId:string,diagnosisId:string,name:string,data?:Record<string,unknown>){
