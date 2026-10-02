@@ -1,93 +1,87 @@
-export const PILOT_VERSION = "V4.4_PILOT_CANDIDATE" as const;
+export const PILOT_VERSION = "V4.5_PILOT_CANDIDATE_FROZEN" as const;
 
-export type CoreScaleType = "A" | "B";
-
-export const CORE_SCALE_LABELS = {
-  A:["ほぼ選ばない","あまり選ばない","半々くらい","やや選びやすい","かなり選びやすい"],
-  B:["まったく当てはまらない","あまり当てはまらない","どちらともいえない","だいたい当てはまる","かなり当てはまる"]
-} as const;
-
-export const PILOT_ITEMS = [
-  {"item_id":"F01","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"自由に使えるお金が手元に5万円あります。今すぐ必要な買い物はありませんが、1年後にはまとまった出費があるかもしれません。","prompt":"今使わず、将来にも使える状態で残しておく方を選びやすいですか？","contract":"1年後不確実支出への資金保全。","behavior_options":""},
-  {"item_id":"F02","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月の生活費に少し余裕があります。一方、半年後には楽しみにしている予定があります。","prompt":"日常の小さな出費を少し抑えて、半年後に使えるお金を増やしておく方を選びやすいですか？","contract":"中期目標に向けた日常の微調整。","behavior_options":""},
-  {"item_id":"F03","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"数か月後にまとまった支払い予定があります。そんなとき、いま買いたい魅力的なものを見つけました。","prompt":"欲しいものをいったん見送り、先の支払いを優先して残す方を選びやすいですか？","contract":"現在の欲しいものと近い将来の支払い準備の拮抗。","behavior_options":""},
-  {"item_id":"F04","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月のやりくりの中で、今月は予定外に5万円の余剰が出ました。前から気になっていたものもありますが、3か月後にも楽しみにしている予定があります。","prompt":"まず先の予定に使う分を確保し、残った分を今使う方を選びやすいですか？","contract":"余剰金の先行配分・未来枠の確保。","behavior_options":""},
-  {"item_id":"F05","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"今少し出費を控えれば、半年後には「旅行・買い物・貯蓄」など複数の選択肢を残せます。今使ってしまうと、その選択肢は狭まります。","prompt":"今の満足を少し減らしてでも、半年後の選択肢を残しておく方を選びやすいですか？","contract":"将来の選択肢を保持する選好。","behavior_options":""},
-
-  {"item_id":"I01","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える3万円があります。今の生活をすぐに快適にできる使い道があり、半年後まで手をつけずに残すこともできます。","prompt":"半年後まで残すより、今の生活を良くするために今使う方を選びやすいですか？","contract":"生活向上への即時効用。","behavior_options":""},
-  {"item_id":"I02","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"今月しか参加できないイベントがあります。同じくらい興味のある買い物なら、数か月後でもできます。","prompt":"後からでもできる買い物より、今しかできない機会を優先して選ぶ方ですか？","contract":"期限のある機会への現在優先度。","behavior_options":""},
-  {"item_id":"I03","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える2万円があります。「今楽しむこと」と「半年後の自分のために残すこと」のどちらも同じくらい大切だと感じています。","prompt":"このように迷った場合、最終的に「今楽しむ方」を選びやすいですか？","contract":"拮抗時の現在バイアス。","behavior_options":""},
-  {"item_id":"I04","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"日常の支出が予定より浮いて、手元に5万円の余裕ができました。","prompt":"「先のためにどう残すか」より、まず「今なら何に使えるか」を先に考える方ですか？","contract":"余剰発生時の初動認知。","behavior_options":""},
-  {"item_id":"I05","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"欲しい商品があります。今日買えば3万円ですぐ手に入りますが、1か月待てば2万5千円程度に下がる可能性があります。","prompt":"5千円安くなるのを待つより、今日手に入れてすぐ使いたい方を選びやすいですか？","contract":"待ち時間コストと即時入手価値。","behavior_options":""},
-
-  {"item_id":"N01","family":"CORE","construct":"INTUITION","scale_type":"A","scenario":"買い物をするとき、候補をいくつか見る前に、最初に見た瞬間に「これがいい」と強く感じたものがありました。","prompt":"その後ほかの商品を一通り見比べても、結局は最初に惹かれたものを選びやすいですか？","contract":"探索初期の第一印象への信頼。","behavior_options":""},
-  {"item_id":"N02","family":"CORE","construct":"INTUITION","scale_type":"A","scenario":"知人から「機能も価格も絶対にこっちが良い」と理由付きで強く勧められました。しかし、自分が見るともう一方の方がしっくりきます。","prompt":"相手の合理的な説明より、自分が感じる「しっくり感」を優先して選びやすいですか？","contract":"他者の論理と自己の内的感覚の対立。","behavior_options":""},
-  {"item_id":"N03","family":"CORE","construct":"INTUITION","scale_type":"A","scenario":"予算内で2つの商品を比較しています。Aはスペックや条件が少し優れています。Bは条件ではやや劣りますが、なぜか自分にはBの方が合っている気がします。","prompt":"スペックで勝るAより、感覚的に合うBを選びやすいですか？","contract":"スペック劣後時の直感優先度。","behavior_options":""},
-  {"item_id":"N04","family":"CORE","construct":"INTUITION","scale_type":"A","scenario":"条件面では特に気になる点のない契約があります。しかし、話を聞いているうちに、言葉にはできない違和感や引っかかりを感じました。","prompt":"条件に問題が見当たらなくても、その違和感を理由に契約を見送ることがありますか？","contract":"否定的内的アラートによる拒否権。","behavior_options":""},
-  {"item_id":"N05","family":"CORE","construct":"INTUITION","scale_type":"A","scenario":"候補を十分に比較・検討した結果、数字やスペックにはほとんど差がありませんでした。これ以上調べても新しい情報は出そうにありません。","prompt":"最後は理屈ではなく、自分の感覚やフィーリングで決めやすいですか？","contract":"探索飽和後の最終決済手段としての直感。","behavior_options":""},
-
-  {"item_id":"D01","family":"CORE","construct":"DELIBERATION","scale_type":"A","scenario":"買おうと考えている商品に3つの候補があります。今日中に決める必要はありません。","prompt":"その場で決めず、3つの特徴や価格を比較・整理してから決める方を選びやすいですか？","contract":"決定猶予時の構造的比較。","behavior_options":""},
-  {"item_id":"D02","family":"CORE","construct":"DELIBERATION","scale_type":"A","scenario":"魅力的なサービスがあり、大半の内容には納得しています。ただ、細かい利用規約や例外条件までは読み切れていません。","prompt":"規約をすべて確認できるまで申し込まず、一度持ち帰る方を選びやすいですか？","contract":"大枠納得で進むか細部まで精査するかの拮抗。","behavior_options":""},
-  {"item_id":"D03","family":"CORE","construct":"DELIBERATION","scale_type":"A","scenario":"30万円ほどの大きな買い物を検討しています。欲しい気持ちはすでに十分に高まっています。","prompt":"買う前に、メリットと気になる点（デメリット）を一度頭やメモで整理してから決める方ですか？","contract":"高揚時の客観的整理プロセス。","behavior_options":""},
-  {"item_id":"D04","family":"CORE","construct":"DELIBERATION","scale_type":"A","scenario":"非常に魅力的に見えるサービスを見つけました。ただ、競合する他のサービスについてはまだ何も調べていません。","prompt":"魅力的でもすぐ申し込まず、他の選択肢を一通り調べてから決める方ですか？","contract":"代替案探索の網羅性。","behavior_options":""},
-  {"item_id":"D05","family":"CORE","construct":"DELIBERATION","scale_type":"A","scenario":"価格・品質・使いやすさがそれぞれ異なる3つの商品で迷っています。","prompt":"感覚で選ぶ前に、「自分にとって価格と品質のどちらが最優先か」などの基準を整理してから決める方ですか？","contract":"判断基準の事前重み付け。","behavior_options":""},
-
-  {"item_id":"M01","family":"CORE","construct":"MONITORING","scale_type":"B","scenario":"今日、「今月あと自由に使えるお金はいくら残っている？」と不意に聞かれたとします。","prompt":"銀行やカードの明細を見なくても、大体の金額をその場で答えられますか？","contract":"残余可処分所得のリアルタイム認知。","behavior_options":""},
-  {"item_id":"M02","family":"CORE","construct":"MONITORING","scale_type":"B","scenario":"家賃・光熱費・通信費・サブスクなど、毎月ほぼ決まって出ていく固定費があります。","prompt":"その合計金額が毎月いくらくらいか、ざっくり頭に入っていますか？","contract":"固定費ベースラインの把握度。","behavior_options":""},
-  {"item_id":"M03","family":"CORE","construct":"MONITORING","scale_type":"B","scenario":"月の半ば、カードや電子マネーで細かな支払いを複数回重ねている状態を想像してください。","prompt":"いま使うペースが、想定より速いか遅いか、大体感覚でつかめていますか？","contract":"支出速度の知覚。","behavior_options":""},
-  {"item_id":"M04","family":"CORE","construct":"MONITORING","scale_type":"B","scenario":"普段の月よりも外食や買い物が増えている月を想像してください。","prompt":"月末の請求書や明細を見る前に、「今月は使いすぎているな」と月中に気づくことが多いですか？","contract":"支出超過の早期検知。","behavior_options":""},
-  {"item_id":"M05","family":"CORE","construct":"MONITORING","scale_type":"B","scenario":"「この直近1週間で、何にいくらくらい使った？」と聞かれたとします。","prompt":"家計簿や履歴を開かなくても、大きめの支出なら大体思い出せますか？","contract":"短期の支出保持。","behavior_options":""},
-
-  {"item_id":"P01","family":"CORE","construct":"PERIODIC","scale_type":"B","scenario":"給料日やカードの引き落とし日といった決まった日とは別に、自分で「週に1回」「隔週」などお金を確認するタイミングを決めていますか？","prompt":"自分なりの周期やルールを決めて確認する方ですか？","contract":"自発的な定期レビュー。","behavior_options":""},
-  {"item_id":"P02","family":"CORE","construct":"PERIODIC","scale_type":"B","scenario":"給料日、クレジットカードの支払日、あるいは毎月末など、お金の出入りに区切りがつく日があります。","prompt":"そうした区切りのタイミングに合わせて、口座残高や支出を確認することが多いですか？","contract":"外部トリガーによる定点観測。","behavior_options":""},
-  {"item_id":"P03","family":"CORE","construct":"PERIODIC","scale_type":"B","scenario":"旅行や大きな家電の購入など、普段よりまとまったお金を使う予定があります。","prompt":"その予定の前後など、イベントの節目に合わせて残高や明細を確認することが多いですか？","contract":"イベント駆動の確認行動。","behavior_options":""},
-  {"item_id":"P04","family":"CORE","construct":"PERIODIC","scale_type":"B","scenario":"家計簿アプリやカードの利用通知を普段どのように確認していますか？","prompt":"通知が来るたびにその都度見るより、週末や月末などにまとめて目を通すことが多いですか？","contract":"都度処理とバッチ処理の違い。","behavior_options":""},
-  {"item_id":"P05","family":"CORE","construct":"PERIODIC","scale_type":"B","scenario":"月の中盤の普段の生活を想像してください。","prompt":"月の途中では残高を細かく気にせず、月末や月初などの区切りで1か月分をまとめて振り返る方ですか？","contract":"月次レビュー思考。","behavior_options":""},
-
-  {"item_id":"R01","family":"CORE","construct":"DRIVE","scale_type":"A","scenario":"自由に使える5万円があります。ずっと欲しかった趣味のものを買うことも、仕事やスキルアップのための教材や講座に使うこともできます。どちらも魅力的です。","prompt":"スキルアップや学びに使う方を選びやすいですか？","contract":"純粋消費と人的資本投資の競合。","behavior_options":""},
-  {"item_id":"R02","family":"CORE","construct":"DRIVE","scale_type":"A","scenario":"自分の目標や作業を大幅に早められそうな有料ツールやサービスがあります。使わなくても、時間をかければ自分でやり切ることはできます。","prompt":"時間を短縮できるなら、進んでお金を払って使う方を選びやすいですか？","contract":"時間のレバレッジ。","behavior_options":""},
-  {"item_id":"R03","family":"CORE","construct":"DRIVE","scale_type":"A","scenario":"手元の資金に10万円のゆとりができました。生活費や備えには困っていません。純粋な休日の楽しみに使うことも、新しい活動や挑戦の準備に使うこともできます。","prompt":"新しい活動や挑戦の準備に使う方を選びやすいですか？","contract":"余剰資金の挑戦的アロケーション。","behavior_options":""},
-  {"item_id":"R04","family":"CORE","construct":"DRIVE","scale_type":"A","scenario":"5万円の自己投資があります。必ず成果につながる保証はありませんが、うまくいけば自分のスキルや活動の幅が広がる可能性があります。","prompt":"結果が保証されていなくても、挑戦として試してみる方を選びやすいですか？","contract":"不確実な成長機会へのリスクテイク。","behavior_options":""},
-  {"item_id":"R05","family":"CORE","construct":"DRIVE","scale_type":"A","scenario":"休日に5万円を使うとします。気兼ねなく心からリフレッシュできる旅行と、新しい人脈や将来の仕事の機会につながりそうなイベントがあります。","prompt":"将来の機会につながりそうなイベントの方を選びやすいですか？","contract":"機会獲得への投資性。","behavior_options":""},
-
-  {"item_id":"E01","family":"CORE","construct":"ENJOY","scale_type":"A","scenario":"自由に使える5万円があります。長く手元に残る欲しいモノを買うことも、以前から行きたかった旅行などの体験に使うこともできます。どちらも同じくらい魅力的です。","prompt":"モノよりも、体験の方にお金を使いやすいですか？","contract":"物質的消費と経験的消費。","behavior_options":""},
-  {"item_id":"E02","family":"CORE","construct":"ENJOY","scale_type":"A","scenario":"休日のお金として2万円があります。自分の部屋で使える欲しかったモノを買うことも、友人や大切な人との食事や遊びに使うこともできます。","prompt":"人と楽しく過ごす時間の方にお金を使いやすいですか？","contract":"共有体験への支出。","behavior_options":""},
-  {"item_id":"E03","family":"CORE","construct":"ENJOY","scale_type":"A","scenario":"同じ価格で、基本機能もほぼ同じ商品が2つあります。一方は無難なデザインですが、もう一方は見た目や質感がとても魅力的で、使うたびに気分が上がりそうです。","prompt":"毎日の気分が上がりそうな方を選びやすいですか？","contract":"情動的・美的価値。","behavior_options":""},
-  {"item_id":"E04","family":"CORE","construct":"ENJOY","scale_type":"A","scenario":"休日に一人で出かけ、数千円〜1万円ほど使いました。形に残るモノは何も買いませんでしたが、とても充実した楽しい時間を過ごせました。","prompt":"形に残るモノが何も残らなくても、「十分に良いお金の使い方だった」と心から思えますか？","contract":"形に残らない消費の事後肯定。","behavior_options":""},
-  {"item_id":"E05","family":"CORE","construct":"ENJOY","scale_type":"A","scenario":"5万円を使うにあたり、数年間使える実用的な家具や家電を新調することも、一生記憶に残りそうな特別なイベントや旅行に使うこともできます。","prompt":"記憶に残る特別な体験の方を選びやすいですか？","contract":"長期記憶価値。","behavior_options":""},
-
-  {"item_id":"S01","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"生活費とは別に、手元に30万円の余裕があります。しばらく大きな支出の予定はありません。","prompt":"何かに使ったり運用に回したりするより、いざという時のためにすぐ引き出せる状態で普通預金などに置いておく方を選びやすいですか？","contract":"流動性選好・緊急資金。","behavior_options":""},
-  {"item_id":"S02","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"10万円を使う2つの選択肢があります。Aはうまくいけば20万円分の大きなリターンがありますが、外れると0になります。Bは確実に11万円分の小さなメリットが得られます。","prompt":"失敗の可能性があるAより、確実なBを選びやすいですか？","contract":"確実性選好。","behavior_options":""},
-  {"item_id":"S03","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"月によって利用料が上下するプランと、毎月一定額で決まっているプランがあります。年間の支払い見込みはほぼ同じです。","prompt":"多少上下する可能性があっても安く済む月がある方より、毎月の支出が一定で読める方を選びやすいですか？","contract":"予測可能性の選好。","behavior_options":""},
-  {"item_id":"S04","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"手元の資金を一時的に預ける選択肢があります。Aはいつでも引き出せますが条件は普通です。Bは条件が少し良くなりますが、契約すると1年間は途中解約や引き出しができません。","prompt":"条件が良くても、一定期間お金を動かせなくなる選択肢は避けたいですか？","contract":"資金拘束への嫌悪感。","behavior_options":""},
-  {"item_id":"S05","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"内容が非常に魅力的な定期サービスがあります。1年契約にすると月額が大幅に安くなりますが、途中で解約しても返金はありません。","prompt":"割高でも、いつでもやめられる通常プランの方を選びやすいですか？","contract":"割引と自由度の拮抗。","behavior_options":""},
-
-  {"item_id":"O01","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"2万円と3万円の商品で迷っています。3万円の方が品質や耐久性が明らかに優れています。","prompt":"少し高くても、「長く使って元を取りたい」と考えて3万円の方を選びやすいですか？","contract":"目先の安さと長期的な使用価値の拮抗。","behavior_options":""},
-  {"item_id":"O02","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"日用品や食品で、大容量パックは1個あたりの単価がかなり割安です。ただし、最後まで全部使い切れるかは分かりません。","prompt":"単価が安くても、使い切れずに余らせるリスクがあるなら、少し割高でも使い切れる通常サイズを選びやすいですか？","contract":"廃棄・ロス回避。","behavior_options":""},
-  {"item_id":"O03","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"月額500円のサービスがあります。最近あまり使っていませんが、たまに必要になる瞬間があり、解約すると再設定の手間がかかります。","prompt":"金額が小さくても、使っていない期間があるなら一旦解約する方を選びやすいですか？","contract":"少額の無駄と再契約の手間の拮抗。","behavior_options":""},
-  {"item_id":"O04","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"今の用途には十分な5,000円の商品と、機能に余裕がある8,000円の商品があります。","prompt":"今の用途に十分な方より、少し高くても機能に余裕がある方を選びやすいですか？","contract":"必要十分の安さと機能余裕への上乗せの拮抗。","behavior_options":""},
-  {"item_id":"O05","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"ソフトウェアやサービスで、すべての機能が入った月4,000円のプランと、自分に必要な機能だけに絞られた月3,000円のプランがあります。","prompt":"機能が少なくても、自分に必要なものだけに絞られた安いプランを選びやすいですか？","contract":"不要機能を省く最適化。","behavior_options":""},
-
-  {"item_id":"SW01","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"日常の余剰。今の快適さ vs 3か月後の楽しみ。","text":"普段の家計のやりくりの中で、今月は予定外に3万円が浮きました。\nA：いま使っている日用品や家電を買い替えて、毎日の生活を少し快適にする\nB：3か月後に予定している楽しみのために、手をつけず残しておく","behavior_options":""},
-  {"item_id":"SW02","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"旅先の余剰。今ここ vs 次の楽しみ。","text":"旅行中、あらかじめ設定していた旅費の予算が2万円余りました。\nA：今回の旅行の食事や宿を少し豪華にして、今ここで使い切る\nB：3か月後にも別の楽しみがあるので、そのために残しておく","behavior_options":""},
-  {"item_id":"SW03","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"臨時収入。欲しいモノ vs 近未来支払い。","text":"臨時収入として5万円が入りました。\nA：以前からずっと欲しかった3万円のモノを、この機会に買う\nB：3か月後に5万円前後の出費が予定されているので、その支払いに備えて残す","behavior_options":""},
-  {"item_id":"SW04","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"自己投資の回収期間。","text":"同じ5万円を使って、自分のための学習やツールに投資します。\nA：すぐに実践でき、3か月以内に効果や成果を実感しやすい方\nB：実感できるまで時間はかかるが、1〜2年以上先まで長く役立ち続ける方","behavior_options":""},
-  {"item_id":"SW05","family":"SWITCH","construct":"SWITCH_DECISION","scale_type":"","scenario":"","prompt":"","contract":"少額・日常での決定様式。SW06と選択肢完全一致。","text":"普段の生活で使う数千円〜1万円程度の日用品を2つまで絞り込みました。どちらも予算内です。\nA：自分にしっくりくる方を選ぶ\nB：条件を比較して納得できる方を選ぶ","behavior_options":""},
-  {"item_id":"SW06","family":"SWITCH","construct":"SWITCH_DECISION","scale_type":"","scenario":"","prompt":"","contract":"高額・重要での決定様式。SW05と選択肢完全一致。","text":"数十万円かかる大きな買い物や長期契約を2つまで絞り込みました。どちらも予算内です。\nA：自分にしっくりくる方を選ぶ\nB：条件を比較して納得できる方を選ぶ","behavior_options":""},
-
-  {"item_id":"B01","family":"BEHAVIOR","construct":"BEHAVIOR","scale_type":"","scenario":"","prompt":"","contract":"同日複数回確認のノイズを避けるため回数ではなく日数。","text":"過去30日間で、銀行口座の残高やクレジットカードの利用明細を、自分から意識して確認した日は合計で何日くらいありましたか？","behavior_options":"0日 / 1日 / 2〜3日 / 4〜7日 / 8〜15日 / 16日以上"},
-  {"item_id":"B02","family":"BEHAVIOR","construct":"BEHAVIOR","scale_type":"","scenario":"","prompt":"","contract":"自動積立を含む仕組み化の実態。","text":"過去6か月のうち、収入が入ったあと「使う前に」貯蓄・積立・投資へお金が回った月はいくつありましたか？（※給与天引きや口座からの自動積立も含みます）","behavior_options":"0か月 / 1か月 / 2〜3か月 / 4〜5か月 / 6か月すべて"},
-  {"item_id":"B03","family":"BEHAVIOR","construct":"BEHAVIOR","scale_type":"","scenario":"","prompt":"","contract":"計画外3,000円以上。閾値はCognitive Pilotで確認。","text":"過去30日間で、出かける前やサイトを見る前には「買う予定がなかった3,000円以上の買い物」を、その場の判断で購入した回数はどれくらいですか？","behavior_options":"0回 / 1回 / 2〜3回 / 4〜5回 / 6回以上"},
-  {"item_id":"B04","family":"BEHAVIOR","construct":"BEHAVIOR","scale_type":"","scenario":"","prompt":"","contract":"検討ではなく完了した見直し件数。","text":"過去12か月間で、スマートフォン等の通信費、サブスク、保険、電気代などの固定費について、実際に「解約・プラン変更・他社への乗り換え」まで完了させた件数はいくつありますか？","behavior_options":"0件 / 1件 / 2件 / 3件 / 4件以上"}
+export const BIPOLAR_SCALE_LABELS = [
+  "左にかなり近い",
+  "やや左に近い",
+  "どちらともいえない",
+  "やや右に近い",
+  "右にかなり近い",
 ] as const;
 
-export const OMISSION_ALLOCATION = {
-  A:{FUTURE:"F01",IMMEDIATE:"I03",INTUITION:"N02",DELIBERATION:"D05",MONITORING:"M03",PERIODIC:"P05",DRIVE:"R04",ENJOY:"E03",SECURE:"S03",OPTIMIZE:"O03"},
-  B:{FUTURE:"F04",IMMEDIATE:"I04",INTUITION:"N01",DELIBERATION:"D02",MONITORING:"M01",PERIODIC:"P01",DRIVE:"R03",ENJOY:"E04",SECURE:"S05",OPTIMIZE:"O04"},
-  C:{FUTURE:"F03",IMMEDIATE:"I02",INTUITION:"N03",DELIBERATION:"D03",MONITORING:"M02",PERIODIC:"P02",DRIVE:"R05",ENJOY:"E02",SECURE:"S02",OPTIMIZE:"O02"},
-  D:{FUTURE:"F05",IMMEDIATE:"I01",INTUITION:"N05",DELIBERATION:"D04",MONITORING:"M04",PERIODIC:"P04",DRIVE:"R01",ENJOY:"E01",SECURE:"S01",OPTIMIZE:"O01"},
-  E:{FUTURE:"F02",IMMEDIATE:"I05",INTUITION:"N04",DELIBERATION:"D01",MONITORING:"M05",PERIODIC:"P03",DRIVE:"R02",ENJOY:"E05",SECURE:"S04",OPTIMIZE:"O05"}
-} as const;
+export const LIKERT_SCALE_LABELS = [
+  "まったく当てはまらない",
+  "あまり当てはまらない",
+  "どちらともいえない",
+  "だいたい当てはまる",
+  "かなり当てはまる",
+] as const;
 
-export const FIXED_SWITCHES = ["SW01","SW02","SW03","SW04","SW05","SW06"] as const;
-export const FIXED_BEHAVIORS = ["B01","B02","B03","B04"] as const;
+export const PILOT_ITEMS = [
+  {item_id:"F01",family:"BIPOLAR",factor:"FUTURE",scenario:"手元にすぐ使う予定のないお金があります。今のところ明確な使い道はありません。",option_a:"必要になったとき、その時点で使い道を決める",option_b:"まだ使い道が決まっていなくても、先のための枠を先に作っておく",trait_pole:"B"},
+  {item_id:"F02",family:"BIPOLAR",factor:"FUTURE",scenario:"数か月後に楽しみにしている予定があります。まだ少し先のことです。",option_a:"時期が近づいてから、そのときの財布の状況に合わせてやりくりする",option_b:"そのとき十分楽しめるよう、今から少しずつ使える枠を準備しておく",trait_pole:"B"},
+  {item_id:"F03",family:"BIPOLAR",factor:"FUTURE",scenario:"数か月後にまとまった支払いがあると分かっています。まだ期日までは余裕があります。",option_a:"支払期日が近づいたタイミングで、全体のやりくりを調整して工面する",option_b:"期日に関わらず、あらかじめその支払いの分を取り分けて手元から切り離しておく",trait_pole:"B"},
+  {item_id:"F04",family:"BIPOLAR",factor:"FUTURE",scenario:"普段の生活の中で、想定より少し支出が浮いて手元にゆとりができました。",option_a:"今後の生活費の余裕として、そのまま持っておく",option_b:"先々のための分として、使わない枠をあらかじめ作っておく",trait_pole:"B"},
+  {item_id:"F05",family:"BIPOLAR",factor:"FUTURE",scenario:"今あらかじめ手元に残しておけば、半年後や1年後に「やりたいこと」ができたとき、すぐに動ける選択肢を持てます。",option_a:"先のことはその時にならないと分からないので、先回りした確保はあまり意識しない",option_b:"使うあてがまだ具体的でなくても、「後で動ける自由」をあらかじめ確保しておきたい",trait_pole:"B"},
+
+  {item_id:"I01",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"今このタイミングでしか参加できない魅力的なイベントや機会があります。見送っても生活には困りません。",option_a:"今回は見送り、別の機会を待つ",option_b:"今しかない機会なら、今回のタイミングで選ぶ",trait_pole:"B"},
+  {item_id:"I02",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"日々の生活や作業の快適さをすぐに底上げしてくれる、良さそうなアイテムや工夫を見つけました。",option_a:"現状でも特に致命的な不便はないので、そのまま今の状態で過ごす",option_b:"今の生活がすぐに快適になるなら、取り入れて生活を良くする",trait_pole:"B"},
+  {item_id:"I03",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"欲しいものがあります。「今すぐ手に入れる」ことも、「しばらく様子を見てから手に入れる」こともできます。",option_a:"しばらく様子を見てから決める",option_b:"欲しいと思った今のタイミングで手に入れる",trait_pole:"B"},
+  {item_id:"I04",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"休日に、今しか参加できない魅力的な誘いがあります。一方で、予定を入れず自分のペースでゆっくり過ごすのも魅力的です。",option_a:"予定を入れず、自分の時間をゆっくり過ごす",option_b:"今しかない誘いなら、その機会を選ぶ",trait_pole:"B"},
+  {item_id:"I05",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"普段より少しお金にゆとりができたとき、ふと頭に浮かぶ最初の感覚として。",option_a:"特に用途を決めず、そのまま余裕として持っておく",option_b:"まず「今使うなら何に使うか」を考える",trait_pole:"B"},
+
+  {item_id:"N01",family:"BIPOLAR",factor:"INTUITION",scenario:"いくつか候補を見る中で、最初に見た瞬間から「これが良さそう」と感じたものがあります。",option_a:"最初の印象に引っ張られず、候補全体を一通り見てから決める",option_b:"最初に感じた「これが良さそう」という印象を大切にして決める",trait_pole:"B"},
+  {item_id:"N02",family:"BIPOLAR",factor:"INTUITION",scenario:"口コミや周囲の評価では評判の良い選択肢があります。一方で、自分には別の方がしっくりきます。",option_a:"多くの人が評価している客観的な安心感の方を選ぶ",option_b:"理由はうまく言えなくても、自分がしっくりくる方を選ぶ",trait_pole:"B"},
+  {item_id:"N03",family:"BIPOLAR",factor:"INTUITION",scenario:"条件だけを見ると大きな差はありませんが、一方にだけ「なんとなく自分に合う」と感じます。",option_a:"根拠を言葉で説明しにくい感覚なら、決め手にはしない",option_b:"理由をうまく説明できなくても、その感覚を決め手にする",trait_pole:"B"},
+  {item_id:"N04",family:"BIPOLAR",factor:"INTUITION",scenario:"条件上は特に問題が見当たらないのに、なぜか少し引っかかる選択肢があります。",option_a:"条件に問題がないなら、感覚的な引っかかりだけでは見送らない",option_b:"はっきりした理由がなくても、その違和感を重視して見送る",trait_pole:"B"},
+  {item_id:"N05",family:"BIPOLAR",factor:"INTUITION",scenario:"十分に調べても、最後の2つに明確な差が見つかりません。これ以上調べても新しい情報は出そうにありません。",option_a:"わずかなスペック差や価格など、目に見える数字で割り切って決める",option_b:"最後は数字ではなく、自分の感覚やフィーリングで決める",trait_pole:"B"},
+
+  {item_id:"D01",family:"BIPOLAR",factor:"DELIBERATION",scenario:"魅力的な選択肢が見つかり、今決めても特に問題はなさそうです。今日中に決める必要はありません。",option_a:"十分良さそうなら、その場で決めて次の行動に進む",option_b:"その場では決めず、ほかの候補と並べて確認してから決める",trait_pole:"B"},
+  {item_id:"D02",family:"BIPOLAR",factor:"DELIBERATION",scenario:"サービスの大まかな内容には納得しています。ただ、細かい利用条件や特則までは確認しきれていません。",option_a:"大枠で納得できていて実用上問題なさそうなら、そのまま進める",option_b:"細かい条件や気になる点まで確認してから進める",trait_pole:"B"},
+  {item_id:"D03",family:"BIPOLAR",factor:"DELIBERATION",scenario:"かなり欲しいものがあり、「もうこれで決まりだ」と気持ちが高まっています。",option_a:"気持ちが十分に高まっている今の勢いを大切にして決める",option_b:"買う前に一度、良い点と気になる点を頭の中で整理してから決める",trait_pole:"B"},
+  {item_id:"D04",family:"BIPOLAR",factor:"DELIBERATION",scenario:"最初に見つけた選択肢がかなり良さそうです。他の候補はまだ探していません。",option_a:"すでに十分な水準なら、余計な手間をかけずこれに決める",option_b:"念のため、ほかにどんな選択肢があるか一度確認してから決める",trait_pole:"B"},
+  {item_id:"D05",family:"BIPOLAR",factor:"DELIBERATION",scenario:"それぞれ違った魅力や特徴を持つ複数の候補で迷っています。",option_a:"全体の雰囲気を見ながら、その場で一番良さそうなものを選ぶ",option_b:"「自分にとって何が一番大切か」の基準を整理してから選ぶ",trait_pole:"B"},
+
+  {item_id:"R01",family:"BIPOLAR",factor:"DRIVE",scenario:"手元に自由に使えるお金があります。どちらも魅力的な使い道です。",option_a:"いまの暮らしを確実に快適にするものに使う",option_b:"自分のできることを広げる学びに使う",trait_pole:"B"},
+  {item_id:"R02",family:"BIPOLAR",factor:"DRIVE",scenario:"自分で時間をかければやり切れますが、進度を大きく早められる有料ツールや外部サービスがあります。",option_a:"費用をかけず、自分の工夫と時間をかけてやり切る",option_b:"時間を大幅に短縮できるなら、費用を払って取り入れる",trait_pole:"B"},
+  {item_id:"R03",family:"BIPOLAR",factor:"DRIVE",scenario:"手元にまとまったゆとり資金ができました。生活や備えには特に困っていません。",option_a:"日常の余暇や休日の手堅いリフレッシュに使う",option_b:"新しい活動や、これから挑戦したいことの準備に回す",trait_pole:"B"},
+  {item_id:"R04",family:"BIPOLAR",factor:"DRIVE",scenario:"今の自分に役立つ使い道と、新しくできることを増やせそうな使い道があります。",option_a:"今すでに役立つことが分かっている方に使う",option_b:"新しくできることを増やす方に使う",trait_pole:"B"},
+  {item_id:"R05",family:"BIPOLAR",factor:"DRIVE",scenario:"休日にお金と時間を使う使い道として、2つの選択肢があります。",option_a:"慣れた過ごし方で心身をしっかりリフレッシュする",option_b:"これまでやったことのない活動や環境を試してみる",trait_pole:"B"},
+
+  {item_id:"E01",family:"BIPOLAR",factor:"ENJOY",scenario:"自由に使える予算があります。どちらも同じくらい魅力的です。",option_a:"日常で長く手元に残って役立つ実用品を買う",option_b:"手元にモノは残らなくても、心から楽しめる体験に使う",trait_pole:"B"},
+  {item_id:"E02",family:"BIPOLAR",factor:"ENJOY",scenario:"休日のお金として使える予算があります。",option_a:"長く使える自分用のモノを買う",option_b:"一人でも誰かとでも、心から楽しめる時間に使う",trait_pole:"B"},
+  {item_id:"E03",family:"BIPOLAR",factor:"ENJOY",scenario:"同じ価格で、基本性能も同等のアイテムが2つあります。一方は無難で飽きがこない作り、もう一方は使うたびに気分が高まりそうなデザインです。",option_a:"飽きずに長く使い続けられそうな無難な方を選ぶ",option_b:"毎日の気分が上がって嬉しくなる方を選ぶ",trait_pole:"B"},
+  {item_id:"E04",family:"BIPOLAR",factor:"ENJOY",scenario:"休日に出かけてお金を使いました。形に残る買い物はしませんでしたが、とても充実した時間を過ごせました。",option_a:"形に残るモノを買ったときの方が、納得感を感じやすい",option_b:"モノが何も残らなくても、それ自体で十分に良いお金の使い方だと感じる",trait_pole:"B"},
+  {item_id:"E05",family:"BIPOLAR",factor:"ENJOY",scenario:"まとまったお金を使う機会があります。",option_a:"何年も使える実用的なものを新調する",option_b:"長く記憶に残りそうな特別な体験に使う",trait_pole:"B"},
+
+  {item_id:"S01",family:"BIPOLAR",factor:"SECURE",scenario:"手元の資金を預ける選択肢があります。",option_a:"条件が良くなるなら、一定期間引き出せない縛りがあっても構わない",option_b:"条件が普通でも、必要なときにいつでも引き出せる状態にしておきたい",trait_pole:"B"},
+  {item_id:"S02",family:"BIPOLAR",factor:"SECURE",scenario:"お金の使い道で2つの選択肢があります。",option_a:"振れ幅は大きいが、うまくいけば大きなメリットがある方を選ぶ",option_b:"得られるメリットは小さくても、結果が確実に読める方を選ぶ",trait_pole:"B"},
+  {item_id:"S03",family:"BIPOLAR",factor:"SECURE",scenario:"利用料のプランを2つから選びます。年間の支払い総額の見込みはほぼ同じです。",option_a:"多少上下しても、安く済む月がある変動プランを選ぶ",option_b:"毎月の支払いが一定で、支出の予測が立ちやすい定額プランを選ぶ",trait_pole:"B"},
+  {item_id:"S04",family:"BIPOLAR",factor:"SECURE",scenario:"魅力的な定期サービスがあります。",option_a:"途中で解約できなくても、月額が大幅に安くなる年間契約を選ぶ",option_b:"多少割高でも、いつでもやめられる月々払いの契約を選ぶ",trait_pole:"B"},
+  {item_id:"S05",family:"BIPOLAR",factor:"SECURE",scenario:"生活に必要な分とは別に、お金の余裕があります。",option_a:"当面使う予定がないなら、何か有効な使い道に回す",option_b:"特に使い道がなくても、余裕として手元に残しておく",trait_pole:"B"},
+
+  {item_id:"O01",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"必要な機能に絞られた低価格プランと、すべての機能が入った上位プランがあります。",option_a:"後から足りなくなるよりは、余裕を持って全機能プランを選ぶ",option_b:"使わない機能には払わず、自分に必要な機能だけのプランを選ぶ",trait_pole:"B"},
+  {item_id:"O02",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"まとめ買いすると1個あたりの単価は割安ですが、最後まで使い切れるかは分かりません。",option_a:"単価が安くお得なら、多少余るリスクがあってもまとめ買いを選ぶ",option_b:"単価が多少割高でも、確実に使い切れる通常サイズを選ぶ",trait_pole:"B"},
+  {item_id:"O03",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"月額数百円のサービスがあります。最近あまり使っていませんが、たまに必要になる瞬間があり、解約・再登録には少し手間がかかります。",option_a:"金額が小さくたまに使うなら、そのまま契約を残しておく",option_b:"使っていない期間があるなら、手間がかかっても一度解約する",trait_pole:"B"},
+  {item_id:"O04",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"価格が手頃な商品と、高価格な商品で迷っています。",option_a:"今の出費を抑えられる手頃な方を選ぶ",option_b:"少し高くても、使う期間や回数まで考えると割に合いそうな方を選ぶ",trait_pole:"B"},
+  {item_id:"O05",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"今の用途には十分な通常モデルと、少し高額ですがスペックにゆとりのある上位モデルがあります。",option_a:"余裕を持たせるため、少し高くてもスペックが上のモデルを選ぶ",option_b:"今の自分の用途に十分なら、無駄な機能のない通常モデルを選ぶ",trait_pole:"B"},
+
+  {item_id:"M01",family:"LIKERT",factor:"MONITORING",prompt:"今、「今月あとどのくらい自由に使えそう？」と不意に聞かれたら、明細やアプリを開かなくても大体の金額が分かりますか？"},
+  {item_id:"M02",family:"LIKERT",factor:"MONITORING",prompt:"毎月ほぼ決まって出ていく固定費の合計が月にどのくらいか、ざっくり頭に入っていますか？"},
+  {item_id:"M03",family:"LIKERT",factor:"MONITORING",prompt:"月の途中で支払いが重なっているとき、今月の支出ペースが普段より速いか遅いか感覚で分かりますか？"},
+  {item_id:"M04",family:"LIKERT",factor:"MONITORING",prompt:"普段より支出が増えている月、月末の請求を見る前に「今月はいつもより使っている」と途中で気づくことが多いですか？"},
+  {item_id:"M05",family:"LIKERT",factor:"MONITORING",prompt:"直近1週間の支出について聞かれたら、大きめの支出なら履歴を見なくても大体思い出せますか？"},
+
+  {item_id:"P01",family:"LIKERT",factor:"PERIODIC",prompt:"給料日や支払日とは別に、自分で「週1回」「隔週」など確認するタイミングを決めてお金を確認していますか？"},
+  {item_id:"P02",family:"LIKERT",factor:"PERIODIC",prompt:"給料日、カード支払日、月末などの区切りの日に合わせて、残高や支出を確認することが多いですか？"},
+  {item_id:"P03",family:"LIKERT",factor:"PERIODIC",prompt:"大きな買い物や旅行などの予定の前後など、イベントの節目に合わせて残高や明細を確認することが多いですか？"},
+  {item_id:"P04",family:"LIKERT",factor:"PERIODIC",prompt:"カードや家計簿アプリの通知はその都度見るより、週末や月末などにまとめて確認することが多いですか？"},
+  {item_id:"P05",family:"LIKERT",factor:"PERIODIC",prompt:"月の途中では細かく見ず、月末や月初などの区切りで1か月分をまとめて振り返ることが多いですか？"},
+
+  {item_id:"B01",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日間で、銀行口座やカード明細を自分から意識して確認した日は合計で何日くらいありましたか？",behavior_options:["0日","1日","2〜3日","4〜7日","8〜15日","16日以上"]},
+  {item_id:"B02",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去6か月のうち、収入が入ったあと「使う前に」貯蓄・積立・投資へお金が回った月はいくつありましたか？（※自動積立・天引き含む）",behavior_options:["0か月","1か月","2〜3か月","4〜5か月","6か月すべて"]},
+  {item_id:"B03",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日間で、事前には買う予定がなかった3,000円以上の買い物を、その場の判断で購入した回数はどれくらいですか？",behavior_options:["0回","1回","2〜3回","4〜5回","6回以上"]},
+  {item_id:"B04",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去12か月間で、通信費・サブスク・保険・電気代などの固定費について、実際に「解約・プラン変更・乗り換え」まで完了させた件数はいくつありますか？",behavior_options:["0件","1件","2件","3件","4件以上"]},
+] as const;
+
+export const BIPOLAR_FACTORS = ["FUTURE","IMMEDIATE","INTUITION","DELIBERATION","DRIVE","ENJOY","SECURE","OPTIMIZE"] as const;
+export const LIKERT_FACTORS = ["MONITORING","PERIODIC"] as const;
