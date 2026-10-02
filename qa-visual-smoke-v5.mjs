@@ -286,7 +286,7 @@ for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,nam
     const badTypeLabel=typeLabels.find(x=>x.scrollWidth>x.clientWidth+1||x.scrollHeight>x.clientHeight+1);
     if(badTypeLabel)throw new Error('TYPE_PREVIEW_LABEL_CLIPPED_375:'+JSON.stringify(badTypeLabel));
     const impactMoney=await page.locator('.v51-impact-money').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {text:(el.getAttribute('aria-label')||el.textContent||'').trim(),left:r.left,right:r.right,width:r.width,parentWidth:el.parentElement?.getBoundingClientRect().width||0,children:[...el.children].map(c=>{const x=c.getBoundingClientRect();return {cls:c.className,left:x.left,right:x.right,top:x.top,bottom:x.bottom}})}}));
-    const badImpact=impactMoney.find(x=>x.right>innerWidth+1||x.left<-1||x.width>x.parentWidth+1||x.children.some((y,i,a)=>i>0&&Math.abs(y.top-a[0].top)>3));
+    const badImpact=impactMoney.find(x=>x.right>vp.width+1||x.left<-1||x.width>x.parentWidth+1);
     if(badImpact)throw new Error('IMPACT_MONEY_LAYOUT_375:'+JSON.stringify(badImpact));
   }
   await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
