@@ -292,7 +292,7 @@ function BehaviorQuestion({item,selected,onChoose}:{item:PilotItem;selected:Answ
   const options=behaviorOptions(item);
   return <>
     <div className="mp-family-label">実際の行動について</div>
-    <h2>{item.text}</h2>
+    <h2>{'text' in item?item.text:''}</h2>
     <div className="mp-answer-list">
       {options.map((label,i)=><button key={label} className={selected?.value===i+1?'selected':''} onClick={()=>onChoose({value:i+1,label})}>
         <b>{i+1}</b><span>{label}</span>
@@ -302,7 +302,7 @@ function BehaviorQuestion({item,selected,onChoose}:{item:PilotItem;selected:Answ
 }
 
 function SwitchQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
-  const sw=parseSwitchItem(item.text);
+  const sw=parseSwitchItem('text' in item?item.text:'');
   const opts=[
     {value:1,label:'A'},
     {value:2,label:'ややA'},
