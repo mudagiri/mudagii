@@ -14,6 +14,12 @@ const context=await browser.newContext({
   colorScheme:'dark',
 });
 const page=await context.newPage();
+await page.addInitScript(()=>{
+  window.__mudagiriShareCalls=[];
+  window.open=(url)=>{window.__mudagiriShareCalls.push({kind:'open',url:String(url)});return null};
+  try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true})}catch{}
+  try{Object.defineProperty(navigator,'share',{configurable:true,value:async(data)=>{window.__mudagiriShareCalls.push({kind:'share',title:data?.title??'',text:data?.text??'',files:(data?.files??[]).map(f=>f.name)})}})}catch{}
+});
 page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
 const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
@@ -144,6 +150,13 @@ await clickButton(/ムダ鑑定を始める/);
 await page.getByText('使ってない・ほぼ使ってないサブスク、ありそう？').waitFor();
 await clickButton(/1つくらいありそう/);
 await page.getByText('その未使用分、月額まで分かる？').waitFor();
+// Appraisal Back regression: dynamic follow-up must return to the previous appraisal question.
+const appraisalBack=page.getByRole('button',{name:/戻る/}).first();
+await appraisalBack.waitFor({state:'visible'});
+await appraisalBack.click();
+await page.getByText('使ってない・ほぼ使ってないサブスク、ありそう？').waitFor({state:'visible'});
+await clickButton(/1つくらいありそう/);
+await page.getByText('その未使用分、月額まで分かる？').waitFor({state:'visible'});
 await clickButton(/月額まで分かる/);
 const subAmountInput=page.locator('.appraisal-amount-input input').first();
 await subAmountInput.waitFor({state:'visible'});
@@ -202,6 +215,20 @@ await page.getByText(/家計クエスト/).first().waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
 for(const label of ['𝕏','Instagram','Threads','LINE']){const btn=page.locator('.v51-type-share button',{hasText:label}).first();await btn.waitFor({state:'visible'})}
+// Share regression without leaving the test page: X should open an intent; Instagram/Threads should invoke native share.
+await page.locator('.v51-type-share button',{hasText:'𝕏'}).first().click();
+await page.locator('.v51-type-share button',{hasText:'Instagram'}).first().click();
+await page.locator('.v51-type-share button',{hasText:'Threads'}).first().click();
+await page.waitForTimeout(80);
+const shareCalls=await page.evaluate(()=>window.__mudagiriShareCalls||[]);
+const xIntent=shareCalls.find(x=>x.kind==='open'&&x.url.includes('twitter.com/intent/tweet'));
+const nativeShares=shareCalls.filter(x=>x.kind==='share');
+if(!xIntent)throw new Error('X_SHARE_INTENT_NOT_CALLED:'+JSON.stringify(shareCalls));
+if(nativeShares.length<2)throw new Error('NATIVE_SHARE_NOT_CALLED_FOR_INSTAGRAM_THREADS:'+JSON.stringify(shareCalls));
+for(const call of nativeShares){
+  const payload=(call.text||'');
+  if(!payload.includes('#ムダギリ診断')||payload.includes('350000')||payload.includes('70000')||payload.includes('1800'))throw new Error('SHARE_PRIVACY_OR_BRAND_REGRESSION:'+JSON.stringify(call));
+}
 const futureRange=page.locator('.v51-money-hero.is-range').first();
 await futureRange.waitFor({state:'visible'});
 const futureRangeText=(await futureRange.innerText()).replace(/\s+/g,'');
@@ -254,6 +281,9 @@ for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,nam
     await range.scrollIntoViewIfNeeded();
     const boxes=await range.locator('strong').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right}}));
     if(boxes.length!==2||Math.abs(boxes[0].top-boxes[1].top)>3)throw new Error('FUTURE_RANGE_WRAP_375:'+JSON.stringify(boxes));
+    const typeLabels=await page.locator('.v51-type-grid b').evaluateAll(els=>els.map(el=>({text:(el.textContent||'').trim(),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight})));
+    const badTypeLabel=typeLabels.find(x=>x.scrollWidth>x.clientWidth+1||x.scrollHeight>x.clientHeight+1);
+    if(badTypeLabel)throw new Error('TYPE_PREVIEW_LABEL_CLIPPED_375:'+JSON.stringify(badTypeLabel));
   }
   await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
 }
