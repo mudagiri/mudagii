@@ -185,6 +185,15 @@ await clickButton(/最後のクエストへ/);
 await page.getByText(/優先チェック対象なし|見直しクエストを特定|見直しやすいところ|処刑候補/).waitFor();
 await shot('13-battle-intro');
 await clickButton(/結果へ進む|クエストを開始する/);
+// Confirmed targets enter the combo battle; zero-target scenarios jump straight to completion.
+const comboStart=page.getByRole('button',{name:/優先チェック開始/}).first();
+if(await comboStart.count()){
+  await comboStart.waitFor({state:'visible'});
+  await comboStart.click();
+  const comboDone=page.getByRole('button',{name:/診断結果へ/}).first();
+  await comboDone.waitFor({state:'visible',timeout:10000});
+  await comboDone.click();
+}
 await page.getByText(/家計防衛成功|見直しクエスト完了/).waitFor();
 await shot('14-battle-complete');
 await clickButton(/診断結果を見る/);
