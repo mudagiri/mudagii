@@ -3,7 +3,7 @@ import {FIXED_BEHAVIORS,FIXED_SWITCHES,OMISSION_ALLOCATION,PILOT_ITEMS} from './
 export type PilotFormId=keyof typeof OMISSION_ALLOCATION;
 export type PilotItem=(typeof PILOT_ITEMS)[number];
 
-const ITEMS_BY_ID=new Map<string,PilotItem>(PILOT_ITEMS.map(x=>[x.item_id,x]));
+const ITEMS_BY_ID=new Map<string,PilotItem>(PILOT_ITEMS.map(x=>[x.item_id,x] as const));
 
 export function itemById(id:string):PilotItem{
   const item=ITEMS_BY_ID.get(id);
