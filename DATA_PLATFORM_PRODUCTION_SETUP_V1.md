@@ -1,46 +1,104 @@
-# ムダギリ診断 本番データ基盤 V1
+# ムダギリ診断 データ資産基盤 V1
 
 Status: RELEASE CANDIDATE
 Date: 2026-10-02
 
 ## 正本
-- Workbook: `MUDAGIRI_PRODUCTION_DATA_MANAGEMENT_V1.xlsx`
-- GAS: `MUDAGIRI_GAS_CODE_V3.gs`
-- Data contract: `MUDAGIRI_ANALYTICS_V1`
 
-## 保存単位
-- `02_Diagnoses`: 1診断 = 1行。diagnosis_id UPSERT。
-- `03_Categories`: 1診断 × 12カテゴリ = 12行。diagnosis_id + category_code UPSERT。
-- `04_Events`: 1イベント = 1行。event_id dedupe。
-- `05_Leads`: 1診断 = 1行。diagnosis_id UPSERT。
-- `09_Meta`: schema/GAS version。
+- Workbook: `MUDAGIRI_DATA_ASSET_V1_FINAL_JP.xlsx`
+- GAS: `MUDAGIRI_GAS_CODE_V4.gs`
+- Data contract: `MUDAGIRI_DATA_ASSET_V1`
+- Frontend diagnosis snapshot: `MUDAGIRI_SHEET_V3`
 
-## Result V5 semantics
-- comparison_difference は比較差額であり、ムダ額でも改善額でもない。
-- confirmed_saving のみ確定改善額。
-- potential_c_upper は比較ベースの見直し余地上限で、確定改善額ではない。
-- Result V5 の position / v5_status / C upper / first quest は診断snapshotの analyticsV5 に保存する。
+診断ロジック・12カテゴリ判定・Result意味論は変更しない。今回の対象は保存・集計・品質管理レイヤーのみ。
 
-## Google Sheets / GAS setup
-1. `MUDAGIRI_PRODUCTION_DATA_MANAGEMENT_V1.xlsx` をGoogle Driveへアップロードし、Googleスプレッドシートへ変換。
+## 普段見る6タブ
+
+1. `①ホーム` — 全体KPIと「3ステップで見る」使い方
+2. `②どんな人？` — 属性フィルターと構成
+3. `③何に使ってる？` — 12カテゴリの実支出統計
+4. `④誰が面談する？` — LINE・面談・成約との関係
+5. `⑤データ信頼度` — 統計利用可能数と品質
+6. `⑥データ保管庫` — 日本語の1診断1行サマリー
+
+GASは別途、`_診断_raw / _支出_raw / _イベント_raw / _面談_raw / _品質_raw / _設定` を自動作成して非表示にする。普段は開かない。
+
+## データ思想
+
+- 実支出という事実と、診断による解釈を分けて保存する。
+- 個人負担額と世帯合計額を混ぜない。`③何に使ってる？` の「支出単位」で切り替える。
+- 高額という理由だけで低品質扱いしない。
+- 品質判定のために通常ユーザーの質問数を増やさない。
+- Quality C/DもRAWには残す。統計は原則A/Bを利用する。
+- 品質は診断全体だけでなくカテゴリ単位でも持つ。
+- `匿名継続ID` は現行ブラウザ/端末に保存される匿名IDであり、本人確認済みの世帯IDではない。
+- 外部提供用の統計は、母数・目的・匿名化・再識別リスクについて別途プライバシー/法務レビューを行う。
+
+## 保存される主な流れ
+
+`属性 → 実支出 → 心理回答 → 診断結果 → 行動 → LINE → 相談 → 面談 → 提案 → 成約 → 再診断`
+
+現行Webアプリから自動保存できるのは、診断snapshot、12カテゴリ、イベント、LINE引継ぎまで。
+
+相談希望以降は、将来LINE Bot/CRMから `conversion_v1` を送るか、暫定的にApps Scriptの
+`recordConversion(diagnosisId, stage, extra)`
+で記録する。
+
+stage:
+- `consult_requested`
+- `appointment_booked`
+- `appointment_attended`
+- `proposal_made`
+- `contracted`
+
+## データ品質 V1
+
+初期Quality Engineは、実データが十分たまるまで保守的なヒューリスティックとして扱う。
+
+主なシグナル:
+- 極端に短い診断時間
+- 多数カテゴリで同一金額の連打
+- 既知項目の全0パターン
+- 同じ匿名IDから短時間の大量再診断
+- 子ども0人なのに子ども教育費が入力される等の明確な整合性矛盾
+- 未使用サブスク額 > サブスク総額などの回答矛盾
+
+A/B = 統計利用候補、C/D = RAWには保持し統計から原則除外。
+
+閾値は固定的な真理ではない。最初の100〜500件を確認して、誤除外・取りこぼしを見ながら調整する。
+
+## 初回セットアップ
+
+1. `MUDAGIRI_DATA_ASSET_V1_FINAL_JP.xlsx` をGoogle Driveにアップロードし、Googleスプレッドシートへ変換。
 2. そのスプレッドシートで「拡張機能 > Apps Script」。
-3. Code.gsを `MUDAGIRI_GAS_CODE_V3.gs` 全文で置換。
-4. `setupMudagiriAnalyticsV1` を1回実行。権限を許可。
-5. 「デプロイ > 新しいデプロイ > ウェブアプリ」。
+3. Code.gsを `MUDAGIRI_GAS_CODE_V4.gs` 全文で置換。
+4. `setupMudagiriDataAssetV1` を1回実行し、権限を許可。
+5. スプシに戻り再読み込み。「ムダギリデータ」メニューが出ることを確認。
+6. 「デプロイ > 新しいデプロイ > ウェブアプリ」。
    - 実行ユーザー: 自分
    - アクセス: 全員
-6. /exec URLを取得。
-7. GitHub Actions Secret `VITE_MUDAGIRI_GAS_URL` をそのURLへ更新。
-8. Pagesを再デプロイ。
-9. Workbookの `08_QA` を上から13項目確認。
+7. /exec URLを取得。
+8. GitHub Actions Secret `VITE_MUDAGIRI_GAS_URL` をそのURLへ更新。
+9. Pagesを再デプロイ。
 
-## 重要な修正
-旧GAS V2ではResult側のイベント名 `goal_selected` とGASの `future_goal_selected` が一致していなかった。
-V3は両方を受けるが、現行正本は `goal_selected`。
+## 接続後の実診断チェック
+
+1件だけ実診断し、次を確認する。
+
+- `⑥データ保管庫` に1行追加
+- 12カテゴリの実支出が正しい列に入る
+- `_支出_raw` に12カテゴリが作られる
+- `LINEクリック` と `LINE遷移（コード発行）` が別々に記録される
+- `⑤データ信頼度` にA〜Dが出る
+- `②どんな人？` のフィルター変更で集計が更新される
+- `③何に使ってる？` の支出単位切替で個人負担/世帯合計が混ざらない
+- `④誰が面談する？` は面談データ未連携なら0%のままで正常
+- Result/LINE遷移速度が以前より遅くなっていない
 
 ## 公開前ゲート
+
 - Build SUCCESS
-- qa:data-pipeline SUCCESS
+- `qa:data-pipeline` SUCCESS
 - 既存全QA SUCCESS
-- 実診断1件で Diagnoses=1 / Categories=12 / Lead=1
-- LINEから戻って同じ diagnosis_id / Result が復元
+- 診断コアの差分なし
+- 実診断1件で保存確認
