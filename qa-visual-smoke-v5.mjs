@@ -129,8 +129,8 @@ for(let i=0;i<11;i++){
   const input=page.locator('.scan-money input').first();
   await input.waitFor({state:'visible'});
   // single-person scan order: mobile, energy, sub, food...
-  // Keep one realistic above-reference category so Result V5 money/horizon UI is exercised.
-  await input.fill(i===3?'70000':'0');
+  // Exercise both confirmed-A subscription savings and comparator-C food opportunity.
+  await input.fill(i===2?'5000':i===3?'70000':'0');
   await clickButton(/気配を探る/);
   const next=page.getByRole('button',{name:/次を探す|探索結果へ/}).first();
   await next.waitFor({state:'visible'});
@@ -140,13 +140,23 @@ await page.getByText(/ここから、必要な支出をちゃんと守ろう。|
 await shot('09-scan-complete');
 await clickButton(/ムダ鑑定を始める/);
 
+// Subscription A evidence: paid -> unused -> concrete monthly amount -> stoppable.
+await page.getByText('使ってない・ほぼ使ってないサブスク、ありそう？').waitFor();
+await clickButton(/1つくらいありそう/);
+await page.getByText('その未使用分、月額まで分かる？').waitFor();
+await clickButton(/月額まで分かる/);
+const subAmountInput=page.locator('.appraisal-amount-input input').first();
+await subAmountInput.waitFor({state:'visible'});
+await subAmountInput.fill('1800');
+await clickButton(/この金額で次へ/);
+await page.getByText('その未使用分、解約・停止できる？').waitFor();
+await clickButton(/^解約・停止できる/);
+
 // Food is above the comparison guide. Choose a value-preserving answer:
 // V4 can still protect it, while V5 must surface price-efficiency C potential.
 const foodAppraisal=page.getByText('今の食費について、一番近いのは？');
-if(await foodAppraisal.count()){
-  await foodAppraisal.waitFor({state:'visible'});
-  await clickButton(/今くらいでいい/);
-}
+await foodAppraisal.waitFor({state:'visible'});
+await clickButton(/今くらいでいい/);
 await page.getByText(/鑑定完了。|仕分けできたよ。|仕分け終了。/).waitFor();
 await shot('10-appraisal-complete');
 await clickButton(/お金タイプを解析する/);
@@ -175,6 +185,15 @@ await clickButton(/最後のクエストへ/);
 await page.getByText(/優先チェック対象なし|見直しクエストを特定|見直しやすいところ|処刑候補/).waitFor();
 await shot('13-battle-intro');
 await clickButton(/結果へ進む|クエストを開始する/);
+// Confirmed targets enter the combo battle; zero-target scenarios jump straight to completion.
+const comboStart=page.getByRole('button',{name:/優先チェック開始/}).first();
+if(await comboStart.count()){
+  await comboStart.waitFor({state:'visible'});
+  await comboStart.click();
+  const comboDone=page.getByRole('button',{name:/診断結果へ/}).first();
+  await comboDone.waitFor({state:'visible',timeout:10000});
+  await comboDone.click();
+}
 await page.getByText(/家計防衛成功|見直しクエスト完了/).waitFor();
 await shot('14-battle-complete');
 await clickButton(/診断結果を見る/);
@@ -183,6 +202,11 @@ await page.getByText(/家計クエスト/).first().waitFor();
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
 for(const label of ['𝕏','Instagram','Threads','LINE']){const btn=page.locator('.v51-type-share button',{hasText:label}).first();await btn.waitFor({state:'visible'})}
+const futureRange=page.locator('.v51-money-hero.is-range').first();
+await futureRange.waitFor({state:'visible'});
+const futureRangeText=(await futureRange.innerText()).replace(/\s+/g,'');
+if(!futureRangeText.includes('1,800')||!futureRangeText.includes('〜'))throw new Error('FUTURE_RANGE_NOT_RENDERED:'+futureRangeText);
+if(await futureRange.locator('strong').count()!==2)throw new Error('FUTURE_RANGE_MUST_RENDER_TWO_VALUES');
 for(const [name,selector] of [
   ['15a-result-type','.v5-type'],
   ['15b-result-position','.v5-position'],
@@ -198,9 +222,26 @@ for(const [name,selector] of [
 }
 const goal=page.getByRole('button',{name:/住まい/}).first();
 if(await goal.count()){await goal.click();await shot('15k-result-goal-selected',{allowVertical:true})}
-const atlasMore=page.getByRole('button',{name:/残りの敵も見る/}).first();if(await atlasMore.count()){await atlasMore.click();const mini=page.locator('.v51-enemy-mini').first();if(await mini.count()){await mini.click();await page.locator('.v51-atlas-detail').first().waitFor({state:'visible'});await shot('15l-result-atlas-detail-open',{allowVertical:true})}}
+
+// Regression: a subscription shown in the verdict must jump to its atlas entry and auto-open detail.
+const subVerdict=page.getByRole('button',{name:/サブスクサキュバスの詳細を見る/}).first();
+await subVerdict.waitFor({state:'visible'});
+await subVerdict.click();
+const subEntry=page.locator('#enemy-sub');
+await subEntry.waitFor({state:'visible'});
+const subDetail=subEntry.locator('.v51-atlas-detail');
+await subDetail.waitFor({state:'visible'});
+await page.waitForTimeout(500);
+const subDetailText=(await subDetail.innerText()).replace(/\s+/g,'');
+if(!subDetailText.includes('確認できた改善額：¥1,800/月'))throw new Error('SUBSCRIPTION_CONFIRMED_SAVING_DETAIL_MISSING:'+subDetailText);
+await shot('15l-result-sub-verdict-jump',{allowVertical:true});
+// Return atlas to a neutral collapsed state, then exercise a normal remaining-enemy disclosure too.
+await subEntry.locator('button').first().click();
+const atlasClose=page.locator('.v51-atlas-more').first();
+if(await atlasClose.count()&&((await atlasClose.innerText()).includes('閉じる')))await atlasClose.click();
+const atlasMore=page.getByRole('button',{name:/残りの敵も見る/}).first();if(await atlasMore.count()){await atlasMore.click();const mini=page.locator('.v51-enemy-mini').first();if(await mini.count()){await mini.click();await page.locator('.v51-atlas-detail').first().waitFor({state:'visible'});await shot('15m-result-atlas-detail-open',{allowVertical:true})}}
 const save=page.getByRole('button',{name:/結果をLINEに保存/}).first();await save.scrollIntoViewIfNeeded();await save.click();
-await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('heading',{name:'診断結果をLINEに保存'}).waitFor();await shot('15m-line-save-modal',{allowVertical:true});await clickButton(/あとで/);
+await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('heading',{name:'診断結果をLINEに保存'}).waitFor();await shot('15n-line-save-modal',{allowVertical:true});await clickButton(/あとで/);
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
 // Cross-width Result regression: narrow and wide phones.
@@ -208,6 +249,12 @@ for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,nam
   await page.setViewportSize({width:vp.width,height:vp.height});
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.waitForTimeout(120);
+  if(vp.width===375){
+    const range=page.locator('.v51-money-hero.is-range').first();
+    await range.scrollIntoViewIfNeeded();
+    const boxes=await range.locator('strong').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right}}));
+    if(boxes.length!==2||Math.abs(boxes[0].top-boxes[1].top)>3)throw new Error('FUTURE_RANGE_WRAP_375:'+JSON.stringify(boxes));
+  }
   await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
 }
 await page.setViewportSize({width:390,height:844});

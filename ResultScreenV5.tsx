@@ -250,7 +250,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
 
   <section className="v5-card v5-future v51-future" data-section="FUTURE MONEY">
    <div className="v51-future-head"><div><div className="v51-jp-kicker is-dark">未来の戦利品</div><h2>未来に回せる可能性</h2></div><img src={ART.guide} alt="" aria-hidden="true"/></div>
-   {adjusted.upper>0?<><div className="v51-money-hero" aria-label={monthlyText(adjusted.lower,adjusted.upper)}>
+   {adjusted.upper>0?<><div className={"v51-money-hero"+(adjusted.lower>0&&roundHero(adjusted.upper)>roundHero(adjusted.lower)?" is-range":"")} aria-label={monthlyText(adjusted.lower,adjusted.upper)}>
     <span className="v51-money-prefix">{adjusted.lower>0?'毎月':'毎月 最大'}</span>
     {adjusted.lower>0&&roundHero(adjusted.upper)>roundHero(adjusted.lower)?<><strong>{yen(roundHero(adjusted.lower))}</strong><i>〜</i><strong>{yen(roundHero(adjusted.upper))}</strong></>:<strong>{yen(roundHero(adjusted.upper))}</strong>}
     <span className="v51-money-unit">円</span>
@@ -338,7 +338,7 @@ const CSS=`
 .v51-deco-kicker{opacity:.72;margin-top:5px}.v51-type-art-frame{position:relative;width:210px;height:210px;margin:6px auto 0;display:grid;place-items:center}
 .v51-type-art-frame::before{content:"";position:absolute;inset:18px;border:1px solid rgba(244,215,107,.6);transform:rotate(45deg);background:radial-gradient(circle,rgba(194,164,255,.20),transparent 62%);box-shadow:0 0 30px rgba(198,161,255,.25)}
 .v51-type .v5-type-art{position:relative;z-index:2;width:190px!important;height:190px!important;filter:drop-shadow(0 12px 14px rgba(0,0,0,.42))}
-.v51-type h2{position:relative;z-index:2;margin-top:2px!important;font-size:36px!important;line-height:1.12!important;text-shadow:0 2px 0 rgba(80,50,5,.55),0 0 14px rgba(246,218,122,.20)}
+.v51-type h2{position:relative;z-index:2;margin-top:2px!important;font-size:clamp(30px,8.2vw,36px)!important;line-height:1.12!important;word-break:keep-all;overflow-wrap:normal;text-shadow:0 2px 0 rgba(80,50,5,.55),0 0 14px rgba(246,218,122,.20)}
 .v51-type h3{font-size:16px!important}.v51-type-summary{font-size:13px!important;color:#ced8e4!important}
 .v51-axis-badges{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:14px}.v51-axis-badges span{padding:6px 9px;border:1px solid rgba(190,171,255,.48);border-radius:999px;background:rgba(10,24,43,.72);font-size:10px;font-weight:900;color:#f5f1ff}
 .v51-type-detail{margin-top:14px;border:1px solid rgba(177,159,225,.32);border-radius:12px;background:rgba(8,21,37,.55);text-align:left}.v51-type-detail summary{min-height:48px;display:flex;align-items:center;justify-content:center;color:#d8cef8;font-size:11px;font-weight:900;cursor:pointer}
@@ -378,7 +378,7 @@ const CSS=`
 .v51-battle-portraits>button{width:48px;height:48px;padding:0;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:#0b1c26;overflow:hidden;cursor:pointer;touch-action:manipulation;transition:transform .14s ease,border-color .14s ease}.v51-battle-portraits>button:active{transform:scale(.92)}.v51-battle-portraits>button img{width:100%;height:100%;object-fit:contain}
 .v51-money-hero{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:3px 5px;margin:20px auto 10px;color:#142332;font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.055em;line-height:.92;text-align:center;text-shadow:0 2px 0 rgba(255,255,255,.35)}
 .v51-money-prefix{flex-basis:100%;margin-bottom:7px;color:#604a05;font-family:system-ui,sans-serif;font-size:16px;font-weight:1000;letter-spacing:.06em;line-height:1}
-.v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}
+.v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}.v51-money-hero.is-range strong{font-size:clamp(38px,10vw,54px)}.v51-money-hero.is-range i{font-size:27px}.v51-money-hero.is-range .v51-money-unit{font-size:24px}
 .v51-impact>h2{font-size:34px!important;line-height:1.08!important;letter-spacing:-.045em;font-weight:1000!important}.v51-impact .v5-impact-grid b{font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-weight:1000;letter-spacing:-.055em}.v51-impact .v5-impact-grid .is-10 b{font-size:clamp(38px,10vw,54px)!important;line-height:1!important;text-shadow:0 2px 0 rgba(255,255,255,.55)}
 
 .v51-axis-badges span{display:grid!important;grid-template-rows:auto auto;gap:1px;text-align:center;min-width:82px}.v51-axis-badges span small{display:block;color:#aa9fd1;font-size:8px;font-weight:800;letter-spacing:.04em}.v51-type-detail.is-open{padding:10px 10px 11px}.v51-type-detail.is-open .v5-axes{margin-top:0}
