@@ -8,10 +8,10 @@ export const CORE_SCALE_LABELS = {
 } as const;
 
 export const PILOT_ITEMS = [
-  {"item_id":"F01","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"自由に使えるお金が手元に5万円あります。今すぐ必要な買い物はありませんが、1年後にはまとまった出費があるかもしれません。","prompt":"この5万円の多くを、1年後にも使える状態で残しておく方を選びやすいですか？","contract":"1年後不確実支出への資金保全。","behavior_options":""},
+  {"item_id":"F01","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"自由に使えるお金が手元に5万円あります。今すぐ必要な買い物はありませんが、1年後にはまとまった出費があるかもしれません。","prompt":"今使わず、将来にも使える状態で残しておく方を選びやすいですか？","contract":"1年後不確実支出への資金保全。","behavior_options":""},
   {"item_id":"F02","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月の生活費に少し余裕があります。一方、半年後には楽しみにしている予定があります。","prompt":"日常の小さな出費を少し抑えて、半年後に使えるお金を増やしておく方を選びやすいですか？","contract":"中期目標に向けた日常の微調整。","behavior_options":""},
   {"item_id":"F03","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"数か月後にまとまった支払い予定があります。そんなとき、いま買いたい魅力的なものを見つけました。","prompt":"欲しいものをいったん見送り、先の支払いを優先して残す方を選びやすいですか？","contract":"現在の欲しいものと近い将来の支払い準備の拮抗。","behavior_options":""},
-  {"item_id":"F04","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月のやりくりの中で、今月は予定外に5万円の余剰が出ました。前から気になっていたものもありますが、3か月後にも楽しみにしている予定があります。","prompt":"まず3か月後の予定に使う分を先に確保し、残った分を今使う方を選びやすいですか？","contract":"余剰金の先行配分・未来枠の確保。","behavior_options":""},
+  {"item_id":"F04","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月のやりくりの中で、今月は予定外に5万円の余剰が出ました。前から気になっていたものもありますが、3か月後にも楽しみにしている予定があります。","prompt":"まず先の予定に使う分を確保し、残った分を今使う方を選びやすいですか？","contract":"余剰金の先行配分・未来枠の確保。","behavior_options":""},
   {"item_id":"F05","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"今少し出費を控えれば、半年後には「旅行・買い物・貯蓄」など複数の選択肢を残せます。今使ってしまうと、その選択肢は狭まります。","prompt":"今の満足を少し減らしてでも、半年後の選択肢を残しておく方を選びやすいですか？","contract":"将来の選択肢を保持する選好。","behavior_options":""},
 
   {"item_id":"I01","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える3万円があります。今の生活をすぐに快適にできる使い道があり、半年後まで手をつけずに残すこともできます。","prompt":"半年後まで残すより、今の生活を良くするために今使う方を選びやすいですか？","contract":"生活向上への即時効用。","behavior_options":""},
@@ -65,8 +65,8 @@ export const PILOT_ITEMS = [
   {"item_id":"O01","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"2万円と3万円の商品で迷っています。3万円の方が品質や耐久性が明らかに優れています。","prompt":"少し高くても、「長く使って元を取りたい」と考えて3万円の方を選びやすいですか？","contract":"目先の安さと長期的な使用価値の拮抗。","behavior_options":""},
   {"item_id":"O02","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"日用品や食品で、大容量パックは1個あたりの単価がかなり割安です。ただし、最後まで全部使い切れるかは分かりません。","prompt":"単価が安くても、使い切れずに余らせるリスクがあるなら、少し割高でも使い切れる通常サイズを選びやすいですか？","contract":"廃棄・ロス回避。","behavior_options":""},
   {"item_id":"O03","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"月額500円のサービスがあります。最近あまり使っていませんが、たまに必要になる瞬間があり、解約すると再設定の手間がかかります。","prompt":"金額が小さくても、使っていない期間があるなら一旦解約する方を選びやすいですか？","contract":"少額の無駄と再契約の手間の拮抗。","behavior_options":""},
-  {"item_id":"O04","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"今の用途には十分な5,000円の商品と、機能に余裕がある8,000円の商品があります。","prompt":"今の用途に十分な5,000円の商品より、少し高くても機能に余裕がある8,000円の商品を選びやすいですか？","contract":"必要十分の安さと機能余裕への上乗せの拮抗。","behavior_options":""},
-  {"item_id":"O05","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"ソフトウェアやサービスで、すべての機能が入った月4,000円のプランと、自分に必要な機能だけに絞られた月3,000円のプランがあります。","prompt":"差額が1,000円なら、機能が少なくても自分に必要なものだけの3,000円プランを選びやすいですか？","contract":"不要機能を省く最適化。","behavior_options":""},
+  {"item_id":"O04","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"今の用途には十分な5,000円の商品と、機能に余裕がある8,000円の商品があります。","prompt":"今の用途に十分な方より、少し高くても機能に余裕がある方を選びやすいですか？","contract":"必要十分の安さと機能余裕への上乗せの拮抗。","behavior_options":""},
+  {"item_id":"O05","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"ソフトウェアやサービスで、すべての機能が入った月4,000円のプランと、自分に必要な機能だけに絞られた月3,000円のプランがあります。","prompt":"機能が少なくても、自分に必要なものだけに絞られた安いプランを選びやすいですか？","contract":"不要機能を省く最適化。","behavior_options":""},
 
   {"item_id":"SW01","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"日常の余剰。今の快適さ vs 3か月後の楽しみ。","text":"普段の家計のやりくりの中で、今月は予定外に3万円が浮きました。\nA：いま使っている日用品や家電を買い替えて、毎日の生活を少し快適にする\nB：3か月後に予定している楽しみのために、手をつけず残しておく","behavior_options":""},
   {"item_id":"SW02","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"旅先の余剰。今ここ vs 次の楽しみ。","text":"旅行中、あらかじめ設定していた旅費の予算が2万円余りました。\nA：今回の旅行の食事や宿を少し豪華にして、今ここで使い切る\nB：3か月後にも別の楽しみがあるので、そのために残しておく","behavior_options":""},
