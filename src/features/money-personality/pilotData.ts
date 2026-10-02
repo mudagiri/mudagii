@@ -10,7 +10,7 @@ export const CORE_SCALE_LABELS = {
 export const PILOT_ITEMS = [
   {"item_id":"F01","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"自由に使えるお金が手元に5万円あります。今すぐ必要な買い物はありませんが、1年後にはまとまった出費があるかもしれません。","prompt":"この5万円の多くを、1年後にも使える状態で残しておく方を選びやすいですか？","contract":"1年後不確実支出への資金保全。","behavior_options":""},
   {"item_id":"F02","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月の生活費に少し余裕があります。一方、半年後には楽しみにしている予定があります。","prompt":"日常の小さな出費を少し抑えて、半年後に使えるお金を増やしておく方を選びやすいですか？","contract":"中期目標に向けた日常の微調整。","behavior_options":""},
-  {"item_id":"F03","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"2か月後に5万円の支払い予定があります。今、普段なかなか手に入らない3万円の欲しいものを見つけました。今月中のやりくりで何とか補える可能性もあります。","prompt":"無理をせず、欲しいものを諦めて2か月後の支払いに備える方を選びやすいですか？","contract":"限定入手機会と手堅い温存の拮抗。","behavior_options":""},
+  {"item_id":"F03","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"数か月後にまとまった支払い予定があります。そんなとき、いま買いたい魅力的なものを見つけました。","prompt":"欲しいものをいったん見送り、先の支払いを優先して残す方を選びやすいですか？","contract":"現在の欲しいものと近い将来の支払い準備の拮抗。","behavior_options":""},
   {"item_id":"F04","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"毎月のやりくりの中で、今月は予定外に5万円の余剰が出ました。前から気になっていたものもありますが、3か月後にも楽しみにしている予定があります。","prompt":"まず3か月後の予定に使う分を先に確保し、残った分を今使う方を選びやすいですか？","contract":"余剰金の先行配分・未来枠の確保。","behavior_options":""},
   {"item_id":"F05","family":"CORE","construct":"FUTURE","scale_type":"A","scenario":"今少し出費を控えれば、半年後には「旅行・買い物・貯蓄」など複数の選択肢を残せます。今使ってしまうと、その選択肢は狭まります。","prompt":"今の満足を少し減らしてでも、半年後の選択肢を残しておく方を選びやすいですか？","contract":"将来の選択肢を保持する選好。","behavior_options":""},
 
@@ -58,14 +58,14 @@ export const PILOT_ITEMS = [
 
   {"item_id":"S01","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"生活費とは別に、手元に30万円の余裕があります。しばらく大きな支出の予定はありません。","prompt":"何かに使ったり運用に回したりするより、いざという時のためにすぐ引き出せる状態で普通預金などに置いておく方を選びやすいですか？","contract":"流動性選好・緊急資金。","behavior_options":""},
   {"item_id":"S02","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"10万円を使う2つの選択肢があります。Aはうまくいけば20万円分の大きなリターンがありますが、外れると0になります。Bは確実に11万円分の小さなメリットが得られます。","prompt":"失敗の可能性があるAより、確実なBを選びやすいですか？","contract":"確実性選好。","behavior_options":""},
-  {"item_id":"S03","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"毎月利用するサービスで、月ごとの利用量によって「8千円〜1万2千円」に変動するプランと、何があっても「毎月1万円固定」のプランがあります。年間トータルの予想金額は同じです。","prompt":"変動するプランより、毎月一定額で読めるプランを選びやすいですか？","contract":"予測可能性の選好。","behavior_options":""},
+  {"item_id":"S03","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"月によって利用料が上下するプランと、毎月一定額で決まっているプランがあります。年間の支払い見込みはほぼ同じです。","prompt":"多少上下する可能性があっても安く済む月がある方より、毎月の支出が一定で読める方を選びやすいですか？","contract":"予測可能性の選好。","behavior_options":""},
   {"item_id":"S04","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"手元の資金を一時的に預ける選択肢があります。Aはいつでも引き出せますが条件は普通です。Bは条件が少し良くなりますが、契約すると1年間は途中解約や引き出しができません。","prompt":"条件が良くても、一定期間お金を動かせなくなる選択肢は避けたいですか？","contract":"資金拘束への嫌悪感。","behavior_options":""},
   {"item_id":"S05","family":"CORE","construct":"SECURE","scale_type":"A","scenario":"内容が非常に魅力的な定期サービスがあります。1年契約にすると月額が大幅に安くなりますが、途中で解約しても返金はありません。","prompt":"割高でも、いつでもやめられる通常プランの方を選びやすいですか？","contract":"割引と自由度の拮抗。","behavior_options":""},
 
-  {"item_id":"O01","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"2万円の商品と3万円の商品があります。3万円の方が耐久性は高いですが、自分の使う頻度を考えると2万円のものでも壊れる前に買い換える可能性があります。","prompt":"それでも、より長持ちする3万円の方を選びやすいですか？","contract":"過剰耐久への投資と適正寿命の拮抗。","behavior_options":""},
+  {"item_id":"O01","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"2万円と3万円の商品で迷っています。3万円の方が品質や耐久性が明らかに優れています。","prompt":"少し高くても、「長く使って元を取りたい」と考えて3万円の方を選びやすいですか？","contract":"目先の安さと長期的な使用価値の拮抗。","behavior_options":""},
   {"item_id":"O02","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"日用品や食品で、大容量パックは1個あたりの単価がかなり割安です。ただし、最後まで全部使い切れるかは分かりません。","prompt":"単価が安くても、使い切れずに余らせるリスクがあるなら、少し割高でも使い切れる通常サイズを選びやすいですか？","contract":"廃棄・ロス回避。","behavior_options":""},
   {"item_id":"O03","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"月額500円のサービスがあります。最近あまり使っていませんが、たまに必要になる瞬間があり、解約すると再設定の手間がかかります。","prompt":"金額が小さくても、使っていない期間があるなら一旦解約する方を選びやすいですか？","contract":"少額の無駄と再契約の手間の拮抗。","behavior_options":""},
-  {"item_id":"O04","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"5,000円の商品は今の必要最低限の機能を満たしています。8,000円の商品は使い勝手が良く長く使えそうですが、今の用途には少しオーバースペックです。","prompt":"3,000円多く払ってでも、余裕を持った8,000円の方を選びやすいですか？","contract":"必要十分と上乗せ価値の拮抗。","behavior_options":""},
+  {"item_id":"O04","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"今の用途には十分な5,000円の商品と、機能に余裕がある8,000円の商品があります。","prompt":"今の用途に十分な5,000円の商品より、少し高くても機能に余裕がある8,000円の商品を選びやすいですか？","contract":"必要十分の安さと機能余裕への上乗せの拮抗。","behavior_options":""},
   {"item_id":"O05","family":"CORE","construct":"OPTIMIZE","scale_type":"A","scenario":"ソフトウェアやサービスで、すべての機能が入った月4,000円のプランと、自分に必要な機能だけに絞られた月3,000円のプランがあります。","prompt":"差額が1,000円なら、機能が少なくても自分に必要なものだけの3,000円プランを選びやすいですか？","contract":"不要機能を省く最適化。","behavior_options":""},
 
   {"item_id":"SW01","family":"SWITCH","construct":"SWITCH_TIME","scale_type":"","scenario":"","prompt":"","contract":"日常の余剰。今の快適さ vs 3か月後の楽しみ。","text":"普段の家計のやりくりの中で、今月は予定外に3万円が浮きました。\nA：いま使っている日用品や家電を買い替えて、毎日の生活を少し快適にする\nB：3か月後に予定している楽しみのために、手をつけず残しておく","behavior_options":""},
