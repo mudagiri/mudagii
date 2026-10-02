@@ -201,8 +201,8 @@ function saveMoneyPersonalityPilot_(b){
     completed_at:b.completedAt||new Date().toISOString(),
     duration_ms:numOrBlank_(b.durationMs),
     pilot_version:String(b.pilotVersion||''),
-    response_count:numOrBlank_(b.responseCount),
-    responses_json:json_(b.responses||[]),
+    response_count:numOrBlank_(b.responseCount!=null?b.responseCount:b.response_count),
+    responses_json:json_(b.item_responses||b.responses||[]),
     quality_json:json_(b.quality||{}),
     user_agent:(b.quality&&b.quality.userAgent)||'',
     source_url:(b.quality&&b.quality.sourceUrl)||''
