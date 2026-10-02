@@ -1,39 +1,55 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {CORE_SCALE_LABELS,PILOT_VERSION} from './pilotData';
-import {assignPilotForm,behaviorOptions,buildPilotOrder,getOrCreatePilotParticipantId,newPilotSessionId,parseSwitchItem,type PilotItem} from './pilotLogic';
+import {BIPOLAR_SCALE_LABELS,LIKERT_SCALE_LABELS,PILOT_VERSION} from './pilotData';
+import {behaviorOptions,bipolarPresentation,buildPilotOrder,getOrCreatePilotParticipantId,newPilotSessionId,normalizeTraitScore,type PilotItem} from './pilotLogic';
 import './pilot.css';
 
 type AnswerChoice={value:number;label:string};
 
 type PilotResponse={
-  itemId:string;
-  family:string;
-  construct:string;
+  session_id:string;
+  participant_id:string;
+  pilot_version:string;
+  item_id:string;
+  factor:string;
+  item_format:'bipolar_5'|'likert_5'|'categorical';
   position:number;
-  shownAt:string;
-  answeredAt:string;
-  firstResponse:number;
-  finalResponse:number;
-  answerLabel:string;
+  display_order:number;
+  shown_at:string;
+  answered_at:string;
+  rt_ms:number;
+  displayed_left_pole:string;
+  displayed_right_pole:string;
+  displayed_left_pole_id:string;
+  displayed_right_pole_id:string;
+  trait_pole:string;
+  is_reversed:boolean;
+  first_response:number;
+  final_response:number;
   changed:boolean;
-  responseTimeMs:number;
-  cognitiveFlags:string[];
-  scaleType?:string;
-  similarityContext:string[];
+  raw_response:number;
+  normalized_trait_score:number|null;
+  answer_label:string;
+  quality_flags:{fast_response_flag:boolean};
+  cognitive_feedback:{
+    similar_to_previous:boolean;
+    hard_to_understand:boolean;
+    neither_fits:boolean;
+  };
+  similarity_context:string[];
 };
 
 type PilotPayload={
   kind:'money_personality_pilot_v1';
-  schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V1';
+  schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V2';
   pilotVersion:string;
   sessionId:string;
   participantId:string;
-  formId:string;
+  formId:'ALL_54';
   startedAt:string;
   completedAt:string;
   durationMs:number;
   responseCount:number;
-  responses:PilotResponse[];
+  item_responses:PilotResponse[];
   quality:{
     cognitiveMode:boolean;
     debugMode:boolean;
@@ -71,9 +87,9 @@ async function saveRemote(payload:PilotPayload){
 }
 
 function itemKindLabel(item:PilotItem){
-  if(item.family==='SWITCH')return 'SCENE';
-  if(item.family==='BEHAVIOR')return 'ACTION';
-  return 'QUESTION';
+  if(item.family==='BIPOLAR')return 'CHOICE';
+  if(item.family==='LIKERT')return 'CHECK';
+  return 'ACTION';
 }
 
 export default function MoneyPersonalityPilot(){
@@ -82,8 +98,7 @@ export default function MoneyPersonalityPilot(){
   const cognitiveMode=debugMode||params.get('cognitive')==='1';
   const forcedParticipant=params.get('participant');
   const participantId=useMemo(()=>forcedParticipant||getOrCreatePilotParticipantId(),[forcedParticipant]);
-  const formId=useMemo(()=>assignPilotForm(participantId,params.get('form')),[participantId,params]);
-  const questions=useMemo(()=>buildPilotOrder(formId,participantId),[formId,participantId]);
+  const questions=useMemo(()=>buildPilotOrder(participantId),[participantId]);
 
   const [stage,setStage]=useState<'intro'|'questions'|'done'>('intro');
   const [sessionId,setSessionId]=useState(()=>newPilotSessionId());
@@ -131,21 +146,44 @@ export default function MoneyPersonalityPilot(){
   const next=()=>{
     if(!selected||!question)return;
     const answeredAt=nowIso();
+    const rtMs=Math.max(0,Math.round(performance.now()-shownPerf.current));
+    const bipolar=question.family==='BIPOLAR'?bipolarPresentation(question,participantId):null;
+    const rawResponse=selected.value;
     const record:PilotResponse={
-      itemId:question.item_id,
-      family:question.family,
-      construct:question.construct,
+      session_id:sessionId,
+      participant_id:participantId,
+      pilot_version:PILOT_VERSION,
+      item_id:question.item_id,
+      factor:question.factor,
+      item_format:question.family==='BIPOLAR'?'bipolar_5':question.family==='LIKERT'?'likert_5':'categorical',
       position:index+1,
-      shownAt:shownIso.current||answeredAt,
-      answeredAt,
-      firstResponse:firstResponse??selected.value,
-      finalResponse:selected.value,
-      answerLabel:selected.label,
+      display_order:index+1,
+      shown_at:shownIso.current||answeredAt,
+      answered_at:answeredAt,
+      rt_ms:rtMs,
+      displayed_left_pole:bipolar?.leftText||'',
+      displayed_right_pole:bipolar?.rightText||'',
+      displayed_left_pole_id:bipolar?.leftPoleId||'',
+      displayed_right_pole_id:bipolar?.rightPoleId||'',
+      trait_pole:bipolar?.traitPole||'',
+      is_reversed:bipolar?.isReversed||false,
+      first_response:firstResponse??rawResponse,
+      final_response:rawResponse,
       changed:changeCount>0,
-      responseTimeMs:Math.max(0,Math.round(performance.now()-shownPerf.current)),
-      cognitiveFlags:flags.slice(),
-      scaleType:question.family==='CORE'?question.scale_type:undefined,
-      similarityContext:flags.includes('similar_to_previous')?[...questions.slice(Math.max(0,index-10),index).map(q=>q.item_id),question.item_id]:[]
+      raw_response:rawResponse,
+      normalized_trait_score:question.family==='BIPOLAR'
+        ?normalizeTraitScore(rawResponse,bipolar!.isReversed)
+        :question.family==='LIKERT'?rawResponse:null,
+      answer_label:selected.label,
+      quality_flags:{fast_response_flag:rtMs<1200},
+      cognitive_feedback:{
+        similar_to_previous:flags.includes('similar_to_previous'),
+        hard_to_understand:flags.includes('hard_to_understand'),
+        neither_fits:flags.includes('neither_fits'),
+      },
+      similarity_context:flags.includes('similar_to_previous')
+        ?[...questions.slice(Math.max(0,index-10),index).map(q=>q.item_id),question.item_id]
+        :[]
     };
     const nextResponses=[...responses,record];
     if(index<questions.length-1){
@@ -158,16 +196,16 @@ export default function MoneyPersonalityPilot(){
     const completedAt=nowIso();
     const payload:PilotPayload={
       kind:'money_personality_pilot_v1',
-      schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V1',
+      schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V2',
       pilotVersion:PILOT_VERSION,
       sessionId,
       participantId,
-      formId,
+      formId:'ALL_54',
       startedAt:startedAt||completedAt,
       completedAt,
       durationMs:Math.max(0,Date.parse(completedAt)-Date.parse(startedAt||completedAt)),
       responseCount:nextResponses.length,
-      responses:nextResponses,
+      item_responses:nextResponses,
       quality:{
         cognitiveMode,
         debugMode,
@@ -201,19 +239,19 @@ export default function MoneyPersonalityPilot(){
   if(stage==='intro'){
     return <main className="mp-page">
       <section className="mp-card mp-intro">
-        <div className="mp-kicker">MONEY PERSONALITY / PILOT</div>
+        <div className="mp-kicker">MONEY PERSONALITY / V4.5 PILOT</div>
         <h1>お金の性格診断<br/><span>検証版</span></h1>
-        <p className="mp-lead">正解・不正解はありません。普段の感覚に一番近いものを選んでください。</p>
+        <p className="mp-lead">正解・不正解はありません。普段の自分に自然に近い方を選んでください。</p>
         <div className="mp-notice">
-          <strong>50問</strong>
+          <strong>54問</strong>
           <span>この検証では、診断結果はまだ表示しません。</span>
         </div>
         <div className="mp-points">
-          <div><b>01</b><span>考えすぎず、最初に近いと思った回答でOK</span></div>
-          <div><b>02</b><span>迷うときは中間を選んでもOK</span></div>
-          <div><b>03</b><span>回答時間も検証データとして記録します</span></div>
+          <div><b>01</b><span>2つの選択肢は、どちらが良い・悪いではありません</span></div>
+          <div><b>02</b><span>迷うときは真ん中を選んでもOK</span></div>
+          <div><b>03</b><span>回答時間や変更も検証データとして記録します</span></div>
         </div>
-        {debugMode&&<div className="mp-debug">DEBUG / FORM {formId}<br/>{participantId}</div>}
+        {debugMode&&<div className="mp-debug">DEBUG / ALL_54<br/>{participantId}</div>}
         <button className="mp-primary" onClick={start}>診断をはじめる</button>
       </section>
     </main>;
@@ -227,7 +265,7 @@ export default function MoneyPersonalityPilot(){
         <h1>回答完了</h1>
         <p className="mp-lead">ありがとう。現在は検証期間のため、タイプ結果はまだ表示していません。</p>
         <div className="mp-summary">
-          <span>FORM</span><b>{formId}</b>
+          <span>VERSION</span><b>V4.5</b>
           <span>回答数</span><b>{responses.length}</b>
         </div>
         {cognitiveMode&&<button className="mp-secondary" onClick={copyPayload}>回答JSONをコピー</button>}
@@ -237,7 +275,6 @@ export default function MoneyPersonalityPilot(){
   }
 
   if(!question)return null;
-
   const progress=((index+1)/questions.length)*100;
 
   return <main className="mp-page">
@@ -245,15 +282,15 @@ export default function MoneyPersonalityPilot(){
       <header className="mp-header">
         <div>
           <span>{itemKindLabel(question)}</span>
-          {debugMode&&<em>{question.item_id} / {question.construct} / FORM {formId}</em>}
+          {debugMode&&<em>{question.item_id} / {question.factor} / V4.5</em>}
         </div>
         <b>{index+1}<small> / {questions.length}</small></b>
       </header>
       <div className="mp-progress"><i style={{width:progress+'%'}}/></div>
 
       <article className="mp-question-card">
-        {question.family==='CORE'&&<CoreQuestion item={question} selected={selected} onChoose={choose}/>}
-        {question.family==='SWITCH'&&<SwitchQuestion item={question} selected={selected} onChoose={choose}/>}
+        {question.family==='BIPOLAR'&&<BipolarQuestion item={question} participantId={participantId} selected={selected} onChoose={choose}/>}
+        {question.family==='LIKERT'&&<LikertQuestion item={question} selected={selected} onChoose={choose}/>}
         {question.family==='BEHAVIOR'&&<BehaviorQuestion item={question} selected={selected} onChoose={choose}/>}
       </article>
 
@@ -272,13 +309,34 @@ export default function MoneyPersonalityPilot(){
   </main>;
 }
 
-function CoreQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
-  const labels=CORE_SCALE_LABELS[item.scale_type as 'A'|'B'];
+function BipolarQuestion({item,participantId,selected,onChoose}:{item:PilotItem;participantId:string;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
+  if(item.family!=='BIPOLAR')return null;
+  const p=bipolarPresentation(item,participantId);
   return <>
+    <div className="mp-family-label">どちらのスタンスが自然に近い？</div>
     <div className="mp-scenario">{item.scenario}</div>
+    <div className="mp-bipolar-poles">
+      <div><b>左</b><span>{p.leftText}</span></div>
+      <div><b>右</b><span>{p.rightText}</span></div>
+    </div>
+    <div className="mp-bipolar-scale">
+      {BIPOLAR_SCALE_LABELS.map((label,i)=>{
+        const value=i+1;
+        return <button key={value} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}>
+          <b>{value}</b><span>{label}</span>
+        </button>;
+      })}
+    </div>
+  </>;
+}
+
+function LikertQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
+  if(item.family!=='LIKERT')return null;
+  return <>
+    <div className="mp-family-label">普段のお金の把握について</div>
     <h2>{item.prompt}</h2>
     <div className="mp-answer-list">
-      {labels.map((label,i)=>{
+      {LIKERT_SCALE_LABELS.map((label,i)=>{
         const value=i+1;
         return <button key={value} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}>
           <b>{value}</b><span>{label}</span>
@@ -289,37 +347,14 @@ function CoreQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerCh
 }
 
 function BehaviorQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
+  if(item.family!=='BEHAVIOR')return null;
   const options=behaviorOptions(item);
   return <>
     <div className="mp-family-label">実際の行動について</div>
-    <h2>{'text' in item?item.text:''}</h2>
+    <h2>{item.prompt}</h2>
     <div className="mp-answer-list">
       {options.map((label,i)=><button key={label} className={selected?.value===i+1?'selected':''} onClick={()=>onChoose({value:i+1,label})}>
         <b>{i+1}</b><span>{label}</span>
-      </button>)}
-    </div>
-  </>;
-}
-
-function SwitchQuestion({item,selected,onChoose}:{item:PilotItem;selected:AnswerChoice|null;onChoose:(x:AnswerChoice)=>void}){
-  const sw=parseSwitchItem('text' in item?item.text:'');
-  const opts=[
-    {value:1,label:'A'},
-    {value:2,label:'ややA'},
-    {value:3,label:'中間'},
-    {value:4,label:'ややB'},
-    {value:5,label:'B'},
-  ];
-  return <>
-    <div className="mp-family-label">場面による選び方</div>
-    <h2>{sw.prompt}</h2>
-    <div className="mp-switch-poles">
-      <div><b>A</b><span>{sw.a}</span></div>
-      <div><b>B</b><span>{sw.b}</span></div>
-    </div>
-    <div className="mp-switch-scale">
-      {opts.map(x=><button key={x.value} className={selected?.value===x.value?'selected':''} onClick={()=>onChoose(x)}>
-        <b>{x.value}</b><span>{x.label}</span>
       </button>)}
     </div>
   </>;
