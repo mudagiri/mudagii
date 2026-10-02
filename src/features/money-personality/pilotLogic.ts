@@ -1,6 +1,5 @@
-import {FIXED_BEHAVIORS,FIXED_SWITCHES,OMISSION_ALLOCATION,PILOT_ITEMS} from './pilotData';
+import {PILOT_ITEMS} from './pilotData';
 
-export type PilotFormId=keyof typeof OMISSION_ALLOCATION;
 export type PilotItem=(typeof PILOT_ITEMS)[number];
 
 const ITEMS_BY_ID=new Map<string,PilotItem>(PILOT_ITEMS.map(x=>[x.item_id,x] as const));
@@ -57,62 +56,61 @@ export function newPilotSessionId(){
   return 'mps_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
 }
 
-export function assignPilotForm(participantId:string,override?:string|null):PilotFormId{
-  if(override&&['A','B','C','D','E'].includes(override))return override as PilotFormId;
-  const forms:PilotFormId[]=['A','B','C','D','E'];
-  return forms[hashString(participantId)%forms.length];
-}
-
-export function assignedPilotItems(form:PilotFormId){
-  const omitted=new Set<string>(Object.values(OMISSION_ALLOCATION[form]));
-  const core=PILOT_ITEMS.filter(x=>x.family==='CORE'&&!omitted.has(x.item_id));
-  const fixed=[...FIXED_SWITCHES,...FIXED_BEHAVIORS].map(itemById);
-  const all=[...core,...fixed];
-  if(core.length!==40||all.length!==50)throw new Error('Invalid pilot assignment');
-  return all;
-}
-
-function role(item:PilotItem){
-  return item.family==='CORE'?item.construct:item.family;
-}
-
 function validOrder(order:PilotItem[]){
   for(let i=1;i<order.length;i++){
     const a=order[i-1],b=order[i];
-    if(a.family==='CORE'&&b.family==='CORE'&&a.construct===b.construct)return false;
-    if(a.family==='SWITCH'&&b.family==='SWITCH')return false;
+    if(a.factor===b.factor&&a.factor!=='BEHAVIOR')return false;
     if(a.family==='BEHAVIOR'&&b.family==='BEHAVIOR')return false;
   }
-  for(let i=0;i<=order.length-8;i++){
-    if(order.slice(i,i+8).filter(x=>x.family==='SWITCH').length>2)return false;
-  }
-  if(new Set(order.slice(0,8).map(role)).size<6)return false;
-  if(new Set(order.slice(-8).map(role)).size<6)return false;
+  if(new Set(order.slice(0,8).map(x=>x.factor)).size<5)return false;
+  if(new Set(order.slice(-8).map(x=>x.factor)).size<5)return false;
   return true;
 }
 
-export function buildPilotOrder(form:PilotFormId,participantId:string){
-  const pool=assignedPilotItems(form);
-  const rng=mulberry32(hashString(form+'|'+participantId+'|MUDAGIRI_V4_4'));
-  for(let i=0;i<10000;i++){
+export function buildPilotOrder(participantId:string){
+  const pool=PILOT_ITEMS.slice() as PilotItem[];
+  const rng=mulberry32(hashString(participantId+'|MUDAGIRI_V4_5'));
+  for(let i=0;i<20000;i++){
     const order=shuffled(pool,rng);
     if(validOrder(order))return order;
   }
-  throw new Error('Unable to build valid pilot order');
+  throw new Error('Unable to build valid V4.5 pilot order');
 }
 
-export function parseSwitchItem(text:string){
-  const lines=text.split('\n').map(x=>x.trim()).filter(Boolean);
-  const aLine=lines.find(x=>x.startsWith('A：')||x.startsWith('A:'));
-  const bLine=lines.find(x=>x.startsWith('B：')||x.startsWith('B:'));
-  const prompt=lines.filter(x=>x!==aLine&&x!==bLine).join(' ');
+export type PoleId='A'|'B';
+
+export type BipolarPresentation={
+  leftPoleId:PoleId;
+  rightPoleId:PoleId;
+  leftText:string;
+  rightText:string;
+  traitPole:PoleId;
+  isReversed:boolean;
+};
+
+export function bipolarPresentation(item:PilotItem,participantId:string):BipolarPresentation{
+  if(item.family!=='BIPOLAR')throw new Error('Not a bipolar item: '+item.item_id);
+  const bOnLeft=(hashString(participantId+'|'+item.item_id+'|POLE_V1')&1)===1;
+  const leftPoleId:PoleId=bOnLeft?'B':'A';
+  const rightPoleId:PoleId=bOnLeft?'A':'B';
+  const leftText=bOnLeft?item.option_b:item.option_a;
+  const rightText=bOnLeft?item.option_a:item.option_b;
+  const traitPole=item.trait_pole as PoleId;
   return {
-    prompt:prompt||'次の2つなら、どちらに近いですか？',
-    a:(aLine||'A：').replace(/^A[：:]/,'').trim(),
-    b:(bLine||'B：').replace(/^B[：:]/,'').trim()
+    leftPoleId,
+    rightPoleId,
+    leftText,
+    rightText,
+    traitPole,
+    isReversed:leftPoleId===traitPole,
   };
 }
 
+export function normalizeTraitScore(rawResponse:number,isReversed:boolean){
+  if(!Number.isInteger(rawResponse)||rawResponse<1||rawResponse>5)throw new Error('rawResponse must be 1..5');
+  return isReversed?6-rawResponse:rawResponse;
+}
+
 export function behaviorOptions(item:PilotItem){
-  return item.behavior_options?item.behavior_options.split(' / ').map(x=>x.trim()).filter(Boolean):[];
+  return item.family==='BEHAVIOR'?[...item.behavior_options]:[];
 }
