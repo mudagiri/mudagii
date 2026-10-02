@@ -155,10 +155,8 @@ await clickButton(/^解約・停止できる/);
 // Food is above the comparison guide. Choose a value-preserving answer:
 // V4 can still protect it, while V5 must surface price-efficiency C potential.
 const foodAppraisal=page.getByText('今の食費について、一番近いのは？');
-if(await foodAppraisal.count()){
-  await foodAppraisal.waitFor({state:'visible'});
-  await clickButton(/今くらいでいい/);
-}
+await foodAppraisal.waitFor({state:'visible'});
+await clickButton(/今くらいでいい/);
 await page.getByText(/鑑定完了。|仕分けできたよ。|仕分け終了。/).waitFor();
 await shot('10-appraisal-complete');
 await clickButton(/お金タイプを解析する/);
