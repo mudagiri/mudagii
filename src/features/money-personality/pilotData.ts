@@ -16,7 +16,7 @@ export const PILOT_ITEMS = [
 
   {"item_id":"I01","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える3万円があります。今の生活をすぐに快適にできる使い道があり、半年後まで手をつけずに残すこともできます。","prompt":"半年後まで残すより、今の生活を良くするために今使う方を選びやすいですか？","contract":"生活向上への即時効用。","behavior_options":""},
   {"item_id":"I02","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"今月しか参加できないイベントがあります。同じくらい興味のある買い物なら、数か月後でもできます。","prompt":"後からでもできる買い物より、今しかできない機会を優先して選ぶ方ですか？","contract":"期限のある機会への現在優先度。","behavior_options":""},
-  {"item_id":"I03","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える2万円があります。「今楽しむこと」と「半年後の自分のために残すこと」のどちらも同じくらい大切だと感じっています。","prompt":"このように迷った場合、最終的に「今楽しむ方」を選びやすいですか？","contract":"拮抗時の現在バイアス。","behavior_options":""},
+  {"item_id":"I03","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"自由に使える2万円があります。「今楽しむこと」と「半年後の自分のために残すこと」のどちらも同じくらい大切だと感じています。","prompt":"このように迷った場合、最終的に「今楽しむ方」を選びやすいですか？","contract":"拮抗時の現在バイアス。","behavior_options":""},
   {"item_id":"I04","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"日常の支出が予定より浮いて、手元に5万円の余裕ができました。","prompt":"「先のためにどう残すか」より、まず「今なら何に使えるか」を先に考える方ですか？","contract":"余剰発生時の初動認知。","behavior_options":""},
   {"item_id":"I05","family":"CORE","construct":"IMMEDIATE","scale_type":"A","scenario":"欲しい商品があります。今日買えば3万円ですぐ手に入りますが、1か月待てば2万5千円程度に下がる可能性があります。","prompt":"5千円安くなるのを待つより、今日手に入れてすぐ使いたい方を選びやすいですか？","contract":"待ち時間コストと即時入手価値。","behavior_options":""},
 
