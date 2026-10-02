@@ -49,6 +49,23 @@ function rangeText(lo:number,hi:number){
  if(lo>0&&Math.round(lo)!==Math.round(hi))return approx(lo).replace('約','')+'〜'+approx(hi);
  return approx(hi);
 }
+function impactAmountParts(n:number){
+ const a=Math.abs(n);
+ if(a>=100000)return {num:yen(Math.round(a/10000)),unit:'万円'};
+ if(a>=10000){
+  const v=Math.round(a/1000)/10;
+  return {num:Number.isInteger(v)?v.toFixed(0):v.toFixed(1),unit:'万円'};
+ }
+ return {num:yen(roundHero(a)),unit:'円'};
+}
+function ImpactMoney({lo,hi}:{lo:number;hi:number}){
+ const hasRange=lo>0&&Math.round(lo)!==Math.round(hi);
+ const lower=impactAmountParts(lo),upper=impactAmountParts(hi);
+ return <b className={'v51-impact-money'+(hasRange?' is-range':'')} aria-label={rangeText(lo,hi)}>
+  {hasRange&&<><span className="v51-impact-num">{lower.num}</span><span className="v51-impact-unit">{lower.unit}</span><span className="v51-impact-wave">〜</span></>}
+  <span className="v51-impact-approx">約</span><span className="v51-impact-num">{upper.num}</span><span className="v51-impact-unit">{upper.unit}</span>
+ </b>;
+}
 function monthlyText(lo:number,hi:number){
  const l=roundHero(lo),u=roundHero(hi);
  if(l>0&&u>l)return '月 約'+yen(l)+'〜'+yen(u)+'円';
@@ -261,7 +278,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
 
   {adjusted.upper>0&&<section className="v5-card v5-impact v51-impact">
    <div className="v51-jp-kicker is-dark">積み重ねた戦利品</div><h2>積み重ねると、ここまで変わる。</h2>
-   <div className="v5-impact-grid"><div><span>1年</span><b>{rangeText(adjusted.lower*12,adjusted.upper*12)}</b></div><div><span>5年</span><b>{rangeText(adjusted.lower*60,adjusted.upper*60)}</b></div><div className="is-10"><span>10年</span><b>{rangeText(adjusted.lower*120,adjusted.upper*120)}</b><i aria-hidden="true"/></div></div>
+   <div className="v5-impact-grid"><div><span>1年</span><ImpactMoney lo={adjusted.lower*12} hi={adjusted.upper*12}/></div><div><span>5年</span><ImpactMoney lo={adjusted.lower*60} hi={adjusted.upper*60}/></div><div className="is-10"><span>10年</span><ImpactMoney lo={adjusted.lower*120} hi={adjusted.upper*120}/><i aria-hidden="true"/></div></div>
    <small>※今と同じ状態が続いた場合の単純累計です。運用益は含みません。</small>
   </section>}
 
@@ -379,12 +396,12 @@ const CSS=`
 .v51-money-hero{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:3px 5px;margin:20px auto 10px;color:#142332;font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.055em;line-height:.92;text-align:center;text-shadow:0 2px 0 rgba(255,255,255,.35)}
 .v51-money-prefix{flex-basis:100%;margin-bottom:7px;color:#604a05;font-family:system-ui,sans-serif;font-size:16px;font-weight:1000;letter-spacing:.06em;line-height:1}
 .v51-money-hero strong{font-size:clamp(48px,13.2vw,70px);font-weight:1000;white-space:nowrap}.v51-money-hero i{font-size:33px;font-style:normal;font-weight:1000;letter-spacing:0}.v51-money-unit{font-size:29px;font-weight:1000;letter-spacing:-.04em}.v51-money-hero.is-range strong{font-size:clamp(38px,10vw,54px)}.v51-money-hero.is-range i{font-size:27px}.v51-money-hero.is-range .v51-money-unit{font-size:24px}
-.v51-impact>h2{font-size:34px!important;line-height:1.08!important;letter-spacing:-.045em;font-weight:1000!important}.v51-impact .v5-impact-grid b{font-family:"Arial Black","Helvetica Neue",system-ui,sans-serif;font-weight:1000;letter-spacing:-.055em}.v51-impact .v5-impact-grid .is-10 b{font-size:clamp(38px,10vw,54px)!important;line-height:1!important;text-shadow:0 2px 0 rgba(255,255,255,.55)}
+.v51-impact>h2{font-size:34px!important;line-height:1.08!important;letter-spacing:-.045em;font-weight:1000!important}.v51-impact-money{display:flex!important;align-items:baseline;justify-content:center;gap:0;margin-top:8px!important;white-space:nowrap;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif!important;font-variant-numeric:tabular-nums;line-height:1!important;letter-spacing:0!important}.v51-impact-num{font-size:clamp(23px,6.2vw,29px);font-weight:900;letter-spacing:-.055em}.v51-impact-unit{margin-left:1px;font-size:11px;font-weight:800;letter-spacing:-.04em}.v51-impact-wave{margin:0 3px;color:#7c8790;font-size:14px;font-weight:700;letter-spacing:-.04em}.v51-impact-approx{margin-left:2px;color:#7a858d;font-size:10px;font-weight:750;letter-spacing:0}.v51-impact .v5-impact-grid .is-10 .v51-impact-money{margin-top:9px!important;text-shadow:0 2px 0 rgba(255,255,255,.55)}.v51-impact .v5-impact-grid .is-10 .v51-impact-num{color:#745802;font-size:clamp(42px,11vw,56px);font-weight:950}.v51-impact .v5-impact-grid .is-10 .v51-impact-unit{color:#745802;font-size:17px;font-weight:850}.v51-impact .v5-impact-grid .is-10 .v51-impact-wave{color:#9b8338;font-size:25px}.v51-impact .v5-impact-grid .is-10 .v51-impact-approx{color:#8d7938;font-size:13px}
 
 .v51-axis-badges span{display:grid!important;grid-template-rows:auto auto;gap:1px;text-align:center;min-width:82px}.v51-axis-badges span small{display:block;color:#aa9fd1;font-size:8px;font-weight:800;letter-spacing:.04em}.v51-type-detail.is-open{padding:10px 10px 11px}.v51-type-detail.is-open .v5-axes{margin-top:0}
 .v51-type-share{position:relative;z-index:2;margin-top:14px;padding-top:12px;border-top:1px solid rgba(196,174,255,.22)}.v51-type-share>b{display:block;color:#f4d76b;font-size:11px;letter-spacing:.04em}.v51-type-share>div{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.v51-type-share button{min-height:48px;padding:0 4px;border:1px solid #665d98;border-radius:9px;background:#151d3b;color:#fff;font-size:10px;font-weight:900}.v51-type-share>small{display:block;margin-top:7px;color:#8f9ab5;font-size:8px}
 
 .v51-chapter-route{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0 13px;padding:10px;border:1px solid rgba(136,217,205,.22);border-radius:11px;background:rgba(5,24,31,.35)}.v51-chapter-route>div{min-width:0;padding:8px;border:1px solid #366474;border-radius:8px;background:#102a34}.v51-chapter-route>div.is-done{opacity:.75}.v51-chapter-route small,.v51-chapter-route b,.v51-chapter-route span{display:block}.v51-chapter-route small{color:#8fb5bd;font-size:7px;letter-spacing:.08em}.v51-chapter-route b{margin-top:3px;font-size:10px;line-height:1.35}.v51-chapter-route span{margin-top:4px;color:#78d9c7;font-size:7px;font-weight:1000}.v51-chapter-route>i{color:#76d8c7;font-style:normal;font-weight:1000}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
-@media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v5-impact-grid b{font-size:18px}.v5-impact-grid .is-10 b{font-size:28px}.v5-type h2{font-size:30px}}
+@media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v51-impact-num{font-size:22px}.v51-impact-unit{font-size:10px}.v51-impact-wave{margin:0 2px;font-size:13px}.v51-impact-approx{font-size:9px}.v51-impact .v5-impact-grid .is-10 .v51-impact-num{font-size:42px}.v51-impact .v5-impact-grid .is-10 .v51-impact-unit{font-size:16px}.v5-type h2{font-size:30px}}
 `;

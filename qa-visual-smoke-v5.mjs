@@ -239,6 +239,7 @@ for(const [name,selector] of [
   ['15b-result-position','.v5-position'],
   ['15c-result-verdict','.v5-verdict'],
   ['15d-result-future','.v5-future'],
+  ['15d2-result-impact','.v5-impact'],
   ['15e-result-goal','.v5-goal'],
   ['15f-result-next','.v5-next'],
   ['15g-result-save','.v5-save'],
@@ -284,6 +285,9 @@ for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,nam
     const typeLabels=await page.locator('.v51-type-grid b').evaluateAll(els=>els.map(el=>({text:(el.textContent||'').trim(),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight})));
     const badTypeLabel=typeLabels.find(x=>x.scrollWidth>x.clientWidth+1||x.scrollHeight>x.clientHeight+1);
     if(badTypeLabel)throw new Error('TYPE_PREVIEW_LABEL_CLIPPED_375:'+JSON.stringify(badTypeLabel));
+    const impactMoney=await page.locator('.v51-impact-money').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {text:(el.getAttribute('aria-label')||el.textContent||'').trim(),left:r.left,right:r.right,width:r.width,parentWidth:el.parentElement?.getBoundingClientRect().width||0,children:[...el.children].map(c=>{const x=c.getBoundingClientRect();return {cls:c.className,left:x.left,right:x.right,top:x.top,bottom:x.bottom}})}}));
+    const badImpact=impactMoney.find(x=>x.right>vp.width+1||x.left<-1||x.width>x.parentWidth+1);
+    if(badImpact)throw new Error('IMPACT_MONEY_LAYOUT_375:'+JSON.stringify(badImpact));
   }
   await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
 }
