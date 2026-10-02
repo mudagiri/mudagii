@@ -85,6 +85,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      diagnosisId,toneMode,profile:v.profile,type:typeVm,finalCategories:v.finalJudgements,
      monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
    });
+   const vmV5:any=v.scopeV4?vm:null;
    const persistenceV4=v.scopeV4?buildPersistencePayloadV4({
      diagnosisId,anonymousUserId,profile:v.scopeV4.profile,finalCategories:v.scopeV4.finalJudgements
    }):null;
@@ -104,7 +105,18 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      result:{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle,counts:vm.counts,improvement:vm.improvement,
        finalStatuses:savedFinalStatuses,
        finalDetails:savedFinalDetails,
-       battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category)}
+       battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category),
+       analyticsV5:v.scopeV4?{
+         resultVmVersion:vmV5.methodologyVersion,
+         potential:vmV5.potential,
+         v5Counts:vmV5.v5Counts,
+         firstQuest:vmV5.firstQuest?.category??null,
+         rows:Object.fromEntries(vmV5.rows.map((x:any)=>[x.category,{
+           positionAvailable:x.positionAvailable??false,positionLabel:x.positionLabel??null,positionMethod:x.positionMethod??null,positionRatio:x.positionRatio??null,
+           v5Status:x.v5Status??null,v5StatusLabel:x.v5StatusLabel??null,cUpper:x.cUpper??0,cEligible:x.cEligible??false,detailReview:x.detailReview??false,cMethod:x.cMethod??null,
+           aAmount:x.aAmount??0,nextAction:x.nextAction??null,appraisalSummary:x.appraisalSummary??null
+         }]))
+       }:null}
    };
    // RESULT must feel instant. Persist the resumable result locally first, render,
    // then send the heavier diagnosis snapshot without blocking navigation.
@@ -125,7 +137,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const ResultComponent=result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenV5:ResultScreenV4;
 
  if(result)return <ResultComponent vm={result} onEvent={emit} onBeforeExternal={()=>{const active=typeof window!=='undefined'?readActiveResultV1():null;if(!active||active.diagnosisId!==diagnosisId)throw new Error('active result missing before external navigation')}} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={(ctx)=>{
-   const payload={...ctx,anonymousUserId,diagnosisId};
+   const payload={...ctx,anonymousUserId,diagnosisId,confirmedMonthly:result.potential?.confirmedA??result.improvement?.monthly??0,potentialLower:result.potential?.lower??result.improvement?.monthly??0,potentialUpper:result.potential?.upper??result.improvement?.monthly??0,futureGoal:ctx?.goal??null};
    void Promise.resolve(store?.saveLead?.({leadId:'lead_'+diagnosisId+(ctx?.handoffCode?'_'+ctx.handoffCode:''),anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null,ctaPlacement:ctx?.placement??null,handoffCode:ctx?.handoffCode??null,consultPrimary:ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',consultSelectedTopic:ctx?.consultSelectedTopic??ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',insuranceReview:ctx?.insuranceReview??result.consultRoute?.insuranceReview??false,homeStructure:ctx?.homeStructure??null,solarEligible:ctx?.solarEligible??false,consultRoute:result.consultRoute??null,goal:ctx?.goal??null})).catch(()=>{});
    if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;

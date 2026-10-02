@@ -51,4 +51,5 @@ jobs:
       - run: npm run qa:result-v5
       - run: npm run qa:result-v5-calibration
       - run: npm run qa:line-handoff
+      - run: npm run qa:data-pipeline
       - run: npm run qa:10k
