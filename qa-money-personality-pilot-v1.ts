@@ -15,9 +15,15 @@ for(const factor of ['FUTURE','IMMEDIATE','INTUITION','DELIBERATION','MONITORING
   if(counts.get(factor)!==5)throw new Error(factor+' != 5');
 }
 
+const b04=PILOT_ITEMS.find(x=>x.item_id==='B04');
+if(!b04||b04.family!=='BEHAVIOR'||!('behavior_followup' in b04))throw new Error('B04 followup missing');
+if(b04.behavior_followup.options.length!==5)throw new Error('B04 followup options != 5');
+const answerCount=PILOT_ITEMS.length+1;
+if(answerCount!==55)throw new Error('answer count != 55');
+
 let left=0,right=0;
 for(let n=0;n<500;n++){
-  const pid='qa_v45_'+n;
+  const pid='qa_v452_'+n;
   const order=buildPilotOrder(pid);
   if(order.length!==54||new Set(order.map(x=>x.item_id)).size!==54)throw new Error('invalid order');
   for(let i=1;i<order.length;i++){
@@ -39,4 +45,4 @@ for(let n=0;n<500;n++){
 }
 const ratio=left/(left+right);
 if(ratio<0.45||ratio>0.55)throw new Error('randomization skew '+ratio);
-console.log(JSON.stringify({ok:true,pilotVersion:PILOT_VERSION,total:PILOT_ITEMS.length,bipolar:bip.length,likert:lik.length,behavior:beh.length,leftRatio:Number(ratio.toFixed(4))}));
+console.log(JSON.stringify({ok:true,pilotVersion:PILOT_VERSION,screens:PILOT_ITEMS.length,answers:answerCount,bipolar:bip.length,likert:lik.length,behavior:beh.length,leftRatio:Number(ratio.toFixed(4))}));
