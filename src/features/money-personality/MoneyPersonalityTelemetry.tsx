@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from './classifierV1';
 import {itemById} from './pilotLogic';
 import {getOrCreatePublicParticipantId,PUBLIC_MONEY_TYPE_VERSION} from './publicFlowV1';
+import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -93,6 +94,7 @@ function captureCompletedSession(){
       cognitiveMode:false,
       debugMode:false,
       variant:'PUBLIC_ADAPTIVE',
+      resultContentVersion:MONEY_RESULT_CONTENT_VERSION,
       userAgent:navigator.userAgent,
       sourceUrl:window.location.href,
       coreCount:30,
@@ -112,6 +114,7 @@ function captureCompletedSession(){
 
   const handoff={
     version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',
+    resultContentVersion:MONEY_RESULT_CONTENT_VERSION,
     participantId,
     sessionId:state.sessionId,
     completedAt,
