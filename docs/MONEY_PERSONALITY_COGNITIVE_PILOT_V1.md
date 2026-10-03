@@ -17,6 +17,17 @@ Route: `?adaptive=money-type&cognitive=1`
 7. Resultのどこに共有価値があるか
 8. 家計診断への遷移理由が成立するか
 
+## バックエンド境界
+
+Money Personality Pilotと家計診断は、ユーザー体験上は連続するが保存基盤は分離する。
+
+- Money Personality → 専用GAS / 専用Spreadsheet
+- 家計診断 → 既存の家計診断GAS / 既存DB（V1 FROZEN）
+- 両者のJOINキー → `anonymousUserId`（同一originの `mudagiri_anonymous_user_id_v1`）
+- 通常Money Personality sessionとCognitive DebriefのJOIN → `parentSessionId`
+- JOB / Styleは家計診断のムダ判定・benchmark・改善額を変更しない
+- Money Personality専用GASには家計金額・口座・カード等の生データを送らない
+
 ## テスター構成
 
 5〜8名の中で、できるだけ以下を混ぜる。
@@ -95,20 +106,19 @@ Cognitive modeだけ、各設問で任意の4フラグを記録できる。
 
 ## 自動保存されるもの
 
-通常Public payloadとは別に、同じPilot sinkへ `PUBLIC_COGNITIVE_DEBRIEF` として保存する。
+通常Public payloadとCognitive Debriefは、**Money Personality専用GAS / 専用Spreadsheet**へ保存する。家計診断GASには送らない。
 
-- parentSessionId
-- participantId
-- JOB / Primary / Secondary
-- Result Content Version
-- Separator数
-- 設問ごとのフラグ
-- 設問のvisitCount / totalViewMs
-- 7評価
-- スクショ候補
-- 自由記述
+専用Spreadsheetは次の5データタブで監査できる。
 
-Cognitive payloadのsession idは `通常sessionId__cognitive`。通常診断データと1対1で追跡できる。
+- `①セッション`：session / participant / anonymousUserId / version / duration等
+- `②回答`：設問単位の回答・position・normalized score
+- `③Cognitiveフラグ`：設問フラグ・visitCount・totalViewMs
+- `④結果`：JOB / Primary / Secondary / 3軸状態
+- `⑤Debrief`：JOB納得度・Result当たり感・質問理解・長さ・Separator自然さ・シェア意向・家計診断意向・自由記述
+
+通常Public sessionとCognitive Debriefは `parentSessionId` で1対1追跡する。Cognitive payloadのsession idは `通常sessionId__cognitive`。
+
+家計診断へ進んだ場合は、両方のDBに保存される同一 `anonymousUserId` で、Money Personality → 家計診断を後からJOINできる。
 
 ## レビュー基準
 
