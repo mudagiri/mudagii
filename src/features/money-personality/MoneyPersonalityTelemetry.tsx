@@ -76,6 +76,9 @@ function captureCompletedSession(){
   const participantId=getOrCreatePublicParticipantId();
   const completedAt=new Date().toISOString();
   const separatorCount=Object.keys(state.separators).length;
+  const params=new URLSearchParams(window.location.search);
+  const cognitiveMode=params.get('cognitive')==='1';
+  const debugMode=params.get('debug')==='1';
   const payload={
     // Reuse the existing GAS pilot sink; form_id/quality.variant distinguish public adaptive sessions.
     kind:'money_personality_pilot_v1' as const,
@@ -91,9 +94,9 @@ function captureCompletedSession(){
     answerCount:traitCount+separatorCount,
     item_responses:buildResponses(state),
     quality:{
-      cognitiveMode:false,
-      debugMode:false,
-      variant:'PUBLIC_ADAPTIVE',
+      cognitiveMode,
+      debugMode,
+      variant:cognitiveMode?'PUBLIC_ADAPTIVE_COGNITIVE':'PUBLIC_ADAPTIVE',
       resultContentVersion:MONEY_RESULT_CONTENT_VERSION,
       userAgent:navigator.userAgent,
       sourceUrl:window.location.href,
