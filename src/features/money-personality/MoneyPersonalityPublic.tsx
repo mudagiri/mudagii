@@ -140,7 +140,7 @@ function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;
     <div className="mpp-kicker">MUDAGIRI LEGEND / JOB DIAGNOSIS</div><div className="mpp-rune" aria-hidden="true">✦</div>
     <h1>あなたの<br/><span>MUDAGIRI JOB</span>を解放</h1>
     <p className="mpp-lead">お金の判断パターンから、ムダギリ伝説の8つのクラスのうち、あなたのJOBを解放します。</p>
-    <div className="mpp-meta"><div><b>約3〜4分</b><span>1問1タップ</span></div><div><b>回答適応型</b><span>あなたに合わせて進行</span></div></div>
+    <div className="mpp-meta"><div><b>約5分</b><span>基本30問＋必要な分だけ</span></div><div><b>回答適応型</b><span>あなたに合わせて進行</span></div></div>
     <div className="mpp-points"><p><i>01</i> 正解・不正解なし</p><p><i>02</i> 「未来も今も強い」をそのまま残す</p><p><i>03</i> 最後にJOB＋主属性＋副属性を解放</p></div>
     {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>JOB診断をはじめる</button>}
     <p className="mpp-intro-note">回答は端末内に自動保存されます。途中で閉じても続きから再開できます。</p>
@@ -163,8 +163,8 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
   return <main className="mpp-page"><section className="mpp-shell"><QuestionHeader phase="FINAL / CLASS SYNC" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
-    <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">どちらも強く出ているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={selected===p.left.value?'selected':''} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={selected===p.right.value?'selected':''} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
-    <p className="mpp-footnote">両方の強さはそのまま残します。ここではJOB上の表現だけを決めます。</p>
+    <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={selected===p.left.value?'selected':''} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={selected===p.right.value?'selected':''} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
+    <p className="mpp-footnote">両方のスコアはそのまま残します。ここではJOB上の表現だけを決めます。</p>
   </section></main>;
 }
 
@@ -176,16 +176,23 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
   };
   const axes=[
-    ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME.balanceState],
-    ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION.balanceState],
-    ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS.balanceState],
+    ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME],
+    ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION],
+    ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS],
   ] as const;
   return <main className="mpp-page"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">MUDAGIRI CLASS UNLOCKED</div><div className="mpp-job-no">JOB #{JOB_NUMBER[job]}</div><div className="mpp-emblem" aria-hidden="true">✦</div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
     <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{MUDAGIRI_LINE[job]}」</p></div>
     <div className="mpp-style-row"><div><span>主属性</span><b>{meta.icon} {meta.label} STYLE</b></div><div><span>副属性</span><b>{sub.icon} {sub.label}</b></div></div><div className="mpp-style-copy">{meta.copy}</div>
-    <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,state])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b>{state==='BALANCED'&&<em>両方強め / 拮抗</em>}</header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div></div>})}</div>
+    <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,axis])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const badge=axisBalanceBadge(axis.balanceState,axis.absoluteState);return <div className="mpp-axis" key={title}><header><b>{title}</b>{badge&&<em>{badge}</em>}</header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div></div>})}</div>
     <div className="mpp-next-quest"><span>NEXT QUEST</span><b>実際の家計には、どんな敵が潜んでいる？</b><p>JOBは「攻略の仕方」。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
     <button className="mpp-primary" onClick={()=>{window.location.href=householdUrl()}}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>このJOBをシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
     {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors},null,2)}</pre>}
   </section></main>;
+}
+
+function axisBalanceBadge(balanceState:string|null,absoluteState:string|null){
+  if(balanceState!=='BALANCED')return '';
+  if(absoluteState==='HIGH_HIGH')return '両方強く・拮抗';
+  if(absoluteState==='LOW_LOW')return '両方控えめ・拮抗';
+  return 'かなりバランス型';
 }
