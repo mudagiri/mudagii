@@ -32,7 +32,8 @@
     "qa:money-engine": "npx --yes tsx@4.20.6 qa-money-personality-engine-v1.ts",
     "qa:money-separators": "npx --yes tsx@4.20.6 qa-money-personality-separators-v1.ts",
     "qa:money-public-flow": "npx --yes tsx@4.20.6 qa-money-personality-public-flow-v1.ts",
-    "qa:money-result-content": "npx --yes tsx@4.20.6 qa-money-personality-result-content-v1.ts"
+    "qa:money-result-content": "npx --yes tsx@4.20.6 qa-money-personality-result-content-v1.ts",
+    "qa:money-result-personas": "npx --yes tsx@4.20.6 qa-money-personality-result-personas-v1.ts"
   },
   "dependencies": {
     "react": "19.1.1",
