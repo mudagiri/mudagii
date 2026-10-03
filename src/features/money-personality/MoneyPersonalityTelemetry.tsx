@@ -3,6 +3,7 @@ import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from '
 import {itemById} from './pilotLogic';
 import {getOrCreatePublicParticipantId,PUBLIC_MONEY_TYPE_VERSION} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
+import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -53,7 +54,7 @@ function buildResponses(state:StoredState){
 }
 
 async function postPayload(payload:unknown){
-  const url=(import.meta as any).env?.VITE_MUDAGIRI_GAS_URL as string|undefined;
+  const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
   if(!url)return;
   try{
     await fetch(url,{
@@ -74,17 +75,18 @@ function captureCompletedSession(){
   if(!evaluation.complete||!evaluation.jobCode||!evaluation.style.primary||!evaluation.style.secondary||traitCount<30)return;
 
   const participantId=getOrCreatePublicParticipantId();
+  const anonymousUserId=getOrCreateAnonymousUserId();
   const completedAt=new Date().toISOString();
   const separatorCount=Object.keys(state.separators).length;
   const params=new URLSearchParams(window.location.search);
   const cognitiveMode=params.get('cognitive')==='1';
   const debugMode=params.get('debug')==='1';
   const payload={
-    // Reuse the existing GAS pilot sink; form_id/quality.variant distinguish public adaptive sessions.
     kind:'money_personality_pilot_v1' as const,
     schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_V1',
     pilotVersion:PUBLIC_MONEY_TYPE_VERSION,
     sessionId:state.sessionId,
+    anonymousUserId,
     participantId,
     formId:'PUBLIC_ADAPTIVE',
     startedAt:state.startedAt||completedAt,
@@ -118,6 +120,7 @@ function captureCompletedSession(){
   const handoff={
     version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',
     resultContentVersion:MONEY_RESULT_CONTENT_VERSION,
+    anonymousUserId,
     participantId,
     sessionId:state.sessionId,
     completedAt,
@@ -141,8 +144,8 @@ function captureCompletedSession(){
 
 /**
  * Non-visual companion for the public adaptive flow.
- * It deliberately lives outside the diagnosis component so telemetry/handoff
- * can evolve without coupling measurement logic to presentation design.
+ * Telemetry is sent only to the dedicated Money Personality backend.
+ * Household Diagnosis remains on its frozen backend; anonymousUserId is the join key.
  */
 export default function MoneyPersonalityTelemetry(){
   useEffect(()=>{
