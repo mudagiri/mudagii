@@ -42,22 +42,32 @@ await page.reload({waitUntil:'networkidle'});
 await page.getByRole('button',{name:'JOB診断をはじめる'}).waitFor({state:'visible'});
 await screenshot('01-intro');
 await page.getByRole('button',{name:'JOB診断をはじめる'}).click();
+await page.locator('.mpp-question-card').waitFor({state:'visible'});
+await screenshot('02-core-question');
 
 let answered=0;
 let sawAdaptive=false;
 let sawSeparator=false;
 let resumeChecked=false;
+let capturedAdaptive=false;
+let capturedSeparator=false;
 for(let guard=0;guard<80;guard++){
   const result=page.locator('.mpp-result');
   if(await result.count()&&await result.isVisible())break;
 
   const debug=page.locator('.mpp-debug');
   const debugText=await debug.count()?await debug.innerText():'';
-  if(debugText.includes('separator'))sawSeparator=true;
-  if(debugText.includes('adaptive'))sawAdaptive=true;
-
   const separator=page.locator('.mpp-separator-options button');
-  if(await separator.count()){
+  const isSeparator=Boolean(await separator.count());
+  const isAdaptive=!isSeparator&&debugText.includes('core 30');
+
+  if(isAdaptive){
+    sawAdaptive=true;
+    if(!capturedAdaptive){await screenshot('03-adaptive-question');capturedAdaptive=true;}
+  }
+  if(isSeparator){
+    sawSeparator=true;
+    if(!capturedSeparator){await screenshot('04-separator');capturedSeparator=true;}
     await separator.first().click();
     answered++;
     await page.waitForTimeout(180);
@@ -88,7 +98,7 @@ for(let guard=0;guard<80;guard++){
 
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
-await screenshot('02-result');
+await screenshot('05-result');
 const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
 if(!text.includes('MUDAGIRI CLASS UNLOCKED'))throw new Error('MONEY_PUBLIC_RESULT_UNLOCK_MISSING');
 if(!text.includes('主属性')||!text.includes('副属性'))throw new Error('MONEY_PUBLIC_STYLE_MISSING');
