@@ -3,7 +3,7 @@ const CFG={
   APP_SCHEMA:'MUDAGIRI_SHEET_V3',
   GAS_VERSION:'MUDAGIRI_GAS_V4_0',
   VISIBLE:{HOME:'①ホーム',PEOPLE:'②どんな人？',SPEND:'③何に使ってる？',CONV:'④誰が面談する？',QUALITY:'⑤データ信頼度',STORE:'⑥データ保管庫'},
-  HIDDEN:{DIAG:'_診断_raw',CAT:'_支出_raw',EVENT:'_イベント_raw',CONV:'_面談_raw',QUALITY:'_品質_raw',PILOT:'_性格Pilot_raw',META:'_設定'}
+  HIDDEN:{DIAG:'_診断_raw',CAT:'_支出_raw',EVENT:'_イベント_raw',CONV:'_面談_raw',QUALITY:'_品質_raw',META:'_設定'}
 };
 const CATS=['rent','mobile','energy','insurance','sub','food','daily','fun','beautyFashion','car','childEducation','selfDevelopment'];
 const CAT_LABEL={rent:'住居',mobile:'通信',energy:'光熱',insurance:'保険',sub:'サブスク',food:'食費',daily:'日用品',fun:'娯楽・交際',beautyFashion:'美容・服飾',car:'車',childEducation:'子ども教育',selfDevelopment:'自己投資'};
@@ -20,7 +20,6 @@ const CAT_HEADERS=['diagnosis_id','anonymous_user_id','created_at','category_cod
 const EVENT_HEADERS=['event_id','anonymous_user_id','diagnosis_id','created_at','name','data_json'];
 const CONV_HEADERS=['conversion_id','anonymous_user_id','diagnosis_id','created_at','stage','source','product','revenue','gross_profit','data_json'];
 const QUALITY_HEADERS=['diagnosis_id','anonymous_user_id','updated_at','score','grade','stat_eligible','duration_seconds','max_same_amount_count','rapid_repeat_count','known_category_count','flags_json'];
-const PILOT_HEADERS=['session_id','participant_id','form_id','started_at','completed_at','duration_ms','pilot_version','response_count','responses_json','quality_json','user_agent','source_url'];
 const META_HEADERS=['key','value','note'];
 const TYPES=['鉄壁マネー要塞','穴あき家計の番人','未来キープストッカー','未来直感ゾンビ','メリハリ消費の賢者','ご褒美予算ブレイカー','直感消費エンターテイナー','感情課金バーサーカー'];
 
@@ -33,7 +32,6 @@ function setupMudagiriDataAssetV1(){
   ensureHidden_(ss,CFG.HIDDEN.EVENT,EVENT_HEADERS);
   ensureHidden_(ss,CFG.HIDDEN.CONV,CONV_HEADERS);
   ensureHidden_(ss,CFG.HIDDEN.QUALITY,QUALITY_HEADERS);
-  ensureHidden_(ss,CFG.HIDDEN.PILOT,PILOT_HEADERS);
   const meta=ensureHidden_(ss,CFG.HIDDEN.META,META_HEADERS);
   upsertKV_(meta,'schema_version',CFG.VERSION,'Data asset contract');
   upsertKV_(meta,'app_schema_version',CFG.APP_SCHEMA,'Frontend snapshot schema');
@@ -88,7 +86,6 @@ function doPost(e){
     else if(b.kind==='event_v3')saveEvent_(b);
     else if(b.kind==='lead_v3')saveLead_(b);
     else if(b.kind==='conversion_v1')saveConversion_(b);
-    else if(b.kind==='money_personality_pilot_v1')saveMoneyPersonalityPilot_(b);
     else throw new Error('unknown kind');
     return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
   }catch(err){
@@ -188,26 +185,6 @@ function saveEvent_(b){
     if((b.name==='goal_selected'||b.name==='future_goal_selected')&&b.data&&b.data.goal)patchStore_(String(b.diagnosisId),{'未来目的':String(b.data.goal)});
     if(b.name==='diagnosis_completed')recalcQuality_(String(b.diagnosisId),null);
   }
-}
-
-function saveMoneyPersonalityPilot_(b){
-  const ss=SpreadsheetApp.getActive(),s=ss.getSheetByName(CFG.HIDDEN.PILOT);
-  const id=String(b.sessionId||''); if(!id)throw new Error('sessionId required');
-  const obj={
-    session_id:id,
-    participant_id:String(b.participantId||''),
-    form_id:String(b.formId||''),
-    started_at:b.startedAt||'',
-    completed_at:b.completedAt||new Date().toISOString(),
-    duration_ms:numOrBlank_(b.durationMs),
-    pilot_version:String(b.pilotVersion||''),
-    response_count:numOrBlank_(b.responseCount!=null?b.responseCount:b.response_count),
-    responses_json:json_(b.item_responses||b.responses||[]),
-    quality_json:json_(b.quality||{}),
-    user_agent:(b.quality&&b.quality.userAgent)||'',
-    source_url:(b.quality&&b.quality.sourceUrl)||''
-  };
-  upsertByKey_(s,PILOT_HEADERS,obj,1,id);
 }
 
 function saveLead_(b){
@@ -444,7 +421,7 @@ function psychologyTags_(category,a){
 function ensureRuntime_(){
   const ss=SpreadsheetApp.getActive();
   ensureVisible_(ss,CFG.VISIBLE.STORE,STORE_HEADERS);
-  ensureHidden_(ss,CFG.HIDDEN.DIAG,DIAG_HEADERS);ensureHidden_(ss,CFG.HIDDEN.CAT,CAT_HEADERS);ensureHidden_(ss,CFG.HIDDEN.EVENT,EVENT_HEADERS);ensureHidden_(ss,CFG.HIDDEN.CONV,CONV_HEADERS);ensureHidden_(ss,CFG.HIDDEN.QUALITY,QUALITY_HEADERS);ensureHidden_(ss,CFG.HIDDEN.PILOT,PILOT_HEADERS);ensureHidden_(ss,CFG.HIDDEN.META,META_HEADERS);
+  ensureHidden_(ss,CFG.HIDDEN.DIAG,DIAG_HEADERS);ensureHidden_(ss,CFG.HIDDEN.CAT,CAT_HEADERS);ensureHidden_(ss,CFG.HIDDEN.EVENT,EVENT_HEADERS);ensureHidden_(ss,CFG.HIDDEN.CONV,CONV_HEADERS);ensureHidden_(ss,CFG.HIDDEN.QUALITY,QUALITY_HEADERS);ensureHidden_(ss,CFG.HIDDEN.META,META_HEADERS);
 }
 function ensureVisibleShells_(ss){
   [CFG.VISIBLE.HOME,CFG.VISIBLE.PEOPLE,CFG.VISIBLE.SPEND,CFG.VISIBLE.CONV,CFG.VISIBLE.QUALITY].forEach(n=>{if(!ss.getSheetByName(n))ss.insertSheet(n)});
