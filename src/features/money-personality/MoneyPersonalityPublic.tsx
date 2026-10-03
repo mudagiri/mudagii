@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {BIPOLAR_SCALE_LABELS,LIKERT_SCALE_LABELS} from './pilotData';
 import {itemById,type PilotItem} from './pilotLogic';
-import {evaluateMoneyPersonality,type SeparatorAnswers,type SeparatorId as _Unused,type StyleId,type TraitAnswers} from './classifierV1';
+import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from './classifierV1';
 import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type SeparatorId} from './separatorDataV1';
 import {buildCoreTraitSideMap,buildPublicCoreOrder,getOrCreatePublicParticipantId,JOB_NUMBER,JOB_ONE_LINERS,newPublicSessionId,normalizePublicBipolarResponse,publicBipolarPresentation,PUBLIC_MONEY_TYPE_VERSION,STYLE_META} from './publicFlowV1';
 import './publicMoney.css';
