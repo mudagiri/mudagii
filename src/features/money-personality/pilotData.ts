@@ -1,4 +1,4 @@
-export const PILOT_VERSION = "V4.5_2_PILOT_CANDIDATE" as const;
+export const PILOT_VERSION = "V4.5_2_PILOT_CANDIDATE_FROZEN" as const;
 
 export const BIPOLAR_SCALE_LABELS = [
   "左にかなり近い",
@@ -65,22 +65,22 @@ export const PILOT_ITEMS = [
   {item_id:"O04",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"価格の違う2つの商品があります。",option_a:"買うときに払う金額を基準に選ぶ",option_b:"使う期間や回数あたりの金額まで考えて選ぶ",trait_pole:"B"},
   {item_id:"O05",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"今の用途には通常モデルで十分ですが、上位モデルなら将来の使い方にも対応できます。",option_a:"将来使う可能性も考えて、上位モデルを選ぶ",option_b:"今の用途に合っている通常モデルを選ぶ",trait_pole:"B"},
 
-  {item_id:"M01",family:"LIKERT",factor:"MONITORING",prompt:"今、「今月あとどのくらい自由に使えそう？」と不意に聞かれたら、明細やアプリを開かなくても大体の金額が分かりますか？"},
-  {item_id:"M02",family:"LIKERT",factor:"MONITORING",prompt:"毎月ほぼ決まって出ていく固定費の合計が月にどのくらいか、ざっくり頭に入っていますか？"},
-  {item_id:"M03",family:"LIKERT",factor:"MONITORING",prompt:"月の途中で支払いが重なっているとき、今月の支出ペースが普段より速いか遅いか感覚で分かりますか？"},
-  {item_id:"M04",family:"LIKERT",factor:"MONITORING",prompt:"普段より支出が増えている月、月末の請求を見る前に「今月はいつもより使っている」と途中で気づくことが多いですか？"},
-  {item_id:"M05",family:"LIKERT",factor:"MONITORING",prompt:"直近1週間の支出について聞かれたら、大きめの支出なら履歴を見なくても大体思い出せますか？"},
+  {item_id:"M01",family:"LIKERT",factor:"MONITORING",prompt:"今、「今月あとどのくらい自由に使えそう？」と聞かれたら、明細やアプリを見なくても大体分かりますか？"},
+  {item_id:"M02",family:"LIKERT",factor:"MONITORING",prompt:"毎月、固定費にだいたいいくら出ていくか、確認しなくても頭に入っていますか？"},
+  {item_id:"M03",family:"LIKERT",factor:"MONITORING",prompt:"月の途中で、「今月はいつもよりお金を使うペースが速い・遅い」が感覚で分かりますか？"},
+  {item_id:"M04",family:"LIKERT",factor:"MONITORING",prompt:"普段より出費が増えているとき、明細を確認する前に「今月はいつもより使ってるな」と気づくことがありますか？"},
+  {item_id:"M05",family:"LIKERT",factor:"MONITORING",prompt:"今、「今月ここまでで、だいたいいくら使った？」と聞かれたら、履歴を見なくても大体答えられますか？"},
 
-  {item_id:"P01",family:"LIKERT",factor:"PERIODIC",prompt:"給料日や支払日とは別に、自分で「週1回」「隔週」など確認するタイミングを決めてお金を確認していますか？"},
-  {item_id:"P02",family:"LIKERT",factor:"PERIODIC",prompt:"給料日、カード支払日、月末などの区切りの日に合わせて、残高や支出を確認することが多いですか？"},
-  {item_id:"P03",family:"LIKERT",factor:"PERIODIC",prompt:"大きな買い物や旅行などの予定の前後など、イベントの節目に合わせて残高や明細を確認することが多いですか？"},
-  {item_id:"P04",family:"LIKERT",factor:"PERIODIC",prompt:"カードや家計簿アプリの通知はその都度見るより、週末や月末などにまとめて確認することが多いですか？"},
-  {item_id:"P05",family:"LIKERT",factor:"PERIODIC",prompt:"月の途中では細かく見ず、月末や月初などの区切りで1か月分をまとめて振り返ることが多いですか？"},
+  {item_id:"P01",family:"LIKERT",factor:"PERIODIC",prompt:"「週1回」「隔週」など、自分で決めたタイミングでお金を確認する習慣がありますか？"},
+  {item_id:"P02",family:"LIKERT",factor:"PERIODIC",prompt:"給料日やカードの支払日など、お金が動く区切りに合わせて残高や支出を確認しますか？"},
+  {item_id:"P03",family:"LIKERT",factor:"PERIODIC",prompt:"旅行や大きな買い物など、お金を使う予定の前に残高や支出を確認しますか？"},
+  {item_id:"P04",family:"LIKERT",factor:"PERIODIC",prompt:"週末などの区切りで、その週に使ったお金をまとめて確認することがありますか？"},
+  {item_id:"P05",family:"LIKERT",factor:"PERIODIC",prompt:"月末や月初に、1か月でどのくらい使ったかをまとめて振り返りますか？"},
 
-  {item_id:"B01",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日間で、銀行口座やカード明細を自分から意識して確認した日は合計で何日くらいありましたか？",behavior_options:["0日","1日","2〜3日","4〜7日","8〜15日","16日以上"]},
-  {item_id:"B02",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去6か月のうち、収入が入ったあと「使う前に」貯蓄・積立・投資へお金が回った月はいくつありましたか？（※自動積立・天引き含む）",behavior_options:["0か月","1か月","2〜3か月","4〜5か月","6か月すべて"]},
-  {item_id:"B03",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日間で、事前には買う予定がなかった3,000円以上の買い物を、その場の判断で購入した回数はどれくらいですか？",behavior_options:["0回","1回","2〜3回","4〜5回","6回以上"]},
-  {item_id:"B04",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去12か月間で、通信費・サブスク・保険・電気代などの固定費について、実際に「解約・プラン変更・乗り換え」まで完了させた件数はいくつありますか？",behavior_options:["0件","1件","2件","3件","4件以上"]},
+  {item_id:"B01",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日で、銀行口座やカードの利用状況を自分から確認した日は何日くらいありましたか？",behavior_options:["0日","1日","2〜3日","4〜7日","8〜15日","16日以上"]},
+  {item_id:"B02",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去6か月のうち、収入が入ったあと、使う前に貯蓄・積立・投資へお金を回した月はいくつありましたか？（※自動積立・天引きも含む）",behavior_options:["0か月","1か月","2〜3か月","4〜5か月","6か月すべて"]},
+  {item_id:"B03",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去30日で、買う予定ではなかったものを、その場で「欲しい」と思って買ったことは何回くらいありましたか？（※普段の食事や日用品など、日常的な買い物は除きます）",behavior_options:["0回","1回","2〜3回","4〜5回","6回以上"]},
+  {item_id:"B04",family:"BEHAVIOR",factor:"BEHAVIOR",prompt:"過去12か月で、通信費・サブスク・保険などの固定費について「今のままでいいか」を自分から見直したことは何回くらいありましたか？",behavior_options:["0回","1回","2回","3回","4回以上"],behavior_followup:{prompt:"そのうち、実際に解約・プラン変更・乗り換えまでしたものはいくつありましたか？",options:["0件","1件","2件","3件","4件以上"]}},
 ] as const;
 
 export const BIPOLAR_FACTORS = ["FUTURE","IMMEDIATE","INTUITION","DELIBERATION","DRIVE","ENJOY","SECURE","OPTIMIZE"] as const;
