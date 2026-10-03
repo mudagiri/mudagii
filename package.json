@@ -30,7 +30,8 @@
     "qa:data-pipeline": "node qa-data-pipeline-v1.mjs",
     "qa:money-pilot": "npx --yes tsx@4.20.6 qa-money-personality-pilot-v1.ts",
     "qa:money-engine": "npx --yes tsx@4.20.6 qa-money-personality-engine-v1.ts",
-    "qa:money-separators": "npx --yes tsx@4.20.6 qa-money-personality-separators-v1.ts"
+    "qa:money-separators": "npx --yes tsx@4.20.6 qa-money-personality-separators-v1.ts",
+    "qa:money-public-flow": "npx --yes tsx@4.20.6 qa-money-personality-public-flow-v1.ts"
   },
   "dependencies": {
     "react": "19.1.1",
