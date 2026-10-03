@@ -21,7 +21,7 @@ const notes:Record<string,CognitiveItemNote>={
   SEP_TIME:{itemId:'SEP_TIME',kind:'separator',flags:['NEITHER_FIT'],visitCount:1,totalViewMs:3000,firstSeenAt:'2026-10-04T00:04:00.000Z',lastSeenAt:'2026-10-04T00:04:03.000Z'},
 };
 const payload=buildCognitiveDebriefPayload({
-  parentSessionId:'mpp_test',participantId:'mpp_user_test',startedAt:'2026-10-04T00:00:00.000Z',completedAt:'2026-10-04T00:05:00.000Z',
+  parentSessionId:'mpp_test',anonymousUserId:'au_test',participantId:'mpp_user_test',startedAt:'2026-10-04T00:00:00.000Z',completedAt:'2026-10-04T00:05:00.000Z',
   itemNotes:notes,debrief:withSeparator as any,jobCode:'FNM',jobName:'兆しの占星術師',primaryStyle:'DRIVE',secondaryStyle:'OPTIMIZE',separatorCount:1,
   resultContentVersion:'MUDAGIRI_MONEY_RESULT_CONTENT_V1_PILOT',userAgent:'qa',sourceUrl:'https://example.test/?adaptive=money-type&cognitive=1',
 });
@@ -29,6 +29,7 @@ assert.equal(payload.kind,'money_personality_pilot_v1');
 assert.equal(payload.schemaVersion,MONEY_COGNITIVE_PILOT_VERSION);
 assert.equal(payload.formId,'PUBLIC_COGNITIVE_DEBRIEF');
 assert.equal(payload.sessionId,'mpp_test__cognitive');
+assert.equal(payload.anonymousUserId,'au_test');
 assert.equal(payload.quality.parentSessionId,'mpp_test');
 assert.equal(payload.quality.cognitiveMode,true);
 assert.equal(payload.quality.flaggedItemCount,2);
@@ -41,6 +42,7 @@ assert.ok(payload.item_responses.some(x=>x.item_id==='F05'));
 assert.ok(payload.responseCount>=14);
 const serialized=JSON.stringify(payload);
 for(const forbidden of ['monthly_take_home','confirmed_saving','annual_income','bank_account','credit_card'])assert.ok(!serialized.includes(forbidden),`privacy leak: ${forbidden}`);
-assert.throws(()=>buildCognitiveDebriefPayload({...({} as any),parentSessionId:'',participantId:'x',debrief:withSeparator}),/parentSessionId required/);
+assert.throws(()=>buildCognitiveDebriefPayload({...({} as any),parentSessionId:'',anonymousUserId:'au',participantId:'x',debrief:withSeparator}),/parentSessionId required/);
+assert.throws(()=>buildCognitiveDebriefPayload({...({} as any),parentSessionId:'mpp',anonymousUserId:'',participantId:'x',debrief:withSeparator}),/anonymousUserId required/);
 
-console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_MONEY_COGNITIVE_PILOT_V1',version:MONEY_COGNITIVE_PILOT_VERSION,notes:Object.keys(notes).length,flagged:payload.quality.flaggedItemCount,separatorRequired:true,privacyGuard:true}));
+console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_MONEY_COGNITIVE_PILOT_V1',version:MONEY_COGNITIVE_PILOT_VERSION,notes:Object.keys(notes).length,flagged:payload.quality.flaggedItemCount,separatorRequired:true,privacyGuard:true,sharedAnonymousJoin:true}));
