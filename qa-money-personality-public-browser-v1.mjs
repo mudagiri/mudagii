@@ -78,18 +78,16 @@ for(let guard=0;guard<80;guard++){
 
   // Exercise persisted resume once without changing the measurement form.
   if(!resumeChecked&&answered===4){
-    const before=await page.locator('.mpp-debug').innerText();
     await page.reload({waitUntil:'networkidle'});
     await page.getByRole('button',{name:'続きから再開する'}).waitFor({state:'visible'});
     await page.getByRole('button',{name:'続きから再開する'}).click();
     await page.waitForTimeout(100);
-    const after=await page.locator('.mpp-debug').innerText();
-    if(!after||after===before){}
     resumeChecked=true;
   }
 }
 
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
 await screenshot('02-result');
 const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
 if(!text.includes('MUDAGIRI CLASS UNLOCKED'))throw new Error('MONEY_PUBLIC_RESULT_UNLOCK_MISSING');
@@ -101,6 +99,19 @@ if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
-await fs.writeFile(`${OUT}/report.json`,JSON.stringify({ok:true,answered,resumeChecked,sawAdaptive,sawSeparator},null,2));
+const telemetry=await page.evaluate(()=>{
+  const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
+  const handoff=JSON.parse(localStorage.getItem('mudagiri_money_type_handoff_v1')||'null');
+  return {payload,handoff};
+});
+if(telemetry.payload?.kind!=='money_personality_pilot_v1')throw new Error('MONEY_PUBLIC_TELEMETRY_KIND_MISSING');
+if(telemetry.payload?.formId!=='PUBLIC_ADAPTIVE')throw new Error('MONEY_PUBLIC_TELEMETRY_FORM_MISSING');
+if((telemetry.payload?.responseCount||0)<30)throw new Error('MONEY_PUBLIC_TELEMETRY_RESPONSE_COUNT_BAD');
+if(!telemetry.payload?.quality?.jobCode||!telemetry.payload?.quality?.primaryStyle)throw new Error('MONEY_PUBLIC_TELEMETRY_RESULT_MISSING');
+if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error('MONEY_PUBLIC_HANDOFF_MISSING');
+if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
+
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle}};
+await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
-console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',answered,resumeChecked,sawAdaptive,sawSeparator}));
+console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
