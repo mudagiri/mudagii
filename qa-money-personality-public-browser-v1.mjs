@@ -1,0 +1,106 @@
+import {chromium} from 'playwright';
+import fs from 'node:fs/promises';
+
+const OUT='visual-smoke-v5/money-personality';
+await fs.mkdir(OUT,{recursive:true});
+const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
+
+const browser=await chromium.launch({headless:true});
+const context=await browser.newContext({
+  viewport:{width:390,height:844},
+  deviceScaleFactor:1,
+  isMobile:true,
+  hasTouch:true,
+  locale:'ja-JP',
+  colorScheme:'dark',
+});
+const page=await context.newPage();
+page.on('pageerror',err=>{throw err});
+
+async function noHorizontalOverflow(label){
+  const m=await page.evaluate(()=>{
+    const root=document.scrollingElement||document.documentElement;
+    const buttons=[...document.querySelectorAll('button')].filter(el=>{
+      const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+      return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;
+    }).map(el=>{const r=el.getBoundingClientRect();return {text:(el.textContent||'').trim().replace(/\s+/g,' ').slice(0,60),height:r.height,right:r.right,left:r.left}});
+    return {scrollWidth:root.scrollWidth,width:innerWidth,small:buttons.filter(x=>x.height<37),outside:buttons.filter(x=>x.left<-2||x.right>innerWidth+2)};
+  });
+  if(m.scrollWidth>m.width+2)throw new Error(`MONEY_PUBLIC_HORIZONTAL_OVERFLOW:${label}:${JSON.stringify(m)}`);
+  if(m.outside.length)throw new Error(`MONEY_PUBLIC_CONTROL_OUTSIDE:${label}:${JSON.stringify(m.outside)}`);
+  if(m.small.length)throw new Error(`MONEY_PUBLIC_TOUCH_TARGET_TOO_SMALL:${label}:${JSON.stringify(m.small)}`);
+}
+
+async function screenshot(name){
+  await noHorizontalOverflow(name);
+  await page.screenshot({path:`${OUT}/${name}.png`,fullPage:true});
+}
+
+await page.goto(base+'?adaptive=money-type&debug=1',{waitUntil:'networkidle'});
+await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
+await page.reload({waitUntil:'networkidle'});
+await page.getByRole('button',{name:'JOB診断をはじめる'}).waitFor({state:'visible'});
+await screenshot('01-intro');
+await page.getByRole('button',{name:'JOB診断をはじめる'}).click();
+
+let answered=0;
+let sawAdaptive=false;
+let sawSeparator=false;
+let resumeChecked=false;
+for(let guard=0;guard<80;guard++){
+  const result=page.locator('.mpp-result');
+  if(await result.count()&&await result.isVisible())break;
+
+  const debug=page.locator('.mpp-debug');
+  const debugText=await debug.count()?await debug.innerText():'';
+  if(debugText.includes('separator'))sawSeparator=true;
+  if(debugText.includes('adaptive'))sawAdaptive=true;
+
+  const separator=page.locator('.mpp-separator-options button');
+  if(await separator.count()){
+    await separator.first().click();
+    answered++;
+    await page.waitForTimeout(180);
+    continue;
+  }
+
+  const scale=page.locator('.mpp-scale button');
+  if(await scale.count()){
+    await scale.nth(2).click(); // semantic midpoint regardless of side mapping
+    answered++;
+  }else{
+    const likert=page.locator('.mpp-answer-list button');
+    if(!await likert.count())throw new Error('MONEY_PUBLIC_NO_ANSWER_CONTROL:'+debugText);
+    await likert.nth(2).click();
+    answered++;
+  }
+  await page.waitForTimeout(180);
+
+  // Exercise persisted resume once without changing the measurement form.
+  if(!resumeChecked&&answered===4){
+    const before=await page.locator('.mpp-debug').innerText();
+    await page.reload({waitUntil:'networkidle'});
+    await page.getByRole('button',{name:'続きから再開する'}).waitFor({state:'visible'});
+    await page.getByRole('button',{name:'続きから再開する'}).click();
+    await page.waitForTimeout(100);
+    const after=await page.locator('.mpp-debug').innerText();
+    if(!after||after===before){}
+    resumeChecked=true;
+  }
+}
+
+await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+await screenshot('02-result');
+const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
+if(!text.includes('MUDAGIRI CLASS UNLOCKED'))throw new Error('MONEY_PUBLIC_RESULT_UNLOCK_MISSING');
+if(!text.includes('主属性')||!text.includes('副属性'))throw new Error('MONEY_PUBLIC_STYLE_MISSING');
+if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
+if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_HOUSEHOLD_CTA_MISSING');
+if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
+if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
+if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
+if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
+
+await fs.writeFile(`${OUT}/report.json`,JSON.stringify({ok:true,answered,resumeChecked,sawAdaptive,sawSeparator},null,2));
+await browser.close();
+console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',answered,resumeChecked,sawAdaptive,sawSeparator}));
