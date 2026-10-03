@@ -33,6 +33,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run qa:money-pilot
+      - run: npm run qa:money-engine
       - run: npm run qa:resolver
       - run: npm run qa:scope
       - run: npm run qa:profile-v4-ux
