@@ -28,7 +28,8 @@
     "qa:result-v5": "npx --yes tsx@4.20.6 qa-result-v5.ts",
     "qa:result-v5-calibration": "npx --yes tsx@4.20.6 qa-result-v5-calibration-10000.ts",
     "qa:data-pipeline": "node qa-data-pipeline-v1.mjs",
-    "qa:money-pilot": "npx --yes tsx@4.20.6 qa-money-personality-pilot-v1.ts"
+    "qa:money-pilot": "npx --yes tsx@4.20.6 qa-money-personality-pilot-v1.ts",
+    "qa:money-engine": "npx --yes tsx@4.20.6 qa-money-personality-engine-v1.ts"
   },
   "dependencies": {
     "react": "19.1.1",
