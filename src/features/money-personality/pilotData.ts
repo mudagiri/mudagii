@@ -1,4 +1,4 @@
-export const PILOT_VERSION = "V4.5_2_PILOT_CANDIDATE_FROZEN" as const;
+export const PILOT_VERSION = "V4.5_3_PILOT_CANDIDATE" as const;
 
 export const BIPOLAR_SCALE_LABELS = [
   "左にかなり近い",
@@ -24,7 +24,7 @@ export const PILOT_ITEMS = [
   {item_id:"F05",family:"BIPOLAR",factor:"FUTURE",scenario:"欲しいものがあり、今月の支払いだけなら無理なく買えます。",option_a:"今月無理なく払えるなら、それを基準に考える",option_b:"この先の予定まで含めて余裕が残るかも考える",trait_pole:"B"},
 
   {item_id:"I01",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"今しか参加できない魅力的な予定があります。一方、もともと楽しみにしていた自分の時間もあります。",option_a:"もともとの自分の時間を優先する",option_b:"今しかない予定の方を選ぶ",trait_pole:"B"},
-  {item_id:"I02",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"今のやり方でも困ってはいませんが、すぐ快適になる方法を見つけました。",option_a:"今のやり方で十分なので、そのまま続ける",option_b:"今から快適になるなら、新しい方法を取り入れる",trait_pole:"B"},
+  {item_id:"I02",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"今のままでも困っていませんが、少しお金を使えば今すぐ快適になる選択肢があります。",option_a:"今のままで十分なので、変えない",option_b:"今すぐ快適になるなら、変える",trait_pole:"B"},
   {item_id:"I03",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"欲しいものがあります。今買っても、しばらく後に買っても条件はほぼ変わりません。",option_a:"急がず、必要になったタイミングで買う",option_b:"使い始められるなら、今のタイミングで買う",trait_pole:"B"},
   {item_id:"I04",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"予定がなくなり、半日自由な時間ができました。",option_a:"予定を入れず、そのままゆっくり過ごす",option_b:"せっかく空いたなら、やりたかったことに使う",trait_pole:"B"},
   {item_id:"I05",family:"BIPOLAR",factor:"IMMEDIATE",scenario:"今月、自由に使えるお金が少し増えました。",option_a:"特に使い道を決めず、余裕として持っておく",option_b:"今できることや楽しめることを考える",trait_pole:"B"},
@@ -57,7 +57,7 @@ export const PILOT_ITEMS = [
   {item_id:"S02",family:"BIPOLAR",factor:"SECURE",scenario:"平均すると同じくらいのメリットが見込める2つの選択肢があります。",option_a:"結果によって、得られるメリットが大きく変わる方",option_b:"得られるメリットが、ほぼ一定の方",trait_pole:"B"},
   {item_id:"S03",family:"BIPOLAR",factor:"SECURE",scenario:"年間では同じくらいの支払いになる2つのプランがあります。",option_a:"月によって支払額が変わるプラン",option_b:"毎月ほぼ同じ金額のプラン",trait_pole:"B"},
   {item_id:"S04",family:"BIPOLAR",factor:"SECURE",scenario:"同じサービスに2つの契約方法があります。",option_a:"少し安い代わりに、途中でやめられない年間契約",option_b:"少し高い代わりに、いつでもやめられる月払い",trait_pole:"B"},
-  {item_id:"S05",family:"BIPOLAR",factor:"SECURE",scenario:"生活に必要な分とは別に、お金の余裕があります。",option_a:"当面使わない分は、目的に合わせて活用する",option_b:"使い道がなくても、手元の余裕として残しておく",trait_pole:"B"},
+  {item_id:"S05",family:"BIPOLAR",factor:"SECURE",scenario:"急な出費に備えて、生活費とは別のお金を持つとします。",option_a:"必要になりそうな分があれば十分",option_b:"使う予定がなくても、余裕を多めに持っておきたい",trait_pole:"B"},
 
   {item_id:"O01",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"必要な機能だけのプランと、全部入りのプランがあります。",option_a:"後で足りなくならないよう、全部入りを選ぶ",option_b:"今使う機能だけのプランを選ぶ",trait_pole:"B"},
   {item_id:"O02",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"大容量なら単価は安いですが、全部使うかは分かりません。",option_a:"単価が安い大容量を選ぶ",option_b:"少し割高でも、使い切れる量を選ぶ",trait_pole:"B"},
