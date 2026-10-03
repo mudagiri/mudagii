@@ -91,7 +91,7 @@ export default function MoneyPersonalityAdaptive(){
   const submitted=useRef(false);
 
   const evaluation=useMemo(()=>evaluateMoneyPersonality(answers,separators),[answers,separators]);
-  const coreSet=useMemo(()=>new Set(publicCore30ItemIds()),[]);
+  const coreSet=useMemo(()=>new Set<string>(publicCore30ItemIds()),[]);
   const coreAnswered=coreOrder.filter(id=>answers[id]!==undefined).length;
   const adaptiveAnswered=Object.keys(answers).filter(id=>!coreSet.has(id)&&answers[id]!==undefined).length;
   const nextCoreId=coreOrder.find(id=>answers[id]===undefined)||null;
