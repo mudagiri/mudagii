@@ -3,6 +3,7 @@ import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from '
 import {MONEY_TYPE_STATE_KEY} from './MoneyPersonalityTelemetry';
 import {buildPublicCoreOrder,getOrCreatePublicParticipantId,orderAdaptiveItemIds} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
+import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
 import {
   buildCognitiveDebriefPayload,COGNITIVE_FLAG_LABEL,emptyCognitiveDebrief,isCognitiveDebriefComplete,
   MONEY_COGNITIVE_LAST_PAYLOAD_KEY,MONEY_COGNITIVE_PILOT_VERSION,MONEY_COGNITIVE_STORAGE_KEY,
@@ -46,13 +47,14 @@ function deriveCurrentTarget(state:PublicState,participantId:string):{target:Cur
 }
 
 async function postPayload(payload:unknown){
-  const url=(import.meta as any).env?.VITE_MUDAGIRI_GAS_URL as string|undefined;
+  const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
   if(!url)return;
   try{await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),keepalive:true,mode:'no-cors'})}catch{}
 }
 
 export default function MoneyPersonalityCognitivePilot(){
   const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);
+  const anonymousUserId=useMemo(()=>getOrCreateAnonymousUserId(),[]);
   const [publicState,setPublicState]=useState<PublicState|null>(()=>readPublicState());
   const [local,setLocal]=useState<LocalState>(()=>emptyLocal(readPublicState()?.sessionId||''));
   const [open,setOpen]=useState(false);
@@ -135,7 +137,7 @@ export default function MoneyPersonalityCognitivePilot(){
     if(!complete||submitted)return;
     const completedAt=new Date().toISOString();
     const payload=buildCognitiveDebriefPayload({
-      parentSessionId:publicState.sessionId,participantId,startedAt:publicState.startedAt,completedAt,itemNotes:local.notes,debrief:local.debrief,
+      parentSessionId:publicState.sessionId,anonymousUserId,participantId,startedAt:publicState.startedAt,completedAt,itemNotes:local.notes,debrief:local.debrief,
       jobCode:evaluation.jobCode!,jobName:evaluation.jobName||'',primaryStyle:evaluation.style.primary!,secondaryStyle:evaluation.style.secondary!,
       separatorCount,resultContentVersion:MONEY_RESULT_CONTENT_VERSION,userAgent:navigator.userAgent,sourceUrl:window.location.href,
     });
