@@ -36,6 +36,7 @@ for(let guard=0;guard<80;guard++){
   throw new Error('COGNITIVE_PUBLIC_NO_ANSWER_CONTROL');
 }
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).waitFor({state:'visible',timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).click();
 await page.locator('.mpp-cog-panel').waitFor({state:'visible'});
@@ -57,17 +58,21 @@ await page.screenshot({path:`${OUT}/01-debrief-saved.png`,fullPage:true});
 
 const data=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_cognitive_last_payload_v1')||'null');
+  const parent=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
   const local=JSON.parse(localStorage.getItem('mudagiri_money_type_cognitive_v1')||'null');
-  return {payload,local};
+  return {payload,parent,local};
 });
+if(data.parent?.quality?.cognitiveMode!==true)throw new Error('COGNITIVE_PARENT_MODE_MISSING');
+if(data.parent?.quality?.variant!=='PUBLIC_ADAPTIVE_COGNITIVE')throw new Error('COGNITIVE_PARENT_VARIANT_BAD');
 if(data.payload?.kind!=='money_personality_pilot_v1')throw new Error('COGNITIVE_PAYLOAD_KIND_BAD');
 if(data.payload?.formId!=='PUBLIC_COGNITIVE_DEBRIEF')throw new Error('COGNITIVE_FORM_BAD');
 if(data.payload?.quality?.cognitiveMode!==true)throw new Error('COGNITIVE_MODE_MISSING');
 if(!data.payload?.quality?.parentSessionId)throw new Error('COGNITIVE_PARENT_SESSION_MISSING');
+if(data.payload?.quality?.parentSessionId!==data.parent?.sessionId)throw new Error('COGNITIVE_PARENT_LINK_MISMATCH');
 if((data.payload?.quality?.flaggedItemCount||0)<1)throw new Error('COGNITIVE_FLAG_MISSING');
 if(!data.local?.submittedAt)throw new Error('COGNITIVE_LOCAL_SUBMITTED_MISSING');
 if(answered<30)throw new Error('COGNITIVE_COMPLETED_BEFORE_CORE30:'+answered);
-const report={ok:true,flow:'MUDAGIRI_MONEY_COGNITIVE_BROWSER_V1',answered,ratingCount,flaggedItemCount:data.payload.quality.flaggedItemCount,jobCode:data.payload.quality.jobCode,primaryStyle:data.payload.quality.primaryStyle};
+const report={ok:true,flow:'MUDAGIRI_MONEY_COGNITIVE_BROWSER_V1',answered,ratingCount,flaggedItemCount:data.payload.quality.flaggedItemCount,jobCode:data.payload.quality.jobCode,primaryStyle:data.payload.quality.primaryStyle,parentVariant:data.parent.quality.variant};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify(report));
