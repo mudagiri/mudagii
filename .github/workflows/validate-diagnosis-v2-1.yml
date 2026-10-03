@@ -38,6 +38,7 @@ jobs:
       - run: npm run qa:money-public-flow
       - run: npm run qa:money-result-content
       - run: npm run qa:money-result-personas
+      - run: npm run qa:money-cognitive
       - run: npm run qa:resolver
       - run: npm run qa:scope
       - run: npm run qa:profile-v4-ux
