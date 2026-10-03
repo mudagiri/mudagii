@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import MudagiriAppV2 from '../MudagiriAppV2';
 import MoneyPersonalityPilot from './features/money-personality/MoneyPersonalityPilot';
 import MoneyPersonalityPublic from './features/money-personality/MoneyPersonalityPublic';
+import MoneyPersonalityTelemetry from './features/money-personality/MoneyPersonalityTelemetry';
 import './style.css';
 
 const params=new URLSearchParams(window.location.search);
@@ -19,6 +20,10 @@ const isMoneyPersonalityPilot=
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {isMoneyPersonalityAdaptive?<MoneyPersonalityPublic/>:isMoneyPersonalityPilot?<MoneyPersonalityPilot/>:<MudagiriAppV2 />}
+    {isMoneyPersonalityAdaptive
+      ?<><MoneyPersonalityPublic/><MoneyPersonalityTelemetry/></>
+      :isMoneyPersonalityPilot
+        ?<MoneyPersonalityPilot/>
+        :<MudagiriAppV2 />}
   </React.StrictMode>,
 );
