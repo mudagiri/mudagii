@@ -4,7 +4,7 @@ import {buildMoneyResultContent,JOB_RESULT_BASE,MONEY_RESULT_CONTENT_VERSION} fr
 
 const jobs=Object.keys(JOBS) as JobCode[];
 const styles:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
-const forbidden=['浪費家','ズボラ','衝動買い','即決','ケチ','仕事人間','臆病','コスパ厨','計画性がない','普段は見ない'];
+const forbidden=['浪費家','ズボラ','衝動買い','即決','ケチ','仕事人間','臆病','コスパ厨','計画性がない','普段は見ない','使える余力を大きめ','決めにくいタイプ'];
 
 function axis(axis:AxisId,dominant:AxisPole,balanceState:'BALANCED'|'LEAN'|'CLEAR'='CLEAR',absoluteState:'HIGH_HIGH'|'LOW_LOW'|'MIXED'='MIXED'){
   return {
@@ -52,6 +52,9 @@ for(const job of jobs){
       assert.equal(result.axisInsights.length,3);
       assert.ok(result.primaryStyleLine.includes(primary));
       assert.ok(result.secondaryStyleLine.includes(secondary));
+      assert.ok(result.primaryStyleLine.includes('4属性の中では'));
+      assert.ok(result.secondaryStyleLine.includes('2番目'));
+      assert.ok(!result.secondaryStyleLine.includes('も強く'));
       const text=JSON.stringify(result);
       for(const word of forbidden)assert.ok(!text.includes(word),`${job}/${primary}/${secondary} contained forbidden wording: ${word}`);
     }
@@ -64,9 +67,10 @@ const ll=buildMoneyResultContent(fakeEvaluation('FDM','DRIVE','ENJOY','ll'));
 assert.ok(hh.axisInsights.every(x=>x.badge==='両方強い'));
 assert.ok(ll.axisInsights.every(x=>x.badge==='どちらも控えめ'));
 assert.ok(hh.axisInsights[0].text.includes('どちらも強く'));
-assert.ok(ll.axisInsights[0].text.includes('どちらか一方を強い基準にするより'));
+assert.ok(ll.axisInsights[0].text.includes('どちらも'));
+assert.ok(!ll.axisInsights[0].text.includes('状況に応じて'));
 assert.notEqual(hh.axisInsights[0].text,ll.axisInsights[0].text);
 
 assert.throws(()=>buildMoneyResultContent({...fakeEvaluation('FDM','DRIVE','ENJOY'),complete:false}),/complete evaluation/);
 
-console.log(JSON.stringify({ok:true,version:MONEY_RESULT_CONTENT_VERSION,jobs:jobs.length,combinations,guardrails:forbidden.length,balancedHighHigh:true,balancedLowLow:true}));
+console.log(JSON.stringify({ok:true,version:MONEY_RESULT_CONTENT_VERSION,jobs:jobs.length,combinations,guardrails:forbidden.length,balancedHighHigh:true,balancedLowLow:true,relativeStyleWording:true}));
