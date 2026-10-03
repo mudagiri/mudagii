@@ -1,4 +1,4 @@
-export const PILOT_VERSION = "V4.5_3_PILOT_CANDIDATE" as const;
+export const PILOT_VERSION = "V4.5_4_PILOT_CANDIDATE" as const;
 
 export const BIPOLAR_SCALE_LABELS = [
   "左にかなり近い",
@@ -55,8 +55,8 @@ export const PILOT_ITEMS = [
 
   {item_id:"S01",family:"BIPOLAR",factor:"SECURE",scenario:"お金を預ける2つの方法があります。",option_a:"少し条件が良い代わりに、しばらく動かせない方",option_b:"条件は普通でも、いつでも動かせる方",trait_pole:"B"},
   {item_id:"S02",family:"BIPOLAR",factor:"SECURE",scenario:"平均すると同じくらいのメリットが見込める2つの選択肢があります。",option_a:"結果によって、得られるメリットが大きく変わる方",option_b:"得られるメリットが、ほぼ一定の方",trait_pole:"B"},
-  {item_id:"S03",family:"BIPOLAR",factor:"SECURE",scenario:"年間では同じくらいの支払いになる2つのプランがあります。",option_a:"月によって支払額が変わるプラン",option_b:"毎月ほぼ同じ金額のプラン",trait_pole:"B"},
-  {item_id:"S04",family:"BIPOLAR",factor:"SECURE",scenario:"同じサービスに2つの契約方法があります。",option_a:"少し安い代わりに、途中でやめられない年間契約",option_b:"少し高い代わりに、いつでもやめられる月払い",trait_pole:"B"},
+  {item_id:"S03",family:"BIPOLAR",factor:"SECURE",scenario:"1年間で払う合計は同じくらいの、2つの料金プランがあります。",option_a:"月によって支払額が変わる",option_b:"毎月ほぼ同じ金額を払う",trait_pole:"B"},
+  {item_id:"S04",family:"BIPOLAR",factor:"SECURE",scenario:"同じサービスに2つの契約方法があります。",option_a:"少し安い代わりに、1年間は解約できない",option_b:"少し高い代わりに、いつでも解約できる",trait_pole:"B"},
   {item_id:"S05",family:"BIPOLAR",factor:"SECURE",scenario:"急な出費に備えて、生活費とは別のお金を持つとします。",option_a:"必要になりそうな分があれば十分",option_b:"使う予定がなくても、余裕を多めに持っておきたい",trait_pole:"B"},
 
   {item_id:"O01",family:"BIPOLAR",factor:"OPTIMIZE",scenario:"必要な機能だけのプランと、全部入りのプランがあります。",option_a:"後で足りなくならないよう、全部入りを選ぶ",option_b:"今使う機能だけのプランを選ぶ",trait_pole:"B"},
