@@ -70,6 +70,7 @@ export function toggleCognitiveFlag(flags:readonly CognitiveFlag[],flag:Cognitiv
 
 export type CognitivePayloadInput={
   parentSessionId:string;
+  anonymousUserId:string;
   participantId:string;
   startedAt:string;
   completedAt:string;
@@ -87,6 +88,7 @@ export type CognitivePayloadInput={
 
 export function buildCognitiveDebriefPayload(input:CognitivePayloadInput){
   if(!input.parentSessionId)throw new Error('parentSessionId required');
+  if(!input.anonymousUserId)throw new Error('anonymousUserId required');
   if(!input.participantId)throw new Error('participantId required');
   if(!isCognitiveDebriefComplete(input.debrief,input.separatorCount))throw new Error('cognitive debrief incomplete');
   const notes=Object.values(input.itemNotes).sort((a,b)=>a.firstSeenAt.localeCompare(b.firstSeenAt));
@@ -114,6 +116,7 @@ export function buildCognitiveDebriefPayload(input:CognitivePayloadInput){
     schemaVersion:MONEY_COGNITIVE_PILOT_VERSION,
     pilotVersion:MONEY_COGNITIVE_PILOT_VERSION,
     sessionId:`${input.parentSessionId}__cognitive`,
+    anonymousUserId:input.anonymousUserId,
     participantId:input.participantId,
     formId:'PUBLIC_COGNITIVE_DEBRIEF',
     startedAt:input.startedAt,
