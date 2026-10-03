@@ -115,7 +115,7 @@ function balanceBadge(state:BalanceState|null,absolute:AbsoluteState|null,domina
     if(absolute==='LOW_LOW')return 'どちらも控えめ';
     return 'かなり拮抗';
   }
-  if(state==='LEAN')return `${dominant??''}寄り`; 
+  if(state==='LEAN')return `${dominant??''}寄り`;
   return 'はっきり';
 }
 
