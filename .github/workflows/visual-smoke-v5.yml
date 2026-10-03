@@ -36,6 +36,10 @@ jobs:
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
         run: node qa-visual-smoke-v5.mjs
+      - name: Run adaptive JOB public browser smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-money-personality-public-browser-v1.mjs
       - name: Upload screenshots and geometry report
         if: always()
         uses: actions/upload-artifact@v4
