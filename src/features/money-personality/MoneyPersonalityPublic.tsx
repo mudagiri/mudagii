@@ -8,6 +8,7 @@ import {
   JOB_NUMBER,JOB_ONE_LINERS,newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
+import {buildMoneyResultContent} from './resultContentV1';
 import './publicMoney.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
@@ -170,29 +171,26 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
 
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
-  const meta=STYLE_META[style];const sub=STYLE_META[secondary];
+  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultContent(evaluation);
   const share=async()=>{
     const text=`私のMUDAGIRI JOBは「${evaluation.jobName}」だった！ ${meta.label} STYLE #ムダギリ診断`;
     try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
   };
   const axes=[
-    ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME],
-    ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION],
-    ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS],
+    ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME,content.axisInsights[0]],
+    ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION,content.axisInsights[1]],
+    ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS,content.axisInsights[2]],
   ] as const;
   return <main className="mpp-page"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">MUDAGIRI CLASS UNLOCKED</div><div className="mpp-job-no">JOB #{JOB_NUMBER[job]}</div><div className="mpp-emblem" aria-hidden="true">✦</div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
+    <p className="mpp-result-headline">{content.headline}</p>
     <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{MUDAGIRI_LINE[job]}」</p></div>
-    <div className="mpp-style-row"><div><span>主属性</span><b>{meta.icon} {meta.label} STYLE</b></div><div><span>副属性</span><b>{sub.icon} {sub.label}</b></div></div><div className="mpp-style-copy">{meta.copy}</div>
-    <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,axis])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const badge=axisBalanceBadge(axis.balanceState,axis.absoluteState);return <div className="mpp-axis" key={title}><header><b>{title}</b>{badge&&<em>{badge}</em>}</header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div></div>})}</div>
+    <div className="mpp-style-row"><div><span>主属性</span><b>{meta.icon} {meta.label} STYLE</b></div><div><span>副属性</span><b>{sub.icon} {sub.label}</b></div></div>
+    <div className="mpp-style-detail"><p>{content.primaryStyleLine}</p><p>{content.secondaryStyleLine}</p></div>
+    <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>死角</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
+    <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,axis,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div>
+    <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
     <div className="mpp-next-quest"><span>NEXT QUEST</span><b>実際の家計には、どんな敵が潜んでいる？</b><p>JOBは「攻略の仕方」。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
     <button className="mpp-primary" onClick={()=>{window.location.href=householdUrl()}}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>このJOBをシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors},null,2)}</pre>}
+    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultContentVersion:content.version},null,2)}</pre>}
   </section></main>;
-}
-
-function axisBalanceBadge(balanceState:string|null,absoluteState:string|null){
-  if(balanceState!=='BALANCED')return '';
-  if(absoluteState==='HIGH_HIGH')return '両方強く・拮抗';
-  if(absoluteState==='LOW_LOW')return '両方控えめ・拮抗';
-  return 'かなりバランス型';
 }
