@@ -5,15 +5,16 @@ import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from '
 import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type SeparatorId} from './separatorDataV1';
 import {
   buildCoreTraitSideMap,buildPublicCoreOrder,displayScore,FACTOR_PUBLIC_LABEL,getOrCreatePublicParticipantId,
-  JOB_NUMBER,JOB_ONE_LINERS,newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
+  JOB_NUMBER,newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
-import {buildMoneyResultContent} from './resultContentV1';
+import {buildMoneyResultExperienceV2} from './resultExperienceV2';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {CLASS_UNLOCK_SEQUENCE,NEXT_QUEST_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
 import './mudagiri-motion.css';
 import './personality-mudagiri.css';
+import './money-personality-polish-v3.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -39,16 +40,14 @@ function householdUrl(){
   return path||'/';
 }
 
-const MUDAGIRI_LINE:Record<string,string>={
-  FDM:'その選択、頭の中で何ターン先まで計算してんだ？',
-  FDP:'節目が来ると、作戦会議の解像度が一気に上がるな。',
-  FNM:'現在地は見えてるのに、最後の一手は自分の感覚なんだな。',
-  FNP:'行き先は決める。でも航路はその時の風で選ぶ派だな。',
-  IDM:'今の状況を見ながら、ちゃんと納得できる一手を選びたいんだな。',
-  IDP:'狙いが定まると、急に照準合わせが細かくなるな。',
-  INM:'今どこにいるか分かってるから、自分の感覚にも乗れるんだな。',
-  INP:'その場の風で動くけど、節目じゃちゃんと構え直すんだな。',
-};
+function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered:number){
+  if(adaptiveAnswered>0)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';
+  if(coreAnswered>=27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';
+  if(coreAnswered>=20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';
+  if(coreAnswered>=10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';
+  if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';
+  return '';
+}
 
 export default function MoneyPersonalityPublic(){
   const params=useMemo(()=>new URLSearchParams(window.location.search),[]);
@@ -125,10 +124,11 @@ export default function MoneyPersonalityPublic(){
   if(!targetItem)return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>お金タイプを解析しています…</p></section></main>;
 
   const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;
+  const companionLine=progressComment(state.screenCount,coreAnswered,adaptiveAnswered);
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell">
     <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
     {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
-    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/></div>
+    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/>{companionLine&&<div className="mpp-progress-talk">{companionLine}</div>}</div>
     <article className="mpp-question-card">
       {targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} 
       {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>} 
@@ -144,13 +144,13 @@ function QuestionHeader({phase,progress,onBack,canBack}:{phase:string;progress:n
 function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;onResume:()=>void}){
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card mpp-intro">
     <div className="mpp-kicker">CHAPTER 1 / MONEY PERSONALITY</div>
-    <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
     <h1>お金の<br/><span>性格診断</span></h1>
-    <p className="mpp-lead">お金の「使い方・決め方・把握のクセ」から、あなたのお金タイプを見つけます。</p>
-    <div className="mpp-meta"><div><b>約5分</b><span>基本30問＋必要な分だけ</span></div><div><b>回答適応型</b><span>あなたに合わせて進行</span></div></div>
-    <div className="mpp-points"><p><i>01</i> 正解・不正解なし</p><p><i>02</i> 似た傾向が両方強くても、そのまま残す</p><p><i>03</i> 最後にお金タイプと攻略ヒントがわかる</p></div>
+    <div className="mpp-intro-copy"><b>同じ収入でも、お金の使い方は人それぞれ。</b><p>30問に答えると、あなたが「何には使えて、どこで迷い、どう管理するか」を、8つの基本タイプ × 4つの価値観から読み解きます。</p></div>
+    <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
+    <div className="mpp-meta"><div><b>約5分</b><span>30問＋必要な追加だけ</span></div><div><b>32タイプ</b><span>強弱までそのまま反映</span></div></div>
+    <div className="mpp-points"><p><i>01</i> 正解はなし。普段の自分で答える</p><p><i>02</i> 迷ったら「理想」より「実際にやりがち」を選ぶ</p><p><i>03</i> 最後に強み・落とし穴・家計攻略法までわかる</p></div>
     {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>診断をはじめる</button>}
-    <p className="mpp-intro-note">回答は端末内に自動保存されます。途中で閉じても続きから再開できます。</p>
+    <p className="mpp-intro-note">回答は端末内に自動保存。途中で閉じても続きから再開できます。</p>
   </section></main>;
 }
 
@@ -170,9 +170,9 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
-    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/></div>
+    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/><div className="mpp-progress-talk">最後の確認！どっちも近ければ、より普段の自分に近い方でOK。</div></div>
     <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
-    <p className="mpp-footnote">両方のスコアはそのまま残します。ここではタイプ上の表現だけを決めます。</p>
+    <p className="mpp-footnote">両方の傾向は消しません。ここでは、より近い表現だけを選びます。</p>
   </section></main>;
 }
 
@@ -218,7 +218,7 @@ function NextQuestDeparture({onComplete}:{onComplete:()=>void}){
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
   const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
-  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultContent(evaluation);
+  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultExperienceV2(evaluation);
   if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
   if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
   const share=async()=>{
@@ -226,25 +226,21 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     try{if(navigator.share){await navigator.share({title:'ムダギリ｜お金の性格診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
   };
   const axes=[
-    ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME,content.axisInsights[0]],
-    ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION,content.axisInsights[1]],
-    ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS,content.axisInsights[2]],
+    ['時間視野','FUTURE','IMMEDIATE',content.patterns[0]],
+    ['判断根拠','DELIBERATION','INTUITION',content.patterns[1]],
+    ['把握リズム','MONITORING','PERIODIC',content.patterns[2]],
   ] as const;
-  return <main className="mpp-page" data-scene="result"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
-    <p className="mpp-result-headline">{content.headline}</p>
+  return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1>
+    <p className="mpp-result-hero-line">{content.heroLine}</p>
+    <section className="mpp-resonance-card"><span>ひとことで言うと</span><b>{content.headline}</b><p>{content.typeMeaning}</p></section>
     <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div>
-    <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{MUDAGIRI_LINE[job]}」</p></div>
-    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultStyle} alt=""/></div>
-    <div className="mpp-style-row"><div><span>主属性</span><b>{meta.icon} {meta.label} STYLE</b></div><div><span>副属性</span><b>{sub.icon} {sub.label}</b></div></div>
-    <div className="mpp-style-detail"><p>{content.primaryStyleLine}</p><p>{content.secondaryStyleLine}</p></div>
-    <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>死角</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
-    <div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultAxes} alt=""/></div>
-    <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,axis,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div>
-    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.nextMove} alt=""/></div>
+    <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{content.mudagiriLine}」</p></div>
+    <section className="mpp-style-synthesis"><header><span>あなたが価値を感じやすい順</span><b>{meta.icon} {meta.label} → {sub.icon} {sub.label}</b></header><p>{content.styleSynthesis}</p></section>
+    <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>ハマりやすい罠</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
+    <details className="mpp-analysis-details"><summary>診断の内訳を見る <small>3軸ステータス</small></summary><div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div></details>
     <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
-    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.householdCta} alt=""/></div>
     <div className="mpp-next-quest"><span>CHAPTER 2 / NEXT QUEST</span><b>次は、実際の家計を冒険しよう。</b><p>このお金タイプをもとに、家計クエストでの「冒険者CLASS」が決まります。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
     <button className="mpp-primary" onClick={()=>setHandoff('class')}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>この結果をシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultContentVersion:content.version},null,2)}</pre>}
+    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version},null,2)}</pre>}
   </section></main>;
 }
