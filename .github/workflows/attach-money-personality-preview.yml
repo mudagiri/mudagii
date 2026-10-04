@@ -13,8 +13,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-money-preview"
-  cancel-in-progress: true
+  group: pages-money-preview-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
 
 jobs:
   build:
