@@ -1,6 +1,14 @@
 import React from 'react';
-import {MUDAGIRI_POSE_ASSET} from './mudagiri-pose-assets-v1';
+import {MUDAGIRI_BACKGROUND_ASSET,MUDAGIRI_POSE_ASSET} from './mudagiri-pose-assets-v1';
 import type {MudagiriVisualSpec} from './mudagiri-personality-visual-v1';
+import './mudagiri-background-runtime.css';
+
+if(typeof document!=='undefined'){
+  const style=document.documentElement.style;
+  style.setProperty('--mpp-bg-guild',`url("${MUDAGIRI_BACKGROUND_ASSET.guildHall}")`);
+  style.setProperty('--mpp-bg-class-unlock',`url("${MUDAGIRI_BACKGROUND_ASSET.classUnlock}")`);
+  style.setProperty('--mpp-bg-next-quest',`url("${MUDAGIRI_BACKGROUND_ASSET.nextQuest}")`);
+}
 
 type Props={visual:MudagiriVisualSpec;alt?:string;className?:string};
 
