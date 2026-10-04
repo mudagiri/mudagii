@@ -35,57 +35,57 @@ export const JOB_RESULT_BASE:Record<JobCode,JobResultBase>={
   FDM:{
     weapon:'先回り設計',
     strength:'先の予定を見ながら、比較して考え、普段の財布の現在地も判断材料にできる。将来だけを見て今を我慢するというより、「この選択をしても先の余白は守れるか」を確認してから進めるのが得意な型。',
-    blindSpot:'比較材料が増え続ける場面では、判断基準を先に絞らないと整理する情報が広がりやすい。考える力が弱いのではなく、見える条件が多いほど全部をちゃんと扱おうとして、優先順位がぼやけることがある。',
-    strategy:'「何を守りたいか」を先に決めてから、今の支出と将来への影響を並べると判断がまとまりやすい。比較項目を増やすより、最初に“絶対に外したくない条件”を1つ置くのが効く。',
+    blindSpot:'比較材料が増え続ける場面では、判断基準を先に絞らないと整理する情報が広がりやすい。見える条件が多いほど全部を扱おうとして、優先順位がぼやけることがある。',
+    strategy:'「何を守りたいか」を先に決めてから、今の支出と将来への影響を並べると判断がまとまりやすい。比較項目を増やすより、外したくない条件を1つ置くのが効く。',
     oneAction:'家計クエストでは、改善候補TOP1を「今月」と「1年後」の両方で見る。',
   },
   FDP:{
     weapon:'節目の作戦会議',
     strength:'先を見据えながら、比較して考え、意味のある節目でお金の作戦を組み直せる。常に細かく管理するより、「ここは見る」と決めたタイミングで一気に整理すると持ち味が出やすい。',
-    blindSpot:'確認する節目が決まっていないと、比較や見直しの強みを使うタイミングが曖昧になりやすい。逆に言えば、見る日さえ決まっていれば、普段まで管理で埋めなくても立て直しやすい。',
-    strategy:'毎日細かく管理するより、給料日・月初・大きな予定の前など「作戦会議の日」を決める方が持ち味を活かしやすい。そこで残高・大きな固定費・次の予定の3つだけを見ると十分。',
+    blindSpot:'確認する節目が決まっていないと、比較や見直しの強みを使うタイミングが曖昧になりやすい。見る日が決まると立て直しやすい。',
+    strategy:'毎日細かく管理するより、給料日・月初・大きな予定の前など「作戦会議の日」を決める方が持ち味を活かしやすい。見る項目も3つ程度に絞ると続けやすい。',
     oneAction:'家計クエストで見つけた改善候補に、次に確認する節目を1つだけ決める。',
   },
   FNM:{
     weapon:'予兆キャッチ',
     strength:'先の見通しと今の現在地を持ちながら、自分のしっくり感や違和感も判断に使える。数字を無視するわけでも、数字だけで決めるわけでもなく、「条件は悪くないけど何か違う」を拾えるのが特徴。',
-    blindSpot:'数字と感覚が違う方向を向いた場面では、どちらを優先するか決めていないと判断軸が散りやすい。感覚を消すより、“数字で越えてはいけない線”だけ先に決めた方が迷いを減らしやすい。',
-    strategy:'まず数字で現在地を確認し、そのあと「どこが一番引っかかるか」を使うと感覚が活きる。先に安全ラインを確認してから感覚を使う順番にすると、両方の強みがぶつかりにくい。',
+    blindSpot:'数字と感覚が違う方向を向いた場面では、どちらを優先するか決めていないと判断軸が散りやすい。先に越えてはいけない線を決めると整いやすい。',
+    strategy:'まず数字で現在地を確認し、そのあと「どこが一番引っかかるか」を使うと感覚が活きる。安全ラインを先に置くと両方の強みがぶつかりにくい。',
     oneAction:'家計クエストの基準比較を見たあと、最も違和感のある1カテゴリだけ深掘りする。',
   },
   FNP:{
     weapon:'航路変更力',
     strength:'先の目的地を意識しながら、その時の感覚と節目の確認を使って進み方を調整できる。最初から完璧な計画を固定するより、目的地を見失わずに途中で航路を変える方が自然な型。',
-    blindSpot:'未来の目的地が複数あると、節目で何を基準に航路を選ぶかが曖昧になりやすい。候補が多いほど自由度は上がる一方で、「今は何を優先するか」が見えにくくなることがある。',
-    strategy:'目的地を1つに絞り、節目ごとに「この航路でまだ合っているか」を確認すると動きやすい。細かなルールより、“今いちばん守りたい予定”を1つ置く方が続けやすい。',
+    blindSpot:'未来の目的地が複数あると、節目で何を基準に航路を選ぶかが曖昧になりやすい。「今は何を優先するか」を1つ置くと判断しやすい。',
+    strategy:'目的地を1つに絞り、節目ごとに「この航路でまだ合っているか」を確認すると動きやすい。細かなルールより、守りたい予定を1つ置く方が続けやすい。',
     oneAction:'家計クエスト前に、今いちばん守りたい未来の予定を1つだけ決める。',
   },
   IDM:{
     weapon:'納得配分',
     strength:'今の状況をつかみながら、比較して考え、自分が納得できる配分を選びやすい。全部を安くするより、「ここは使う・ここは見直す」と意味を分ける方がしっくり来やすい型。',
-    blindSpot:'比較する基準が増えすぎると、「守る支出」と「見直す支出」の境目が見えにくくなることがある。条件を増やすほど精密になる反面、どこで十分とするかを先に決めないと比較が長引きやすい。',
-    strategy:'全部を同じ基準で削るより、「守る支出」と「見直す支出」を分けると判断しやすい。金額だけではなく、使った後に納得できるかまで含めて2分類すると持ち味が出る。',
+    blindSpot:'比較する基準が増えすぎると、「守る支出」と「見直す支出」の境目が見えにくくなることがある。どこで十分とするかを先に決めると整いやすい。',
+    strategy:'全部を同じ基準で削るより、「守る支出」と「見直す支出」を分けると判断しやすい。金額だけでなく、使った後に納得できるかも含めると持ち味が出る。',
     oneAction:'家計クエストでは、守りたい支出1つと見直してよい支出1つを分ける。',
   },
   IDP:{
     weapon:'ターゲット選定',
     strength:'目の前の条件を比較して見定め、節目で照準を合わせ直しながら判断できる。全部を一度に整えるより、「今はここ」と狙いを決めた瞬間に判断の精度が上がりやすい型。',
-    blindSpot:'優先対象が複数あると、節目で何を先に確認するかが散りやすい。見る力が足りないのではなく、候補が同時に並ぶほど“次の1つ”を決める工程が必要になる。',
-    strategy:'候補を広げ続けるより、優先順位をつけて「次に見る1つ」を明確にすると強みが出やすい。比較はTOP3まで、実際に動くのはTOP1だけにするとテンポが保ちやすい。',
+    blindSpot:'優先対象が複数あると、節目で何を先に確認するかが散りやすい。候補が同時に並ぶほど「次の1つ」を決める工程が必要になる。',
+    strategy:'候補を広げ続けるより、優先順位をつけて「次に見る1つ」を明確にすると強みが出やすい。比較はTOP3、動くのはTOP1にするとテンポを保ちやすい。',
     oneAction:'家計クエストでは、最優先の改善候補TOP1だけにまず照準を合わせる。',
   },
   INM:{
     weapon:'感覚と現在地の両立',
     strength:'手元の現在地をつかみながら、自分にしっくりくる感覚を判断に重ねられる。数字を見て終わりではなく、「今の自分に合っているか」まで含めて選べるのが特徴。',
-    blindSpot:'現在地と感覚だけでは決めきれない選択では、追加で何を見るかが曖昧だと判断軸が散りやすい。情報を増やしすぎる必要はなく、足りない時だけ“あと1つ何を見るか”を決めると整いやすい。',
-    strategy:'感覚を変えようとするより、判断前に「残る余力」だけ見える状態を作ると持ち味を保ちやすい。現在地を確認してから、自分が納得できるかを見る2段階にするとブレにくい。',
+    blindSpot:'現在地と感覚だけでは決めきれない選択では、追加で何を見るかが曖昧だと判断軸が散りやすい。足りない時だけ「あと1つ何を見るか」を決めると整いやすい。',
+    strategy:'感覚を変えようとするより、判断前に「残る余力」だけ見える状態を作ると持ち味を保ちやすい。現在地→納得感の2段階にするとブレにくい。',
     oneAction:'家計クエストでは、いちばん大きい改善候補を1つだけ先に見る。',
   },
   INP:{
     weapon:'柔軟な構え',
     strength:'今の状況を感覚で読みながら、節目ごとに構えを整えて次の一手を選べる。毎日同じルールで縛るより、必要な時にちゃんと見直せる余白がある方が自然な型。',
-    blindSpot:'節目で見る基準が毎回変わると、前回との差をつかみにくくなる。自由度を残しつつも、“毎回これだけは見る”という1項目を固定すると流れを追いやすい。',
-    strategy:'細かな管理ルールを増やすより、節目で見る数字を1つだけ決めると続けやすい。その数字を確認したあとで、自分の感覚に合う次の一手を選ぶ順番が相性いい。',
+    blindSpot:'節目で見る基準が毎回変わると、前回との差をつかみにくくなる。「毎回これだけは見る」という1項目を固定すると流れを追いやすい。',
+    strategy:'細かな管理ルールを増やすより、節目で見る数字を1つだけ決めると続けやすい。その数字を確認してから、自分に合う次の一手を選ぶ順番が相性いい。',
     oneAction:'家計クエストの結果から、今日できるアクションを1つだけ選ぶ。',
   },
 };
@@ -162,20 +162,20 @@ function axisTitle(axis:AxisId){
 
 function shortAxisClause(axis:AxisId,state:BalanceState|null,absolute:AbsoluteState|null,dominant:AxisPole|null){
   if(state==='BALANCED'){
-    if(absolute==='HIGH_HIGH')return axis==='TIME'?'未来と今をどちらもかなり重く見る':axis==='DECISION'?'比較と感覚をどちらもかなり使う':'普段把握と節目確認をどちらも使う';
-    if(absolute==='LOW_LOW')return axis==='TIME'?'未来か今だけでは決めない':axis==='DECISION'?'比較か感覚だけでは決めない':'把握の仕方を固定しすぎない';
-    return axis==='TIME'?'未来と今をほぼ同じくらい残す':axis==='DECISION'?'比較と感覚をほぼ同じくらい使う':'普段把握と節目確認がかなり拮抗する';
+    if(absolute==='HIGH_HIGH')return axis==='TIME'?'未来と今を両方重く見る':axis==='DECISION'?'比較と感覚を両方使う':'普段把握と節目確認を両方使う';
+    if(absolute==='LOW_LOW')return axis==='TIME'?'未来か今だけでは決めない':axis==='DECISION'?'比較か感覚だけでは決めない':'把握方法を固定しすぎない';
+    return axis==='TIME'?'未来と今をほぼ同じに見る':axis==='DECISION'?'比較と感覚がかなり拮抗':'普段把握と節目確認がかなり拮抗';
   }
   if(axis==='TIME')return dominant==='F'?'先への影響を先に見る':'今得られる価値を先に見る';
-  if(axis==='DECISION')return dominant==='D'?'比較して筋を通してから決める':'しっくり感や違和感を残して決める';
-  return dominant==='M'?'普段から財布の現在地をつかむ':'意味のある節目で財布を確認する';
+  if(axis==='DECISION')return dominant==='D'?'比較して筋を通す':'しっくり感を残して決める';
+  return dominant==='M'?'普段から現在地をつかむ':'節目で財布を確認する';
 }
 
 function headline(evaluation:EngineEvaluation,primary:StyleId,secondary:StyleId){
   const t=evaluation.axes.TIME;
   const d=evaluation.axes.DECISION;
   const a=evaluation.axes.AWARENESS;
-  return `あなたは「${shortAxisClause('TIME',t.balanceState,t.absoluteState,t.dominant)}」タイプ。そのうえで、決める時は${shortAxisClause('DECISION',d.balanceState,d.absoluteState,d.dominant)}傾向があり、お金の把握は${shortAxisClause('AWARENESS',a.balanceState,a.absoluteState,a.dominant)}形が近い。4属性では「${STYLE_WORD[primary]}」が先頭で、「${STYLE_WORD[secondary]}」が次に続くので、同じ金額でも“何に使うか・どう納得するか”で評価が変わりやすい。`;
+  return `${shortAxisClause('TIME',t.balanceState,t.absoluteState,t.dominant)}。${shortAxisClause('DECISION',d.balanceState,d.absoluteState,d.dominant)}。${shortAxisClause('AWARENESS',a.balanceState,a.absoluteState,a.dominant)}。4属性は「${STYLE_WORD[primary]}」→「${STYLE_WORD[secondary]}」の順。`;
 }
 
 export function buildMoneyResultContent(evaluation:EngineEvaluation):MoneyResultContent{
@@ -196,16 +196,14 @@ export function buildMoneyResultContent(evaluation:EngineEvaluation):MoneyResult
     };
   });
   const strength=`${base.strength} さらに今回の4属性では「${STYLE_WORD[primary]}」が先頭なので、選択肢を見た時に「${STYLE_QUESTION[primary]}」まで含めて判断しやすい。`;
-  const blindSpot=`${base.blindSpot} とくに上位の「${STYLE_WORD[primary]}」と「${STYLE_WORD[secondary]}」を同時に満たそうとする場面では、条件が増えすぎる前に“今回はどちらを先にするか”を決めると整理しやすい。`;
-  const strategy=`${base.strategy} 迷った時は、最初に「${STYLE_QUESTION[primary]}」、次に「${STYLE_QUESTION[secondary]}」の順で2つだけ確認すると、自分の判断軸を使いやすい。`;
   return {
     version:MONEY_RESULT_CONTENT_VERSION,
     headline:headline(evaluation,primary,secondary),
     summary:`${strength} ${STYLE_RESULT[primary].primary}`,
     weapon:base.weapon,
     strength,
-    blindSpot,
-    strategy,
+    blindSpot:base.blindSpot,
+    strategy:base.strategy,
     oneAction:base.oneAction,
     primaryStyleLine:STYLE_RESULT[primary].primary,
     secondaryStyleLine:STYLE_RESULT[secondary].secondary,
