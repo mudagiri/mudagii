@@ -51,9 +51,17 @@ let sawSeparator=false;
 let resumeChecked=false;
 let capturedAdaptive=false;
 let capturedSeparator=false;
+let capturedUnlock=false;
 for(let guard=0;guard<80;guard++){
   const result=page.locator('.mpp-result');
   if(await result.count()&&await result.isVisible())break;
+
+  const unlock=page.locator('.mpp-job-unlock');
+  if(await unlock.count()&&await unlock.isVisible()){
+    if(!capturedUnlock){await screenshot('05-job-unlock');capturedUnlock=true;}
+    await page.locator('.mpp-result').waitFor({state:'visible',timeout:6000});
+    break;
+  }
 
   const debug=page.locator('.mpp-debug');
   const debugText=await debug.count()?await debug.innerText():'';
@@ -76,7 +84,7 @@ for(let guard=0;guard<80;guard++){
 
   const scale=page.locator('.mpp-scale button');
   if(await scale.count()){
-    await scale.nth(2).click(); // semantic midpoint regardless of side mapping
+    await scale.nth(2).click();
     answered++;
   }else{
     const likert=page.locator('.mpp-answer-list button');
@@ -86,7 +94,6 @@ for(let guard=0;guard<80;guard++){
   }
   await page.waitForTimeout(180);
 
-  // Exercise persisted resume once without changing the measurement form.
   if(!resumeChecked&&answered===4){
     await page.reload({waitUntil:'networkidle'});
     await page.getByRole('button',{name:'続きから再開する'}).waitFor({state:'visible'});
@@ -98,7 +105,7 @@ for(let guard=0;guard<80;guard++){
 
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
-await screenshot('05-result');
+await screenshot('06-result');
 const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
 if(!text.includes('MUDAGIRI CLASS UNLOCKED'))throw new Error('MONEY_PUBLIC_RESULT_UNLOCK_MISSING');
 if(!text.includes('主属性')||!text.includes('副属性'))throw new Error('MONEY_PUBLIC_STYLE_MISSING');
@@ -110,6 +117,7 @@ if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered)
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
+if(!capturedUnlock)throw new Error('MONEY_PUBLIC_JOB_UNLOCK_NOT_EXERCISED');
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
@@ -125,7 +133,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,personalizedResult:true,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedUnlock,personalizedResult:true,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
