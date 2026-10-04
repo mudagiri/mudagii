@@ -13,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-money-preview"
   cancel-in-progress: true
 
 jobs:
@@ -22,10 +22,10 @@ jobs:
       ${{
         github.event.workflow_run.conclusion == 'success' &&
         (
-          github.event.workflow_run.name == 'Deploy Mudagiri to GitHub Pages' ||
+          github.event.workflow_run.workflow_id == 366013716 ||
           (
-            github.event.workflow_run.name == 'Validate Diagnosis V2.1' &&
-            github.event.workflow_run.head_branch == 'feature/money-personality-pilot'
+            github.event.workflow_run.workflow_id == 369191527 &&
+            github.event.workflow_run.event == 'pull_request'
           )
         )
       }}
