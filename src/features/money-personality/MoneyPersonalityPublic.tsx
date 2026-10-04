@@ -9,7 +9,11 @@ import {
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
 import {buildMoneyResultContent} from './resultContentV1';
+import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
+import {JOB_UNLOCK_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
+import './mudagiri-motion.css';
+import './personality-mudagiri.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -57,6 +61,7 @@ export default function MoneyPersonalityPublic(){
   const [selected,setSelected]=useState<Choice|null>(null);
   const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);
   const [committing,setCommitting]=useState(false);
+  const [resultReady,setResultReady]=useState(false);
   const timerRef=useRef<number|null>(null);
 
   const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
@@ -79,10 +84,11 @@ export default function MoneyPersonalityPublic(){
     setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});
     return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)};
   },[targetKey]);
+  useEffect(()=>{if(!done)setResultReady(false)},[done]);
 
   const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;
-  const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};
-  const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
+  const startNew=()=>{setResultReady(false);setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};
+  const resume=()=>{setResultReady(false);setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
   const goBack=()=>{
     if(committing||state.history.length===0)return;
     const last=state.history[state.history.length-1];
@@ -116,14 +122,16 @@ export default function MoneyPersonalityPublic(){
   };
 
   if(!active)return <Intro hasResume={hasSavedProgress} onStart={startNew} onResume={resume}/>;
+  if(done&&!resultReady)return <JobUnlockScreen jobName={evaluation.jobName||'MUDAGIRI JOB'} onComplete={()=>setResultReady(true)}/>;
   if(done)return <Result evaluation={evaluation} onRestart={startNew} debug={debug}/>;
   if(pendingSeparatorId)return <SeparatorScreen id={pendingSeparatorId as SeparatorId} participantId={participantId} evaluation={evaluation} selected={separatorSelected} onSelect={(v)=>commitSeparator(pendingSeparatorId as SeparatorId,v)} onBack={goBack} canBack={state.history.length>0} progress={progress} debug={debug}/>;
-  if(!targetItem)return <main className="mpp-page"><section className="mpp-card"><p>JOBを解析しています…</p></section></main>;
+  if(!targetItem)return <main className="mpp-page"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>JOBを解析しています…</p></section></main>;
 
   const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;
   return <main className="mpp-page"><section className="mpp-shell">
     <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
     {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
+    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/></div>
     <article className="mpp-question-card">
       {targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} 
       {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>} 
@@ -138,7 +146,8 @@ function QuestionHeader({phase,progress,onBack,canBack}:{phase:string;progress:n
 
 function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;onResume:()=>void}){
   return <main className="mpp-page"><section className="mpp-card mpp-intro">
-    <div className="mpp-kicker">MUDAGIRI LEGEND / JOB DIAGNOSIS</div><div className="mpp-rune" aria-hidden="true">✦</div>
+    <div className="mpp-kicker">MUDAGIRI LEGEND / JOB DIAGNOSIS</div>
+    <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
     <h1>あなたの<br/><span>MUDAGIRI JOB</span>を解放</h1>
     <p className="mpp-lead">お金の判断パターンから、ムダギリ伝説の8つのクラスのうち、あなたのJOBを解放します。</p>
     <div className="mpp-meta"><div><b>約5分</b><span>基本30問＋必要な分だけ</span></div><div><b>回答適応型</b><span>あなたに合わせて進行</span></div></div>
@@ -164,8 +173,28 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
   return <main className="mpp-page"><section className="mpp-shell"><QuestionHeader phase="FINAL / CLASS SYNC" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
+    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/></div>
     <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={selected===p.left.value?'selected':''} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={selected===p.right.value?'selected':''} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
     <p className="mpp-footnote">両方のスコアはそのまま残します。ここではJOB上の表現だけを決めます。</p>
+  </section></main>;
+}
+
+function JobUnlockScreen({jobName,onComplete}:{jobName:string;onComplete:()=>void}){
+  const [step,setStep]=useState(0);
+  const current=JOB_UNLOCK_SEQUENCE[Math.min(step,JOB_UNLOCK_SEQUENCE.length-1)];
+  useEffect(()=>{
+    const t=window.setTimeout(()=>{
+      if(step<JOB_UNLOCK_SEQUENCE.length-1)setStep(step+1);
+      else{window.scrollTo({top:0,behavior:'auto'});onComplete()}
+    },current.holdMs);
+    return ()=>window.clearTimeout(t);
+  },[step]);
+  const headline=current.key==='think'?'JOBを最終解析中':current.key==='unlock'?'CLASS SIGNAL FOUND':`${jobName} 解放！`;
+  const sub=current.key==='think'?'回答の組み合わせを照合しています…':current.key==='unlock'?'あなたのクラスを検出しました':'MUDAGIRI CLASS UNLOCKED';
+  return <main className="mpp-job-unlock"><section className="mpp-job-unlock-card">
+    <MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>
+    <div className="mpp-job-unlock-copy">{sub}</div><h2>{headline}</h2><div className="mpp-job-unlock-scan"/>
+    <p>まもなく結果を表示します。</p>
   </section></main>;
 }
 
@@ -181,14 +210,19 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION,content.axisInsights[1]],
     ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS,content.axisInsights[2]],
   ] as const;
-  return <main className="mpp-page"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">MUDAGIRI CLASS UNLOCKED</div><div className="mpp-job-no">JOB #{JOB_NUMBER[job]}</div><div className="mpp-emblem" aria-hidden="true">✦</div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
+  return <main className="mpp-page"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">MUDAGIRI CLASS UNLOCKED</div><div className="mpp-job-no">JOB #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
     <p className="mpp-result-headline">{content.headline}</p>
+    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div>
     <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{MUDAGIRI_LINE[job]}」</p></div>
+    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultStyle} alt=""/></div>
     <div className="mpp-style-row"><div><span>主属性</span><b>{meta.icon} {meta.label} STYLE</b></div><div><span>副属性</span><b>{sub.icon} {sub.label}</b></div></div>
     <div className="mpp-style-detail"><p>{content.primaryStyleLine}</p><p>{content.secondaryStyleLine}</p></div>
     <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>死角</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
+    <div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultAxes} alt=""/></div>
     <div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,axis,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div>
+    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.nextMove} alt=""/></div>
     <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
+    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.householdCta} alt=""/></div>
     <div className="mpp-next-quest"><span>NEXT QUEST</span><b>実際の家計には、どんな敵が潜んでいる？</b><p>JOBは「攻略の仕方」。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
     <button className="mpp-primary" onClick={()=>{window.location.href=householdUrl()}}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>このJOBをシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
     {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultContentVersion:content.version},null,2)}</pre>}
