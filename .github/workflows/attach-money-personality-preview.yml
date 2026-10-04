@@ -18,17 +18,7 @@ concurrency:
 
 jobs:
   build:
-    if: >-
-      ${{
-        github.event.workflow_run.conclusion == 'success' &&
-        (
-          github.event.workflow_run.name == 'Deploy Mudagiri to GitHub Pages' ||
-          (
-            github.event.workflow_run.name == 'Validate Diagnosis V2.1' &&
-            github.event.workflow_run.head_branch == 'feature/money-personality-pilot'
-          )
-        )
-      }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout production main
