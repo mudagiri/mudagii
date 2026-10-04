@@ -18,9 +18,19 @@ await page.locator('.mpp-cog-note').waitFor({state:'visible',timeout:5000});
 await page.getByRole('button',{name:'意味が取りづらい'}).click();
 
 let answered=0;
+let capturedUnlock=false;
 for(let guard=0;guard<80;guard++){
   const result=page.locator('.mpp-result');
   if(await result.count()&&await result.isVisible())break;
+  const unlock=page.locator('.mpp-job-unlock');
+  if(await unlock.count()&&await unlock.isVisible()){
+    if(!capturedUnlock){
+      await page.screenshot({path:`${OUT}/00-job-unlock.png`,fullPage:true});
+      capturedUnlock=true;
+    }
+    await page.locator('.mpp-result').waitFor({state:'visible',timeout:6000});
+    break;
+  }
   const separator=page.locator('.mpp-separator-options button');
   if(await separator.count()){
     await separator.first().click();answered++;await page.waitForTimeout(170);continue;
@@ -36,6 +46,7 @@ for(let guard=0;guard<80;guard++){
   throw new Error('COGNITIVE_PUBLIC_NO_ANSWER_CONTROL');
 }
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+if(!capturedUnlock)throw new Error('COGNITIVE_JOB_UNLOCK_NOT_EXERCISED');
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).waitFor({state:'visible',timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).click();
@@ -72,7 +83,7 @@ if(data.payload?.quality?.parentSessionId!==data.parent?.sessionId)throw new Err
 if((data.payload?.quality?.flaggedItemCount||0)<1)throw new Error('COGNITIVE_FLAG_MISSING');
 if(!data.local?.submittedAt)throw new Error('COGNITIVE_LOCAL_SUBMITTED_MISSING');
 if(answered<30)throw new Error('COGNITIVE_COMPLETED_BEFORE_CORE30:'+answered);
-const report={ok:true,flow:'MUDAGIRI_MONEY_COGNITIVE_BROWSER_V1',answered,ratingCount,flaggedItemCount:data.payload.quality.flaggedItemCount,jobCode:data.payload.quality.jobCode,primaryStyle:data.payload.quality.primaryStyle,parentVariant:data.parent.quality.variant};
+const report={ok:true,flow:'MUDAGIRI_MONEY_COGNITIVE_BROWSER_V1',answered,capturedUnlock,ratingCount,flaggedItemCount:data.payload.quality.flaggedItemCount,jobCode:data.payload.quality.jobCode,primaryStyle:data.payload.quality.primaryStyle,parentVariant:data.parent.quality.variant};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify(report));
