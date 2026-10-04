@@ -1,1 +1,74 @@
 .mpp-mudagiri{position:relative;z-index:2;display:grid;place-items:end center;pointer-events:none;margin-inline:auto}.mpp-mudagiri img{width:100%;height:auto;display:block}.mpp-mudagiri img[data-load-error="1"]{opacity:.2}.mpp-mudagiri--hero{width:clamp(138px,40vw,204px)}.mpp-mudagiri--question{width:clamp(82px,23vw,112px);margin-bottom:8px}.mpp-mudagiri--section{width:clamp(98px,28vw,142px)}.mpp-mudagiri--mini{width:68px}.mpp-measurement-companion{min-height:88px;display:grid;place-items:end center;overflow:visible}.mpp-result-companion{display:grid;place-items:center;margin:10px auto 4px}.mpp-result-companion--tight{margin-top:4px;margin-bottom:-2px}.mpp-profile-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:start}.mpp-profile-row+.mpp-profile-row{margin-top:8px}.mpp-profile-row .mpp-mudagiri{margin-top:2px}.mpp-transition-scene{min-height:100dvh;position:relative;isolation:isolate;display:flex;justify-content:center;align-items:center;background-color:#09090b;background-size:cover;background-position:center center;background-repeat:no-repeat;color:#fff;padding:24px}.mpp-transition-scene::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,6,9,.48),rgba(8,8,12,.68) 56%,rgba(5,5,8,.82))}.mpp-class-unlock{background-image:url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp')}.mpp-next-quest-departure{background-image:url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp')}.mpp-transition-card{width:min(100%,440px);text-align:center;padding:24px 18px;border:1px solid rgba(251,191,36,.28);border-radius:20px;background:linear-gradient(180deg,rgba(9,9,11,.48),rgba(9,9,11,.7));box-shadow:0 22px 70px rgba(0,0,0,.42);backdrop-filter:blur(3px)}.mpp-transition-copy{margin:18px 0 0;font-size:11px;font-weight:900;letter-spacing:.16em;color:#fbbf24;text-shadow:0 1px 10px #000}.mpp-transition-scene h2{margin:8px 0 0;font-size:clamp(26px,8vw,40px);line-height:1.1;text-shadow:0 2px 14px #000}.mpp-transition-scene p{color:#d4d4d8;font-size:12px;line-height:1.6;margin-top:10px;text-shadow:0 1px 8px #000}.mpp-transition-scan{height:1px;width:min(240px,70%);margin:18px auto 0;background:linear-gradient(90deg,transparent,#fbbf24,transparent);box-shadow:0 0 18px rgba(251,191,36,.35);animation:mpp-transition-scan 900ms ease-in-out infinite alternate}@keyframes mpp-transition-scan{from{transform:scaleX(.55);opacity:.45}to{transform:scaleX(1);opacity:1}}.mpp-next-quest-departure .mpp-transition-copy{margin-top:0}.mpp-next-quest-departure .mpp-mudagiri{margin-top:10px;margin-bottom:8px}@media(max-width:390px){.mpp-mudagiri--hero{width:146px}.mpp-mudagiri--question{width:88px}.mpp-mudagiri--section{width:108px}.mpp-mudagiri--mini{width:62px}.mpp-measurement-companion{min-height:82px}.mpp-profile-row{grid-template-columns:64px 1fr}.mpp-transition-scene{padding:18px 12px}.mpp-transition-card{padding:22px 14px}.mpp-class-unlock,.mpp-next-quest-departure{background-position:center top}}@media(prefers-reduced-motion:reduce){.mpp-transition-scan{animation:none}.mpp-mudagiri .mdg-motion{animation:none!important;transform:none!important}}
+
+/* MONEY PERSONALITY RPG SHELL V2
+   Visual-only layer. Scoring, adaptive order, 130ms commit, separators and handoff logic are untouched. */
+:root{--mpp-rpg-gold:#f6c64d;--mpp-rpg-gold-dark:#8c6a2e;--mpp-rpg-ink:#0b0d10;--mpp-rpg-panel:rgba(14,14,16,.90);--mpp-rpg-serif:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif}
+
+.mpp-page--guild{background-image:linear-gradient(180deg,rgba(5,6,9,.32),rgba(6,7,10,.24) 42%,rgba(5,6,9,.62) 100%),var(--mpp-bg-guild)!important;background-position:center top!important;background-size:cover!important;background-repeat:no-repeat!important}
+.mpp-page--guild .mpp-shell{padding-top:clamp(14px,3.2dvh,34px)}
+.mpp-page--guild .mpp-intro{align-self:center;margin-block:clamp(18px,5dvh,56px);overflow:visible;border:2px solid var(--mpp-rpg-gold-dark);border-radius:6px;background:linear-gradient(180deg,rgba(19,18,16,.88),rgba(10,11,14,.93));box-shadow:inset 0 0 0 1px rgba(246,198,77,.52),inset 0 0 0 6px rgba(55,42,22,.34),0 22px 60px rgba(0,0,0,.48);backdrop-filter:blur(1.5px)}
+.mpp-page--guild .mpp-intro::before,.mpp-question-card::before{content:"✦";position:absolute;z-index:3;left:50%;top:-14px;transform:translateX(-50%);display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--mpp-rpg-gold-dark);background:#12110e;color:var(--mpp-rpg-gold);font-family:Georgia,serif;font-size:15px;box-shadow:0 0 0 3px rgba(15,13,9,.85),0 3px 12px rgba(0,0,0,.55)}
+.mpp-kicker,.mpp-header span,.mpp-next-quest span,.mpp-transition-copy{font-family:Georgia,"Times New Roman",serif;letter-spacing:.16em;text-shadow:0 2px 8px rgba(0,0,0,.9)}
+.mpp-intro h1,.mpp-result h1,.mpp-scenario,.mpp-question-card h2,.mpp-transition-scene h2{font-family:var(--mpp-rpg-serif);font-feature-settings:"palt";text-shadow:0 2px 12px rgba(0,0,0,.78)}
+.mpp-intro h1{font-size:clamp(36px,10vw,48px)!important;line-height:1.14!important;letter-spacing:.01em!important;margin-top:8px!important}
+.mpp-intro h1 span{color:var(--mpp-rpg-gold);text-shadow:0 0 18px rgba(246,198,77,.16),0 2px 10px #000}
+.mpp-lead{font-family:var(--mpp-rpg-serif);font-size:14px!important;line-height:1.9!important;color:#f2eee4!important}
+.mpp-intro .mpp-mudagiri--hero{width:clamp(172px,46vw,224px);margin-top:8px;margin-bottom:-2px;filter:drop-shadow(0 13px 11px rgba(0,0,0,.5))}
+.mpp-mudagiri img[data-load-error="1"]{display:none!important}
+
+.mpp-meta>div,.mpp-poles>div,.mpp-style-row>div,.mpp-next-quest{border-radius:4px!important;border-color:#705c35!important;background:linear-gradient(180deg,rgba(17,17,18,.94),rgba(9,10,12,.94))!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.10)!important}
+.mpp-meta b,.mpp-points p,.mpp-poles span{font-family:var(--mpp-rpg-serif)}
+.mpp-points{border-color:#65512f!important}
+.mpp-points i{border-radius:2px!important;border-color:#80672f!important;color:var(--mpp-rpg-gold)!important;background:rgba(246,198,77,.05)}
+
+.mpp-header{border:1px solid #765f33!important;border-radius:4px!important;background:linear-gradient(180deg,rgba(19,17,13,.91),rgba(9,10,12,.91))!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.12),0 8px 24px rgba(0,0,0,.26)!important;padding:9px 10px!important}
+.mpp-header small{font-family:var(--mpp-rpg-serif);color:#eee8d9!important}
+.mpp-header>b{font-family:Georgia,serif!important;color:#fff7df!important}
+.mpp-back{border-radius:3px!important;border-color:#766037!important;background:linear-gradient(180deg,#1b1915,#0d0e10)!important;color:#f3dfaa!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.12)}
+.mpp-progress{height:9px!important;border-radius:2px!important;border-color:#69562f!important;background:#090b0e!important;box-shadow:inset 0 1px 5px rgba(0,0,0,.9)!important;margin-bottom:10px!important}
+.mpp-progress i{background:linear-gradient(90deg,#c58b18,#ffd95e 58%,#fff0a7)!important;box-shadow:0 0 12px rgba(246,198,77,.42)!important}
+
+.mpp-measurement-companion{min-height:118px!important;margin:0 0 -14px!important;display:grid!important;place-items:end center!important;overflow:visible!important;position:relative;z-index:4}
+.mpp-measurement-companion .mpp-mudagiri--question{width:clamp(106px,29vw,128px)!important;margin-bottom:0!important;filter:drop-shadow(0 11px 9px rgba(0,0,0,.55))}
+.mpp-question-card{position:relative!important;overflow:visible!important;border:2px solid var(--mpp-rpg-gold-dark)!important;border-radius:6px!important;background:linear-gradient(180deg,rgba(20,19,17,.96),rgba(10,11,14,.97))!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.38),inset 0 0 0 6px rgba(60,45,22,.24),0 20px 46px rgba(0,0,0,.44)!important;padding:25px 15px 17px!important}
+.mpp-family-label{font-family:var(--mpp-rpg-serif);color:#d8ccb1!important;font-size:12px!important;letter-spacing:.04em!important;margin-bottom:10px!important}
+.mpp-scenario,.mpp-question-card h2{font-size:clamp(18px,5.2vw,22px)!important;line-height:1.72!important;color:#fffdf5!important;margin:5px auto 16px!important}
+.mpp-poles{gap:8px!important;margin-bottom:12px!important}
+.mpp-poles>div{min-height:98px!important;padding:11px 10px!important}
+.mpp-poles b{border-radius:2px!important;border-color:#7f6737!important;color:var(--mpp-rpg-gold)!important;background:#0b0c0f;font-family:Georgia,serif!important}
+.mpp-poles span{font-size:13px!important;line-height:1.62!important;color:#f1eee6!important}
+
+/* One interaction grammar for every scored question: five full-width vertical command rows. */
+.mpp-scale{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+.mpp-scale button,.mpp-answer-list button,.mpp-separator-options button{border:1px solid #66583e!important;border-radius:4px!important;background:linear-gradient(180deg,#171719,#0d0e11)!important;color:#f5f1e8!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.018);transition:transform .08s ease,border-color .1s ease,background .1s ease!important}
+.mpp-scale button{height:auto!important;min-height:58px!important;display:grid!important;grid-template-columns:46px 1fr!important;align-items:center!important;text-align:left!important;padding:8px 12px!important}
+.mpp-scale button b{margin:0!important;display:grid!important;place-items:center!important;width:32px;height:32px;border:1px solid #7a6336;border-radius:2px;color:var(--mpp-rpg-gold)!important;background:#0b0c0f;font-family:Georgia,serif!important;font-size:16px!important}
+.mpp-scale button span{margin:0!important;font-family:var(--mpp-rpg-serif);font-size:14px!important;line-height:1.45!important;color:#eee9dd!important;word-break:normal!important}
+.mpp-answer-list{gap:8px!important}
+.mpp-answer-list button{grid-template-columns:46px 1fr!important;min-height:58px!important;padding:8px 12px!important}
+.mpp-answer-list button b{display:grid;place-items:center;width:32px;height:32px;border:1px solid #7a6336;border-radius:2px;background:#0b0c0f;color:var(--mpp-rpg-gold)!important;font-family:Georgia,serif!important}
+.mpp-answer-list button span{font-family:var(--mpp-rpg-serif);font-size:14px!important;line-height:1.5!important;color:#eee9dd!important}
+.mpp-separator-options button{font-family:var(--mpp-rpg-serif);font-size:14px!important}
+.mpp-scale button.selected,.mpp-answer-list button.selected,.mpp-separator-options button.selected{border-color:var(--mpp-rpg-gold)!important;background:linear-gradient(180deg,rgba(100,73,22,.82),rgba(45,33,16,.94))!important;box-shadow:inset 0 0 0 1px rgba(255,227,134,.22),0 0 18px rgba(246,198,77,.15)!important}
+.mpp-scale button:active,.mpp-answer-list button:active,.mpp-separator-options button:active{transform:translateY(1px) scale(.997)}
+.mpp-footnote{font-family:var(--mpp-rpg-serif);color:#d5cdbd!important;font-size:11px!important;text-shadow:0 2px 8px #000!important;margin-top:15px!important}
+
+.mpp-primary,.mpp-secondary{border-radius:4px!important;font-family:var(--mpp-rpg-serif);letter-spacing:.02em}
+.mpp-primary{border:2px solid #ffdf82!important;background:linear-gradient(180deg,#ffd55c,#d99512)!important;box-shadow:inset 0 0 0 2px rgba(91,55,5,.20),0 10px 28px rgba(0,0,0,.34),0 0 18px rgba(246,198,77,.12)!important}
+.mpp-secondary{border-color:#6e5a33!important;background:linear-gradient(180deg,#181714,#0d0e10)!important;color:#f2e8cf!important}
+
+.mpp-transition-scene::before{background:linear-gradient(180deg,rgba(6,6,9,.25),rgba(8,8,12,.45) 56%,rgba(5,5,8,.68))!important}
+.mpp-transition-card{border:2px solid var(--mpp-rpg-gold-dark)!important;border-radius:6px!important;background:linear-gradient(180deg,rgba(18,16,12,.74),rgba(8,9,12,.82))!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.32),inset 0 0 0 6px rgba(60,45,22,.20),0 22px 70px rgba(0,0,0,.42)!important}
+
+@media(max-width:390px){
+  .mpp-page--guild .mpp-shell{padding-top:14px}
+  .mpp-page--guild .mpp-intro{margin-block:24px}
+  .mpp-intro .mpp-mudagiri--hero{width:168px}
+  .mpp-measurement-companion{min-height:112px!important;margin-bottom:-13px!important}
+  .mpp-measurement-companion .mpp-mudagiri--question{width:112px!important}
+  .mpp-question-card{padding:23px 13px 15px!important}
+  .mpp-poles>div{min-height:92px!important}
+  .mpp-scale button,.mpp-answer-list button{min-height:56px!important}
+}
+
+@media(prefers-reduced-motion:reduce){.mpp-scale button,.mpp-answer-list button,.mpp-separator-options button{transition:none!important}}
