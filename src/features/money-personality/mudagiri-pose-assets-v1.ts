@@ -2,7 +2,8 @@ import type {MudagiriPoseId} from './mudagiri-personality-visual-v1';
 
 const VITE_BASE=((import.meta as any).env?.BASE_URL as string|undefined)||'./';
 const NORMALIZED_BASE=VITE_BASE.endsWith('/')?VITE_BASE:`${VITE_BASE}/`;
-export const MUDAGIRI_POSE_WEB_BASE=`${NORMALIZED_BASE}assets/mudagiri/poses/v1` as const;
+const MUDAGIRI_ASSET_BASE=`${NORMALIZED_BASE}assets/mudagiri` as const;
+export const MUDAGIRI_POSE_WEB_BASE=`${MUDAGIRI_ASSET_BASE}/poses/v1` as const;
 
 const FILES:Record<MudagiriPoseId,string>={
   IDLE_01:'MUDAGIRI_POSE_01_IDLE_01.webp',
@@ -35,3 +36,9 @@ const FILES:Record<MudagiriPoseId,string>={
 export const MUDAGIRI_POSE_ASSET=Object.fromEntries(
   Object.entries(FILES).map(([key,file])=>[key,`${MUDAGIRI_POSE_WEB_BASE}/${file}`]),
 ) as Record<MudagiriPoseId,string>;
+
+export const MUDAGIRI_BACKGROUND_ASSET={
+  guildHall:`${MUDAGIRI_ASSET_BASE}/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp`,
+  classUnlock:`${MUDAGIRI_ASSET_BASE}/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp`,
+  nextQuest:`${MUDAGIRI_ASSET_BASE}/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp`,
+} as const;
