@@ -5,9 +5,10 @@ import './mudagiri-background-runtime.css';
 
 if(typeof document!=='undefined'){
   const style=document.documentElement.style;
-  style.setProperty('--mpp-bg-guild',`url("${MUDAGIRI_BACKGROUND_ASSET.guildHall}")`);
-  style.setProperty('--mpp-bg-class-unlock',`url("${MUDAGIRI_BACKGROUND_ASSET.classUnlock}")`);
-  style.setProperty('--mpp-bg-next-quest',`url("${MUDAGIRI_BACKGROUND_ASSET.nextQuest}")`);
+  const absolute=(src:string)=>new URL(src,window.location.href).href;
+  style.setProperty('--mpp-bg-guild',`url("${absolute(MUDAGIRI_BACKGROUND_ASSET.guildHall)}")`);
+  style.setProperty('--mpp-bg-class-unlock',`url("${absolute(MUDAGIRI_BACKGROUND_ASSET.classUnlock)}")`);
+  style.setProperty('--mpp-bg-next-quest',`url("${absolute(MUDAGIRI_BACKGROUND_ASSET.nextQuest)}")`);
 }
 
 type Props={visual:MudagiriVisualSpec;alt?:string;className?:string};
