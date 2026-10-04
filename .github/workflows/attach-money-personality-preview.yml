@@ -13,12 +13,22 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-money-preview"
   cancel-in-progress: true
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        (
+          github.event.workflow_run.workflow_id == 366013716 ||
+          (
+            github.event.workflow_run.workflow_id == 369191527 &&
+            github.event.workflow_run.event == 'pull_request'
+          )
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout production main
