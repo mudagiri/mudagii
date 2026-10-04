@@ -1,6 +1,8 @@
 import type {MudagiriPoseId} from './mudagiri-personality-visual-v1';
 
-export const MUDAGIRI_POSE_WEB_BASE='/assets/mudagiri/poses/v1' as const;
+const VITE_BASE=((import.meta as any).env?.BASE_URL as string|undefined)||'./';
+const NORMALIZED_BASE=VITE_BASE.endsWith('/')?VITE_BASE:`${VITE_BASE}/`;
+export const MUDAGIRI_POSE_WEB_BASE=`${NORMALIZED_BASE}assets/mudagiri/poses/v1` as const;
 
 const FILES:Record<MudagiriPoseId,string>={
   IDLE_01:'MUDAGIRI_POSE_01_IDLE_01.webp',
