@@ -9,6 +9,7 @@ import {
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
 import {buildMoneyResultExperienceV2} from './resultExperienceV2';
+import {refineMoneyResultExperienceV3} from './resultNarrativeV3';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {CLASS_UNLOCK_SEQUENCE,NEXT_QUEST_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
@@ -218,7 +219,7 @@ function NextQuestDeparture({onComplete}:{onComplete:()=>void}){
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
   const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
-  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultExperienceV2(evaluation);
+  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=refineMoneyResultExperienceV3(evaluation,buildMoneyResultExperienceV2(evaluation));
   if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
   if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
   const share=async()=>{
