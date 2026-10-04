@@ -39,9 +39,9 @@ async function screenshot(name){
 await page.goto(base+'?adaptive=money-type&debug=1',{waitUntil:'networkidle'});
 await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
 await page.reload({waitUntil:'networkidle'});
-await page.getByRole('button',{name:'JOB診断をはじめる'}).waitFor({state:'visible'});
+await page.getByRole('button',{name:'診断をはじめる'}).waitFor({state:'visible'});
 await screenshot('01-intro');
-await page.getByRole('button',{name:'JOB診断をはじめる'}).click();
+await page.getByRole('button',{name:'診断をはじめる'}).click();
 await page.locator('.mpp-question-card').waitFor({state:'visible'});
 await screenshot('02-core-question');
 
@@ -51,17 +51,9 @@ let sawSeparator=false;
 let resumeChecked=false;
 let capturedAdaptive=false;
 let capturedSeparator=false;
-let capturedUnlock=false;
 for(let guard=0;guard<80;guard++){
   const result=page.locator('.mpp-result');
   if(await result.count()&&await result.isVisible())break;
-
-  const unlock=page.locator('.mpp-job-unlock');
-  if(await unlock.count()&&await unlock.isVisible()){
-    if(!capturedUnlock){await screenshot('05-job-unlock');capturedUnlock=true;}
-    await page.locator('.mpp-result').waitFor({state:'visible',timeout:6000});
-    break;
-  }
 
   const debug=page.locator('.mpp-debug');
   const debugText=await debug.count()?await debug.innerText():'';
@@ -105,9 +97,9 @@ for(let guard=0;guard<80;guard++){
 
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
-await screenshot('06-result');
+await screenshot('05-result');
 const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
-if(!text.includes('MUDAGIRI CLASS UNLOCKED'))throw new Error('MONEY_PUBLIC_RESULT_UNLOCK_MISSING');
+if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
 if(!text.includes('主属性')||!text.includes('副属性'))throw new Error('MONEY_PUBLIC_STYLE_MISSING');
 if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('死角')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
@@ -117,7 +109,15 @@ if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered)
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
-if(!capturedUnlock)throw new Error('MONEY_PUBLIC_JOB_UNLOCK_NOT_EXERCISED');
+
+// CLASS is deliberately introduced only after the user chooses Chapter 2.
+await page.getByRole('button',{name:'家計クエストへ進む'}).click();
+await page.locator('.mpp-class-unlock').waitFor({state:'visible',timeout:3000});
+await screenshot('06-class-unlock');
+if((await page.locator('.mpp-class-unlock').getAttribute('data-scene'))!=='class-unlock')throw new Error('MONEY_PUBLIC_CLASS_SCENE_BAD');
+await page.locator('.mpp-next-quest-departure').waitFor({state:'visible',timeout:5000});
+await screenshot('07-next-quest');
+if((await page.locator('.mpp-next-quest-departure').getAttribute('data-scene'))!=='next-quest')throw new Error('MONEY_PUBLIC_NEXT_QUEST_SCENE_BAD');
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
@@ -133,7 +133,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedUnlock,personalizedResult:true,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedClassUnlock:true,capturedNextQuest:true,personalizedResult:true,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));

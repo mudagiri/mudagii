@@ -52,8 +52,8 @@ for(let n=0;n<500;n++){
 
 assert(publicPhaseLabel(0)==='QUEST 1 / MONEY MAP','phase 1 broken');
 assert(publicPhaseLabel(10)==='QUEST 2 / CHOICE MAP','phase 2 broken');
-assert(publicPhaseLabel(20)==='QUEST 3 / JOB MAP','phase 3 broken');
-assert(publicPhaseLabel(30)==='FINAL / JOB ANALYSIS','final phase broken');
+assert(publicPhaseLabel(20)==='QUEST 3 / TYPE MAP','phase 3 broken');
+assert(publicPhaseLabel(30)==='FINAL / TYPE ANALYSIS','final phase broken');
 
 let last=-1;
 for(let n=0;n<=30;n++){

@@ -161,8 +161,8 @@ export function orderAdaptiveItemIds(ids:readonly string[],participantId:string)
 export function publicPhaseLabel(coreAnswered:number){
   if(coreAnswered<10)return 'QUEST 1 / MONEY MAP';
   if(coreAnswered<20)return 'QUEST 2 / CHOICE MAP';
-  if(coreAnswered<30)return 'QUEST 3 / JOB MAP';
-  return 'FINAL / JOB ANALYSIS';
+  if(coreAnswered<30)return 'QUEST 3 / TYPE MAP';
+  return 'FINAL / TYPE ANALYSIS';
 }
 
 /**

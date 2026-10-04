@@ -10,7 +10,7 @@ import {
 } from './publicFlowV1';
 import {buildMoneyResultContent} from './resultContentV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
-import {JOB_UNLOCK_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
+import {CLASS_UNLOCK_SEQUENCE,NEXT_QUEST_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
 import './mudagiri-motion.css';
 import './personality-mudagiri.css';
@@ -61,7 +61,6 @@ export default function MoneyPersonalityPublic(){
   const [selected,setSelected]=useState<Choice|null>(null);
   const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);
   const [committing,setCommitting]=useState(false);
-  const [resultReady,setResultReady]=useState(false);
   const timerRef=useRef<number|null>(null);
 
   const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
@@ -84,11 +83,10 @@ export default function MoneyPersonalityPublic(){
     setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});
     return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)};
   },[targetKey]);
-  useEffect(()=>{if(!done)setResultReady(false)},[done]);
 
   const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;
-  const startNew=()=>{setResultReady(false);setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};
-  const resume=()=>{setResultReady(false);setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
+  const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};
+  const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
   const goBack=()=>{
     if(committing||state.history.length===0)return;
     const last=state.history[state.history.length-1];
@@ -122,13 +120,12 @@ export default function MoneyPersonalityPublic(){
   };
 
   if(!active)return <Intro hasResume={hasSavedProgress} onStart={startNew} onResume={resume}/>;
-  if(done&&!resultReady)return <JobUnlockScreen jobName={evaluation.jobName||'MUDAGIRI JOB'} onComplete={()=>setResultReady(true)}/>;
   if(done)return <Result evaluation={evaluation} onRestart={startNew} debug={debug}/>;
   if(pendingSeparatorId)return <SeparatorScreen id={pendingSeparatorId as SeparatorId} participantId={participantId} evaluation={evaluation} selected={separatorSelected} onSelect={(v)=>commitSeparator(pendingSeparatorId as SeparatorId,v)} onBack={goBack} canBack={state.history.length>0} progress={progress} debug={debug}/>;
-  if(!targetItem)return <main className="mpp-page"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>JOBを解析しています…</p></section></main>;
+  if(!targetItem)return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>お金タイプを解析しています…</p></section></main>;
 
   const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;
-  return <main className="mpp-page"><section className="mpp-shell">
+  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell">
     <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
     {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
     <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/></div>
@@ -141,18 +138,18 @@ export default function MoneyPersonalityPublic(){
 }
 
 function QuestionHeader({phase,progress,onBack,canBack}:{phase:string;progress:number;onBack:()=>void;canBack:boolean}){
-  return <><header className="mpp-header"><button className="mpp-back" disabled={!canBack} onClick={onBack} aria-label="1つ前の質問に戻る">←</button><div><span>{phase}</span><small>{progress<84?'JOBの輪郭を読み取り中':'あなたに合わせて最終解析中'}</small></div><b>{Math.round(progress)}%</b></header><div className="mpp-progress"><i style={{width:progress+'%'}}/></div></>;
+  return <><header className="mpp-header"><button className="mpp-back" disabled={!canBack} onClick={onBack} aria-label="1つ前の質問に戻る">←</button><div><span>{phase}</span><small>{progress<84?'お金タイプの輪郭を読み取り中':'あなたに合わせて最終解析中'}</small></div><b>{Math.round(progress)}%</b></header><div className="mpp-progress"><i style={{width:progress+'%'}}/></div></>;
 }
 
 function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;onResume:()=>void}){
-  return <main className="mpp-page"><section className="mpp-card mpp-intro">
-    <div className="mpp-kicker">MUDAGIRI LEGEND / JOB DIAGNOSIS</div>
+  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card mpp-intro">
+    <div className="mpp-kicker">CHAPTER 1 / MONEY PERSONALITY</div>
     <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
-    <h1>あなたの<br/><span>MUDAGIRI JOB</span>を解放</h1>
-    <p className="mpp-lead">お金の判断パターンから、ムダギリ伝説の8つのクラスのうち、あなたのJOBを解放します。</p>
+    <h1>お金の<br/><span>性格診断</span></h1>
+    <p className="mpp-lead">お金の「使い方・決め方・把握のクセ」から、あなたのお金タイプを見つけます。</p>
     <div className="mpp-meta"><div><b>約5分</b><span>基本30問＋必要な分だけ</span></div><div><b>回答適応型</b><span>あなたに合わせて進行</span></div></div>
-    <div className="mpp-points"><p><i>01</i> 正解・不正解なし</p><p><i>02</i> 「未来も今も強い」をそのまま残す</p><p><i>03</i> 最後にJOB＋主属性＋副属性を解放</p></div>
-    {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>JOB診断をはじめる</button>}
+    <div className="mpp-points"><p><i>01</i> 正解・不正解なし</p><p><i>02</i> 似た傾向が両方強くても、そのまま残す</p><p><i>03</i> 最後にお金タイプと攻略ヒントがわかる</p></div>
+    {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>診断をはじめる</button>}
     <p className="mpp-intro-note">回答は端末内に自動保存されます。途中で閉じても続きから再開できます。</p>
   </section></main>;
 }
@@ -172,45 +169,68 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   const item=id==='SEP_STYLE'&&evaluation.style.primary&&evaluation.style.secondary?buildStyleSeparator(evaluation.style.primary,evaluation.style.secondary):id!=='SEP_STYLE'?AXIS_SEPARATOR_ITEMS[id]:null;
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
-  return <main className="mpp-page"><section className="mpp-shell"><QuestionHeader phase="FINAL / CLASS SYNC" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
+  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
     <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/></div>
-    <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={selected===p.left.value?'selected':''} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={selected===p.right.value?'selected':''} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
-    <p className="mpp-footnote">両方のスコアはそのまま残します。ここではJOB上の表現だけを決めます。</p>
+    <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
+    <p className="mpp-footnote">両方のスコアはそのまま残します。ここではタイプ上の表現だけを決めます。</p>
   </section></main>;
 }
 
-function JobUnlockScreen({jobName,onComplete}:{jobName:string;onComplete:()=>void}){
+function separatorSelectedClass(selected:string|null,value:string){return selected===value?'selected':''}
+
+function ClassUnlockScreen({adventurerClassName,onComplete}:{adventurerClassName:string;onComplete:()=>void}){
   const [step,setStep]=useState(0);
-  const current=JOB_UNLOCK_SEQUENCE[Math.min(step,JOB_UNLOCK_SEQUENCE.length-1)];
+  const current=CLASS_UNLOCK_SEQUENCE[Math.min(step,CLASS_UNLOCK_SEQUENCE.length-1)];
   useEffect(()=>{
     const t=window.setTimeout(()=>{
-      if(step<JOB_UNLOCK_SEQUENCE.length-1)setStep(step+1);
+      if(step<CLASS_UNLOCK_SEQUENCE.length-1)setStep(step+1);
       else{window.scrollTo({top:0,behavior:'auto'});onComplete()}
     },current.holdMs);
     return ()=>window.clearTimeout(t);
-  },[step]);
-  const headline=current.key==='think'?'JOBを最終解析中':current.key==='unlock'?'CLASS SIGNAL FOUND':`${jobName} 解放！`;
-  const sub=current.key==='think'?'回答の組み合わせを照合しています…':current.key==='unlock'?'あなたのクラスを検出しました':'MUDAGIRI CLASS UNLOCKED';
-  return <main className="mpp-job-unlock"><section className="mpp-job-unlock-card">
+  },[step,current.holdMs,onComplete]);
+  const headline=current.key==='think'?'冒険者CLASSを編成中':current.key==='unlock'?'CLASS SIGNAL FOUND':adventurerClassName;
+  const sub=current.key==='think'?'お金タイプの特性をクエスト用に変換しています…':current.key==='unlock'?'家計クエストでの役割が決まりました':'ADVENTURER CLASS UNLOCKED';
+  return <main className="mpp-transition-scene mpp-class-unlock" data-scene="class-unlock"><section className="mpp-transition-card">
     <MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>
-    <div className="mpp-job-unlock-copy">{sub}</div><h2>{headline}</h2><div className="mpp-job-unlock-scan"/>
-    <p>まもなく結果を表示します。</p>
+    <div className="mpp-transition-copy">{sub}</div><h2>{headline}</h2><div className="mpp-transition-scan"/>
+    <p>このCLASSで第2章へ進みます。</p>
+  </section></main>;
+}
+
+function NextQuestDeparture({onComplete}:{onComplete:()=>void}){
+  const [step,setStep]=useState(0);
+  const current=NEXT_QUEST_SEQUENCE[Math.min(step,NEXT_QUEST_SEQUENCE.length-1)];
+  useEffect(()=>{
+    const t=window.setTimeout(()=>{
+      if(step<NEXT_QUEST_SEQUENCE.length-1)setStep(step+1);
+      else onComplete();
+    },current.holdMs);
+    return ()=>window.clearTimeout(t);
+  },[step,current.holdMs,onComplete]);
+  return <main className="mpp-transition-scene mpp-next-quest-departure" data-scene="next-quest"><section className="mpp-transition-card">
+    <div className="mpp-transition-copy">CHAPTER 2 / NEXT QUEST</div>
+    <MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>
+    <h2>家計クエストへ出発！</h2>
+    <p>次は12カテゴリをスキャンして、改善余地のある敵を探します。</p>
   </section></main>;
 }
 
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
+  const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
   const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultContent(evaluation);
+  if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
+  if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
   const share=async()=>{
-    const text=`私のMUDAGIRI JOBは「${evaluation.jobName}」だった！ ${meta.label} STYLE #ムダギリ診断`;
-    try{if(navigator.share){await navigator.share({title:'ムダギリ診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
+    const text=`私のお金タイプは「${evaluation.jobName}」だった！ ${meta.label} STYLE #ムダギリ診断`;
+    try{if(navigator.share){await navigator.share({title:'ムダギリ｜お金の性格診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
   };
   const axes=[
     ['時間視野','FUTURE','IMMEDIATE',evaluation.axes.TIME,content.axisInsights[0]],
     ['判断根拠','DELIBERATION','INTUITION',evaluation.axes.DECISION,content.axisInsights[1]],
     ['把握リズム','MONITORING','PERIODIC',evaluation.axes.AWARENESS,content.axisInsights[2]],
   ] as const;
-  return <main className="mpp-page"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">MUDAGIRI CLASS UNLOCKED</div><div className="mpp-job-no">JOB #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
+  return <main className="mpp-page" data-scene="result"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1><p className="mpp-job-copy">「{JOB_ONE_LINERS[job]}」</p>
     <p className="mpp-result-headline">{content.headline}</p>
     <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div>
     <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{MUDAGIRI_LINE[job]}」</p></div>
@@ -223,8 +243,8 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.nextMove} alt=""/></div>
     <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
     <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.householdCta} alt=""/></div>
-    <div className="mpp-next-quest"><span>NEXT QUEST</span><b>実際の家計には、どんな敵が潜んでいる？</b><p>JOBは「攻略の仕方」。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
-    <button className="mpp-primary" onClick={()=>{window.location.href=householdUrl()}}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>このJOBをシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
+    <div className="mpp-next-quest"><span>CHAPTER 2 / NEXT QUEST</span><b>次は、実際の家計を冒険しよう。</b><p>このお金タイプをもとに、家計クエストでの「冒険者CLASS」が決まります。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
+    <button className="mpp-primary" onClick={()=>setHandoff('class')}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>この結果をシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
     {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultContentVersion:content.version},null,2)}</pre>}
   </section></main>;
 }

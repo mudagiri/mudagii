@@ -1,4 +1,4 @@
-/* MUDAGIRI motion layer for Money Personality Public V1 */
+/* MUDAGIRI shared motion layer V1.1 */
 .mdg-motion{display:block;max-width:100%;height:auto;transform-origin:50% 92%;backface-visibility:hidden}
 .mdg-motion[data-motion]{will-change:transform,opacity,filter}
 .mdg-motion[data-motion="idle-breathe"]{animation:mdg-idle-breathe 2800ms ease-in-out infinite}
@@ -21,4 +21,6 @@
 @keyframes mdg-guide-nudge{0%,100%{transform:translate3d(0,0,0)}28%{transform:translate3d(6px,0,0)}48%{transform:translate3d(1px,0,0)}66%{transform:translate3d(7px,0,0)}}
 .mdg-motion[data-motion="run-dash"]{animation:mdg-run-dash 640ms cubic-bezier(.16,.78,.18,1) both}
 @keyframes mdg-run-dash{0%{transform:translate3d(-6px,1px,0) rotate(-2deg) scale(.99)}22%{transform:translate3d(2px,-5px,0) rotate(1deg) scale(1.015,.985)}48%{transform:translate3d(11px,1px,0) rotate(-1deg) scale(.995,1.008)}72%{transform:translate3d(20px,-4px,0) rotate(1.2deg) scale(1.012,.99)}100%{transform:translate3d(31px,0,0) rotate(0) scale(1)}}
+.mdg-motion[data-motion="attack-lunge"]{animation:mdg-attack-lunge 520ms cubic-bezier(.18,.82,.2,1) both}
+@keyframes mdg-attack-lunge{0%{transform:translate3d(-4px,1px,0) rotate(-2deg) scale(.99)}28%{transform:translate3d(4px,-4px,0) rotate(1deg) scale(1.015,.99)}58%{transform:translate3d(28px,-2px,0) rotate(2.2deg) scale(1.035,.975)}78%{transform:translate3d(20px,1px,0) rotate(.4deg) scale(1.005)}100%{transform:translate3d(0,0,0) rotate(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.mdg-motion[data-motion]{animation:none!important;transform:none!important;filter:none!important}}
