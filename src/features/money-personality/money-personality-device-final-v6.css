@@ -1,20 +1,29 @@
-/* Device Final V6 — authoritative real-device layout overrides.
-   Goal: companion is the top row of the question window; Result uses normal document scrolling.
-   No scoring / classifier changes. */
+/* Device Final V6 — authoritative real-device overrides.
+   Companion is inside the question window. Result uses normal document scrolling.
+   No scoring/classifier changes. */
 
-/* QUESTION WINDOW: one continuous RPG window.
-   Row 1 = Mudagiri left + optional speech right.
-   Row 2 = question copy and choices. */
-body #root .mpp-shell > .mpp-measurement-companion,
-body #root .mpp-shell > .mpp-measurement-companion.has-talk{
+/* QUESTION WINDOW: character + talk at the top, question content below. */
+body #root .mpp-question-card{
+  position:relative!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0 14px 16px!important;
+  border:2px solid rgba(226,185,71,.86)!important;
+  border-radius:28px!important;
+  background:linear-gradient(180deg,rgba(3,55,61,.97),rgba(2,43,50,.985))!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.30),inset 0 0 0 1px rgba(255,255,255,.03)!important;
+  overflow:hidden!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion,
+body #root .mpp-question-card > .mpp-measurement-companion.has-talk{
   position:relative!important;
   inset:auto!important;
-  width:100%!important;
-  height:88px!important;
-  min-height:88px!important;
-  max-height:88px!important;
-  margin:0!important;
-  padding:8px 14px 4px!important;
+  width:calc(100% + 28px)!important;
+  height:86px!important;
+  min-height:86px!important;
+  max-height:86px!important;
+  margin:0 -14px 12px!important;
+  padding:7px 14px!important;
   display:flex!important;
   flex-direction:row!important;
   align-items:center!important;
@@ -24,45 +33,45 @@ body #root .mpp-shell > .mpp-measurement-companion.has-talk{
   transform:none!important;
   z-index:6!important;
   pointer-events:none!important;
-  background:linear-gradient(180deg,rgba(3,55,61,.97),rgba(2,48,55,.98))!important;
-  border:2px solid rgba(226,185,71,.86)!important;
-  border-bottom:0!important;
-  border-radius:28px 28px 0 0!important;
-  box-shadow:0 -6px 22px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.035)!important;
+  background:linear-gradient(180deg,rgba(2,46,53,.98),rgba(2,38,45,.98))!important;
+  border:0!important;
+  border-bottom:1px solid rgba(226,185,71,.48)!important;
+  border-radius:26px 26px 0 0!important;
+  box-shadow:none!important;
 }
-body #root .mpp-shell > .mpp-measurement-companion:not(.has-talk){
+body #root .mpp-question-card > .mpp-measurement-companion:not(.has-talk){
   justify-content:flex-start!important;
 }
-body #root .mpp-shell > .mpp-measurement-companion > .mpp-mudagiri,
-body #root .mpp-shell > .mpp-measurement-companion .mpp-mudagiri--question{
+body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question{
   position:relative!important;
   inset:auto!important;
-  flex:0 0 76px!important;
-  width:76px!important;
-  min-width:76px!important;
-  max-width:76px!important;
-  height:76px!important;
-  min-height:76px!important;
-  max-height:76px!important;
+  flex:0 0 72px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  height:72px!important;
+  min-height:72px!important;
+  max-height:72px!important;
   margin:0!important;
   padding:0!important;
   display:grid!important;
   place-items:center!important;
   transform:none!important;
 }
-body #root .mpp-shell > .mpp-measurement-companion .mpp-mudagiri--question img,
-body #root .mpp-shell > .mpp-measurement-companion > .mpp-mudagiri img{
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
   display:block!important;
-  width:76px!important;
-  min-width:76px!important;
-  max-width:76px!important;
-  height:76px!important;
-  min-height:76px!important;
-  max-height:76px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  height:72px!important;
+  min-height:72px!important;
+  max-height:72px!important;
   object-fit:contain!important;
   object-position:center center!important;
 }
-body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk{
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
   position:relative!important;
   inset:auto!important;
   flex:1 1 auto!important;
@@ -70,7 +79,7 @@ body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk{
   min-width:0!important;
   max-width:none!important;
   margin:0!important;
-  padding:9px 12px!important;
+  padding:9px 11px!important;
   align-self:center!important;
   white-space:normal!important;
   writing-mode:horizontal-tb!important;
@@ -80,16 +89,16 @@ body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk{
   line-break:strict!important;
   font-size:11px!important;
   font-weight:850!important;
-  line-height:1.5!important;
+  line-height:1.48!important;
   text-align:left!important;
-  background:rgba(3,38,45,.92)!important;
+  background:rgba(4,34,40,.92)!important;
   border:1px solid rgba(226,185,71,.48)!important;
   border-radius:12px!important;
   box-shadow:none!important;
   transform:none!important;
   z-index:7!important;
 }
-body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk::before{
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk::before{
   content:""!important;
   position:absolute!important;
   left:-7px!important;
@@ -98,43 +107,15 @@ body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk::before{
   bottom:auto!important;
   width:12px!important;
   height:12px!important;
-  background:rgba(3,38,45,.92)!important;
+  background:rgba(4,34,40,.92)!important;
   border-left:1px solid rgba(226,185,71,.48)!important;
   border-bottom:1px solid rgba(226,185,71,.48)!important;
   transform:translateY(-50%) rotate(45deg)!important;
 }
-body #root .mpp-shell > .mpp-question-card{
-  position:relative!important;
-  z-index:2!important;
-  width:100%!important;
-  margin:0!important;
-  padding:14px 14px 16px!important;
-  border:2px solid rgba(226,185,71,.86)!important;
-  border-top:0!important;
-  border-radius:0 0 28px 28px!important;
-  background:linear-gradient(180deg,rgba(3,55,61,.97),rgba(2,43,50,.985))!important;
-  box-shadow:0 16px 38px rgba(0,0,0,.30),inset 0 0 0 1px rgba(255,255,255,.03)!important;
-  overflow:hidden!important;
-}
 
-/* Remove the former negative-margin / artificial top-padding layout. */
-body #root .mpp-shell > .mpp-measurement-companion + .mpp-question-card{
-  margin-top:0!important;
-  padding-top:14px!important;
-}
-
-/* RESULT: normal page/document scrolling. Never trap the result inside 100dvh. */
-html:has(body #root .mpp-page--result){
-  height:auto!important;
-  min-height:100%!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior-y:auto!important;
-  touch-action:pan-y!important;
-  -webkit-overflow-scrolling:touch!important;
-}
-html:has(body #root .mpp-page--result) body{
+/* Result: explicit class + inline-important JS fallback; no viewport-height trap. */
+html.mpp-result-active,
+body.mpp-result-active{
   position:static!important;
   height:auto!important;
   min-height:100%!important;
@@ -145,7 +126,7 @@ html:has(body #root .mpp-page--result) body{
   touch-action:pan-y!important;
   -webkit-overflow-scrolling:touch!important;
 }
-html:has(body #root .mpp-page--result) body #root{
+#root.mpp-result-active{
   position:static!important;
   height:auto!important;
   min-height:100%!important;
@@ -183,33 +164,34 @@ body #root .mpp-page.mpp-page--result .mpp-result{
 }
 
 @media(max-width:430px){
-  body #root .mpp-shell > .mpp-measurement-companion,
-  body #root .mpp-shell > .mpp-measurement-companion.has-talk{
-    height:84px!important;
-    min-height:84px!important;
-    max-height:84px!important;
-    padding:6px 10px 3px!important;
+  body #root .mpp-question-card{
+    padding:0 12px 14px!important;
+  }
+  body #root .mpp-question-card > .mpp-measurement-companion,
+  body #root .mpp-question-card > .mpp-measurement-companion.has-talk{
+    width:calc(100% + 24px)!important;
+    height:82px!important;
+    min-height:82px!important;
+    max-height:82px!important;
+    margin:0 -12px 11px!important;
+    padding:5px 10px!important;
     gap:8px!important;
   }
-  body #root .mpp-shell > .mpp-measurement-companion > .mpp-mudagiri,
-  body #root .mpp-shell > .mpp-measurement-companion .mpp-mudagiri--question,
-  body #root .mpp-shell > .mpp-measurement-companion .mpp-mudagiri--question img,
-  body #root .mpp-shell > .mpp-measurement-companion > .mpp-mudagiri img{
-    flex-basis:72px!important;
-    width:72px!important;
-    min-width:72px!important;
-    max-width:72px!important;
-    height:72px!important;
-    min-height:72px!important;
-    max-height:72px!important;
+  body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question,
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+  body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
+    flex-basis:70px!important;
+    width:70px!important;
+    min-width:70px!important;
+    max-width:70px!important;
+    height:70px!important;
+    min-height:70px!important;
+    max-height:70px!important;
   }
-  body #root .mpp-shell > .mpp-measurement-companion .mpp-progress-talk{
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
     font-size:10.5px!important;
     line-height:1.45!important;
-    padding:8px 10px!important;
-  }
-  body #root .mpp-shell > .mpp-question-card,
-  body #root .mpp-shell > .mpp-measurement-companion + .mpp-question-card{
-    padding-top:12px!important;
+    padding:8px 9px!important;
   }
 }
