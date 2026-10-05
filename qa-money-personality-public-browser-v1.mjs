@@ -36,6 +36,34 @@ async function screenshot(name){
   await page.screenshot({path:`${OUT}/${name}.png`,fullPage:true});
 }
 
+async function assertQuestionCompanionGeometry(label){
+  const m=await page.evaluate(()=>{
+    const card=document.querySelector('.mpp-question-card');
+    const companion=card?.querySelector(':scope > .mpp-measurement-companion');
+    const img=companion?.querySelector('.mpp-mudagiri--question img, .mpp-mudagiri img');
+    const question=card?.querySelector('.mpp-family-label, .mpp-scenario, h2');
+    if(!card||!companion||!img||!question)return {ok:false,reason:'missing',card:!!card,companion:!!companion,img:!!img,question:!!question};
+    const c=card.getBoundingClientRect(),r=companion.getBoundingClientRect(),i=img.getBoundingClientRect(),q=question.getBoundingClientRect();
+    const speech=companion.querySelector('.mpp-progress-talk');
+    const s=speech?.getBoundingClientRect();
+    return {
+      ok:true,
+      card:{top:c.top,left:c.left,right:c.right},
+      companion:{top:r.top,bottom:r.bottom,left:r.left,right:r.right},
+      image:{width:i.width,height:i.height,left:i.left,right:i.right},
+      question:{top:q.top,left:q.left},
+      speech:s?{top:s.top,bottom:s.bottom,left:s.left,right:s.right}:null,
+      viewport:innerWidth,
+    };
+  });
+  if(!m.ok)throw new Error(`MONEY_PUBLIC_COMPANION_NOT_IN_QUESTION_CARD:${label}:${JSON.stringify(m)}`);
+  if(m.companion.top<m.card.top-2)throw new Error(`MONEY_PUBLIC_COMPANION_ABOVE_CARD:${label}:${JSON.stringify(m)}`);
+  if(m.question.top<m.companion.bottom-3)throw new Error(`MONEY_PUBLIC_COMPANION_OVERLAPS_QUESTION:${label}:${JSON.stringify(m)}`);
+  if(Math.abs(m.image.width-m.image.height)>2||m.image.width<66||m.image.width>76)throw new Error(`MONEY_PUBLIC_COMPANION_SIZE_BAD:${label}:${JSON.stringify(m)}`);
+  if(m.speech&&(m.speech.left<m.image.right-3||m.speech.right>m.viewport+2))throw new Error(`MONEY_PUBLIC_SPEECH_POSITION_BAD:${label}:${JSON.stringify(m)}`);
+  return m;
+}
+
 await page.goto(base+'?adaptive=money-type&debug=1',{waitUntil:'networkidle'});
 await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
 await page.reload({waitUntil:'networkidle'});
@@ -43,6 +71,7 @@ await page.getByRole('button',{name:'診断をはじめる'}).waitFor({state:'vi
 await screenshot('01-intro');
 await page.getByRole('button',{name:'診断をはじめる'}).click();
 await page.locator('.mpp-question-card').waitFor({state:'visible'});
+const firstQuestionGeometry=await assertQuestionCompanionGeometry('core-first');
 await screenshot('02-core-question');
 
 let answered=0;
@@ -63,11 +92,11 @@ for(let guard=0;guard<80;guard++){
 
   if(isAdaptive){
     sawAdaptive=true;
-    if(!capturedAdaptive){await screenshot('03-adaptive-question');capturedAdaptive=true;}
+    if(!capturedAdaptive){await assertQuestionCompanionGeometry('adaptive');await screenshot('03-adaptive-question');capturedAdaptive=true;}
   }
   if(isSeparator){
     sawSeparator=true;
-    if(!capturedSeparator){await screenshot('04-separator');capturedSeparator=true;}
+    if(!capturedSeparator){await assertQuestionCompanionGeometry('separator');await screenshot('04-separator');capturedSeparator=true;}
     await separator.first().click();
     answered++;
     await page.waitForTimeout(180);
@@ -98,10 +127,25 @@ for(let guard=0;guard<80;guard++){
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
 await screenshot('05-result');
-const text=(await page.locator('.mpp-result').innerText()).replace(/\s+/g,' ');
+
+// Result must be a genuinely scrollable document on a phone, not a 100dvh scroll trap.
+const resultScrollBefore=await page.evaluate(()=>{
+  const root=document.scrollingElement||document.documentElement;
+  const htmlStyle=getComputedStyle(document.documentElement),bodyStyle=getComputedStyle(document.body);
+  return {scrollHeight:root.scrollHeight,innerHeight,scrollY,htmlOverflowY:htmlStyle.overflowY,bodyOverflowY:bodyStyle.overflowY,pageHeight:document.querySelector('.mpp-page--result')?.getBoundingClientRect().height||0,cardHeight:document.querySelector('.mpp-result')?.getBoundingClientRect().height||0};
+});
+if(resultScrollBefore.scrollHeight<=resultScrollBefore.innerHeight+100)throw new Error('MONEY_PUBLIC_RESULT_NOT_TALL_ENOUGH:'+JSON.stringify(resultScrollBefore));
+if(resultScrollBefore.htmlOverflowY==='hidden'||resultScrollBefore.bodyOverflowY==='hidden')throw new Error('MONEY_PUBLIC_RESULT_DOCUMENT_SCROLL_LOCKED:'+JSON.stringify(resultScrollBefore));
+await page.evaluate(()=>window.scrollTo({top:Math.min(700,(document.scrollingElement||document.documentElement).scrollHeight-innerHeight),behavior:'auto'}));
+await page.waitForTimeout(80);
+const resultScrollY=await page.evaluate(()=>window.scrollY);
+if(resultScrollY<40)throw new Error('MONEY_PUBLIC_RESULT_CANNOT_SCROLL:'+JSON.stringify({resultScrollBefore,resultScrollY}));
+await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
+
+const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
-if(!text.includes('主属性')||!text.includes('副属性'))throw new Error('MONEY_PUBLIC_STYLE_MISSING');
-if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('死角')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
+if(!text.includes('あなたが価値を感じやすい順'))throw new Error('MONEY_PUBLIC_STYLE_SYNTHESIS_MISSING');
+if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('ハマりやすい罠')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_HOUSEHOLD_CTA_MISSING');
@@ -133,7 +177,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedClassUnlock:true,capturedNextQuest:true,personalizedResult:true,telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedClassUnlock:true,capturedNextQuest:true,personalizedResult:true,firstQuestionGeometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
