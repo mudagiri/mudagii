@@ -202,17 +202,19 @@
 }
 .mpp-result-v4-chapter-label::after{transform:scaleX(-1)}
 
-/* Question-pose optical normalization stage. Motion remains on the image; optical correction lives on the wrapper. */
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri{
-  transform-origin:50% 90%!important;
-}
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01']{--mdg-optical-scale:1}
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN']{--mdg-optical-scale:1}
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{--mdg-optical-scale:1}
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01'],
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN'],
-html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{
+/* Optical audit 2026-10-05:
+   IDLE_01 alpha bbox height 466, LISTEN 572, IDLE_02 580 on their source canvases.
+   Same CSS box therefore looked dramatically different. Normalize to the median visible height (572).
+   Motion remains on the image; optical correction is applied to the fixed question-stage wrapper. */
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01']{--mdg-optical-scale:1.2275}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN']{--mdg-optical-scale:1}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{--mdg-optical-scale:.9862}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01'],
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN'],
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{
   transform:scale(var(--mdg-optical-scale,1))!important;
+  transform-origin:50% 50%!important;
+  justify-self:center!important;
 }
 
 @media(max-width:430px){
@@ -228,4 +230,15 @@ html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data
   .mpp-page--result .mpp-result-profile{grid-template-columns:1fr!important}
   .mpp-page--result .mpp-result-profile>div:first-child,
   .mpp-page--result .mpp-result-profile>div:nth-child(4){grid-column:auto}
+
+  /* Make enough room for the normalized IDLE_01 visual without clipping or colliding with speech. */
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion.has-talk{
+    height:90px!important;
+    min-height:90px!important;
+    max-height:90px!important;
+    flex-basis:90px!important;
+    grid-template-columns:84px minmax(0,1fr)!important;
+    overflow:visible!important;
+  }
 }
