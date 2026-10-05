@@ -10,8 +10,10 @@ import {
 } from './publicFlowV1';
 import {buildMoneyResultExperienceV2} from './resultExperienceV2';
 import {buildMoneyResultExperienceV4} from './resultNarrativeV4';
+import {moneyTypeCode} from './money-type-code-v1';
+import ResultJourneyV1 from './ResultJourneyV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
-import {CLASS_UNLOCK_SEQUENCE,NEXT_QUEST_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
+import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
 import './mudagiri-motion.css';
 import './personality-mudagiri.css';
@@ -20,286 +22,49 @@ import './money-personality-device-final-v6.css';
 import './money-result-v4.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
-type StoredState={
-  version:string;sessionId:string;startedAt:string;answers:TraitAnswers;separators:SeparatorAnswers;history:HistoryEntry[];screenCount:number;
-};
+type StoredState={version:string;sessionId:string;startedAt:string;answers:TraitAnswers;separators:SeparatorAnswers;history:HistoryEntry[];screenCount:number};
 type Choice={value:number;label:string};
 type MudagiriVisual=React.ComponentProps<typeof MoneyPersonalityMudagiri>['visual'];
 
 const STORAGE_KEY='mudagiri_money_type_public_state_v1';
 const BIPOLAR_PUBLIC_LABELS=['Aにかなり近い','ややAに近い','半々','ややBに近い','Bにかなり近い'] as const;
 const blankState=():StoredState=>({version:PUBLIC_MONEY_TYPE_VERSION,sessionId:newPublicSessionId(),startedAt:'',answers:{},separators:{},history:[],screenCount:0});
-function loadState():StoredState{
-  try{
-    const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    if(x&&x.version===PUBLIC_MONEY_TYPE_VERSION&&x.answers&&x.separators){
-      return {...blankState(),...x,history:Array.isArray(x.history)?x.history:[]} as StoredState;
-    }
-  }catch{}
-  return blankState();
-}
+function loadState():StoredState{try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(x&&x.version===PUBLIC_MONEY_TYPE_VERSION&&x.answers&&x.separators)return {...blankState(),...x,history:Array.isArray(x.history)?x.history:[]} as StoredState}catch{}return blankState()}
 function saveState(x:StoredState){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(x))}catch{}}
-function householdUrl(){
-  const path=window.location.pathname.replace(/\/(?:pilot\/money-type|money-type)\/?$/,'/');
-  return path||'/';
-}
-
-function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered:number){
-  if(adaptiveAnswered===1)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';
-  if(coreAnswered===27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';
-  if(coreAnswered===20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';
-  if(coreAnswered===10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';
-  if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';
-  return '';
-}
-
-function QuestionCompanion({visual,line}:{visual:MudagiriVisual;line?:string}){
-  return <div className={`mpp-measurement-companion${line?' has-talk':''}`}>
-    <MoneyPersonalityMudagiri visual={visual} alt=""/>
-    {line&&<div className="mpp-progress-talk">{line}</div>}
-  </div>;
-}
+function householdUrl(){const path=window.location.pathname.replace(/\/(?:pilot\/money-type|money-type)\/?$/,'/');return path||'/'}
+function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered:number){if(adaptiveAnswered===1)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';if(coreAnswered===27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';if(coreAnswered===20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';if(coreAnswered===10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';return ''}
+function QuestionCompanion({visual,line}:{visual:MudagiriVisual;line?:string}){return <div className={`mpp-measurement-companion${line?' has-talk':''}`}><MoneyPersonalityMudagiri visual={visual} alt=""/>{line&&<div className="mpp-progress-talk">{line}</div>}</div>}
 
 export default function MoneyPersonalityPublic(){
-  const params=useMemo(()=>new URLSearchParams(window.location.search),[]);
-  const debug=params.get('debug')==='1';
-  const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);
-  const coreOrder=useMemo(()=>buildPublicCoreOrder(participantId),[participantId]);
-  const coreSideMap=useMemo(()=>buildCoreTraitSideMap(participantId,coreOrder),[participantId,coreOrder]);
-  const [state,setState]=useState<StoredState>(()=>loadState());
-  const [active,setActive]=useState(false);
-  const [selected,setSelected]=useState<Choice|null>(null);
-  const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);
-  const [committing,setCommitting]=useState(false);
-  const timerRef=useRef<number|null>(null);
-
-  const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
-  const pendingCore=coreOrder.find(q=>state.answers[q.item_id]===undefined)??null;
-  const adaptiveIds=useMemo(()=>orderAdaptiveItemIds(evaluation.adaptive.nextItemIds.filter(id=>state.answers[id]===undefined),participantId),[evaluation.adaptive.nextItemIds,state.answers,participantId]);
-  const pendingAdaptiveId=!pendingCore?(adaptiveIds[0]??null):null;
-  const pendingSeparatorId=!pendingCore&&!pendingAdaptiveId?evaluation.adaptive.separatorIds.find(id=>state.separators[id as keyof SeparatorAnswers]===undefined)??null:null;
-  const targetItem=pendingCore??(pendingAdaptiveId?itemById(pendingAdaptiveId):null);
-  const done=!pendingCore&&!pendingAdaptiveId&&!pendingSeparatorId&&evaluation.complete;
-  const targetKey=targetItem?.item_id??pendingSeparatorId??(done?'RESULT':'NONE');
-
-  const coreAnswered=coreOrder.filter(x=>state.answers[x.item_id]!==undefined).length;
-  const adaptiveAnswered=Math.max(0,Object.keys(state.answers).length-coreAnswered);
-  const separatorAnswered=Object.keys(state.separators).length;
-  const progress=publicProgress(coreAnswered,adaptiveAnswered,separatorAnswered,done);
-
-  useEffect(()=>{saveState(state)},[state]);
-  useEffect(()=>{
-    if(timerRef.current)window.clearTimeout(timerRef.current);
-    setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});
-    return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)};
-  },[targetKey]);
-
-  const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;
-  const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};
-  const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
-  const goBack=()=>{
-    if(committing||state.history.length===0)return;
-    const last=state.history[state.history.length-1];
-    setState(s=>{
-      const history=s.history.slice(0,-1);
-      if(last.kind==='trait'){
-        const answers={...s.answers};delete answers[last.id];
-        return {...s,answers,history,screenCount:Math.max(0,s.screenCount-1)};
-      }
-      const separators={...s.separators};delete (separators as Record<string,unknown>)[last.id];
-      return {...s,separators,history,screenCount:Math.max(0,s.screenCount-1)};
-    });
-  };
-
-  const commitTrait=(choice:Choice)=>{
-    if(!targetItem||committing)return;
-    setSelected(choice);setCommitting(true);
-    const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;
-    const traitValue=targetItem.family==='BIPOLAR'?normalizePublicBipolarResponse(choice.value,presentation!):choice.value;
-    timerRef.current=window.setTimeout(()=>{
-      setState(s=>({...s,answers:{...s.answers,[targetItem.item_id]:traitValue},history:[...s.history,{kind:'trait',id:targetItem.item_id}],screenCount:s.screenCount+1}));
-    },130);
-  };
-
-  const commitSeparator=(id:SeparatorId,value:string)=>{
-    if(committing)return;
-    setSeparatorSelected(value);setCommitting(true);
-    timerRef.current=window.setTimeout(()=>{
-      setState(s=>({...s,separators:{...s.separators,[id]:value} as SeparatorAnswers,history:[...s.history,{kind:'separator',id}],screenCount:s.screenCount+1}));
-    },130);
-  };
-
-  if(!active)return <Intro hasResume={hasSavedProgress} onStart={startNew} onResume={resume}/>;
-  if(done)return <Result evaluation={evaluation} onRestart={startNew} debug={debug}/>;
-  if(pendingSeparatorId)return <SeparatorScreen id={pendingSeparatorId as SeparatorId} participantId={participantId} evaluation={evaluation} selected={separatorSelected} onSelect={(v)=>commitSeparator(pendingSeparatorId as SeparatorId,v)} onBack={goBack} canBack={state.history.length>0} progress={progress} debug={debug}/>;
-  if(!targetItem)return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>お金タイプを解析しています…</p></section></main>;
-
-  const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;
-  const companionLine=progressComment(state.screenCount,coreAnswered,adaptiveAnswered);
-  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell">
-    <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
-    {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
-    <article className="mpp-question-card">
-      <QuestionCompanion visual={measurementVisual(state.screenCount)} line={companionLine||undefined}/>
-      {targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} 
-      {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>} 
-    </article>
-    <p className="mpp-footnote">選ぶとそのまま次へ進みます。迷ったら真ん中でOK。</p>
-  </section></main>;
+ const params=useMemo(()=>new URLSearchParams(window.location.search),[]);const debug=params.get('debug')==='1';
+ const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);const coreOrder=useMemo(()=>buildPublicCoreOrder(participantId),[participantId]);const coreSideMap=useMemo(()=>buildCoreTraitSideMap(participantId,coreOrder),[participantId,coreOrder]);
+ const [state,setState]=useState<StoredState>(()=>loadState());const [active,setActive]=useState(false);const [selected,setSelected]=useState<Choice|null>(null);const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);const [committing,setCommitting]=useState(false);const timerRef=useRef<number|null>(null);
+ const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
+ const pendingCore=coreOrder.find(q=>state.answers[q.item_id]===undefined)??null;const adaptiveIds=useMemo(()=>orderAdaptiveItemIds(evaluation.adaptive.nextItemIds.filter(id=>state.answers[id]===undefined),participantId),[evaluation.adaptive.nextItemIds,state.answers,participantId]);const pendingAdaptiveId=!pendingCore?(adaptiveIds[0]??null):null;const pendingSeparatorId=!pendingCore&&!pendingAdaptiveId?evaluation.adaptive.separatorIds.find(id=>state.separators[id as keyof SeparatorAnswers]===undefined)??null:null;const targetItem=pendingCore??(pendingAdaptiveId?itemById(pendingAdaptiveId):null);const done=!pendingCore&&!pendingAdaptiveId&&!pendingSeparatorId&&evaluation.complete;const targetKey=targetItem?.item_id??pendingSeparatorId??(done?'RESULT':'NONE');
+ const coreAnswered=coreOrder.filter(x=>state.answers[x.item_id]!==undefined).length;const adaptiveAnswered=Math.max(0,Object.keys(state.answers).length-coreAnswered);const separatorAnswered=Object.keys(state.separators).length;const progress=publicProgress(coreAnswered,adaptiveAnswered,separatorAnswered,done);
+ useEffect(()=>{saveState(state)},[state]);useEffect(()=>{if(timerRef.current)window.clearTimeout(timerRef.current);setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)}},[targetKey]);
+ const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
+ const goBack=()=>{if(committing||state.history.length===0)return;const last=state.history[state.history.length-1];setState(s=>{const history=s.history.slice(0,-1);if(last.kind==='trait'){const answers={...s.answers};delete answers[last.id];return {...s,answers,history,screenCount:Math.max(0,s.screenCount-1)}}const separators={...s.separators};delete (separators as Record<string,unknown>)[last.id];return {...s,separators,history,screenCount:Math.max(0,s.screenCount-1)}})};
+ const commitTrait=(choice:Choice)=>{if(!targetItem||committing)return;setSelected(choice);setCommitting(true);const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;const traitValue=targetItem.family==='BIPOLAR'?normalizePublicBipolarResponse(choice.value,presentation!):choice.value;timerRef.current=window.setTimeout(()=>setState(s=>({...s,answers:{...s.answers,[targetItem.item_id]:traitValue},history:[...s.history,{kind:'trait',id:targetItem.item_id}],screenCount:s.screenCount+1})),130)};
+ const commitSeparator=(id:SeparatorId,value:string)=>{if(committing)return;setSeparatorSelected(value);setCommitting(true);timerRef.current=window.setTimeout(()=>setState(s=>({...s,separators:{...s.separators,[id]:value} as SeparatorAnswers,history:[...s.history,{kind:'separator',id}],screenCount:s.screenCount+1})),130)};
+ if(!active)return <Intro hasResume={hasSavedProgress} onStart={startNew} onResume={resume}/>;if(done)return <Result evaluation={evaluation} onRestart={startNew} debug={debug}/>;if(pendingSeparatorId)return <SeparatorScreen id={pendingSeparatorId as SeparatorId} participantId={participantId} evaluation={evaluation} selected={separatorSelected} onSelect={v=>commitSeparator(pendingSeparatorId as SeparatorId,v)} onBack={goBack} canBack={state.history.length>0} progress={progress} debug={debug}/>;if(!targetItem)return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.finalAnalysis} alt=""/><p style={{textAlign:'center'}}>お金タイプを解析しています…</p></section></main>;
+ const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;const companionLine=progressComment(state.screenCount,coreAnswered,adaptiveAnswered);
+ return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>{debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}<article className="mpp-question-card"><QuestionCompanion visual={measurementVisual(state.screenCount)} line={companionLine||undefined}/>{targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>}</article><p className="mpp-footnote">選ぶとそのまま次へ進みます。迷ったら真ん中でOK。</p></section></main>
 }
 
-function QuestionHeader({phase,progress,onBack,canBack}:{phase:string;progress:number;onBack:()=>void;canBack:boolean}){
-  return <><header className="mpp-header"><button className="mpp-back" disabled={!canBack} onClick={onBack} aria-label="1つ前の質問に戻る">←</button><div><span>{phase}</span><small>{progress<84?'お金タイプの輪郭を読み取り中':'あなたに合わせて最終解析中'}</small></div><b>{Math.round(progress)}%</b></header><div className="mpp-progress"><i style={{width:progress+'%'}}/></div></>;
-}
-
-function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;onResume:()=>void}){
-  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card mpp-intro">
-    <div className="mpp-kicker">CHAPTER 1 / MONEY PERSONALITY</div>
-    <h1>お金の<br/><span>性格診断</span></h1>
-    <div className="mpp-intro-copy"><b>同じ収入でも、お金の使い方は人それぞれ。</b><p>30問に答えると、あなたが「何には使えて、どこで迷い、どう管理するか」を、8つの基本タイプ × 4つの価値観から読み解きます。</p></div>
-    <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
-    <div className="mpp-meta"><div><b>約5分</b><span>30問＋必要な追加だけ</span></div><div><b>32パターン</b><span>8タイプ × 4つの価値観</span></div></div>
-    <div className="mpp-points"><p><i>01</i> 正解はなし。普段の自分で答える</p><p><i>02</i> 迷ったら「理想」より「実際にやりがち」を選ぶ</p><p><i>03</i> 最後に強み・落とし穴・家計攻略法までわかる</p></div>
-    {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>診断をはじめる</button>}
-    <p className="mpp-intro-note">回答は端末内に自動保存。途中で閉じても続きから再開できます。</p>
-  </section></main>;
-}
-
-function Bipolar({item,presentation,selected,onChoose}:{item:PilotItem;presentation:ReturnType<typeof publicBipolarPresentation>;selected:Choice|null;onChoose:(x:Choice)=>void}){
-  if(item.family!=='BIPOLAR')return null;
-  return <><div className="mpp-family-label">どちらのスタンスが自然に近い？</div><div className="mpp-scenario">{item.scenario}</div>
-    <div className="mpp-poles"><div><b>A</b><span>{presentation.leftText}</span></div><div><b>B</b><span>{presentation.rightText}</span></div></div>
-    <div className="mpp-scale">{BIPOLAR_PUBLIC_LABELS.map((label,i)=>{const value=i+1;return <button key={value} aria-label={label} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}><b>{i===0?'A':i===1?'A':i===2?'―':'B'}</b><span>{label}</span></button>})}</div></>;
-}
-function Likert({item,selected,onChoose}:{item:PilotItem;selected:Choice|null;onChoose:(x:Choice)=>void}){
-  if(item.family!=='LIKERT')return null;
-  return <><div className="mpp-family-label">普段の自分にどれくらい当てはまる？</div><h2>{item.prompt}</h2><div className="mpp-answer-list">{LIKERT_SCALE_LABELS.map((label,i)=>{const value=i+1;return <button key={value} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}><b>{value}</b><span>{label}</span></button>})}</div></>;
-}
-
-function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,canBack,progress,debug}:{id:SeparatorId;participantId:string;evaluation:ReturnType<typeof evaluateMoneyPersonality>;selected:string|null;onSelect:(x:string)=>void;onBack:()=>void;canBack:boolean;progress:number;debug:boolean}){
-  const item=id==='SEP_STYLE'&&evaluation.style.primary&&evaluation.style.secondary?buildStyleSeparator(evaluation.style.primary,evaluation.style.secondary):id!=='SEP_STYLE'?AXIS_SEPARATOR_ITEMS[id]:null;
-  if(!item)return null;
-  const p=separatorPresentation(id,participantId,item.choices as any);
-  return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
-    <article className="mpp-question-card mpp-separator">
-      <QuestionCompanion visual={PERSONALITY_SCENE_VISUALS.separator} line="最後の確認！どっちも近ければ、より普段の自分に近い方でOK。"/>
-      <div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
-    <p className="mpp-footnote">両方の傾向は消しません。ここでは、より近い表現だけを選びます。</p>
-  </section></main>;
-}
-
+function QuestionHeader({phase,progress,onBack,canBack}:{phase:string;progress:number;onBack:()=>void;canBack:boolean}){return <><header className="mpp-header"><button className="mpp-back" disabled={!canBack} onClick={onBack} aria-label="1つ前の質問に戻る">←</button><div><span>{phase}</span><small>{progress<84?'お金タイプの輪郭を読み取り中':'あなたに合わせて最終解析中'}</small></div><b>{Math.round(progress)}%</b></header><div className="mpp-progress"><i style={{width:progress+'%'}}/></div></>}
+function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;onResume:()=>void}){return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-card mpp-intro"><div className="mpp-kicker">CHAPTER 1 / MONEY PERSONALITY</div><h1>お金の<br/><span>性格診断</span></h1><div className="mpp-intro-copy"><b>同じ収入でも、お金の使い方は人それぞれ。</b><p>30問に答えると、あなたが「何には使えて、どこで迷い、どう管理するか」を、8つの基本タイプ × 4つの価値観から読み解きます。</p></div><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/><div className="mpp-meta"><div><b>約5分</b><span>30問＋必要な追加だけ</span></div><div><b>32タイプ</b><span>8 JOB × 4 STYLE</span></div></div><div className="mpp-points"><p><i>01</i> 正解はなし。普段の自分で答える</p><p><i>02</i> 迷ったら「理想」より「実際にやりがち」を選ぶ</p><p><i>03</i> 最後に強み・落とし穴・家計攻略法までわかる</p></div>{hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>診断をはじめる</button>}<p className="mpp-intro-note">回答は端末内に自動保存。途中で閉じても続きから再開できます。</p></section></main>}
+function Bipolar({item,presentation,selected,onChoose}:{item:PilotItem;presentation:ReturnType<typeof publicBipolarPresentation>;selected:Choice|null;onChoose:(x:Choice)=>void}){if(item.family!=='BIPOLAR')return null;return <><div className="mpp-family-label">どちらのスタンスが自然に近い？</div><div className="mpp-scenario">{item.scenario}</div><div className="mpp-poles"><div><b>A</b><span>{presentation.leftText}</span></div><div><b>B</b><span>{presentation.rightText}</span></div></div><div className="mpp-scale">{BIPOLAR_PUBLIC_LABELS.map((label,i)=>{const value=i+1;return <button key={value} aria-label={label} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}><b>{i===0?'A':i===1?'A':i===2?'―':'B'}</b><span>{label}</span></button>})}</div></>}
+function Likert({item,selected,onChoose}:{item:PilotItem;selected:Choice|null;onChoose:(x:Choice)=>void}){if(item.family!=='LIKERT')return null;return <><div className="mpp-family-label">普段の自分にどれくらい当てはまる？</div><h2>{item.prompt}</h2><div className="mpp-answer-list">{LIKERT_SCALE_LABELS.map((label,i)=>{const value=i+1;return <button key={value} className={selected?.value===value?'selected':''} onClick={()=>onChoose({value,label})}><b>{value}</b><span>{label}</span></button>})}</div></>}
+function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,canBack,progress,debug}:{id:SeparatorId;participantId:string;evaluation:ReturnType<typeof evaluateMoneyPersonality>;selected:string|null;onSelect:(x:string)=>void;onBack:()=>void;canBack:boolean;progress:number;debug:boolean}){const item=id==='SEP_STYLE'&&evaluation.style.primary&&evaluation.style.secondary?buildStyleSeparator(evaluation.style.primary,evaluation.style.secondary):id!=='SEP_STYLE'?AXIS_SEPARATOR_ITEMS[id]:null;if(!item)return null;const p=separatorPresentation(id,participantId,item.choices as any);return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}<article className="mpp-question-card mpp-separator"><QuestionCompanion visual={PERSONALITY_SCENE_VISUALS.separator} line="最後の確認！どっちも近ければ、より普段の自分に近い方でOK。"/><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article><p className="mpp-footnote">両方の傾向は消しません。ここでは、より近い表現だけを選びます。</p></section></main>}
 function separatorSelectedClass(selected:string|null,value:string){return selected===value?'selected':''}
 
-function ClassUnlockScreen({adventurerClassName,onComplete}:{adventurerClassName:string;onComplete:()=>void}){
-  const [step,setStep]=useState(0);
-  const current=CLASS_UNLOCK_SEQUENCE[Math.min(step,CLASS_UNLOCK_SEQUENCE.length-1)];
-  useEffect(()=>{
-    const t=window.setTimeout(()=>{
-      if(step<CLASS_UNLOCK_SEQUENCE.length-1)setStep(step+1);
-      else{window.scrollTo({top:0,behavior:'auto'});onComplete()}
-    },current.holdMs);
-    return ()=>window.clearTimeout(t);
-  },[step,current.holdMs,onComplete]);
-  const headline=current.key==='think'?'冒険者CLASSを編成中':current.key==='unlock'?'CLASS SIGNAL FOUND':adventurerClassName;
-  const sub=current.key==='think'?'お金タイプの特性をクエスト用に変換しています…':current.key==='unlock'?'家計クエストでの役割が決まりました':'ADVENTURER CLASS UNLOCKED';
-  return <main className="mpp-transition-scene mpp-class-unlock" data-scene="class-unlock"><section className="mpp-transition-card">
-    <MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>
-    <div className="mpp-transition-copy">{sub}</div><h2>{headline}</h2><div className="mpp-transition-scan"/>
-    <p>このCLASSで第2章へ進みます。</p>
-  </section></main>;
-}
-
-function NextQuestDeparture({onComplete}:{onComplete:()=>void}){
-  const [step,setStep]=useState(0);
-  const current=NEXT_QUEST_SEQUENCE[Math.min(step,NEXT_QUEST_SEQUENCE.length-1)];
-  useEffect(()=>{
-    const t=window.setTimeout(()=>{
-      if(step<NEXT_QUEST_SEQUENCE.length-1)setStep(step+1);
-      else onComplete();
-    },current.holdMs);
-    return ()=>window.clearTimeout(t);
-  },[step,current.holdMs,onComplete]);
-  return <main className="mpp-transition-scene mpp-next-quest-departure" data-scene="next-quest"><section className="mpp-transition-card">
-    <div className="mpp-transition-copy">CHAPTER 2 / NEXT QUEST</div>
-    <MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>
-    <h2>家計クエストへ出発！</h2>
-    <p>次は12カテゴリをスキャンして、改善余地のある敵を探します。</p>
-  </section></main>;
-}
-
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
-  const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
-  const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
-  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultExperienceV4(evaluation,buildMoneyResultExperienceV2(evaluation));
-  useEffect(()=>{
-    if(handoff!=='result')return;
-    const html=document.documentElement;const body=document.body;const root=document.getElementById('root');
-    const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');
-    const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];
-    const previous=nodes.map(el=>({el,cssText:el.style.cssText}));
-    html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');
-    for(const el of [html,body]){
-      el.style.setProperty('height','auto','important');
-      el.style.setProperty('min-height','100%','important');
-      el.style.setProperty('max-height','none','important');
-      el.style.setProperty('overflow-x','hidden','important');
-      el.style.setProperty('overflow-y','auto','important');
-      el.style.setProperty('touch-action','pan-y','important');
-    }
-    if(root){
-      root.style.setProperty('height','auto','important');
-      root.style.setProperty('min-height','100%','important');
-      root.style.setProperty('max-height','none','important');
-      root.style.setProperty('overflow','visible','important');
-      root.style.setProperty('touch-action','pan-y','important');
-    }
-    for(const el of [page,card])if(el){
-      el.style.setProperty('height','auto','important');
-      el.style.setProperty('min-height',el===page?'100dvh':'0','important');
-      el.style.setProperty('max-height','none','important');
-      el.style.setProperty('overflow','visible','important');
-      el.style.setProperty('overflow-y','visible','important');
-      el.style.setProperty('touch-action','pan-y','important');
-    }
-    window.scrollTo({top:0,behavior:'auto'});
-    return ()=>{
-      previous.forEach(({el,cssText})=>{el.style.cssText=cssText});
-      html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active');
-    };
-  },[handoff]);
-  if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
-  if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
-  const share=async()=>{
-    const text=`私のお金タイプは「${evaluation.jobName}」だった！ ${meta.label} STYLE #ムダギリ診断`;
-    try{if(navigator.share){await navigator.share({title:'ムダギリ｜お金の性格診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}
-  };
-  const axes=[
-    ['時間視野','FUTURE','IMMEDIATE',content.patterns[0]],
-    ['判断根拠','DELIBERATION','INTUITION',content.patterns[1]],
-    ['把握リズム','MONITORING','PERIODIC',content.patterns[2]],
-  ] as const;
-  return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style}><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div>
-    <section className="mpp-result-v4-hero">
-      <div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div>
-      <div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div>
-      <div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1>
-      <p className="mpp-result-hero-line">{content.heroLine}</p>
-      <div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label}が最優先</span><span>{sub.icon} 次に{sub.label}</span></div>
-      <section className="mpp-result-v4-hit"><span>これ、ある？</span><ul>{content.resonanceChecks.map((line,i)=><li key={i}>{line}</li>)}</ul></section>
-      <div className="mpp-result-v4-scrollcue">このタイプを詳しく見る</div>
-    </section>
-
-    <div className="mpp-result-v4-section-title">YOUR MONEY MANUAL</div>
-    <section className="mpp-result-v4-identity"><span>このタイプの正体</span><b>{content.identityTitle}</b><p>{content.typeMeaning}</p></section>
-    <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div>
-    <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{content.mudagiriLine}」</p></div>
-    <section className="mpp-style-synthesis"><header><span>あなたが価値を感じやすい順</span><b>{meta.icon} {meta.label} → {sub.icon} {sub.label}</b></header><p>{content.styleSynthesis}</p></section>
-    <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>ハマりやすい罠</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
-    <details className="mpp-analysis-details"><summary>診断の内訳を見る <small>3軸ステータス</small></summary><div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div></details>
-    <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
-    <div className="mpp-result-v4-chapter-label">CHAPTER 2</div>
-    <div className="mpp-next-quest"><span>NEXT QUEST</span><b>次は、実際の家計を冒険しよう。</b><p>このお金タイプをもとに、家計クエストでの「冒険者CLASS」が決まります。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
-    <button className="mpp-primary" onClick={()=>setHandoff('class')}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>この結果をシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version,resultNarrativeVersion:content.resultVersion},null,2)}</pre>}
-  </section></main>;
+ const [handoff,setHandoff]=useState<'result'|'journey'>('result');const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;const meta=STYLE_META[style];const sub=STYLE_META[secondary];const typeCode=moneyTypeCode(job,style);const content=buildMoneyResultExperienceV4(evaluation,buildMoneyResultExperienceV2(evaluation));
+ useEffect(()=>{if(handoff!=='result')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];const previous=nodes.map(el=>({el,cssText:el.style.cssText}));html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}for(const el of [page,card])if(el){el.style.setProperty('height','auto','important');el.style.setProperty('min-height',el===page?'100dvh':'0','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow','visible','important');el.style.setProperty('overflow-y','visible','important');el.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText});html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active')}},[handoff]);
+ if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
+ const share=async()=>{const text=`私のお金タイプは「${typeCode}｜${evaluation.jobName}」だった！ ${meta.label} STYLE｜あなたはどのタイプ？ #ムダギリ診断 #お金の性格診断`;try{if(navigator.share){await navigator.share({title:'ムダギリ｜お金の性格診断',text,url:window.location.href});return}await navigator.clipboard.writeText(text+' '+window.location.href)}catch{}};
+ const axes=[['時間視野','FUTURE','IMMEDIATE',content.patterns[0]],['判断根拠','DELIBERATION','INTUITION',content.patterns[1]],['把握リズム','MONITORING','PERIODIC',content.patterns[2]]] as const;
+ return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style} data-money-type={typeCode}><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><section className="mpp-result-v4-hero"><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">{typeCode} · TYPE {JOB_NUMBER[job]}/8</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1><p className="mpp-result-hero-line">{content.heroLine}</p><div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label} STYLE</span></div><section className="mpp-result-v4-hit"><span>これ、ある？</span><ul>{content.resonanceChecks.map((line,i)=><li key={i}>{line}</li>)}</ul></section><div className="mpp-result-v4-scrollcue">このタイプを詳しく見る</div></section>
+ <div className="mpp-result-v4-section-title">YOUR MONEY MANUAL</div><section className="mpp-result-v4-identity"><span>このタイプの正体</span><b>{content.identityTitle}</b><p>{content.typeMeaning}</p></section><div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div><div className="mpp-dialogue"><b>ムダギリくん</b><p>「{content.mudagiriLine}」</p></div><section className="mpp-style-synthesis"><header><span>あなたの価値観を詳しく見ると</span><b>{meta.icon} {meta.label} を軸に、{sub.icon} {sub.label} の傾向もあります</b></header><p>{content.styleSynthesis}</p></section><div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>ハマりやすい罠</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div><details className="mpp-analysis-details"><summary>診断の内訳を見る <small>3軸ステータス</small></summary><div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div></details><div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div><div className="mpp-result-v4-chapter-label">CLASS UNLOCK</div><div className="mpp-next-quest"><span>NEXT</span><b>あなたの冒険者CLASSを解放しよう。</b><p>お金タイプから、第2章で一緒に進む冒険者CLASSが決まります。解放後は、結果の保存・シェア・図鑑・家計診断へ進めます。</p></div><button className="mpp-primary" onClick={()=>setHandoff('journey')}>冒険者CLASSを解放する</button><button className="mpp-secondary" onClick={share}>この結果をシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>{debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version,resultNarrativeVersion:content.resultVersion},null,2)}</pre>}</section></main>
 }
