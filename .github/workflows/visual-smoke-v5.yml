@@ -40,6 +40,10 @@ jobs:
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
         run: node qa-money-personality-public-browser-v1.mjs
+      - name: Audit Mudagiri optical bounds
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-mudagiri-optical-bounds-v1.mjs
       - name: Run cognitive pilot browser smoke
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
