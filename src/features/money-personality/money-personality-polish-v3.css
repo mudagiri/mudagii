@@ -72,3 +72,97 @@ html:has(.mpp-page--result),body:has(.mpp-page--result),#root:has(.mpp-page--res
 }
 
 @media(prefers-reduced-motion:reduce){.mpp-progress-talk{transition:none}}
+
+/* DEVICE LAYOUT V5 — companion belongs to the question window, and Result uses document scrolling. */
+.mpp-shell>.mpp-measurement-companion,
+.mpp-shell>.mpp-measurement-companion.has-talk{
+  height:90px!important;
+  min-height:90px!important;
+  max-height:90px!important;
+  margin:0 0 -90px!important;
+  padding:8px 18px 0!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  position:relative!important;
+  z-index:8!important;
+  overflow:visible!important;
+}
+.mpp-shell>.mpp-measurement-companion:not(.has-talk){justify-content:flex-start!important}
+.mpp-shell>.mpp-measurement-companion>.mpp-mudagiri,
+.mpp-shell>.mpp-measurement-companion .mpp-mudagiri--question{
+  flex:0 0 82px!important;
+  width:82px!important;
+  min-width:82px!important;
+  max-width:82px!important;
+  height:82px!important;
+  min-height:82px!important;
+  max-height:82px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.mpp-shell>.mpp-measurement-companion .mpp-mudagiri--question img,
+.mpp-shell>.mpp-measurement-companion>.mpp-mudagiri img{
+  width:82px!important;
+  min-width:82px!important;
+  max-width:82px!important;
+  height:82px!important;
+  min-height:82px!important;
+  max-height:82px!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+}
+.mpp-shell>.mpp-measurement-companion .mpp-progress-talk{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:5px 0 0!important;
+  padding:9px 11px!important;
+  align-self:flex-start!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+}
+.mpp-shell>.mpp-measurement-companion .mpp-progress-talk::before{left:-7px!important;top:17px!important;bottom:auto!important}
+.mpp-shell>.mpp-question-card{
+  padding-top:108px!important;
+}
+
+/* Result must scroll as the document itself on Android Custom Tabs. */
+html:has(.mpp-page--result){height:auto!important;min-height:100%!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important}
+body:has(.mpp-page--result){position:static!important;height:auto!important;min-height:100%!important;max-height:none!important;overflow-x:hidden!important;overflow-y:visible!important;touch-action:pan-y!important}
+#root:has(.mpp-page--result){position:static!important;height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+.mpp-page--result{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+  touch-action:pan-y!important;
+  overscroll-behavior-y:auto!important;
+  -webkit-overflow-scrolling:auto!important;
+  padding-bottom:calc(88px + env(safe-area-inset-bottom))!important;
+}
+.mpp-page--result .mpp-result{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  margin-bottom:56px!important;
+}
+
+@media(max-width:430px){
+  .mpp-shell>.mpp-measurement-companion,
+  .mpp-shell>.mpp-measurement-companion.has-talk{height:86px!important;min-height:86px!important;max-height:86px!important;margin-bottom:-86px!important;padding:7px 14px 0!important;gap:7px!important}
+  .mpp-shell>.mpp-measurement-companion>.mpp-mudagiri,
+  .mpp-shell>.mpp-measurement-companion .mpp-mudagiri--question,
+  .mpp-shell>.mpp-measurement-companion .mpp-mudagiri--question img,
+  .mpp-shell>.mpp-measurement-companion>.mpp-mudagiri img{flex-basis:78px!important;width:78px!important;min-width:78px!important;max-width:78px!important;height:78px!important;min-height:78px!important;max-height:78px!important}
+  .mpp-shell>.mpp-question-card{padding-top:101px!important}
+  .mpp-shell>.mpp-measurement-companion .mpp-progress-talk{font-size:10.5px!important;padding:8px 10px!important;margin-top:4px!important}
+}
