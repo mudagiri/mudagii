@@ -25,11 +25,15 @@
 .mpp-points p{font-size:12.5px!important;font-weight:750!important;color:#f4f6f6!important;line-height:1.45}
 .mpp-intro-note{color:#e5e7eb!important;font-weight:700!important}
 
-/* Progress talk: only progress-based, never answer/content-based, so it does not become a psychometric cue. */
-.mpp-measurement-companion{grid-template-columns:auto 1fr!important;place-items:end start!important;gap:8px!important;padding-inline:14px!important}
+/* Measurement companion: fixed frame + non-overlapping milestone callout. */
+.mpp-measurement-companion{width:100%!important;min-height:120px!important;margin:0 0 10px!important;padding:0 14px!important;display:grid!important;grid-template-columns:112px minmax(0,1fr)!important;align-items:end!important;justify-items:start!important;gap:10px!important;overflow:visible!important;position:relative;z-index:4}
+.mpp-measurement-companion:not(.has-talk){grid-template-columns:1fr!important;place-items:end center!important}
 .mpp-measurement-companion>.mpp-mudagiri{margin:0!important}
-.mpp-progress-talk{position:relative;align-self:center;max-width:250px;padding:8px 10px;border:1px solid rgba(246,198,77,.52);border-radius:11px;background:rgba(2,33,40,.93);color:#fff;font-size:11px;font-weight:850;line-height:1.5;text-shadow:0 1px 4px #000;box-shadow:0 7px 20px rgba(0,0,0,.28)}
-.mpp-progress-talk::before{content:"";position:absolute;left:-7px;bottom:12px;width:12px;height:12px;background:rgba(2,33,40,.93);border-left:1px solid rgba(246,198,77,.52);border-bottom:1px solid rgba(246,198,77,.52);transform:rotate(45deg)}
+.mpp-measurement-companion .mpp-mudagiri--question{width:112px!important;height:112px!important;margin:0!important;display:grid!important;place-items:end center!important;filter:drop-shadow(0 9px 8px rgba(0,0,0,.45))}
+.mpp-measurement-companion .mpp-mudagiri--question img{width:112px!important;height:112px!important;object-fit:contain!important;object-position:center bottom!important}
+.mpp-progress-talk{position:relative;align-self:center;justify-self:stretch;width:100%;max-width:260px;min-width:0;padding:9px 11px;border:1px solid rgba(246,198,77,.52);border-radius:11px;background:rgba(2,33,40,.95);color:#fff;font-size:11px;font-weight:850;line-height:1.55;text-shadow:0 1px 4px #000;box-shadow:0 7px 20px rgba(0,0,0,.28);word-break:normal;overflow-wrap:anywhere}
+.mpp-progress-talk::before{content:"";position:absolute;left:-7px;bottom:14px;width:12px;height:12px;background:rgba(2,33,40,.95);border-left:1px solid rgba(246,198,77,.52);border-bottom:1px solid rgba(246,198,77,.52);transform:rotate(45deg)}
+.mpp-question-card{z-index:2!important}
 
 /* Make question text feel like a game command UI rather than thin editorial copy. */
 .mpp-family-label{font-weight:850!important;color:#e7dfcf!important}
@@ -38,9 +42,9 @@
 .mpp-scale button,.mpp-answer-list button,.mpp-separator-options button{font-weight:800!important}
 .mpp-footnote{font-weight:750!important;color:#ece7dc!important}
 
-/* Result: narrative first, raw scores second. */
-.mpp-page--result{align-items:flex-start!important;padding-top:14px!important;background-image:linear-gradient(180deg,rgba(2,14,19,.28),rgba(2,18,23,.58) 42%,rgba(2,14,19,.86)),var(--mpp-bg-guild)!important;background-position:center top!important;background-size:cover!important;background-attachment:fixed!important}
-.mpp-page--result .mpp-result{background:linear-gradient(180deg,rgba(3,46,53,.94),rgba(2,30,37,.96))!important;border:2px solid rgba(246,198,77,.58)!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.18),0 20px 50px rgba(0,0,0,.36)!important}
+/* Result: narrative first, raw scores second. Keep document scrolling native on Android/WebView. */
+.mpp-page--result{display:block!important;min-height:100dvh!important;height:auto!important;overflow:visible!important;touch-action:pan-y!important;padding-top:14px!important;padding-bottom:calc(48px + env(safe-area-inset-bottom))!important;background-image:linear-gradient(180deg,rgba(2,14,19,.28),rgba(2,18,23,.58) 42%,rgba(2,14,19,.86)),var(--mpp-bg-guild)!important;background-position:center top!important;background-size:cover!important;background-attachment:scroll!important}
+.mpp-page--result .mpp-result{width:min(100%,520px)!important;margin:0 auto 36px!important;overflow:visible!important;background:linear-gradient(180deg,rgba(3,46,53,.94),rgba(2,30,37,.96))!important;border:2px solid rgba(246,198,77,.58)!important;box-shadow:inset 0 0 0 1px rgba(246,198,77,.18),0 20px 50px rgba(0,0,0,.36)!important}
 .mpp-result h1{font-weight:900!important;font-size:clamp(35px,10vw,48px)!important;text-shadow:0 3px 10px rgba(0,0,0,.72)!important}
 .mpp-result-hero-line{margin:12px auto 18px;max-width:430px;color:#fff6d8;text-align:center;font-size:17px;line-height:1.65;font-weight:900!important;text-shadow:0 2px 7px #000}
 .mpp-resonance-card{margin:14px 0 12px;padding:15px 15px 16px;border-left:4px solid #ffd557;border-radius:10px;background:linear-gradient(180deg,rgba(4,62,68,.88),rgba(3,46,54,.88));box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
@@ -60,7 +64,10 @@
 
 @media(max-width:390px){
   .mpp-intro-copy{padding:10px 11px}.mpp-intro-copy>b{font-size:14px}.mpp-intro-copy p{font-size:12px}
-  .mpp-progress-talk{max-width:215px;font-size:10.5px;padding:7px 9px}
+  .mpp-measurement-companion{grid-template-columns:104px minmax(0,1fr)!important;min-height:112px!important;padding-inline:10px!important;gap:8px!important}
+  .mpp-measurement-companion:not(.has-talk){grid-template-columns:1fr!important}
+  .mpp-measurement-companion .mpp-mudagiri--question,.mpp-measurement-companion .mpp-mudagiri--question img{width:104px!important;height:104px!important}
+  .mpp-progress-talk{max-width:none;font-size:10.5px;padding:8px 9px}
   .mpp-result-hero-line{font-size:16px}.mpp-resonance-card p,.mpp-style-synthesis p,.mpp-result-profile p{font-size:13px!important}
 }
 
