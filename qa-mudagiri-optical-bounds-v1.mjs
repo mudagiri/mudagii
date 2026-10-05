@@ -35,6 +35,7 @@ const poses=[
 
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:390,height:844}});
+await page.emulateMedia({reducedMotion:'reduce',colorScheme:'dark'});
 await page.goto(base,{waitUntil:'networkidle'});
 
 const report=await page.evaluate(async (poseList)=>{
@@ -87,7 +88,71 @@ const normalization=measurement.map(x=>({
   occupancyHeight:Number(x.occupancy.h.toFixed(4)),
   recommendedScale:Number((target/x.bbox.h).toFixed(4)),
 }));
-const summary={ok:true,targetVisibleHeight:target,measurementNormalization:normalization,poses:report};
+
+// Prove the source files really do have materially different transparent padding.
+const sourceSpread=Math.max(...visibleHeights)/Math.min(...visibleHeights);
+if(sourceSpread<1.15)throw new Error(`MUDAGIRI_OPTICAL_SOURCE_SPREAD_NOT_REPRODUCED:${sourceSpread}`);
+
+// Now verify the rendered question stage compensates for that source-padding difference.
+await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
+await page.reload({waitUntil:'networkidle'});
+await page.getByRole('button',{name:'診断をはじめる'}).click();
+await page.locator('.mpp-question-card').waitFor({state:'visible'});
+
+const rendered=[];
+for(let i=0;i<3;i++){
+  const geometry=await page.evaluate(()=>{
+    const wrapper=document.querySelector('.mpp-question-card > .mpp-measurement-companion .mpp-mudagiri');
+    const img=wrapper?.querySelector('img');
+    const speech=document.querySelector('.mpp-question-card > .mpp-measurement-companion .mpp-progress-talk');
+    if(!wrapper||!img)throw new Error('MUDAGIRI_OPTICAL_RENDERED_NODE_MISSING');
+    const r=img.getBoundingClientRect();
+    const w=wrapper.getBoundingClientRect();
+    const s=speech?.getBoundingClientRect();
+    return {
+      pose:wrapper.getAttribute('data-pose'),
+      image:{width:r.width,height:r.height,left:r.left,right:r.right,top:r.top,bottom:r.bottom},
+      wrapper:{width:w.width,height:w.height,left:w.left,right:w.right,top:w.top,bottom:w.bottom},
+      speech:s?{left:s.left,right:s.right,top:s.top,bottom:s.bottom}:null,
+    };
+  });
+  const source=measurement.find(x=>x.id===geometry.pose);
+  if(!source)throw new Error(`MUDAGIRI_OPTICAL_UNEXPECTED_MEASUREMENT_POSE:${geometry.pose}`);
+  const effectiveVisibleHeight=geometry.image.height*source.occupancy.h;
+  const effectiveVisibleWidth=geometry.image.width*source.occupancy.w;
+  rendered.push({...geometry,effectiveVisibleHeight,effectiveVisibleWidth});
+  if(geometry.speech&&geometry.image.right>geometry.speech.left+1)throw new Error(`MUDAGIRI_OPTICAL_COLLIDES_WITH_SPEECH:${JSON.stringify(geometry)}`);
+  if(i<2){
+    const scale=page.locator('.mpp-scale button');
+    if(await scale.count())await scale.nth(2).click();
+    else await page.locator('.mpp-answer-list button').nth(2).click();
+    await page.waitForTimeout(190);
+    await page.locator('.mpp-question-card').waitFor({state:'visible'});
+  }
+}
+
+const renderedIds=rendered.map(x=>x.pose);
+for(const id of ['IDLE_01','LISTEN','IDLE_02'])if(!renderedIds.includes(id))throw new Error(`MUDAGIRI_OPTICAL_POSE_CYCLE_MISSING:${id}:${JSON.stringify(renderedIds)}`);
+const effectiveHeights=rendered.map(x=>x.effectiveVisibleHeight);
+const renderedSpread=Math.max(...effectiveHeights)-Math.min(...effectiveHeights);
+if(renderedSpread>2)throw new Error(`MUDAGIRI_OPTICAL_RENDERED_SIZE_DRIFT:${renderedSpread}:${JSON.stringify(rendered)}`);
+
+const summary={
+  ok:true,
+  targetVisibleHeight:target,
+  sourceSpread:Number(sourceSpread.toFixed(4)),
+  measurementNormalization:normalization,
+  renderedNormalization:{spreadPx:Number(renderedSpread.toFixed(3)),samples:rendered},
+  poses:report,
+};
 await fs.writeFile(`${OUT}/optical-bounds.json`,JSON.stringify(summary,null,2));
 await browser.close();
-console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_OPTICAL_BOUNDS_V1',targetVisibleHeight:target,measurementNormalization:normalization}));
+console.log(JSON.stringify({
+  ok:true,
+  flow:'MUDAGIRI_OPTICAL_BOUNDS_V1',
+  targetVisibleHeight:target,
+  sourceSpread:Number(sourceSpread.toFixed(4)),
+  measurementNormalization:normalization,
+  renderedSpreadPx:Number(renderedSpread.toFixed(3)),
+  rendered:rendered.map(x=>({pose:x.pose,imageHeight:Number(x.image.height.toFixed(2)),effectiveVisibleHeight:Number(x.effectiveVisibleHeight.toFixed(2))})),
+}));
