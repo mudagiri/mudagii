@@ -9,7 +9,7 @@ import {
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
 import {buildMoneyResultExperienceV2} from './resultExperienceV2';
-import {refineMoneyResultExperienceV3} from './resultNarrativeV3';
+import {buildMoneyResultExperienceV4} from './resultNarrativeV4';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {CLASS_UNLOCK_SEQUENCE,NEXT_QUEST_SEQUENCE,PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
 import './publicMoney.css';
@@ -17,6 +17,7 @@ import './mudagiri-motion.css';
 import './personality-mudagiri.css';
 import './money-personality-polish-v3.css';
 import './money-personality-device-final-v6.css';
+import './money-result-v4.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -229,7 +230,7 @@ function NextQuestDeparture({onComplete}:{onComplete:()=>void}){
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
   const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
-  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=refineMoneyResultExperienceV3(evaluation,buildMoneyResultExperienceV2(evaluation));
+  const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=buildMoneyResultExperienceV4(evaluation,buildMoneyResultExperienceV2(evaluation));
   useEffect(()=>{
     if(handoff!=='result')return;
     const html=document.documentElement;const body=document.body;const root=document.getElementById('root');
@@ -277,17 +278,28 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     ['判断根拠','DELIBERATION','INTUITION',content.patterns[1]],
     ['把握リズム','MONITORING','PERIODIC',content.patterns[2]],
   ] as const;
-  return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result"><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div><div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div><div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1>
-    <p className="mpp-result-hero-line">{content.heroLine}</p>
-    <section className="mpp-resonance-card"><span>ひとことで言うと</span><b>{content.headline}</b><p>{content.typeMeaning}</p></section>
+  return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style}><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div>
+    <section className="mpp-result-v4-hero">
+      <div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">TYPE #{JOB_NUMBER[job]}</div>
+      <div className="mpp-result-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultHero} alt="ムダギリくん"/></div>
+      <div className="mpp-result-label">あなたのお金タイプ</div><h1>{evaluation.jobName}</h1>
+      <p className="mpp-result-hero-line">{content.heroLine}</p>
+      <div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label}が最優先</span><span>{sub.icon} 次に{sub.label}</span></div>
+      <section className="mpp-result-v4-hit"><span>これ、ある？</span><ul>{content.resonanceChecks.map((line,i)=><li key={i}>{line}</li>)}</ul></section>
+      <div className="mpp-result-v4-scrollcue">このタイプを詳しく見る</div>
+    </section>
+
+    <div className="mpp-result-v4-section-title">YOUR MONEY MANUAL</div>
+    <section className="mpp-result-v4-identity"><span>このタイプの正体</span><b>{content.identityTitle}</b><p>{content.typeMeaning}</p></section>
     <div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div>
     <div className="mpp-dialogue"><b>ムダギリくん</b><p>「{content.mudagiriLine}」</p></div>
     <section className="mpp-style-synthesis"><header><span>あなたが価値を感じやすい順</span><b>{meta.icon} {meta.label} → {sub.icon} {sub.label}</b></header><p>{content.styleSynthesis}</p></section>
     <div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>ハマりやすい罠</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div>
     <details className="mpp-analysis-details"><summary>診断の内訳を見る <small>3軸ステータス</small></summary><div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div></details>
     <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div>
-    <div className="mpp-next-quest"><span>CHAPTER 2 / NEXT QUEST</span><b>次は、実際の家計を冒険しよう。</b><p>このお金タイプをもとに、家計クエストでの「冒険者CLASS」が決まります。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
+    <div className="mpp-result-v4-chapter-label">CHAPTER 2</div>
+    <div className="mpp-next-quest"><span>NEXT QUEST</span><b>次は、実際の家計を冒険しよう。</b><p>このお金タイプをもとに、家計クエストでの「冒険者CLASS」が決まります。次は12カテゴリをスキャンして、本当に改善余地がある場所だけを探します。</p></div>
     <button className="mpp-primary" onClick={()=>setHandoff('class')}>家計クエストへ進む</button><button className="mpp-secondary" onClick={share}>この結果をシェア</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version},null,2)}</pre>}
+    {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version,resultNarrativeVersion:content.resultVersion},null,2)}</pre>}
   </section></main>;
 }
