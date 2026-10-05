@@ -42,10 +42,10 @@ function householdUrl(){
 }
 
 function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered:number){
-  if(adaptiveAnswered>0)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';
-  if(coreAnswered>=27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';
-  if(coreAnswered>=20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';
-  if(coreAnswered>=10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';
+  if(adaptiveAnswered===1)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';
+  if(coreAnswered===27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';
+  if(coreAnswered===20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';
+  if(coreAnswered===10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';
   if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';
   return '';
 }
@@ -129,7 +129,7 @@ export default function MoneyPersonalityPublic(){
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell">
     <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
     {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
-    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/>{companionLine&&<div className="mpp-progress-talk">{companionLine}</div>}</div>
+    <div className={`mpp-measurement-companion${companionLine?' has-talk':''}`}><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/>{companionLine&&<div className="mpp-progress-talk">{companionLine}</div>}</div>
     <article className="mpp-question-card">
       {targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} 
       {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>} 
@@ -148,7 +148,7 @@ function Intro({hasResume,onStart,onResume}:{hasResume:boolean;onStart:()=>void;
     <h1>お金の<br/><span>性格診断</span></h1>
     <div className="mpp-intro-copy"><b>同じ収入でも、お金の使い方は人それぞれ。</b><p>30問に答えると、あなたが「何には使えて、どこで迷い、どう管理するか」を、8つの基本タイプ × 4つの価値観から読み解きます。</p></div>
     <MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.intro} alt="ムダギリくん"/>
-    <div className="mpp-meta"><div><b>約5分</b><span>30問＋必要な追加だけ</span></div><div><b>32タイプ</b><span>強弱までそのまま反映</span></div></div>
+    <div className="mpp-meta"><div><b>約5分</b><span>30問＋必要な追加だけ</span></div><div><b>32パターン</b><span>8タイプ × 4つの価値観</span></div></div>
     <div className="mpp-points"><p><i>01</i> 正解はなし。普段の自分で答える</p><p><i>02</i> 迷ったら「理想」より「実際にやりがち」を選ぶ</p><p><i>03</i> 最後に強み・落とし穴・家計攻略法までわかる</p></div>
     {hasResume?<><button className="mpp-primary" onClick={onResume}>続きから再開する</button><button className="mpp-secondary" onClick={onStart}>最初からやり直す</button></>:<button className="mpp-primary" onClick={onStart}>診断をはじめる</button>}
     <p className="mpp-intro-note">回答は端末内に自動保存。途中で閉じても続きから再開できます。</p>
@@ -171,7 +171,7 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
-    <div className="mpp-measurement-companion"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/><div className="mpp-progress-talk">最後の確認！どっちも近ければ、より普段の自分に近い方でOK。</div></div>
+    <div className="mpp-measurement-companion has-talk"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/><div className="mpp-progress-talk">最後の確認！どっちも近ければ、より普段の自分に近い方でOK。</div></div>
     <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
     <p className="mpp-footnote">両方の傾向は消しません。ここでは、より近い表現だけを選びます。</p>
   </section></main>;
@@ -220,6 +220,12 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
   const [handoff,setHandoff]=useState<'result'|'class'|'depart'>('result');
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
   const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=refineMoneyResultExperienceV3(evaluation,buildMoneyResultExperienceV2(evaluation));
+  useEffect(()=>{
+    const html=document.documentElement;const body=document.body;
+    const prevHtmlOverflow=html.style.overflowY;const prevBodyOverflow=body.style.overflowY;const prevBodyHeight=body.style.height;
+    html.style.overflowY='auto';body.style.overflowY='auto';body.style.height='auto';
+    return ()=>{html.style.overflowY=prevHtmlOverflow;body.style.overflowY=prevBodyOverflow;body.style.height=prevBodyHeight};
+  },[]);
   if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
   if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
   const share=async()=>{
