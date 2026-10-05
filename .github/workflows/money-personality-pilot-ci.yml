@@ -1,0 +1,49 @@
+name: Validate Money Personality Pilot
+
+on:
+  push:
+    branches:
+      - feature/money-personality-pilot
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/features/money-personality/**'
+      - 'qa-money-personality-*.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - '.github/workflows/money-personality-pilot-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: money-personality-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Typecheck and build
+        run: npm run build
+      - name: Public flow QA
+        run: npm run qa:money-public-flow
+      - name: Engine QA
+        run: npm run qa:money-engine
+      - name: Result content QA
+        run: npm run qa:money-result-content
+      - name: Result persona QA
+        run: npm run qa:money-result-personas
+      - name: Pilot QA
+        run: npm run qa:money-pilot
