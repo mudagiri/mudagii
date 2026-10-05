@@ -1,0 +1,231 @@
+/* Money Personality Result V4 — mobile-first identity -> resonance -> manual -> Chapter 2.
+   Visual/narrative only. Classifier, scores and handoff semantics are unchanged. */
+
+.mpp-page--result .mpp-result{
+  padding:18px 14px 28px!important;
+}
+
+.mpp-result-v4-hero{
+  position:relative;
+  min-height:min(760px,calc(100dvh - 26px));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:4px 0 18px;
+}
+.mpp-result-v4-hero .mpp-kicker{margin-top:2px}
+.mpp-result-v4-hero .mpp-job-no{margin-top:6px}
+.mpp-result-v4-hero .mpp-result-companion{margin:4px auto -2px}
+.mpp-result-v4-hero .mpp-result-companion .mpp-mudagiri{width:118px!important}
+.mpp-result-v4-hero .mpp-result-label{margin-top:0}
+.mpp-result-v4-hero h1{
+  margin:3px 0 7px!important;
+  font-size:clamp(34px,10vw,46px)!important;
+  line-height:1.08!important;
+}
+.mpp-result-v4-hero .mpp-result-hero-line{
+  margin:5px auto 12px!important;
+  max-width:350px;
+  font-size:16px!important;
+  line-height:1.58!important;
+}
+
+.mpp-result-v4-styleline{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 12px;
+}
+.mpp-result-v4-styleline span{
+  padding:5px 9px;
+  border:1px solid rgba(246,198,77,.34);
+  border-radius:999px;
+  background:rgba(2,36,43,.82);
+  color:#f6f1df;
+  font-size:10px;
+  font-weight:850;
+  line-height:1.2;
+}
+.mpp-result-v4-styleline span:first-child{
+  border-color:rgba(255,218,103,.62);
+  color:#ffe79a;
+}
+
+.mpp-result-v4-hit{
+  width:100%;
+  margin:0 auto;
+  padding:13px 13px 12px;
+  border:1px solid rgba(255,217,92,.52);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(3,58,64,.94),rgba(2,38,46,.96));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 10px 26px rgba(0,0,0,.20);
+}
+.mpp-result-v4-hit>span{
+  display:block;
+  margin-bottom:8px;
+  color:#ffd85b;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-align:left;
+}
+.mpp-result-v4-hit ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:7px;
+}
+.mpp-result-v4-hit li{
+  position:relative;
+  padding:0 0 0 24px;
+  color:#fbfdfb;
+  font-size:12.5px;
+  font-weight:760;
+  line-height:1.56;
+  text-align:left;
+}
+.mpp-result-v4-hit li::before{
+  content:'✓';
+  position:absolute;
+  left:2px;
+  top:0;
+  color:#ffda63;
+  font-weight:950;
+}
+
+.mpp-result-v4-scrollcue{
+  margin:auto 0 0;
+  padding-top:11px;
+  color:#d8e4e3;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-align:center;
+  opacity:.86;
+}
+.mpp-result-v4-scrollcue::after{
+  content:'↓';
+  display:block;
+  margin-top:2px;
+  color:#ffd75a;
+  font-size:16px;
+  line-height:1;
+}
+
+.mpp-result-v4-section-title{
+  margin:20px 0 9px;
+  color:#ffd75a;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.10em;
+  text-align:left;
+}
+.mpp-result-v4-identity{
+  margin:0 0 12px;
+  padding:14px 14px 15px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(3,47,54,.90),rgba(2,34,41,.94));
+}
+.mpp-result-v4-identity>span{
+  display:block;
+  margin-bottom:6px;
+  color:#bcd0cf;
+  font-size:10px;
+  font-weight:850;
+}
+.mpp-result-v4-identity>b{
+  display:block;
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  line-height:1.5;
+}
+.mpp-result-v4-identity p{
+  margin:8px 0 0;
+  color:#edf4f3;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.78;
+}
+
+.mpp-page--result .mpp-result-companion--tight{
+  margin:2px auto -4px!important;
+}
+.mpp-page--result .mpp-result-companion--tight .mpp-mudagiri{
+  width:92px!important;
+}
+.mpp-page--result .mpp-dialogue{
+  margin-top:0!important;
+}
+
+.mpp-page--result .mpp-style-synthesis,
+.mpp-page--result .mpp-result-profile,
+.mpp-page--result .mpp-analysis-details,
+.mpp-page--result .mpp-one-action,
+.mpp-page--result .mpp-next-quest{
+  scroll-margin-top:16px;
+}
+
+.mpp-page--result .mpp-result-profile{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+}
+.mpp-page--result .mpp-result-profile>div:first-child{
+  grid-column:1 / -1;
+}
+.mpp-page--result .mpp-result-profile>div:nth-child(4){
+  grid-column:1 / -1;
+}
+
+.mpp-result-v4-chapter-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:20px 0 8px;
+  color:#ffd75a;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.1em;
+}
+.mpp-result-v4-chapter-label::before,
+.mpp-result-v4-chapter-label::after{
+  content:'';
+  height:1px;
+  flex:1 1 auto;
+  background:linear-gradient(90deg,transparent,rgba(255,215,90,.52));
+}
+.mpp-result-v4-chapter-label::after{transform:scaleX(-1)}
+
+/* Question-pose optical normalization stage. Motion remains on the image; optical correction lives on the wrapper. */
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri{
+  transform-origin:50% 90%!important;
+}
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01']{--mdg-optical-scale:1}
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN']{--mdg-optical-scale:1}
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{--mdg-optical-scale:1}
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01'],
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN'],
+html body #root .mpp-question-card .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{
+  transform:scale(var(--mdg-optical-scale,1))!important;
+}
+
+@media(max-width:430px){
+  .mpp-page--result .mpp-result{padding:14px 12px 26px!important}
+  .mpp-result-v4-hero{min-height:min(748px,calc(100dvh - 20px));padding-top:2px}
+  .mpp-result-v4-hero .mpp-result-companion .mpp-mudagiri{width:108px!important}
+  .mpp-result-v4-hero h1{font-size:34px!important}
+  .mpp-result-v4-hero .mpp-result-hero-line{font-size:15px!important;line-height:1.55!important}
+  .mpp-result-v4-hit{padding:12px 11px 11px}
+  .mpp-result-v4-hit li{font-size:12px;line-height:1.52}
+  .mpp-result-v4-identity>b{font-size:15px}
+  .mpp-result-v4-identity p{font-size:12.5px}
+  .mpp-page--result .mpp-result-profile{grid-template-columns:1fr!important}
+  .mpp-page--result .mpp-result-profile>div:first-child,
+  .mpp-page--result .mpp-result-profile>div:nth-child(4){grid-column:auto}
+}
