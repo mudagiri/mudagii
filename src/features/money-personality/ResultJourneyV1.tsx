@@ -1,5 +1,6 @@
 import React,{useCallback,useState} from 'react';
 import type {JobCode} from './classifierV1';
+import {jobCharacterAsset} from './job-character-assets-v1';
 import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
 import ResultNextRoutesV1 from './ResultNextRoutesV1';
 import JobEncyclopediaV1 from './JobEncyclopediaV1';
@@ -14,17 +15,17 @@ const CLASS_KEY='mudagiri_adventurer_class_v1';
 
 export default function ResultJourneyV1({jobCode,styleLabel,secondaryStyleLabel,householdUrl,onBack}:Props){
  const [step,setStep]=useState<Step>('unlock');
+ const asset=jobCharacterAsset(jobCode);
  const saveClass=useCallback(()=>{try{localStorage.setItem(CLASS_KEY,jobCode)}catch{}},[jobCode]);
  const goHousehold=useCallback(()=>{saveClass();window.location.href=householdUrl},[saveClass,householdUrl]);
  const share=useCallback(async()=>{
-  const text=`私の冒険者CLASSは「${jobCode}」！ ${styleLabel} STYLE #ムダギリ診断 #お金の性格診断`;
+  const text=`私の冒険者CLASSは「${asset.name}」だった！ ${styleLabel} STYLE｜あなたはどのCLASS？ #ムダギリ診断 #お金の性格診断`;
   try{if(navigator.share){await navigator.share({title:'ムダギリ｜お金の性格診断',text,url:window.location.href});return}await navigator.clipboard.writeText(`${text} ${window.location.href}`)}catch{}
- },[jobCode,styleLabel]);
+ },[asset.name,styleLabel]);
  const addLine=useCallback(()=>{
   saveClass();
   try{localStorage.setItem(HANDOFF_KEY,JSON.stringify({jobCode,createdAt:new Date().toISOString(),next:'household',reward:'class-guide-v1'}))}catch{}
   if(LINE_URL){window.location.href=LINE_URL;return}
-  // Production-safe fallback until the official LINE URL is configured.
   setStep('routes');
  },[jobCode,saveClass]);
  if(step==='unlock')return <AdventurerClassUnlockV1 jobCode={jobCode} onComplete={()=>{saveClass();setStep('routes')}}/>;
