@@ -16,12 +16,14 @@ import './publicMoney.css';
 import './mudagiri-motion.css';
 import './personality-mudagiri.css';
 import './money-personality-polish-v3.css';
+import './money-personality-device-final-v6.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
   version:string;sessionId:string;startedAt:string;answers:TraitAnswers;separators:SeparatorAnswers;history:HistoryEntry[];screenCount:number;
 };
 type Choice={value:number;label:string};
+type MudagiriVisual=React.ComponentProps<typeof MoneyPersonalityMudagiri>['visual'];
 
 const STORAGE_KEY='mudagiri_money_type_public_state_v1';
 const BIPOLAR_PUBLIC_LABELS=['Aにかなり近い','ややAに近い','半々','ややBに近い','Bにかなり近い'] as const;
@@ -48,6 +50,13 @@ function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered
   if(coreAnswered===10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';
   if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';
   return '';
+}
+
+function QuestionCompanion({visual,line}:{visual:MudagiriVisual;line?:string}){
+  return <div className={`mpp-measurement-companion${line?' has-talk':''}`}>
+    <MoneyPersonalityMudagiri visual={visual} alt=""/>
+    {line&&<div className="mpp-progress-talk">{line}</div>}
+  </div>;
 }
 
 export default function MoneyPersonalityPublic(){
@@ -129,8 +138,8 @@ export default function MoneyPersonalityPublic(){
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell">
     <QuestionHeader phase={publicPhaseLabel(coreAnswered)} progress={progress} onBack={goBack} canBack={state.history.length>0}/>
     {debug&&<div className="mpp-debug">{targetItem.item_id} / {targetItem.factor} / core {coreAnswered} / adaptive {adaptiveAnswered}</div>}
-    <div className={`mpp-measurement-companion${companionLine?' has-talk':''}`}><MoneyPersonalityMudagiri visual={measurementVisual(state.screenCount)} alt=""/>{companionLine&&<div className="mpp-progress-talk">{companionLine}</div>}</div>
     <article className="mpp-question-card">
+      <QuestionCompanion visual={measurementVisual(state.screenCount)} line={companionLine||undefined}/>
       {targetItem.family==='BIPOLAR'&&presentation&&<Bipolar item={targetItem} presentation={presentation} selected={selected} onChoose={commitTrait}/>} 
       {targetItem.family==='LIKERT'&&<Likert item={targetItem} selected={selected} onChoose={commitTrait}/>} 
     </article>
@@ -171,8 +180,9 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
   if(!item)return null;
   const p=separatorPresentation(id,participantId,item.choices as any);
   return <main className="mpp-page mpp-page--guild" data-scene="guild-hall"><section className="mpp-shell"><QuestionHeader phase="FINAL / TYPE CHECK" progress={progress} onBack={onBack} canBack={canBack}/>{debug&&<div className="mpp-debug">{id} / separator / score unchanged</div>}
-    <div className="mpp-measurement-companion has-talk"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.separator} alt=""/><div className="mpp-progress-talk">最後の確認！どっちも近ければ、より普段の自分に近い方でOK。</div></div>
-    <article className="mpp-question-card mpp-separator"><div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
+    <article className="mpp-question-card mpp-separator">
+      <QuestionCompanion visual={PERSONALITY_SCENE_VISUALS.separator} line="最後の確認！どっちも近ければ、より普段の自分に近い方でOK。"/>
+      <div className="mpp-family-label">かなり拮抗しているあなたへ</div><div className="mpp-scenario">{item.scenario}</div><h2>{item.prompt}</h2><div className="mpp-separator-options"><button className={separatorSelectedClass(selected,p.left.value)} onClick={()=>onSelect(p.left.value)}>{p.left.text}</button><button className={separatorSelectedClass(selected,p.right.value)} onClick={()=>onSelect(p.right.value)}>{p.right.text}</button></div></article>
     <p className="mpp-footnote">両方の傾向は消しません。ここでは、より近い表現だけを選びます。</p>
   </section></main>;
 }
@@ -221,11 +231,41 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
   const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;
   const meta=STYLE_META[style];const sub=STYLE_META[secondary];const content=refineMoneyResultExperienceV3(evaluation,buildMoneyResultExperienceV2(evaluation));
   useEffect(()=>{
-    const html=document.documentElement;const body=document.body;
-    const prevHtmlOverflow=html.style.overflowY;const prevBodyOverflow=body.style.overflowY;const prevBodyHeight=body.style.height;
-    html.style.overflowY='auto';body.style.overflowY='auto';body.style.height='auto';
-    return ()=>{html.style.overflowY=prevHtmlOverflow;body.style.overflowY=prevBodyOverflow;body.style.height=prevBodyHeight};
-  },[]);
+    if(handoff!=='result')return;
+    const html=document.documentElement;const body=document.body;const root=document.getElementById('root');
+    const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');
+    const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];
+    const previous=nodes.map(el=>({el,cssText:el.style.cssText}));
+    html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');
+    for(const el of [html,body]){
+      el.style.setProperty('height','auto','important');
+      el.style.setProperty('min-height','100%','important');
+      el.style.setProperty('max-height','none','important');
+      el.style.setProperty('overflow-x','hidden','important');
+      el.style.setProperty('overflow-y','auto','important');
+      el.style.setProperty('touch-action','pan-y','important');
+    }
+    if(root){
+      root.style.setProperty('height','auto','important');
+      root.style.setProperty('min-height','100%','important');
+      root.style.setProperty('max-height','none','important');
+      root.style.setProperty('overflow','visible','important');
+      root.style.setProperty('touch-action','pan-y','important');
+    }
+    for(const el of [page,card])if(el){
+      el.style.setProperty('height','auto','important');
+      el.style.setProperty('min-height',el===page?'100dvh':'0','important');
+      el.style.setProperty('max-height','none','important');
+      el.style.setProperty('overflow','visible','important');
+      el.style.setProperty('overflow-y','visible','important');
+      el.style.setProperty('touch-action','pan-y','important');
+    }
+    window.scrollTo({top:0,behavior:'auto'});
+    return ()=>{
+      previous.forEach(({el,cssText})=>{el.style.cssText=cssText});
+      html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active');
+    };
+  },[handoff]);
   if(handoff==='class')return <ClassUnlockScreen adventurerClassName={evaluation.jobName!} onComplete={()=>setHandoff('depart')}/>;
   if(handoff==='depart')return <NextQuestDeparture onComplete={()=>{window.location.href=householdUrl()}}/>;
   const share=async()=>{
