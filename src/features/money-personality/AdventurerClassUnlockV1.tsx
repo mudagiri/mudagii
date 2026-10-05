@@ -17,7 +17,7 @@ export default function AdventurerClassUnlockV1({jobCode,onComplete}:{jobCode:Jo
     },current.holdMs);
     return ()=>window.clearTimeout(t);
   },[step,current.holdMs,onComplete]);
-  const reveal=current.key==='result';
+  const reveal=current.key==='celebrate';
   return <main className={`mpp-transition-scene mpp-class-unlock${reveal?' is-job-revealed':''}`} data-scene="class-unlock" data-job={jobCode}>
     <section className="mpp-transition-card">
       <div className="mpp-transition-copy">{current.key==='think'?'YOUR MONEY TYPE → QUEST CLASS':current.key==='unlock'?'CLASS SIGNAL FOUND':'ADVENTURER CLASS UNLOCKED'}</div>
