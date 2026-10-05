@@ -36,7 +36,7 @@ const poses=[
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:390,height:844}});
 await page.emulateMedia({reducedMotion:'reduce',colorScheme:'dark'});
-await page.goto(base,{waitUntil:'networkidle'});
+await page.goto(base+'?adaptive=money-type',{waitUntil:'networkidle'});
 
 const report=await page.evaluate(async (poseList)=>{
   async function measure(id,file){
@@ -96,6 +96,7 @@ if(sourceSpread<1.15)throw new Error(`MUDAGIRI_OPTICAL_SOURCE_SPREAD_NOT_REPRODU
 // Now verify the rendered question stage compensates for that source-padding difference.
 await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
 await page.reload({waitUntil:'networkidle'});
+await page.getByRole('button',{name:'診断をはじめる'}).waitFor({state:'visible'});
 await page.getByRole('button',{name:'診断をはじめる'}).click();
 await page.locator('.mpp-question-card').waitFor({state:'visible'});
 
