@@ -227,6 +227,106 @@
 }
 .mpp-result-v4-chapter-label::after{transform:scaleX(-1)}
 
+/* SSR opening card: the Result itself is the reward. */
+.mpp-result-ssr-card{
+  width:min(100%,430px);
+  min-height:0;
+  margin:0 auto 12px;
+  padding:15px 16px 16px;
+  overflow:hidden;
+  border:2px solid rgba(255,215,90,.72);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 50% 27%,rgba(184,135,255,.20),transparent 38%),
+    radial-gradient(circle at 50% 2%,rgba(255,225,128,.10),transparent 31%),
+    linear-gradient(180deg,rgba(2,52,60,.98),rgba(1,31,38,.99));
+  box-shadow:
+    0 26px 65px rgba(0,0,0,.44),
+    0 0 0 1px rgba(255,244,190,.11) inset,
+    0 0 44px rgba(255,212,89,.10);
+  isolation:isolate;
+  transform-origin:50% 18%;
+  animation:mppSsrCardReveal 1.05s cubic-bezier(.18,.82,.22,1) both;
+}
+.mpp-result-ssr-card::before{
+  content:'';
+  position:absolute;
+  inset:-35%;
+  z-index:-1;
+  pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0 15%,rgba(255,225,128,.10) 19%,transparent 23% 48%,rgba(115,219,255,.08) 53%,transparent 58% 100%);
+  animation:mppSsrAuraSpin 9s linear infinite;
+}
+.mpp-result-ssr-card::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:8;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.28) 47%,rgba(255,231,148,.16) 52%,transparent 69%);
+  transform:translateX(-135%);
+  animation:mppSsrCardShine 1.25s .55s ease-out both;
+}
+.mpp-result-ssr-badge{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:0 auto 8px;
+  color:#ffe58b;
+  text-shadow:0 0 18px rgba(255,215,90,.24);
+}
+.mpp-result-ssr-badge b{
+  display:grid;
+  place-items:center;
+  min-width:42px;
+  min-height:24px;
+  padding:3px 8px;
+  border:1px solid rgba(255,229,139,.72);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,216,92,.20),rgba(255,183,39,.07));
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.12em;
+}
+.mpp-result-ssr-badge span{
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.16em;
+  opacity:.86;
+}
+.mpp-result-ssr-card .mpp-kicker{font-size:9px;opacity:.74}
+.mpp-result-ssr-card .mpp-job-no{font-size:11px;letter-spacing:.16em}
+.mpp-result-ssr-card .mpp-result-job-hero{margin-top:0}
+.mpp-result-ssr-card .mpp-result-v4-hit{
+  margin-top:4px;
+  background:linear-gradient(180deg,rgba(3,57,65,.86),rgba(2,35,43,.93));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.mpp-result-card-share{
+  width:min(100%,430px);
+  margin:0 auto 18px!important;
+  border-color:rgba(255,215,90,.45)!important;
+  color:#fff6d5!important;
+  background:linear-gradient(180deg,rgba(29,31,32,.92),rgba(10,12,13,.96))!important;
+}
+
+@keyframes mppSsrCardReveal{
+  0%{opacity:0;transform:perspective(900px) rotateY(-72deg) scale(.78) translateY(18px);filter:brightness(.55) blur(2px)}
+  55%{opacity:1;transform:perspective(900px) rotateY(7deg) scale(1.025) translateY(-2px);filter:brightness(1.16) blur(0)}
+  76%{transform:perspective(900px) rotateY(-2deg) scale(.992)}
+  100%{opacity:1;transform:perspective(900px) rotateY(0) scale(1);filter:none}
+}
+@keyframes mppSsrCardShine{
+  0%{transform:translateX(-135%);opacity:0}
+  25%{opacity:.8}
+  100%{transform:translateX(135%);opacity:0}
+}
+@keyframes mppSsrAuraSpin{to{transform:rotate(360deg)}}
+
 /* Optical audit 2026-10-05:
    IDLE_01 alpha bbox height 466, LISTEN 572, IDLE_02 580 on their source canvases.
    Same CSS box therefore looked dramatically different. Normalize to the median visible height (572).
@@ -255,6 +355,9 @@ html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-
   .mpp-page--result .mpp-result-profile{grid-template-columns:1fr!important}
   .mpp-page--result .mpp-result-profile>div:first-child,
   .mpp-page--result .mpp-result-profile>div:nth-child(4){grid-column:auto}
+  .mpp-result-ssr-card{min-height:0;padding:13px 12px 14px;border-radius:24px}
+  .mpp-result-ssr-card .mpp-result-job-character{width:min(57vw,220px)}
+  .mpp-result-ssr-card .mpp-result-v4-hit li{font-size:11.5px;line-height:1.48}
 
   /* Make enough room for the normalized IDLE_01 visual without clipping or colliding with speech. */
   html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion,
@@ -266,4 +369,9 @@ html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-
     grid-template-columns:84px minmax(0,1fr)!important;
     overflow:visible!important;
   }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mpp-result-ssr-card{animation:none}
+  .mpp-result-ssr-card::before,.mpp-result-ssr-card::after{animation:none}
 }
