@@ -1,7 +1,7 @@
 import React from 'react';
 import {JOBS,type JobCode,type StyleId} from './classifierV1';
 import {moneyTypeCode} from './money-type-code-v1';
-import {DAILY_SCENE_LIBRARY_SIZE,JOB_AXES,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV3';
+import {DAILY_SCENE_LIBRARY_SIZE,JOB_AXES,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV4';
 import './result-competitive-v6.css';
 
 type Props={
