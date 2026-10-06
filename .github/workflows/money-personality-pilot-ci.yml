@@ -45,5 +45,7 @@ jobs:
         run: npm run qa:money-result-content
       - name: Result persona QA
         run: npm run qa:money-result-personas
+      - name: Everyday scene resonance QA
+        run: npm run qa:money-scenes
       - name: Pilot QA
         run: npm run qa:money-pilot
