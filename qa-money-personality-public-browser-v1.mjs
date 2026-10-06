@@ -136,9 +136,11 @@ for(let guard=0;guard<80;guard++){
 
 await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
+await page.locator('.mpp-result-ssr-card').waitFor({state:'visible',timeout:3000});
 await page.waitForFunction(()=>{const img=document.querySelector('.mpp-result-job-hero .mpp-job-character img');return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0},{timeout:5000});
 await assertJobImageLoaded('.mpp-result-job-hero','result-hero');
-await screenshot('05-result');
+await page.waitForTimeout(1100);
+await screenshot('05-result-ssr-card');
 
 const resultV4Geometry=await page.evaluate(()=>{
   const hero=document.querySelector('.mpp-result-v4-hero');
@@ -150,11 +152,13 @@ const resultV4Geometry=await page.evaluate(()=>{
     hit:hitRect?{top:hitRect.top,bottom:hitRect.bottom,height:hitRect.height}:null,
     innerHeight,
     checkCount:document.querySelectorAll('.mpp-result-v4-hit li').length,
+    hasSsrBadge:Boolean(document.querySelector('.mpp-result-ssr-badge')),
   };
 });
 if(!resultV4Geometry.hero||!resultV4Geometry.hit)throw new Error('MONEY_PUBLIC_RESULT_V4_HERO_MISSING:'+JSON.stringify(resultV4Geometry));
 if(resultV4Geometry.checkCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_CHECK_COUNT_BAD:'+JSON.stringify(resultV4Geometry));
-if(resultV4Geometry.hit.bottom>resultV4Geometry.innerHeight+55)throw new Error('MONEY_PUBLIC_RESULT_V4_FIRST_VIEW_TOO_TALL:'+JSON.stringify(resultV4Geometry));
+if(!resultV4Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_MISSING');
+if(resultV4Geometry.hit.bottom>resultV4Geometry.innerHeight+220)throw new Error('MONEY_PUBLIC_RESULT_SSR_CARD_TOO_TALL:'+JSON.stringify(resultV4Geometry));
 
 const resultScrollBefore=await page.evaluate(()=>{
   const root=document.scrollingElement||document.documentElement;
@@ -171,38 +175,25 @@ await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 
 const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
+if(!text.includes('TYPE UNLOCKED')||!text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_MISSING');
 if(!text.includes('これ、ある？'))throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_MISSING');
 if(!text.includes('YOUR MONEY MANUAL')||!text.includes('このタイプの正体'))throw new Error('MONEY_PUBLIC_RESULT_V4_MANUAL_MISSING');
 if(!text.includes('あなたの価値観を詳しく見ると'))throw new Error('MONEY_PUBLIC_STYLE_SYNTHESIS_MISSING');
 if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('ハマりやすい罠')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
-if(!text.includes('SSRカードを獲得する'))throw new Error('MONEY_PUBLIC_SSR_UNLOCK_CTA_MISSING');
+if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
+if(!text.includes('このTYPEカードをシェア'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
-await page.getByRole('button',{name:'SSRカードを獲得する'}).click();
-await page.locator('.mpp-class-unlock').waitFor({state:'visible',timeout:3000});
-if((await page.locator('.mpp-class-unlock').getAttribute('data-scene'))!=='class-unlock')throw new Error('MONEY_PUBLIC_CLASS_SCENE_BAD');
-await page.locator('.mpp-class-unlock.is-job-revealed').waitFor({state:'visible',timeout:7000});
-await page.waitForFunction(()=>{const img=document.querySelector('.mpp-class-unlock .mpp-job-character img');return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0},{timeout:5000});
-await assertJobImageLoaded('.mpp-class-unlock','class-unlock');
-await screenshot('06-class-unlock');
-
-await page.getByRole('button',{name:'SSRカードを受け取る'}).click();
-await page.locator('.mpp-job-share-card').waitFor({state:'visible',timeout:3000});
-await page.waitForFunction(()=>{const img=document.querySelector('.mpp-job-share-card .mpp-job-character img');return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0},{timeout:5000});
-await assertJobImageLoaded('.mpp-job-share-card','ssr-share-card');
-const shareCardText=((await page.locator('.mpp-job-share-card').textContent())||'').replace(/\s+/g,' ');
-if(!shareCardText.includes('1 OF 32')||!shareCardText.includes('あなたのTYPEも見せて。'))throw new Error('MONEY_PUBLIC_SSR_SHARE_CARD_COPY_BAD:'+shareCardText);
-if(!await page.getByRole('button',{name:/をシェアする/}).count())throw new Error('MONEY_PUBLIC_SSR_SHARE_BUTTON_MISSING');
-await screenshot('07-ssr-share-card');
-
-await page.getByRole('button',{name:'次のクエストを選ぶ'}).click();
+await page.getByRole('button',{name:'次のクエストへ進む'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
-await screenshot('08-next-routes');
+await screenshot('06-next-routes');
+const routesText=((await page.locator('.mpp-next-routes').textContent())||'').replace(/\s+/g,' ');
+if(!routesText.includes('SSR ACQUIRED')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
@@ -218,7 +209,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedClassUnlock:true,capturedSsrShareCard:true,capturedNextRoutes:true,personalizedResult:true,resultV4:true,firstQuestionGeometry,resultV4Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV4:true,firstQuestionGeometry,resultV4Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
