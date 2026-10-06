@@ -21,7 +21,9 @@ assert(!resultUi.includes('DAILY_SCENE_LIBRARY_SIZE'),`RESULT_UI_EXPOSES_INTERNA
 assert(resultUi.includes("primaryScenes=scenes.slice(0,3)"),`RESULT_UI_NOT_RECOGNITION_FIRST_THREE`);
 assert(resultUi.indexOf('mpp-v7-scenes')<resultUi.indexOf('mpp-v7-type-core'),`RESULT_UI_EXPLAINS_BEFORE_RECOGNITION`);
 assert(!resultUi.includes('WHY THIS TYPE?'),`RESULT_UI_DUPLICATES_AXIS_EXPLANATION`);
-for(const selector of ['.mpp-vivid-scene','.mpp-result-v4-identity','.mpp-style-synthesis']){
+assert(resultUi.indexOf('mpp-v7-compare')<resultUi.indexOf('mpp-v7-variant-details'),`RESULT_UI_SECONDARY_NUANCE_TOO_EARLY`);
+assert(resultUi.includes('<details className="mpp-v7-variant-details">'),`RESULT_UI_SECONDARY_NUANCE_NOT_COLLAPSED`);
+for(const selector of ['.mpp-vivid-scene','.mpp-result-v4-hit','.mpp-result-v4-identity','.mpp-style-synthesis']){
   assert(resultV7Css.includes(selector),`RESULT_DUPLICATE_SECTION_NOT_HIDDEN:${selector}`);
 }
 
@@ -85,7 +87,7 @@ assert(signatures.size>=20,`SCENE_SIGNATURE_VARIETY_LOW:${signatures.size}`);
 
 console.log(JSON.stringify({
   ok:true,
-  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V4',
+  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V5',
   librarySize:DAILY_SCENE_LIBRARY_SIZE,
   publicTypePatterns:PUBLIC_TYPE_PATTERN_COUNT,
   types:totalTypes,
@@ -97,4 +99,5 @@ console.log(JSON.stringify({
   vaguePointerGuard:true,
   recognitionFirst:true,
   duplicateLegacySectionsHidden:true,
+  secondaryNuanceCollapsed:true,
 },null,2));
