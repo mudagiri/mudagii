@@ -13,6 +13,14 @@ type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:read
 
 const WIDTH=1080;
 const HEIGHT=1350;
+const SECONDARY:Record<JobCode,string>={
+  FDM:'#ff6b4a',FDP:'#ffd166',FNM:'#a98cff',FNP:'#3c9fff',
+  IDM:'#ffd071',IDP:'#ff7858',INM:'#39e7ff',INP:'#ff5f72',
+};
+const DEEP:Record<JobCode,string>={
+  FDM:'#281409',FDP:'#0b2619',FNM:'#081a38',FNP:'#052a32',
+  IDM:'#32140f',IDP:'#261b11',INM:'#190b3c',INP:'#0b1e38',
+};
 
 function roundedRect(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number){
   const rr=Math.min(r,w/2,h/2);
@@ -54,73 +62,159 @@ async function canvasBlob(canvas:HTMLCanvasElement){
   return new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('share image export failed')),'image/png'));
 }
 
+function drawStar(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:string,alpha=.8){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(Math.PI/4);
+  ctx.globalAlpha=alpha;
+  ctx.fillStyle=color;
+  ctx.fillRect(-r/2,-r/2,r,r);
+  ctx.shadowColor=color;
+  ctx.shadowBlur=r*2.4;
+  ctx.fillRect(-r/3,-r/3,r*.66,r*.66);
+  ctx.restore();
+}
+
 export async function createJobShareImage({jobCode,primaryStyle,styleLabel,features=[]}:Args){
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
+  const accent=asset.accent;
+  const secondary=SECONDARY[jobCode];
+  const deep=DEEP[jobCode];
   const canvas=document.createElement('canvas');
   canvas.width=WIDTH;
   canvas.height=HEIGHT;
   const ctx=canvas.getContext('2d');
   if(!ctx)throw new Error('canvas unavailable');
 
-  const bg=ctx.createLinearGradient(0,0,0,HEIGHT);
-  bg.addColorStop(0,'#062e36');
-  bg.addColorStop(.55,'#041f28');
-  bg.addColorStop(1,'#02151d');
+  const bg=ctx.createLinearGradient(0,0,WIDTH,HEIGHT);
+  bg.addColorStop(0,deep);
+  bg.addColorStop(.42,'#07121f');
+  bg.addColorStop(.72,'#080a18');
+  bg.addColorStop(1,'#01030a');
   ctx.fillStyle=bg;
   ctx.fillRect(0,0,WIDTH,HEIGHT);
 
-  const glow=ctx.createRadialGradient(WIDTH/2,460,30,WIDTH/2,460,500);
-  glow.addColorStop(0,`${asset.accent}66`);
-  glow.addColorStop(.48,`${asset.accent}20`);
-  glow.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=glow;
-  ctx.fillRect(0,0,WIDTH,900);
+  const glowA=ctx.createRadialGradient(220,190,10,220,190,520);
+  glowA.addColorStop(0,`${accent}7d`);
+  glowA.addColorStop(.36,`${accent}2d`);
+  glowA.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glowA;
+  ctx.fillRect(0,0,WIDTH,820);
 
-  roundedRect(ctx,54,54,WIDTH-108,HEIGHT-108,36);
-  ctx.fillStyle='rgba(2,24,31,.54)';
+  const glowB=ctx.createRadialGradient(850,510,10,850,510,520);
+  glowB.addColorStop(0,`${secondary}66`);
+  glowB.addColorStop(.42,`${secondary}22`);
+  glowB.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glowB;
+  ctx.fillRect(300,0,780,1000);
+
+  ctx.save();
+  ctx.translate(WIDTH/2,505);
+  ctx.globalAlpha=.13;
+  for(let i=0;i<18;i++){
+    ctx.rotate(Math.PI/9);
+    const ray=ctx.createLinearGradient(60,0,520,0);
+    ray.addColorStop(0,'rgba(255,255,255,.36)');
+    ray.addColorStop(.35,`${i%2?accent:secondary}66`);
+    ray.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=ray;
+    ctx.fillRect(70,-2,470,4);
+  }
+  ctx.restore();
+
+  roundedRect(ctx,46,46,WIDTH-92,HEIGHT-92,46);
+  const panel=ctx.createLinearGradient(0,46,WIDTH,HEIGHT-46);
+  panel.addColorStop(0,'rgba(10,16,32,.54)');
+  panel.addColorStop(.5,'rgba(3,8,20,.72)');
+  panel.addColorStop(1,'rgba(0,2,10,.88)');
+  ctx.fillStyle=panel;
   ctx.fill();
-  ctx.lineWidth=4;
-  ctx.strokeStyle='#e9c85d';
+  ctx.lineWidth=6;
+  ctx.strokeStyle='#f2d56f';
+  ctx.shadowColor='#f2d56f';
+  ctx.shadowBlur=18;
+  ctx.stroke();
+  ctx.shadowBlur=0;
+
+  roundedRect(ctx,62,62,WIDTH-124,HEIGHT-124,38);
+  ctx.lineWidth=2;
+  ctx.strokeStyle=`${secondary}bb`;
   ctx.stroke();
 
-  text(ctx,'MUDAGIRI / MONEY TYPE',92,108,24,800,'left','#d8e5e3');
-  text(ctx,'1 OF 32',WIDTH-92,108,24,900,'right','#f0d97f');
-  text(ctx,'SSR / TYPE UNLOCKED',WIDTH/2,168,32,950,'center','#f0d46a');
-  text(ctx,typeCode,WIDTH/2,258,112,950,'center','#ffffff');
-  text(ctx,`${styleLabel} STYLE`,WIDTH/2,338,32,900,'center','#d9c9ff');
+  for(const [x,y,r,c,a] of [
+    [124,190,11,accent,.95],[942,226,8,secondary,.9],[168,650,7,secondary,.75],
+    [920,724,10,accent,.8],[126,1110,7,accent,.75],[948,1040,8,secondary,.72],
+  ] as const)drawStar(ctx,x,y,r,c,a);
+
+  text(ctx,'MUDAGIRI / MONEY TYPE',92,105,24,850,'left','#e9eef6');
+  text(ctx,'1 OF 32',WIDTH-92,105,24,950,'right','#f4de8b');
+
+  roundedRect(ctx,390,134,300,58,29);
+  const badge=ctx.createLinearGradient(0,134,0,192);
+  badge.addColorStop(0,'#fff0aa');
+  badge.addColorStop(.52,'#efbd35');
+  badge.addColorStop(1,'#a55b08');
+  ctx.fillStyle=badge;
+  ctx.fill();
+  ctx.lineWidth=2;
+  ctx.strokeStyle='#fff2b8';
+  ctx.stroke();
+  text(ctx,'SSR / TYPE UNLOCKED',WIDTH/2,163,25,1000,'center','#341700');
+
+  text(ctx,typeCode,WIDTH/2,270,116,1000,'center','#ffffff');
+  ctx.save();
+  ctx.shadowColor=secondary;
+  ctx.shadowBlur=28;
+  text(ctx,typeCode,WIDTH/2,270,116,1000,'center','#ffffff');
+  ctx.restore();
+  text(ctx,`${styleLabel} STYLE`,WIDTH/2,351,31,950,'center','#f7f4ff');
 
   const img=await loadImage(asset.file);
-  const boxW=570,boxH=430;
+  const boxW=620,boxH=455;
   const scale=Math.min(boxW/img.naturalWidth,boxH/img.naturalHeight);
   const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+  ctx.save();
+  ctx.shadowColor=secondary;
+  ctx.shadowBlur=48;
   ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(img,(WIDTH-w)/2,382+(boxH-h)/2,w,h);
+  ctx.drawImage(img,(WIDTH-w)/2,390+(boxH-h)/2,w,h);
+  ctx.restore();
 
-  text(ctx,asset.name,WIDTH/2,858,62,950,'center','#ffffff');
-  text(ctx,asset.tagline,WIDTH/2,916,28,750,'center','#e2eceb');
+  text(ctx,asset.name,WIDTH/2,870,66,1000,'center','#ffffff');
+  text(ctx,asset.tagline,WIDTH/2,930,28,780,'center','#e8edf3');
 
   const cardFeatures=features.slice(0,3);
   if(cardFeatures.length){
-    roundedRect(ctx,104,960,WIDTH-208,170,24);
-    ctx.fillStyle='rgba(1,45,52,.78)';
+    roundedRect(ctx,100,970,WIDTH-200,172,28);
+    const traits=ctx.createLinearGradient(100,970,980,1142);
+    traits.addColorStop(0,`${accent}20`);
+    traits.addColorStop(.45,'rgba(3,10,24,.88)');
+    traits.addColorStop(1,`${secondary}18`);
+    ctx.fillStyle=traits;
     ctx.fill();
     ctx.lineWidth=2;
-    ctx.strokeStyle='rgba(233,200,93,.55)';
+    ctx.strokeStyle='#e8cb67';
     ctx.stroke();
-    text(ctx,'YOUR TRAITS',136,991,21,950,'left','#f0d97f');
+    text(ctx,'THIS IS YOU',136,1002,21,1000,'left','#f5dc82');
     cardFeatures.forEach((feature,index)=>{
-      text(ctx,'✓',138,1030+index*37,24,950,'left','#f0d46a');
-      text(ctx,shorten(feature),180,1030+index*37,23,760,'left','#f4f8f7');
+      text(ctx,'◆',138,1042+index*36,18,950,'left',index%2?secondary:accent);
+      text(ctx,shorten(feature),178,1042+index*36,23,780,'left','#f5f7fb');
     });
   }
 
-  ctx.fillStyle='rgba(233,200,93,.55)';
-  ctx.fillRect(110,1162,WIDTH-220,2);
-  text(ctx,`CLASS ${String(asset.jobNumber).padStart(2,'0')} · ${jobCode}`,110,1205,24,850,'left','#f0d97f');
-  text(ctx,'あなたはどのTYPE？',WIDTH-110,1205,26,900,'right','#ffffff');
-  text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1260,22,750,'center','#b9cfcd');
-  text(ctx,'ムダギリ診断',WIDTH/2,1302,27,950,'center','#f2d978');
+  const divider=ctx.createLinearGradient(110,0,WIDTH-110,0);
+  divider.addColorStop(0,'rgba(242,213,111,0)');
+  divider.addColorStop(.18,'rgba(242,213,111,.8)');
+  divider.addColorStop(.5,'rgba(255,255,255,.85)');
+  divider.addColorStop(.82,'rgba(242,213,111,.8)');
+  divider.addColorStop(1,'rgba(242,213,111,0)');
+  ctx.fillStyle=divider;
+  ctx.fillRect(110,1173,WIDTH-220,2);
+  text(ctx,`CLASS ${String(asset.jobNumber).padStart(2,'0')} · ${jobCode}`,110,1215,24,900,'left','#f2d978');
+  text(ctx,'あなたはどのTYPE？',WIDTH-110,1215,26,950,'right','#ffffff');
+  text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1267,22,780,'center','#c7d1dd');
+  text(ctx,'ムダギリ診断',WIDTH/2,1307,29,1000,'center','#f4dd82');
 
   const blob=await canvasBlob(canvas);
   return new File([blob],`mudagiri-${typeCode}.png`,{type:'image/png'});
