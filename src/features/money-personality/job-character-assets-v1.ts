@@ -13,7 +13,7 @@ export type JobCharacterAsset={
   tagline:string;
 };
 
-const BASE='/assets/jobs/v1';
+const BASE=`${import.meta.env.BASE_URL}assets/jobs/v1`.replace(/\/$/,'');
 
 /**
  * Shared canonical JOB character assets used across Chapter 1 SSR reveal,
