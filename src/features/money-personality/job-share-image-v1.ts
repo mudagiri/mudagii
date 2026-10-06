@@ -9,7 +9,7 @@ type FileShareNavigator=Navigator&{
   canShare?:(data?:SharePayload)=>boolean;
 };
 
-type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string};
+type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:readonly string[]};
 
 const WIDTH=1080;
 const HEIGHT=1350;
@@ -35,6 +35,11 @@ function text(ctx:CanvasRenderingContext2D,value:string,x:number,y:number,size:n
   ctx.restore();
 }
 
+function shorten(value:string,max=27){
+  const clean=value.replace(/\s+/g,'').trim();
+  return clean.length>max?`${clean.slice(0,max)}…`:clean;
+}
+
 function loadImage(src:string){
   return new Promise<HTMLImageElement>((resolve,reject)=>{
     const img=new Image();
@@ -49,7 +54,7 @@ async function canvasBlob(canvas:HTMLCanvasElement){
   return new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('share image export failed')),'image/png'));
 }
 
-export async function createJobShareImage({jobCode,primaryStyle,styleLabel}:Args){
+export async function createJobShareImage({jobCode,primaryStyle,styleLabel,features=[]}:Args){
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const canvas=document.createElement('canvas');
@@ -65,12 +70,12 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel}:Args
   ctx.fillStyle=bg;
   ctx.fillRect(0,0,WIDTH,HEIGHT);
 
-  const glow=ctx.createRadialGradient(WIDTH/2,510,30,WIDTH/2,510,500);
+  const glow=ctx.createRadialGradient(WIDTH/2,460,30,WIDTH/2,460,500);
   glow.addColorStop(0,`${asset.accent}66`);
   glow.addColorStop(.48,`${asset.accent}20`);
   glow.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=glow;
-  ctx.fillRect(0,0,WIDTH,980);
+  ctx.fillRect(0,0,WIDTH,900);
 
   roundedRect(ctx,54,54,WIDTH-108,HEIGHT-108,36);
   ctx.fillStyle='rgba(2,24,31,.54)';
@@ -79,28 +84,43 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel}:Args
   ctx.strokeStyle='#e9c85d';
   ctx.stroke();
 
-  text(ctx,'MUDAGIRI / MONEY TYPE',92,112,26,800,'left','#d8e5e3');
-  text(ctx,'1 OF 32',WIDTH-92,112,26,900,'right','#f0d97f');
-  text(ctx,'SSR',WIDTH/2,188,42,950,'center','#f0d46a');
-  text(ctx,typeCode,WIDTH/2,292,122,950,'center','#ffffff');
-  text(ctx,`${styleLabel} STYLE`,WIDTH/2,378,34,900,'center','#d9c9ff');
+  text(ctx,'MUDAGIRI / MONEY TYPE',92,108,24,800,'left','#d8e5e3');
+  text(ctx,'1 OF 32',WIDTH-92,108,24,900,'right','#f0d97f');
+  text(ctx,'SSR / TYPE UNLOCKED',WIDTH/2,168,32,950,'center','#f0d46a');
+  text(ctx,typeCode,WIDTH/2,258,112,950,'center','#ffffff');
+  text(ctx,`${styleLabel} STYLE`,WIDTH/2,338,32,900,'center','#d9c9ff');
 
   const img=await loadImage(asset.file);
-  const boxW=620,boxH=510;
+  const boxW=570,boxH=430;
   const scale=Math.min(boxW/img.naturalWidth,boxH/img.naturalHeight);
   const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
   ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(img,(WIDTH-w)/2,430+(boxH-h)/2,w,h);
+  ctx.drawImage(img,(WIDTH-w)/2,382+(boxH-h)/2,w,h);
 
-  text(ctx,asset.name,WIDTH/2,1000,66,950,'center','#ffffff');
-  text(ctx,asset.tagline,WIDTH/2,1062,30,750,'center','#e2eceb');
+  text(ctx,asset.name,WIDTH/2,858,62,950,'center','#ffffff');
+  text(ctx,asset.tagline,WIDTH/2,916,28,750,'center','#e2eceb');
+
+  const cardFeatures=features.slice(0,3);
+  if(cardFeatures.length){
+    roundedRect(ctx,104,960,WIDTH-208,170,24);
+    ctx.fillStyle='rgba(1,45,52,.78)';
+    ctx.fill();
+    ctx.lineWidth=2;
+    ctx.strokeStyle='rgba(233,200,93,.55)';
+    ctx.stroke();
+    text(ctx,'YOUR TRAITS',136,991,21,950,'left','#f0d97f');
+    cardFeatures.forEach((feature,index)=>{
+      text(ctx,'✓',138,1030+index*37,24,950,'left','#f0d46a');
+      text(ctx,shorten(feature),180,1030+index*37,23,760,'left','#f4f8f7');
+    });
+  }
 
   ctx.fillStyle='rgba(233,200,93,.55)';
-  ctx.fillRect(110,1114,WIDTH-220,2);
-  text(ctx,`CLASS ${String(asset.jobNumber).padStart(2,'0')} · ${jobCode}`,110,1160,26,850,'left','#f0d97f');
-  text(ctx,'あなたはどのTYPE？',WIDTH-110,1160,28,900,'right','#ffffff');
-  text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1232,24,750,'center','#b9cfcd');
-  text(ctx,'ムダギリ診断',WIDTH/2,1284,30,950,'center','#f2d978');
+  ctx.fillRect(110,1162,WIDTH-220,2);
+  text(ctx,`CLASS ${String(asset.jobNumber).padStart(2,'0')} · ${jobCode}`,110,1205,24,850,'left','#f0d97f');
+  text(ctx,'あなたはどのTYPE？',WIDTH-110,1205,26,900,'right','#ffffff');
+  text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1260,22,750,'center','#b9cfcd');
+  text(ctx,'ムダギリ診断',WIDTH/2,1302,27,950,'center','#f2d978');
 
   const blob=await canvasBlob(canvas);
   return new File([blob],`mudagiri-${typeCode}.png`,{type:'image/png'});
@@ -117,13 +137,13 @@ function downloadFile(file:File){
   window.setTimeout(()=>URL.revokeObjectURL(href),1500);
 }
 
-export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel}:Args):Promise<ShareResult>{
+export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,features=[]}:Args):Promise<ShareResult>{
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const message=`私のお金タイプは「${typeCode}｜${asset.name}」だった！ ${styleLabel} STYLE｜あなたはどのTYPE？ #ムダギリ診断 #お金の性格診断`;
   const nav=navigator as FileShareNavigator;
   try{
-    const file=await createJobShareImage({jobCode,primaryStyle,styleLabel});
+    const file=await createJobShareImage({jobCode,primaryStyle,styleLabel,features});
     if(nav.share&&nav.canShare?.({files:[file]})){
       await nav.share({title:'ムダギリ｜お金の性格診断',text:message,files:[file]});
       return 'shared';
