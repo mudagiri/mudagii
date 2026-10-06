@@ -23,6 +23,7 @@ assert(PRIMARY_RECOGNITION_HIT_COUNT===96,`PRIMARY_RECOGNITION_HIT_COUNT_BAD:${P
 
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultCompetitiveV6.tsx','utf8');
 const resultV7Css=fs.readFileSync('./src/features/money-personality/result-competitive-v7.css','utf8');
+const resultV8Css=fs.readFileSync('./src/features/money-personality/result-competitive-v8.css','utf8');
 for(const word of VAGUE_POINTERS)assert(!resultUi.includes(word),`RESULT_UI_VAGUE_POINTER:${word}`);
 assert(!resultUi.includes('scene.body'),`RESULT_UI_REPEATS_SCENE_BODY`);
 assert(!resultUi.includes('scene.insight'),`RESULT_UI_REPEATS_SCENE_INSIGHT`);
@@ -30,10 +31,17 @@ assert(!resultUi.includes('DAILY_SCENE_LIBRARY_SIZE'),`RESULT_UI_EXPOSES_INTERNA
 assert(resultUi.includes("primaryScenes=scenes.slice(0,3)"),`RESULT_UI_NOT_RECOGNITION_FIRST_THREE`);
 assert(resultUi.indexOf('mpp-v7-scenes')<resultUi.indexOf('mpp-v7-type-core'),`RESULT_UI_EXPLAINS_BEFORE_RECOGNITION`);
 assert(!resultUi.includes('WHY THIS TYPE?'),`RESULT_UI_DUPLICATES_AXIS_EXPLANATION`);
+assert(resultUi.indexOf('mpp-v8-weapon')<resultUi.indexOf('mpp-v7-compare'),`RESULT_UI_WEAPON_ARC_TOO_LATE`);
+assert(resultUi.includes('WEAPON_ARC:Record<JobCode,WeaponArc>'),`RESULT_UI_WEAPON_ARC_MISSING`);
+assert(resultUi.includes('武器と暴走 / WEAPON → OVERDRIVE'),`RESULT_UI_WEAPON_OVERDRIVE_COPY_MISSING`);
+assert(resultUi.includes('この武器がうまく働くと')&&resultUi.includes('暴走すると')&&resultUi.includes('扱い方はこれだけ'),`RESULT_UI_WEAPON_CAUSAL_FLOW_MISSING`);
 assert(resultUi.indexOf('mpp-v7-compare')<resultUi.indexOf('mpp-v7-variant-details'),`RESULT_UI_SECONDARY_NUANCE_TOO_EARLY`);
 assert(resultUi.includes('<details className="mpp-v7-variant-details">'),`RESULT_UI_SECONDARY_NUANCE_NOT_COLLAPSED`);
 for(const selector of ['.mpp-vivid-scene','.mpp-result-v4-hit','.mpp-result-v4-identity','.mpp-style-synthesis']){
   assert(resultV7Css.includes(selector),`RESULT_DUPLICATE_SECTION_NOT_HIDDEN:${selector}`);
+}
+for(const selector of ['.mpp-result-v4-section-title','.mpp-result-companion--tight','.mpp-dialogue','.mpp-result-profile']){
+  assert(resultV8Css.includes(selector),`RESULT_LEGACY_MANUAL_NOT_HIDDEN:${selector}`);
 }
 
 const signatures=new Set<string>();
@@ -120,7 +128,7 @@ assert(signatures.size>=20,`SCENE_SIGNATURE_VARIETY_LOW:${signatures.size}`);
 
 console.log(JSON.stringify({
   ok:true,
-  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V7',
+  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V8',
   librarySize:DAILY_SCENE_LIBRARY_SIZE,
   publicTypePatterns:PUBLIC_TYPE_PATTERN_COUNT,
   primaryRecognitionHits:PRIMARY_RECOGNITION_HIT_COUNT,
@@ -139,5 +147,7 @@ console.log(JSON.stringify({
   nonRepeatingPrimaryTripleGuard:true,
   recognitionFirst:true,
   duplicateLegacySectionsHidden:true,
+  legacyManualHidden:true,
+  weaponOverdriveCausalFlow:true,
   secondaryNuanceCollapsed:true,
 },null,2));
