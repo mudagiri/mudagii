@@ -1,16 +1,18 @@
 import fs from 'node:fs';
-import {corePatternForType,dailyScenesForType,DAILY_SCENE_LIBRARY_SIZE,PUBLIC_TYPE_PATTERN_COUNT} from './src/features/money-personality/resultDailySceneNarrativeV5';
+import {corePatternForType,dailyScenesForType,DAILY_SCENE_LIBRARY_SIZE,PUBLIC_TYPE_PATTERN_COUNT,PRIMARY_RECOGNITION_HIT_COUNT} from './src/features/money-personality/resultDailySceneNarrativeV6';
 import type {JobCode,StyleId} from './src/features/money-personality/classifierV1';
 
 const JOBS:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
 const STYLES:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
 const FORBIDDEN=['浪費家','ズボラ','ケチ','衝動買い','何も考えない','必ずこうする','絶対こうする'];
 const VAGUE_POINTERS=['こっち','そっち','あっち','こちら','どっち'];
+const ARBITRARY_VISIBLE_NUMBERS=['数か月','数年','半年','20分','数千円'];
 
 function assert(ok:unknown,message:string):asserts ok{if(!ok)throw new Error(message)}
 
 assert(DAILY_SCENE_LIBRARY_SIZE>=50,`SCENE_LIBRARY_TOO_SMALL:${DAILY_SCENE_LIBRARY_SIZE}`);
 assert(PUBLIC_TYPE_PATTERN_COUNT===32,`TYPE_PATTERN_COUNT_BAD:${PUBLIC_TYPE_PATTERN_COUNT}`);
+assert(PRIMARY_RECOGNITION_HIT_COUNT===96,`PRIMARY_RECOGNITION_HIT_COUNT_BAD:${PRIMARY_RECOGNITION_HIT_COUNT}`);
 
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultCompetitiveV6.tsx','utf8');
 const resultV7Css=fs.readFileSync('./src/features/money-personality/result-competitive-v7.css','utf8');
@@ -30,9 +32,11 @@ for(const selector of ['.mpp-vivid-scene','.mpp-result-v4-hit','.mpp-result-v4-i
 const signatures=new Set<string>();
 const patternHeadlines=new Set<string>();
 const patternWhys=new Set<string>();
+const primaryVoiceTriples=new Set<string>();
 let totalScenes=0;
 let totalTypes=0;
 let minCategoryDiversity=99;
+let maxPrimaryVoiceLength=0;
 
 for(const job of JOBS){
   const jobSignatures=new Set<string>();
@@ -47,6 +51,7 @@ for(const job of JOBS){
     const coreText=`${pattern.headline}${pattern.why}`;
     for(const word of FORBIDDEN)assert(!coreText.includes(word),`TYPE_CORE_OVERINFERENCE:${job}-${style}:${word}`);
     for(const word of VAGUE_POINTERS)assert(!coreText.includes(word),`TYPE_CORE_VAGUE_POINTER:${job}-${style}:${word}`);
+    for(const word of ARBITRARY_VISIBLE_NUMBERS)assert(!coreText.includes(word),`TYPE_CORE_ARBITRARY_NUMBER:${job}-${style}:${word}`);
 
     const scenes=dailyScenesForType(job,style,6);
     assert(scenes.length===6,`SCENE_COUNT_BAD:${job}-${style}:${scenes.length}`);
@@ -71,8 +76,15 @@ for(const job of JOBS){
       for(const word of FORBIDDEN)assert(!allText.includes(word),`SCENE_OVERINFERENCE:${job}-${style}:${index}:${word}`);
       const visibleText=`${scene.title}${scene.voice}`;
       for(const word of VAGUE_POINTERS)assert(!visibleText.includes(word),`SCENE_VISIBLE_VAGUE_POINTER:${job}-${style}:${index}:${word}`);
+      if(index<3){
+        maxPrimaryVoiceLength=Math.max(maxPrimaryVoiceLength,scene.voice.length);
+        assert(scene.voice.length<=105,`PRIMARY_SCENE_VOICE_TOO_LONG:${job}-${style}:${index}:${scene.voice.length}:${scene.voice}`);
+        for(const word of ARBITRARY_VISIBLE_NUMBERS)assert(!visibleText.includes(word),`PRIMARY_SCENE_ARBITRARY_NUMBER:${job}-${style}:${index}:${word}`);
+      }
     });
 
+    const primaryTriple=voices.slice(0,3).join('|');
+    primaryVoiceTriples.add(primaryTriple);
     const signature=labels.slice(0,4).join('|');
     signatures.add(signature);
     jobSignatures.add(signature);
@@ -83,20 +95,25 @@ for(const job of JOBS){
 assert(totalTypes===32,`TYPE_COUNT_BAD:${totalTypes}`);
 assert(patternHeadlines.size===32,`TYPE_CORE_HEADLINE_NOT_UNIQUE:${patternHeadlines.size}`);
 assert(patternWhys.size===32,`TYPE_CORE_WHY_NOT_UNIQUE:${patternWhys.size}`);
+assert(primaryVoiceTriples.size===32,`PRIMARY_VOICE_TRIPLES_NOT_UNIQUE:${primaryVoiceTriples.size}`);
 assert(signatures.size>=20,`SCENE_SIGNATURE_VARIETY_LOW:${signatures.size}`);
 
 console.log(JSON.stringify({
   ok:true,
-  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V5',
+  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V6',
   librarySize:DAILY_SCENE_LIBRARY_SIZE,
   publicTypePatterns:PUBLIC_TYPE_PATTERN_COUNT,
+  primaryRecognitionHits:PRIMARY_RECOGNITION_HIT_COUNT,
   types:totalTypes,
   renderedScenes:totalScenes,
   uniqueCoreHeadlines:patternHeadlines.size,
   uniqueCoreWhys:patternWhys.size,
+  uniquePrimaryVoiceTriples:primaryVoiceTriples.size,
   uniquePrimarySignatures:signatures.size,
   minCategoryDiversity,
+  maxPrimaryVoiceLength,
   vaguePointerGuard:true,
+  arbitraryVisibleNumberGuard:true,
   recognitionFirst:true,
   duplicateLegacySectionsHidden:true,
   secondaryNuanceCollapsed:true,
