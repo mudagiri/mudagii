@@ -10,6 +10,7 @@ type Props={
 };
 
 type JobAxes={time:'F'|'I';decision:'D'|'N';rhythm:'M'|'P'};
+type EverydayScene={label:string;title:string;body:string;voice:string};
 
 const JOB_AXES:Record<JobCode,JobAxes>={
   FDM:{time:'F',decision:'D',rhythm:'M'},
@@ -55,44 +56,92 @@ const DECISION_FLIP:Record<JobCode,JobCode>={
   FDM:'FNM',FNM:'FDM',FDP:'FNP',FNP:'FDP',IDM:'INM',INM:'IDM',IDP:'INP',INP:'IDP',
 };
 
-function spendScene(axes:JobAxes,style:StyleId){
-  const hook=STYLE_HOOK[style];
-  if(axes.time==='F')return {
-    label:'支払う直前',
-    title:'「欲しい」で終わらず、一回だけ未来が割り込む',
-    body:`「${hook}」と思っても、決める直前にこの先の予定や余白を一度だけ確認しやすい。そこで問題がないと分かると、むしろ迷いが減りやすい。`,
-  };
-  return {
-    label:'支払う直前',
-    title:'まず「今の自分に意味があるか」から判断が始まる',
-    body:`「${hook}」が今はっきりしていると、判断が動きやすい。先のことを無視するというより、まず目の前の意味を起点に考えやすい。`,
-  };
+const PHONE_STYLE:Record<StyleId,{hook:string;voice:string}>={
+  DRIVE:{hook:'仕事や毎日の動きが明確に速くなるか',voice:'これに替えたら、今よりできること増える？'},
+  ENJOY:{hook:'毎日触るたびに「これにしてよかった」と思えるか',voice:'毎日使うなら、触ってて気分いい方がよくない？'},
+  SECURE:{hook:'数年使っても困らなそうか',voice:'買った後に容量とか電池で困るのは嫌だな。'},
+  OPTIMIZE:{hook:'自分が使う機能に対して余計がないか',voice:'その機能、本当に俺使う？そこに払う必要ある？'},
+};
+
+const APPLIANCE_STYLE:Record<StyleId,{hook:string;voice:string}>={
+  DRIVE:{hook:'時短になって、今より動きやすくなるか',voice:'毎日10分でも浮くなら、結構デカくない？'},
+  ENJOY:{hook:'使うたびに生活の満足度が上がるか',voice:'毎日使うものなら、ちょっとテンション上がる方がいい。'},
+  SECURE:{hook:'故障や買い直しの心配を減らせるか',voice:'安く買ってすぐ壊れるのが一番イヤ。'},
+  OPTIMIZE:{hook:'必要な機能だけで役割がきれいに満たせるか',voice:'機能20個あっても、使うの3個じゃない？'},
+};
+
+const CLOTHES_STYLE:Record<StyleId,{hook:string;voice:string}>={
+  DRIVE:{hook:'着た時に自分の行動や見せ方を後押ししてくれるか',voice:'これ着たら、出る場所ちょっと増えそう。'},
+  ENJOY:{hook:'鏡を見た瞬間に気分が上がるか',voice:'こっち着た時の方が、普通にテンション上がる。'},
+  SECURE:{hook:'何度も着られて「失敗した」が起きにくいか',voice:'一回だけ着て終わるやつは避けたいな。'},
+  OPTIMIZE:{hook:'手持ちと合わせやすく、ちゃんと出番があるか',voice:'これ、家にある服と3パターンくらい組める？'},
+};
+
+const TRAVEL_STYLE:Record<StyleId,{hook:string;voice:string}>={
+  DRIVE:{hook:'経験として何か残るか、次につながるか',voice:'せっかく行くなら、何か持って帰れる旅にしたい。'},
+  ENJOY:{hook:'「行ってよかった」がちゃんと残るか',voice:'安く済ませて微妙になるくらいなら、満足する方がいい。'},
+  SECURE:{hook:'現地でお金や段取りを心配せず過ごせるか',voice:'行ってからずっと予算気にするのは嫌だな。'},
+  OPTIMIZE:{hook:'移動・宿・時間のムダが少なく、やりたいことに集中できるか',voice:'安くても移動で半日消えるなら、それって得？'},
+};
+
+function phoneScene(axes:JobAxes,style:StyleId):EverydayScene{
+  const s=PHONE_STYLE[style];
+  const start=axes.time==='F'
+    ?'機種変を考えると、今の不満だけじゃなく「これを2〜3年使うなら？」まで一度頭に入る。'
+    :'今のスマホで困っていることや、「今これが欲しい」がはっきりすると機種変のスイッチが入りやすい。';
+  const choose=axes.decision==='D'
+    ?'容量・電池・カメラ・価格を並べて、どれなら理由を説明できるかを比べる。'
+    :'スペックは見る。でも実機を触った時のサイズ感や「なんかこっち」の感覚が最後まで残る。';
+  const money=axes.rhythm==='M'
+    ?'だいたい今どこまで出せるかも分かっているので、その範囲で決めやすい。'
+    :'機種変のタイミングで、端末代・残債・プランまでまとめて確認すると決めやすい。';
+  return {label:'📱 スマホを買い替える時',title:s.hook,body:`${start}${choose}${money}`,voice:`「${s.voice}」`};
 }
 
-function choiceScene(axes:JobAxes){
-  if(axes.decision==='D')return {
-    label:'候補が2つで迷った時',
-    title:'「なぜこっちか」を自分で説明できる方が残る',
-    body:'値段・条件・役割をいったん並べて、選ぶ理由を作りやすい。感覚だけで押し切るより、比較して納得できることが決め手になりやすい。',
-  };
-  return {
-    label:'候補が2つで迷った時',
-    title:'比較はする。でも最後は「なんかこっち」が勝つことがある',
-    body:'条件を見ても、数字の1位がそのまま勝つとは限らない。最後に残るしっくり感や違和感を、判断材料から外しにくい。',
-  };
+function applianceScene(axes:JobAxes,style:StyleId):EverydayScene{
+  const s=APPLIANCE_STYLE[style];
+  const start=axes.time==='F'
+    ?'冷蔵庫や洗濯機みたいな家電だと、今日の値段だけじゃなく「何年使うか」「買い直しにならないか」まで気になりやすい。'
+    :'壊れた・不便・今すぐ改善したい、みたいに目の前の必要性が見えると一気に検討が現実的になる。';
+  const choose=axes.decision==='D'
+    ?'サイズ・性能・保証・価格を比較して、「この差額ならこの機能に払う」と理由を作れる方が残りやすい。'
+    :'数字は悪くなくても、店頭で見て「でかすぎる」「使いにくそう」があると候補から落ちやすい。';
+  const money=axes.rhythm==='M'
+    ?'今の余力感があるので、予算内かどうかを見ながら候補を絞りやすい。'
+    :'買い替えという節目で一度家計を見て、「ここまでならOK」を作ると動きやすい。';
+  return {label:'🏠 家電を買う時',title:s.hook,body:`${start}${choose}${money}`,voice:`「${s.voice}」`};
 }
 
-function reviewScene(axes:JobAxes){
-  if(axes.rhythm==='M')return {
-    label:'家計を見直す時',
-    title:'ゼロから確認するより、普段の「だいたい今ここ」から始める',
-    body:'財布の現在地や余力感を普段からつかみやすいので、判断のたびに全部を見直すより「今どの辺か」を土台に考えやすい。',
-  };
-  return {
-    label:'家計を見直す時',
-    title:'毎日ではなく、「今見る意味がある」時にスイッチが入る',
-    body:'予定・請求・更新など節目が来ると、そこでまとめて確認しやすい。常時管理するより、意味のあるタイミングで整える方が自然。',
-  };
+function clothesScene(axes:JobAxes,style:StyleId):EverydayScene{
+  const s=CLOTHES_STYLE[style];
+  const start=axes.time==='F'
+    ?'服を見る時も、その場で欲しいだけじゃなく「来月も着る？」「この先どこで着る？」が少し頭に入りやすい。'
+    :'試着して「今の自分にこれいい」が出ると、検討が一気に具体的になりやすい。';
+  const choose=axes.decision==='D'
+    ?'値段・素材・着回し・手持ちとの相性を見て、買う理由がちゃんと残る方を選びやすい。'
+    :'条件を見ても、鏡を見た瞬間の「こっちの方が似合う」が最後の決め手になることがある。';
+  const money=axes.rhythm==='M'
+    ?'今月どのくらい使っているかの感覚があるので、「今買うか」をその場で判断しやすい。'
+    :'セール・季節の変わり目・買い替えなどのタイミングで、まとめて見直す方が選びやすい。';
+  return {label:'👕 洋服・靴を買う時',title:s.hook,body:`${start}${choose}${money}`,voice:`「${s.voice}」`};
+}
+
+function travelScene(axes:JobAxes,style:StyleId):EverydayScene{
+  const s=TRAVEL_STYLE[style];
+  const start=axes.time==='F'
+    ?'旅行を決める時は、行きたい気持ちと一緒に、その前後の予定や支払いまで少し先を見やすい。'
+    :'「今ここ行きたい」「この時期しかない」が強いと、そこを起点に予定を組み始めやすい。';
+  const choose=axes.decision==='D'
+    ?'ホテル・航空券・場所・レビューを並べて、価格差にちゃんと意味があるかを比べる。'
+    :'比較はしても、写真や雰囲気を見て「ここに泊まりたい」が出ると、その候補が急に強くなる。';
+  const money=axes.rhythm==='M'
+    ?'今の余力が見えているぶん、「このくらいなら楽しめる」の線を作りやすい。'
+    :'予約する節目で旅費全体を一度確認すると、その後は旅行そのものに集中しやすい。';
+  return {label:'✈️ 旅行を決める時',title:s.hook,body:`${start}${choose}${money}`,voice:`「${s.voice}」`};
+}
+
+function everydayScenes(axes:JobAxes,style:StyleId):EverydayScene[]{
+  return [phoneScene(axes,style),applianceScene(axes,style),clothesScene(axes,style),travelScene(axes,style)];
 }
 
 function whyType(axes:JobAxes){
@@ -119,16 +168,16 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
   const secondaryCode=moneyTypeCode(jobCode,secondaryStyle);
   const otherJob=DECISION_FLIP[jobCode];
   const otherCode=moneyTypeCode(otherJob,primaryStyle);
-  const scenes=[spendScene(axes,primaryStyle),choiceScene(axes),reviewScene(axes)];
+  const scenes=everydayScenes(axes,primaryStyle);
   const why=whyType(axes);
   const misread=MISREAD[jobCode];
 
   return <div className="mpp-v6-deep">
     <section className="mpp-v6-section mpp-v6-life">
       <div className="mpp-v6-kicker">MONEY IN REAL LIFE</div>
-      <h2>お金になると、こう出やすい。</h2>
-      <p className="mpp-v6-lead">同じ性格でも、場面が変わると出方が変わる。あなたの3つの判断パターン。</p>
-      <div className="mpp-v6-scenes">{scenes.map((scene,i)=><article key={scene.label}><small>0{i+1} / {scene.label}</small><b>{scene.title}</b><p>{scene.body}</p></article>)}</div>
+      <h2>たとえば、こんな時にあなたが出る。</h2>
+      <p className="mpp-v6-lead">抽象論じゃなく、誰でも想像しやすい4つの場面で見ると、このTYPEのクセがかなり分かりやすい。</p>
+      <div className="mpp-v6-scenes">{scenes.map((scene,i)=><article key={scene.label}><small>0{i+1} / {scene.label}</small><b>{scene.title}</b><p>{scene.body}</p><blockquote className="mpp-v6-scene-voice">{scene.voice}</blockquote></article>)}</div>
     </section>
 
     <section className="mpp-v6-section mpp-v6-misread">
@@ -150,7 +199,7 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
         <article><small>同じJOB・STYLE違い</small><b>{secondaryCode}｜{JOBS[jobCode]}</b><p>JOBは同じでも、{typeCode}は「{STYLE_HOOK[primaryStyle]}」が主軸。{secondaryCode}は「{STYLE_HOOK[secondaryStyle]}」が主軸になる。</p></article>
         <article><small>同じSTYLE・決め方違い</small><b>{otherCode}｜{JOBS[otherJob]}</b><p>{comparisonCopy(axes,otherJob)}</p></article>
       </div>
-      <p className="mpp-v6-social-hook">友だちのTYPEが分かったら、ここを比べると違いがかなり見えやすい。</p>
+      <p className="mpp-v6-social-hook">友だちのTYPEが分かったら、スマホ・服・旅行みたいな同じ場面で比べると違いがかなり見えやすい。</p>
     </section>
 
     <section className="mpp-v6-section mpp-v6-why">
