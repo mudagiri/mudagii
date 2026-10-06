@@ -145,7 +145,6 @@ if(!resultV4Geometry.hero||!resultV4Geometry.hit)throw new Error('MONEY_PUBLIC_R
 if(resultV4Geometry.checkCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_CHECK_COUNT_BAD:'+JSON.stringify(resultV4Geometry));
 if(resultV4Geometry.hit.bottom>resultV4Geometry.innerHeight+55)throw new Error('MONEY_PUBLIC_RESULT_V4_FIRST_VIEW_TOO_TALL:'+JSON.stringify(resultV4Geometry));
 
-// Result must be a genuinely scrollable document on a phone, not a 100dvh scroll trap.
 const resultScrollBefore=await page.evaluate(()=>{
   const root=document.scrollingElement||document.documentElement;
   const htmlStyle=getComputedStyle(document.documentElement),bodyStyle=getComputedStyle(document.body);
@@ -163,18 +162,17 @@ const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
 if(!text.includes('これ、ある？'))throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_MISSING');
 if(!text.includes('YOUR MONEY MANUAL')||!text.includes('このタイプの正体'))throw new Error('MONEY_PUBLIC_RESULT_V4_MANUAL_MISSING');
-if(!text.includes('あなたが価値を感じやすい順'))throw new Error('MONEY_PUBLIC_STYLE_SYNTHESIS_MISSING');
+if(!text.includes('あなたの価値観を詳しく見ると'))throw new Error('MONEY_PUBLIC_STYLE_SYNTHESIS_MISSING');
 if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('ハマりやすい罠')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
-if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_HOUSEHOLD_CTA_MISSING');
+if(!text.includes('冒険者CLASSを解放する'))throw new Error('MONEY_PUBLIC_CLASS_UNLOCK_CTA_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
-// CLASS is deliberately introduced only after the user chooses Chapter 2.
-await page.getByRole('button',{name:'家計クエストへ進む'}).click();
+await page.getByRole('button',{name:'冒険者CLASSを解放する'}).click();
 await page.locator('.mpp-class-unlock').waitFor({state:'visible',timeout:3000});
 await screenshot('06-class-unlock');
 if((await page.locator('.mpp-class-unlock').getAttribute('data-scene'))!=='class-unlock')throw new Error('MONEY_PUBLIC_CLASS_SCENE_BAD');
