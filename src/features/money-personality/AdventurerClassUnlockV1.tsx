@@ -32,8 +32,8 @@ export default function AdventurerClassUnlockV1({jobCode,primaryStyle,styleLabel
       <div className="mpp-transition-scan"/>
       {reveal?<>
         <p><b>{asset.tagline}</b><br/>32のお金タイプから、あなたのTYPEを獲得しました。</p>
-        <button className="mpp-primary mpp-ssr-continue" onClick={()=>{window.scrollTo({top:0,behavior:'auto'});onComplete()}}>このTYPEで冒険を続ける</button>
-      </>:<p>診断結果を、第2章で使う冒険者CLASSに変換しています。</p>}
+        <button className="mpp-primary mpp-ssr-continue" onClick={()=>{window.scrollTo({top:0,behavior:'auto'});onComplete()}}>TYPEを受け取る</button>
+      </>:<p>あなたのお金タイプから、冒険者CLASSを生成しています。</p>}
     </section>
   </main>;
 }
