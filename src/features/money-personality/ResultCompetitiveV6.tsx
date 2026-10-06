@@ -11,8 +11,8 @@ type Props={
   secondaryStyle:StyleId;
 };
 
-const STYLE_LABEL:Record<StyleId,string>={
-  DRIVE:'DRIVE',ENJOY:'ENJOY',SECURE:'SECURE',OPTIMIZE:'OPTIMIZE',
+const STYLE_JA:Record<StyleId,string>={
+  DRIVE:'前進',ENJOY:'満足',SECURE:'安心',OPTIMIZE:'ムダなし',
 };
 
 const STYLE_HOOK:Record<StyleId,string>={
@@ -23,21 +23,21 @@ const STYLE_HOOK:Record<StyleId,string>={
 };
 
 const STYLE_SECONDARY:Record<StyleId,string>={
-  DRIVE:'前に進めるかも、最後まで気になりやすい。',
-  ENJOY:'払ったあとに満足できるかも、最後まで気になりやすい。',
-  SECURE:'決めたあとに困らないかも、最後まで気になりやすい。',
-  OPTIMIZE:'使わないものにまで払っていないかも、最後まで気になりやすい。',
+  DRIVE:'迷った時は、前に進める選択が最後の一押しになりやすい。',
+  ENJOY:'条件が近い時は、自分が満足できる選択が残りやすい。',
+  SECURE:'条件が近い時は、あとで困りにくい選択が残りやすい。',
+  OPTIMIZE:'条件が近い時は、余分が少ない選択が残りやすい。',
 };
 
 const MISREAD:Record<JobCode,{looks:string;really:string}>={
-  FDM:{looks:'慎重で、なかなかお金を使わない人。',really:'使わないのではなく、先の予定まで見て「払っても大丈夫」を作ってから決めたい。'},
-  FDP:{looks:'普段は家計をあまり気にしていない人。',really:'毎日見るより、更新や予定の節目でまとめて確認する方が自然。'},
-  FNM:{looks:'最後は感覚で決める、気分屋な人。',really:'先のことも確認したうえで、数字だけでは拾えない違和感も残している。'},
-  FNP:{looks:'途中で方針を変えやすい人。',really:'目的を変えたいのではなく、状況が変わった時に行き方を組み直している。'},
-  IDM:{looks:'使う時と使わない時の差が大きい人。',really:'全部を同じ基準で見るより、今の自分に必要かどうかでメリハリを付けている。'},
-  IDP:{looks:'一部だけ見て、ほかを後回しにする人。',really:'全部を一度に考えるより、今いちばん効く判断から片づける方がラク。'},
-  INM:{looks:'直感でサッと決める人。',really:'条件を見ていないわけではない。最後だけ、自分に合う感覚を残している。'},
-  INP:{looks:'その時の気分で自由に動く人。',really:'ずっと管理するより、動く時と見直す時を分けた方が自分のテンポに合う。'},
+  FDM:{looks:'「慎重で、なかなか使わない人」に見えることも。',really:'使わないのではなく、先の予定まで見て「払っても大丈夫」を作ってから決めたい。'},
+  FDP:{looks:'「普段は家計をあまり気にしていない人」に見えることも。',really:'毎日見るより、更新や予定の節目でまとめて確認する方が自然。'},
+  FNM:{looks:'「最後は感覚で決める人」に見えることも。',really:'先のことも確認したうえで、数字だけでは拾えない違和感も判断に残している。'},
+  FNP:{looks:'「途中で方針を変えやすい人」に見えることも。',really:'目的を変えたいのではなく、状況が変わった時に行き方を組み直している。'},
+  IDM:{looks:'「使う時と使わない時の差が大きい人」に見えることも。',really:'全部を同じ基準で見るより、今の自分に必要かどうかでメリハリを付けている。'},
+  IDP:{looks:'「一部だけ見て、ほかを後回しにする人」に見えることも。',really:'全部を一度に考えるより、今いちばん効く判断から片づける方がラク。'},
+  INM:{looks:'「直感でサッと決める人」に見えることも。',really:'条件を見ていないわけではない。最後だけ、自分に合う感覚を判断に残している。'},
+  INP:{looks:'「その時の気分で動く人」に見えることも。',really:'ずっと管理するより、動く時と見直す時を分けた方が自分のテンポに合う。'},
 };
 
 const DECISION_FLIP:Record<JobCode,JobCode>={
@@ -46,9 +46,9 @@ const DECISION_FLIP:Record<JobCode,JobCode>={
 
 function comparisonCopy(current:JobAxes,currentCode:string,otherCode:string){
   if(current.decision==='N'){
-    return `${currentCode}は、条件を見たあとも「自分に合うか」を残しやすい。${otherCode}は、比較して「選ぶ理由が通るか」をより重く見る。`;
+    return `${currentCode}は、条件を見たあとも「自分に合うか」を判断に残しやすい。${otherCode}は、比較して「選ぶ理由が通るか」をより重く見る。`;
   }
-  return `${currentCode}は、比較して「選ぶ理由が通るか」を重く見やすい。${otherCode}は、条件を見たあとも最後のしっくり感を残しやすい。`;
+  return `${currentCode}は、比較して「選ぶ理由が通るか」を重く見やすい。${otherCode}は、条件を見たあとも最後のしっくり感を判断に残しやすい。`;
 }
 
 function SceneCard({scene}:{scene:ReturnType<typeof dailyScenesForType>[number]}){
@@ -74,38 +74,41 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
 
   return <div className="mpp-v6-deep mpp-v7-deep">
     <section className="mpp-v6-section mpp-v6-life mpp-v7-life">
-      <div className="mpp-v6-kicker">REAL LIFE / これ、やりがち？</div>
-      <h2>こんな時、こうならない？</h2>
+      <div className="mpp-v6-kicker">あるある / REAL LIFE</div>
+      <h2>日常で、こんな判断しない？</h2>
       <div className="mpp-v6-scenes mpp-v7-scenes">{primaryScenes.map(scene=><SceneCard key={scene.label} scene={scene}/>)}</div>
-      {extraScenes.length>0&&<details className="mpp-v6-more-scenes"><summary>まだある <small>＋{extraScenes.length}</small></summary><div className="mpp-v6-scenes">{extraScenes.map(scene=><SceneCard key={scene.label} scene={scene}/>)}</div></details>}
+      {extraScenes.length>0&&<details className="mpp-v6-more-scenes"><summary>ほかの場面も見る <small>＋{extraScenes.length}</small></summary><div className="mpp-v6-scenes">{extraScenes.map(scene=><SceneCard key={scene.label} scene={scene}/>)}</div></details>}
       <div className="mpp-v6-type-core mpp-v7-type-core">
-        <small>WHY / なんでこうなる？</small>
+        <small>正体 / なんでそうなる？</small>
         <b>{core.headline}</b>
         <p>{core.why}</p>
       </div>
     </section>
 
     <section className="mpp-v6-section mpp-v6-misread mpp-v7-misread">
-      <div className="mpp-v6-kicker">GAP / 周りからはこう見える</div>
-      <h2>でも、本人の中ではちょっと違う。</h2>
-      <div className="mpp-v6-versus"><article><small>周りからは</small><b>{misread.looks}</b></article><i>≠</i><article><small>本人の中では</small><b>{misread.really}</b></article></div>
-    </section>
-
-    <section className="mpp-v6-section mpp-v6-variant mpp-v7-variant">
-      <div className="mpp-v6-kicker">YOUR SHADE / 同じTYPEでも少し違う</div>
-      <h2>{typeCode} の中でも、{STYLE_LABEL[secondaryStyle]} の傾向が少し残る。</h2>
-      <p>いちばん強いのは「{STYLE_HOOK[primaryStyle]}」。ただ、あなたは「{STYLE_HOOK[secondaryStyle]}」も無視しにくい。{STYLE_SECONDARY[secondaryStyle]}</p>
-      <div className="mpp-v6-variant-note"><span>{STYLE_LABEL[primaryStyle]} が主役</span><i>＋</i><span>{STYLE_LABEL[secondaryStyle]} も少し</span></div>
+      <div className="mpp-v6-kicker">見え方のズレ / GAP</div>
+      <h2>外から見える理由と、本人の理由は違う。</h2>
+      <div className="mpp-v6-versus"><article><small>外から見ると</small><b>{misread.looks}</b></article><i>≠</i><article><small>本人の中では</small><b>{misread.really}</b></article></div>
     </section>
 
     <section className="mpp-v6-section mpp-v6-compare mpp-v7-compare">
-      <div className="mpp-v6-kicker">TYPE COMPARE / 友だちと比べるならここ</div>
-      <h2>似ていても、決め手が違う。</h2>
+      <div className="mpp-v6-kicker">友だちと比べる / TYPE COMPARE</div>
+      <h2>似てるTYPEでも、決め手はここで分かれる。</h2>
       <div className="mpp-v6-compare-grid">
-        <article><small>同じJOB・価値観違い</small><b>{secondaryCode}｜{JOBS[jobCode]}</b><p>{typeCode}は「{STYLE_HOOK[primaryStyle]}」がいちばん強い。{secondaryCode}は「{STYLE_HOOK[secondaryStyle]}」がいちばん強い。</p></article>
-        <article><small>同じ価値観・決め方違い</small><b>{otherCode}｜{JOBS[otherJob]}</b><p>{comparisonCopy(axes,typeCode,otherCode)}</p></article>
+        <article><small>同じJOBで、価値観が違うと</small><b>{secondaryCode}｜{JOBS[jobCode]}</b><p>{typeCode}は「{STYLE_HOOK[primaryStyle]}」が決め手。もし{secondaryCode}なら「{STYLE_HOOK[secondaryStyle]}」が決め手になりやすい。</p></article>
+        <article><small>同じ価値観で、決め方が違うと</small><b>{otherCode}｜{JOBS[otherJob]}</b><p>{comparisonCopy(axes,typeCode,otherCode)}</p></article>
       </div>
-      <p className="mpp-v6-social-hook">同じ買い物や旅行の場面で比べると、「自分ならこうする」が一発で分かれる。</p>
+      <p className="mpp-v6-social-hook">同じ買い物や旅行でも、「自分ならどう決める？」でTYPEの違いが出やすい。</p>
     </section>
+
+    <details className="mpp-v7-variant-details">
+      <summary>同じTYPEの中の「あなたらしさ」も見る</summary>
+      <section className="mpp-v6-section mpp-v6-variant mpp-v7-variant">
+        <div className="mpp-v6-kicker">あなたの細かい違い</div>
+        <h2>{typeCode} の中でも、「{STYLE_JA[secondaryStyle]}」も判断に残りやすい。</h2>
+        <p>いちばん強いのは「{STYLE_HOOK[primaryStyle]}」。そこに「{STYLE_HOOK[secondaryStyle]}」も少し入る。{STYLE_SECONDARY[secondaryStyle]}</p>
+        <div className="mpp-v6-variant-note"><span>{STYLE_JA[primaryStyle]} が主軸</span><i>＋</i><span>{STYLE_JA[secondaryStyle]} も少し</span></div>
+      </section>
+    </details>
   </div>;
 }
