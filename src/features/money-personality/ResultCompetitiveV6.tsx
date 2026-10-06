@@ -15,9 +15,9 @@ const STYLE_LABEL:Record<StyleId,string>={
 };
 
 const STYLE_HOOK:Record<StyleId,string>={
-  DRIVE:'これで前に進めるか',
-  ENJOY:'ちゃんと満足できるか',
-  SECURE:'あとで困らないか',
+  DRIVE:'今より前に進めるか',
+  ENJOY:'払ったあとも満足できるか',
+  SECURE:'決めたあとに困らないか',
   OPTIMIZE:'今の用途に本当に合っているか',
 };
 
@@ -51,23 +51,19 @@ function whyType(axes:JobAxes){
   ] as const;
 }
 
-function comparisonCopy(current:JobAxes,other:JobCode){
-  const otherAxes=JOB_AXES[other];
-  if(current.decision!==otherAxes.decision){
-    return current.decision==='N'
-      ?'あなたは最後に「自分に合うか」を残しやすい。こちらは比較・整理して「理由が通るか」をより重く見る。'
-      :'あなたは比較・整理して「理由が通るか」を重く見やすい。こちらは最後のしっくり感や違和感をより残す。';
+function comparisonCopy(current:JobAxes,currentCode:string,otherCode:string){
+  if(current.decision==='N'){
+    return `${currentCode}は、条件を見たあとも「自分に合うか」を判断に残しやすい。${otherCode}は、比較・整理して「選ぶ理由が通るか」をより重く見る。`;
   }
-  return '似て見えるけれど、判断に使う軸が1つ違うTYPE。';
+  return `${currentCode}は、比較・整理して「選ぶ理由が通るか」を重く見やすい。${otherCode}は、条件を見たあとも最後のしっくり感や違和感を判断に残しやすい。`;
 }
 
 function SceneCard({scene,index}:{scene:ReturnType<typeof dailyScenesForType>[number];index:number}){
   return <article>
     <small>{String(index+1).padStart(2,'0')} / {scene.label}</small>
     <b>{scene.title}</b>
-    <p>{scene.body}</p>
+    <small className="mpp-v6-thought-label">その瞬間の頭の中</small>
     <blockquote className="mpp-v6-scene-voice">{scene.voice}</blockquote>
-    <div className="mpp-v6-scene-insight"><small>この場面で出ているクセ</small><span>{scene.insight}</span></div>
   </article>;
 }
 
@@ -88,9 +84,9 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
     <section className="mpp-v6-section mpp-v6-life">
       <div className="mpp-v6-kicker">MONEY IN REAL LIFE</div>
       <h2>日常の「あ、この時」であなたが出る。</h2>
-      <p className="mpp-v6-lead">{DAILY_SCENE_LIBRARY_SIZE}個の日常シーンから、このTYPEの特徴が出やすい場面を選んでいます。スマホや旅行だけに固定せず、買い物・外食・固定費・人付き合い・移動・予定外の出費まで横断します。</p>
+      <p className="mpp-v6-lead">{DAILY_SCENE_LIBRARY_SIZE}個の日常シーンから、このTYPEらしさが出やすい場面を選んでいます。買い物だけでなく、外食・旅行・固定費・人付き合い・移動・予定外の出費まで横断します。</p>
       <div className="mpp-v6-type-core">
-        <small>THIS IS YOUR MONEY LOGIC / このTYPEの判断の芯</small>
+        <small>THIS IS YOUR MONEY LOGIC / 判断の芯</small>
         <b>{core.headline}</b>
         <p>{core.why}</p>
       </div>
@@ -115,9 +111,9 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
       <h2>似てるTYPEと、何が違う？</h2>
       <div className="mpp-v6-compare-grid">
         <article><small>同じJOB・STYLE違い</small><b>{secondaryCode}｜{JOBS[jobCode]}</b><p>JOBは同じでも、{typeCode}は「{STYLE_HOOK[primaryStyle]}」が主軸。{secondaryCode}は「{STYLE_HOOK[secondaryStyle]}」が主軸になる。</p></article>
-        <article><small>同じSTYLE・決め方違い</small><b>{otherCode}｜{JOBS[otherJob]}</b><p>{comparisonCopy(axes,otherJob)}</p></article>
+        <article><small>同じSTYLE・決め方違い</small><b>{otherCode}｜{JOBS[otherJob]}</b><p>{comparisonCopy(axes,typeCode,otherCode)}</p></article>
       </div>
-      <p className="mpp-v6-social-hook">友だちのTYPEが分かったら、同じ日常シーンで比べると「自分との違い」がかなり見えやすい。</p>
+      <p className="mpp-v6-social-hook">友だちのTYPEが分かったら、同じ日常シーンで比べると判断基準の違いが見えやすい。</p>
     </section>
 
     <section className="mpp-v6-section mpp-v6-why">
