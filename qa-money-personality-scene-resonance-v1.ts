@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import {corePatternForType,dailyScenesForType,DAILY_SCENE_LIBRARY_SIZE,PUBLIC_TYPE_PATTERN_COUNT,PRIMARY_RECOGNITION_HIT_COUNT} from './src/features/money-personality/resultDailySceneNarrativeV6';
+import {corePatternForType,dailyScenesForType,DAILY_SCENE_LIBRARY_SIZE,PUBLIC_TYPE_PATTERN_COUNT,PRIMARY_RECOGNITION_HIT_COUNT,primaryRecognitionPunchesForType} from './src/features/money-personality/resultDailySceneNarrativeV6';
 import type {JobCode,StyleId} from './src/features/money-personality/classifierV1';
 
 const JOBS:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
@@ -9,6 +9,13 @@ const VAGUE_POINTERS=['こっち','そっち','あっち','こちら','どっち
 const ARBITRARY_VISIBLE_NUMBERS=['数か月','数年','半年','20分','数千円'];
 
 function assert(ok:unknown,message:string):asserts ok{if(!ok)throw new Error(message)}
+function bigrams(text:string){const xs=new Set<string>();for(let i=0;i<text.length-1;i++)xs.add(text.slice(i,i+2));return xs}
+function similarity(a:string,b:string){
+  const aa=bigrams(a),bb=bigrams(b);let overlap=0;
+  for(const x of aa)if(bb.has(x))overlap++;
+  const union=new Set([...aa,...bb]).size;
+  return union?overlap/union:0;
+}
 
 assert(DAILY_SCENE_LIBRARY_SIZE>=50,`SCENE_LIBRARY_TOO_SMALL:${DAILY_SCENE_LIBRARY_SIZE}`);
 assert(PUBLIC_TYPE_PATTERN_COUNT===32,`TYPE_PATTERN_COUNT_BAD:${PUBLIC_TYPE_PATTERN_COUNT}`);
@@ -33,10 +40,12 @@ const signatures=new Set<string>();
 const patternHeadlines=new Set<string>();
 const patternWhys=new Set<string>();
 const primaryVoiceTriples=new Set<string>();
+const primaryPunchTriples=new Set<string>();
 let totalScenes=0;
 let totalTypes=0;
 let minCategoryDiversity=99;
 let maxPrimaryVoiceLength=0;
+let maxWithinTypePunchSimilarity=0;
 
 for(const job of JOBS){
   const jobSignatures=new Set<string>();
@@ -52,6 +61,16 @@ for(const job of JOBS){
     for(const word of FORBIDDEN)assert(!coreText.includes(word),`TYPE_CORE_OVERINFERENCE:${job}-${style}:${word}`);
     for(const word of VAGUE_POINTERS)assert(!coreText.includes(word),`TYPE_CORE_VAGUE_POINTER:${job}-${style}:${word}`);
     for(const word of ARBITRARY_VISIBLE_NUMBERS)assert(!coreText.includes(word),`TYPE_CORE_ARBITRARY_NUMBER:${job}-${style}:${word}`);
+
+    const punches=primaryRecognitionPunchesForType(job,style);
+    assert(punches.length===3,`PRIMARY_PUNCH_COUNT_BAD:${job}-${style}`);
+    assert(new Set(punches).size===3,`PRIMARY_PUNCH_DUPLICATE:${job}-${style}`);
+    primaryPunchTriples.add(punches.join('|'));
+    for(let i=0;i<punches.length;i++)for(let j=i+1;j<punches.length;j++){
+      const s=similarity(punches[i],punches[j]);
+      maxWithinTypePunchSimilarity=Math.max(maxWithinTypePunchSimilarity,s);
+      assert(s<0.68,`PRIMARY_PUNCH_TOO_SIMILAR:${job}-${style}:${i}-${j}:${s.toFixed(3)}:${punches[i]}|${punches[j]}`);
+    }
 
     const scenes=dailyScenesForType(job,style,6);
     assert(scenes.length===6,`SCENE_COUNT_BAD:${job}-${style}:${scenes.length}`);
@@ -95,12 +114,13 @@ for(const job of JOBS){
 assert(totalTypes===32,`TYPE_COUNT_BAD:${totalTypes}`);
 assert(patternHeadlines.size===32,`TYPE_CORE_HEADLINE_NOT_UNIQUE:${patternHeadlines.size}`);
 assert(patternWhys.size===32,`TYPE_CORE_WHY_NOT_UNIQUE:${patternWhys.size}`);
+assert(primaryPunchTriples.size===32,`PRIMARY_PUNCH_TRIPLES_NOT_UNIQUE:${primaryPunchTriples.size}`);
 assert(primaryVoiceTriples.size===32,`PRIMARY_VOICE_TRIPLES_NOT_UNIQUE:${primaryVoiceTriples.size}`);
 assert(signatures.size>=20,`SCENE_SIGNATURE_VARIETY_LOW:${signatures.size}`);
 
 console.log(JSON.stringify({
   ok:true,
-  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V6',
+  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V7',
   librarySize:DAILY_SCENE_LIBRARY_SIZE,
   publicTypePatterns:PUBLIC_TYPE_PATTERN_COUNT,
   primaryRecognitionHits:PRIMARY_RECOGNITION_HIT_COUNT,
@@ -108,12 +128,15 @@ console.log(JSON.stringify({
   renderedScenes:totalScenes,
   uniqueCoreHeadlines:patternHeadlines.size,
   uniqueCoreWhys:patternWhys.size,
+  uniquePrimaryPunchTriples:primaryPunchTriples.size,
   uniquePrimaryVoiceTriples:primaryVoiceTriples.size,
   uniquePrimarySignatures:signatures.size,
   minCategoryDiversity,
   maxPrimaryVoiceLength,
+  maxWithinTypePunchSimilarity:Number(maxWithinTypePunchSimilarity.toFixed(3)),
   vaguePointerGuard:true,
   arbitraryVisibleNumberGuard:true,
+  nonRepeatingPrimaryTripleGuard:true,
   recognitionFirst:true,
   duplicateLegacySectionsHidden:true,
   secondaryNuanceCollapsed:true,
