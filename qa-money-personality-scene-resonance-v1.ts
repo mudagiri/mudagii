@@ -13,9 +13,17 @@ assert(DAILY_SCENE_LIBRARY_SIZE>=50,`SCENE_LIBRARY_TOO_SMALL:${DAILY_SCENE_LIBRA
 assert(PUBLIC_TYPE_PATTERN_COUNT===32,`TYPE_PATTERN_COUNT_BAD:${PUBLIC_TYPE_PATTERN_COUNT}`);
 
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultCompetitiveV6.tsx','utf8');
+const resultV7Css=fs.readFileSync('./src/features/money-personality/result-competitive-v7.css','utf8');
 for(const word of VAGUE_POINTERS)assert(!resultUi.includes(word),`RESULT_UI_VAGUE_POINTER:${word}`);
 assert(!resultUi.includes('scene.body'),`RESULT_UI_REPEATS_SCENE_BODY`);
 assert(!resultUi.includes('scene.insight'),`RESULT_UI_REPEATS_SCENE_INSIGHT`);
+assert(!resultUi.includes('DAILY_SCENE_LIBRARY_SIZE'),`RESULT_UI_EXPOSES_INTERNAL_LIBRARY_COUNT`);
+assert(resultUi.includes("primaryScenes=scenes.slice(0,3)"),`RESULT_UI_NOT_RECOGNITION_FIRST_THREE`);
+assert(resultUi.indexOf('mpp-v7-scenes')<resultUi.indexOf('mpp-v7-type-core'),`RESULT_UI_EXPLAINS_BEFORE_RECOGNITION`);
+assert(!resultUi.includes('WHY THIS TYPE?'),`RESULT_UI_DUPLICATES_AXIS_EXPLANATION`);
+for(const selector of ['.mpp-vivid-scene','.mpp-result-v4-identity','.mpp-style-synthesis']){
+  assert(resultV7Css.includes(selector),`RESULT_DUPLICATE_SECTION_NOT_HIDDEN:${selector}`);
+}
 
 const signatures=new Set<string>();
 const patternHeadlines=new Set<string>();
@@ -77,7 +85,7 @@ assert(signatures.size>=20,`SCENE_SIGNATURE_VARIETY_LOW:${signatures.size}`);
 
 console.log(JSON.stringify({
   ok:true,
-  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V3',
+  qa:'MUDAGIRI_MONEY_SCENE_RESONANCE_V4',
   librarySize:DAILY_SCENE_LIBRARY_SIZE,
   publicTypePatterns:PUBLIC_TYPE_PATTERN_COUNT,
   types:totalTypes,
@@ -87,5 +95,6 @@ console.log(JSON.stringify({
   uniquePrimarySignatures:signatures.size,
   minCategoryDiversity,
   vaguePointerGuard:true,
-  duplicateSceneBodyHidden:true,
+  recognitionFirst:true,
+  duplicateLegacySectionsHidden:true,
 },null,2));
