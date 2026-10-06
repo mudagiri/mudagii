@@ -1,7 +1,7 @@
 import React from 'react';
 import {JOBS,type JobCode,type StyleId} from './classifierV1';
 import {moneyTypeCode} from './money-type-code-v1';
-import {JOB_AXES,corePatternForType,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV6';
+import {JOB_AXES,corePatternForType,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV7';
 import './result-competitive-v6.css';
 import './result-competitive-v7.css';
 import './result-competitive-v8.css';
