@@ -1,7 +1,7 @@
 import React from 'react';
 import {JOBS,type JobCode,type StyleId} from './classifierV1';
 import {moneyTypeCode} from './money-type-code-v1';
-import {DAILY_SCENE_LIBRARY_SIZE,JOB_AXES,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV4';
+import {DAILY_SCENE_LIBRARY_SIZE,JOB_AXES,corePatternForType,dailyScenesForType,type JobAxes} from './resultDailySceneNarrativeV5';
 import './result-competitive-v6.css';
 
 type Props={
@@ -62,7 +62,13 @@ function comparisonCopy(current:JobAxes,other:JobCode){
 }
 
 function SceneCard({scene,index}:{scene:ReturnType<typeof dailyScenesForType>[number];index:number}){
-  return <article><small>{String(index+1).padStart(2,'0')} / {scene.label}</small><b>{scene.title}</b><p>{scene.body}</p><blockquote className="mpp-v6-scene-voice">{scene.voice}</blockquote></article>;
+  return <article>
+    <small>{String(index+1).padStart(2,'0')} / {scene.label}</small>
+    <b>{scene.title}</b>
+    <p>{scene.body}</p>
+    <blockquote className="mpp-v6-scene-voice">{scene.voice}</blockquote>
+    <div className="mpp-v6-scene-insight"><small>この場面で出ているクセ</small><span>{scene.insight}</span></div>
+  </article>;
 }
 
 export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle}:Props){
@@ -71,6 +77,7 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
   const secondaryCode=moneyTypeCode(jobCode,secondaryStyle);
   const otherJob=DECISION_FLIP[jobCode];
   const otherCode=moneyTypeCode(otherJob,primaryStyle);
+  const core=corePatternForType(jobCode,primaryStyle);
   const scenes=dailyScenesForType(jobCode,primaryStyle,6);
   const primaryScenes=scenes.slice(0,4);
   const extraScenes=scenes.slice(4);
@@ -82,6 +89,11 @@ export default function ResultCompetitiveV6({jobCode,primaryStyle,secondaryStyle
       <div className="mpp-v6-kicker">MONEY IN REAL LIFE</div>
       <h2>日常の「あ、この時」であなたが出る。</h2>
       <p className="mpp-v6-lead">{DAILY_SCENE_LIBRARY_SIZE}個の日常シーンから、このTYPEの特徴が出やすい場面を選んでいます。スマホや旅行だけに固定せず、買い物・外食・固定費・人付き合い・移動・予定外の出費まで横断します。</p>
+      <div className="mpp-v6-type-core">
+        <small>THIS IS YOUR MONEY LOGIC / このTYPEの判断の芯</small>
+        <b>{core.headline}</b>
+        <p>{core.why}</p>
+      </div>
       <div className="mpp-v6-scenes">{primaryScenes.map((scene,i)=><SceneCard key={scene.label} scene={scene} index={i}/>)}</div>
       {extraScenes.length>0&&<details className="mpp-v6-more-scenes"><summary>ほかの場面でも見る <small>＋{extraScenes.length}</small></summary><div className="mpp-v6-scenes">{extraScenes.map((scene,i)=><SceneCard key={scene.label} scene={scene} index={i+primaryScenes.length}/>)}</div></details>}
     </section>
