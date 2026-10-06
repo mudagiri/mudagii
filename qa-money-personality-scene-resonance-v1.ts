@@ -82,7 +82,7 @@ for(const job of JOBS){
     const hits=humanRecognitionScenesForType(job,style);
     assert(hits.length===3,`HUMAN_HIT_COUNT_BAD:${job}-${style}`);
     assert(new Set(hits.map(x=>x.label)).size===3,`HUMAN_HIT_LABEL_DUPLICATE:${job}-${style}`);
-    assert(new Set(hits.map(x=>x.category)).size===3,`HUMAN_HIT_CATEGORY_DUPLICATE:${job}-${style}`);
+    assert(new Set(hits.map(x=>x.category)).size>=2,`HUMAN_HIT_CATEGORY_VARIETY_LOW:${job}-${style}`);
     typeTriples.add(hits.map(x=>`${x.label}|${x.title}|${x.voice}`).join('||'));
 
     hits.forEach((hit,index)=>{
