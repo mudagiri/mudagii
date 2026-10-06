@@ -23,8 +23,8 @@ export default function ResultNextRoutesV1({jobCode,primaryStyle,onHousehold,onL
       <span className="mpp-route-badge">おすすめ</span><small>CHAPTER 2 / NO SIGN-UP</small><b>このTYPEで家計クエストへ</b><p>次は12カテゴリをスキャン。性格ではなく、実際の支出から改善余地がある場所だけを探します。</p><em>登録なしでそのまま冒険を続ける →</em>
     </button>
     <button className="mpp-route-card mpp-route-card--line" onClick={onLine}>
-      <span className="mpp-route-gift">SAVE + 特典</span><small>TAKE YOUR TYPE HOME</small><b>{asset.name}専用の攻略ガイドを受け取る</b><p>獲得したTYPEをLINEに持ち帰って保存。CLASS別の攻略ガイドを受け取り、あとから家計診断にも戻れます。</p><em>公式LINEで保存する →</em>
+      <span className="mpp-route-gift">LINE特典</span><small>CLASS BONUS</small><b>{asset.name}専用の攻略ガイドを受け取る</b><p>公式LINEでCLASS別の攻略ガイドを受け取れます。家計診断はLINE登録なしでも、この画面からそのまま進めます。</p><em>公式LINEで攻略ガイドを受け取る →</em>
     </button>
-    <div className="mpp-next-routes-bonus"><strong>LINE追加後に選べる</strong><span>家計診断を続ける</span><i/><span>詳細レポートを見る</span></div>
+    <div className="mpp-next-routes-bonus"><strong>LINE特典</strong><span>CLASS別攻略ガイド</span><i/><span>詳細レポートへつながる導線</span></div>
   </section>;
 }
