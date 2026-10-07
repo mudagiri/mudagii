@@ -1768,3 +1768,153 @@ html body #root .mpp17-page{
   border-radius:50%;
 }
 
+
+
+/* ---------- V17.11 TRUE FOIL HOLOGRAM ----------
+   Separate the JOB-colored card stock from a real TCG-style diffraction foil overlay. */
+.mpp17-profile{
+  background:
+    radial-gradient(circle at 50% 28%,
+      color-mix(in srgb,var(--mpp17-accent) 34%,transparent) 0%,
+      transparent 42%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 22%,#2b2928) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 16%,#1a1b1f) 34%,
+      color-mix(in srgb,var(--mpp17-accent) 11%,#111319) 69%,
+      #0a0c10 100%)!important;
+}
+
+/* Disable the older pseudo-hologram so the foil reads as a distinct material layer. */
+.mpp17-profile::after{
+  opacity:0!important;
+  animation:none!important;
+  background:none!important;
+}
+.mpp17-profile::before{
+  z-index:0!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.055),transparent 25% 72%,rgba(0,0,0,.16))!important;
+}
+
+/* True prismatic foil overlay: broad rainbow refraction + fine diffraction texture. */
+.mpp17-holo-foil{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  overflow:hidden;
+  pointer-events:none;
+  border-radius:20px;
+  opacity:.58;
+  mix-blend-mode:screen;
+  background:
+    linear-gradient(118deg,
+      transparent 0 11%,
+      rgba(255,68,96,.18) 18%,
+      rgba(255,154,60,.19) 27%,
+      rgba(255,230,84,.17) 36%,
+      rgba(88,235,165,.16) 45%,
+      rgba(72,203,255,.20) 54%,
+      rgba(116,112,255,.19) 63%,
+      rgba(223,102,255,.18) 72%,
+      transparent 84% 100%),
+    repeating-linear-gradient(122deg,
+      transparent 0 7px,
+      rgba(255,255,255,.055) 7px 8px,
+      transparent 8px 16px),
+    repeating-conic-gradient(from 12deg at 52% 42%,
+      rgba(255,255,255,.05) 0deg 2deg,
+      transparent 2deg 8deg);
+  background-size:190% 100%,100% 100%,150% 150%;
+  background-position:-42% 0,0 0,50% 50%;
+  filter:saturate(1.18) contrast(1.04);
+}
+.mpp17-holo-foil::before{
+  content:"";
+  position:absolute;
+  inset:-12%;
+  background:
+    radial-gradient(circle at 18% 24%,rgba(255,255,255,.48) 0 1px,transparent 2px),
+    radial-gradient(circle at 31% 68%,rgba(255,255,255,.36) 0 1px,transparent 2px),
+    radial-gradient(circle at 47% 17%,rgba(255,255,255,.42) 0 1px,transparent 2px),
+    radial-gradient(circle at 63% 77%,rgba(255,255,255,.38) 0 1px,transparent 2px),
+    radial-gradient(circle at 79% 32%,rgba(255,255,255,.52) 0 1px,transparent 2px),
+    radial-gradient(circle at 91% 62%,rgba(255,255,255,.34) 0 1px,transparent 2px),
+    linear-gradient(104deg,
+      transparent 0 38%,
+      rgba(255,255,255,.04) 42%,
+      rgba(255,255,255,.28) 48%,
+      rgba(255,255,255,.055) 54%,
+      transparent 60% 100%);
+  opacity:.72;
+  filter:blur(.15px);
+}
+.mpp17-holo-foil::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,
+      transparent 0 18%,
+      rgba(255,255,255,.04) 24%,
+      transparent 31% 65%,
+      rgba(255,255,255,.035) 72%,
+      transparent 79%),
+    repeating-linear-gradient(32deg,
+      rgba(255,255,255,.025) 0 1px,
+      transparent 1px 9px);
+  opacity:.72;
+}
+
+/* Keep copy and character crisp above the foil layer. */
+.mpp17-profile > :not(.mpp17-holo-foil):not(.mpp17-card-edge){
+  position:relative;
+  z-index:3;
+}
+.mpp17-card-edge{z-index:4!important}
+
+/* STYLE no longer paints the whole card; it only leaves a small spectral signature. */
+.mpp17-profile .mpp17-code::after{
+  border-color:color-mix(in srgb,var(--mpp17-style-accent) 54%,var(--mpp17-accent))!important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-style-accent) 15%,rgba(255,255,255,.07)),
+      rgba(0,0,0,.10))!important;
+}
+.mpp17-profile .mpp17-portrait{
+  background:
+    radial-gradient(circle at 50% 52%,
+      color-mix(in srgb,var(--mpp17-accent) 28%,transparent) 0 30%,
+      transparent 68%)!important;
+}
+.mpp17-profile h1{
+  background:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:
+    0 0 12px color-mix(in srgb,var(--mpp17-accent) 18%,transparent),
+    0 1px 0 rgba(0,0,0,.18)!important;
+}
+
+@keyframes mpp17-foil-diffraction{
+  0%{background-position:-42% 0,0 0,48% 48%;filter:saturate(1.10) hue-rotate(-5deg)}
+  45%{background-position:58% 0,0 0,54% 46%;filter:saturate(1.28) hue-rotate(5deg)}
+  100%{background-position:142% 0,0 0,48% 54%;filter:saturate(1.14) hue-rotate(-3deg)}
+}
+@keyframes mpp17-foil-glint{
+  0%,14%{transform:translateX(-42%) skewX(-8deg);opacity:.20}
+  48%{opacity:.88}
+  76%,100%{transform:translateX(42%) skewX(-8deg);opacity:.28}
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-holo-foil{
+    animation:mpp17-foil-diffraction 5.8s ease-in-out infinite alternate;
+  }
+  .mpp17-holo-foil::before{
+    animation:mpp17-foil-glint 4.4s ease-in-out infinite alternate;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-holo-foil,
+  .mpp17-holo-foil::before{animation:none!important}
+}
+
