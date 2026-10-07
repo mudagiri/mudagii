@@ -4,7 +4,7 @@ import type {JobCode,StyleId} from './src/features/money-personality/classifierV
 
 const JOBS:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
 const STYLES:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
-const FORBIDDEN=['浪費家','ズボラ','衝動買い','何も考えない','必ずこうする','絶対こうする'];
+const FORBIDDEN=['浪費家','ズボラ','ケチ','衝動買い','何も考えない','必ずこうする','絶対こうする'];
 const VAGUE=['こっち','そっち','あっち','こちら','どっち'];
 const GENERIC=['今必要な理由','必要な理由は見えている','条件を確認して決める','何を優先して決める','選んでよかったと思えそう','今の自分は何を優先'];
 function assert(ok:unknown,msg:string):asserts ok{if(!ok)throw new Error(msg)}
