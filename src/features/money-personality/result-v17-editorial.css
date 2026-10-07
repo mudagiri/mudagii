@@ -2097,3 +2097,137 @@ html body #root .mpp17-page{
 @media(prefers-reduced-motion:reduce){
   .mpp17-holo-texture{animation:none!important}
 }
+
+
+/* ---------- V17.14 PREMIUM COLD-FOIL ----------
+   Remove the full-card rainbow sticker look. Rarity now comes from restrained
+   metallic interference: edge foil, portrait bloom, and a single moving glint. */
+.mpp17-holo-texture{
+  display:none!important;
+}
+
+/* Keep the card stock rich and JOB-colored, not rainbow-painted. */
+.mpp17-profile{
+  background:
+    radial-gradient(circle at 50% 28%,
+      color-mix(in srgb,var(--mpp17-accent) 30%,transparent) 0%,
+      transparent 40%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 22%,#292826) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 15%,#181a20) 42%,
+      color-mix(in srgb,var(--mpp17-accent) 9%,#101218) 72%,
+      #090b0f 100%)!important;
+}
+
+/* Premium cold-foil: mostly invisible, with a narrow spectral reflection. */
+.mpp17-holo-foil{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  border-radius:20px!important;
+  opacity:.48!important;
+  mix-blend-mode:screen!important;
+  background:
+    linear-gradient(112deg,
+      transparent 0 36%,
+      rgba(110,215,255,.025) 40%,
+      rgba(190,135,255,.055) 43%,
+      rgba(255,255,255,.22) 47%,
+      rgba(255,224,150,.075) 50%,
+      rgba(118,240,205,.045) 53%,
+      transparent 58% 100%),
+    radial-gradient(circle at 50% 36%,
+      color-mix(in srgb,var(--mpp17-accent) 18%,transparent) 0 22%,
+      transparent 47%)!important;
+  background-size:185% 100%,100% 100%!important;
+  background-position:-72% 0,0 0!important;
+  filter:none!important;
+}
+
+/* Fine metallic grain instead of visible rainbow stripes. */
+.mpp17-holo-foil::before{
+  content:""!important;
+  position:absolute!important;
+  inset:7px!important;
+  opacity:.26!important;
+  background:
+    repeating-linear-gradient(125deg,
+      rgba(255,255,255,.022) 0 1px,
+      transparent 1px 7px),
+    repeating-linear-gradient(35deg,
+      rgba(255,255,255,.014) 0 1px,
+      transparent 1px 11px)!important;
+  mask-image:linear-gradient(180deg,#000 0 62%,transparent 92%);
+}
+
+/* Tiny foil flecks around the collectible area only. */
+.mpp17-holo-foil::after{
+  content:""!important;
+  position:absolute!important;
+  inset:12% 9% 42%!important;
+  opacity:.48!important;
+  background:
+    radial-gradient(circle at 8% 38%,rgba(255,255,255,.74) 0 1px,transparent 2px),
+    radial-gradient(circle at 22% 17%,color-mix(in srgb,var(--mpp17-accent) 54%,#fff) 0 1.1px,transparent 2.2px),
+    radial-gradient(circle at 38% 72%,rgba(175,220,255,.62) 0 1px,transparent 2px),
+    radial-gradient(circle at 59% 14%,rgba(255,240,190,.72) 0 1.1px,transparent 2.2px),
+    radial-gradient(circle at 76% 67%,color-mix(in srgb,var(--mpp17-style-accent) 22%,#fff) 0 1px,transparent 2px),
+    radial-gradient(circle at 92% 34%,rgba(210,185,255,.58) 0 1px,transparent 2px)!important;
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.18))!important;
+}
+
+/* Frame reads as metallic foil with just a hint of spectral interference. */
+.mpp17-profile{
+  border-color:color-mix(in srgb,var(--mpp17-accent) 64%,#e7d6ac)!important;
+  box-shadow:
+    0 26px 58px rgba(15,13,10,.30),
+    0 0 14px color-mix(in srgb,var(--mpp17-accent) 24%,transparent),
+    inset 0 0 0 1px rgba(255,255,255,.10),
+    inset 0 0 24px color-mix(in srgb,var(--mpp17-accent) 7%,transparent)!important;
+}
+.mpp17-card-edge{
+  border-color:color-mix(in srgb,var(--mpp17-accent) 62%,#f4dfb8)!important;
+  box-shadow:
+    inset 0 0 14px rgba(255,255,255,.035),
+    0 0 10px color-mix(in srgb,var(--mpp17-accent) 18%,transparent)!important;
+}
+
+/* Character gets the rare-card focal glow; no giant pink wash. */
+.mpp17-profile .mpp17-portrait::before{
+  opacity:.72!important;
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,.055) 0 17%,
+      color-mix(in srgb,var(--mpp17-accent) 22%,transparent) 18% 31%,
+      transparent 42% 46%,
+      color-mix(in srgb,var(--mpp17-accent) 60%,#f3e7c8) 47% 48.2%,
+      transparent 49.3% 55%,
+      rgba(255,255,255,.16) 56% 57%,
+      transparent 58%),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb,var(--mpp17-accent) 58%,#e9dfcb) 0 1.25deg,
+      transparent 1.25deg 11deg)!important;
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb,var(--mpp17-accent) 28%,transparent))
+    drop-shadow(0 0 22px rgba(255,255,255,.05))!important;
+}
+
+@keyframes mpp17-coldfoil-glint{
+  0%,16%{background-position:-72% 0,0 0}
+  48%{background-position:46% 0,0 0}
+  84%,100%{background-position:165% 0,0 0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-holo-foil{
+    animation:mpp17-coldfoil-glint 4.9s cubic-bezier(.4,0,.2,1) infinite!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-holo-foil{
+    animation:none!important;
+    background-position:42% 0,0 0!important;
+  }
+}
