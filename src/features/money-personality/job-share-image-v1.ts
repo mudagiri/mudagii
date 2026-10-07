@@ -11,7 +11,8 @@ type FileShareNavigator=Navigator&{
   canShare?:(data?:SharePayload)=>boolean;
 };
 
-type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:readonly string[]};
+type ShareTarget='x'|'instagram'|'threads'|'line';
+type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:readonly string[];target?:ShareTarget};
 
 const WIDTH=1080;
 const HEIGHT=1350;
@@ -151,42 +152,32 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
     [920,724,10,accent,.8],[126,1110,7,accent,.75],[948,1040,8,secondary,.72],
   ] as const)drawStar(ctx,x,y,r,c,a);
 
-  text(ctx,'MUDAGIRI / MONEY TYPE',92,105,24,850,'left','#e9eef6');
-  text(ctx,'1 OF 32',WIDTH-92,105,24,950,'right','#f4de8b');
+  text(ctx,'ムダギリ｜お金の性格診断',92,105,25,900,'left','#f4f7fb');
+  text(ctx,'1 / 32',WIDTH-92,105,22,900,'right','#b8c4d1');
 
-  roundedRect(ctx,390,134,300,58,29);
-  const badge=ctx.createLinearGradient(0,134,0,192);
-  badge.addColorStop(0,'#fff0aa');
-  badge.addColorStop(.52,'#efbd35');
-  badge.addColorStop(1,'#a55b08');
-  ctx.fillStyle=badge;
-  ctx.fill();
-  ctx.lineWidth=2;
-  ctx.strokeStyle='#fff2b8';
-  ctx.stroke();
-  text(ctx,'SSR / TYPE UNLOCKED',WIDTH/2,163,25,1000,'center','#341700');
+  text(ctx,'わたしのお金タイプ',WIDTH/2,162,26,850,'center','#cbd5e1');
 
-  text(ctx,typeCode,WIDTH/2,270,116,1000,'center','#ffffff');
+  text(ctx,typeCode,WIDTH/2,252,108,1000,'center','#ffffff');
   ctx.save();
   ctx.shadowColor=secondary;
   ctx.shadowBlur=28;
-  text(ctx,typeCode,WIDTH/2,270,116,1000,'center','#ffffff');
+  text(ctx,typeCode,WIDTH/2,252,108,1000,'center','#ffffff');
   ctx.restore();
-  text(ctx,identity.styleTypeLabel,WIDTH/2,351,31,950,'center','#f7f4ff');
+  text(ctx,identity.compact,WIDTH/2,334,46,1000,'center','#f7f4ff');
 
   const img=await loadImage(asset.file);
-  const boxW=620,boxH=455;
+  const boxW=620,boxH=430;
   const scale=Math.min(boxW/img.naturalWidth,boxH/img.naturalHeight);
   const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
   ctx.save();
   ctx.shadowColor=secondary;
   ctx.shadowBlur=48;
   ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(img,(WIDTH-w)/2,390+(boxH-h)/2,w,h);
+  ctx.drawImage(img,(WIDTH-w)/2,380+(boxH-h)/2,w,h);
   ctx.restore();
 
-  text(ctx,asset.name,WIDTH/2,870,66,1000,'center','#ffffff');
-  text(ctx,shorten(result.hero,30),WIDTH/2,930,27,820,'center','#e8edf3');
+  text(ctx,shorten(result.hero,34),WIDTH/2,850,30,850,'center','#f1f4f8');
+  text(ctx,'こんなタイプらしい',WIDTH/2,903,21,850,'center','#f0d477');
 
   const cardFeatures=(features.length?features:[result.scenes[0].voice]).slice(0,2);
   if(cardFeatures.length){
@@ -200,7 +191,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
     ctx.lineWidth=2;
     ctx.strokeStyle='#e8cb67';
     ctx.stroke();
-    text(ctx,'THIS IS YOU',136,1002,21,1000,'left','#f5dc82');
+    text(ctx,'あるある',136,1002,21,1000,'left','#f5dc82');
     cardFeatures.forEach((feature,index)=>{
       text(ctx,'◆',138,1042+index*36,18,950,'left',index%2?secondary:accent);
       text(ctx,shorten(feature),178,1042+index*36,23,780,'left','#f5f7fb');
@@ -215,8 +206,8 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   divider.addColorStop(1,'rgba(242,213,111,0)');
   ctx.fillStyle=divider;
   ctx.fillRect(110,1173,WIDTH-220,2);
-  text(ctx,`CLASS ${String(asset.jobNumber).padStart(2,'0')} · ${jobCode}`,110,1215,24,900,'left','#f2d978');
-  text(ctx,'あなたはどのTYPE？',WIDTH-110,1215,26,950,'right','#ffffff');
+  text(ctx,`JOB ${String(asset.jobNumber).padStart(2,'0')} · ${asset.animal}`,110,1215,22,850,'left','#c8d2dd');
+  text(ctx,'友だちは何タイプ？',WIDTH-110,1215,26,950,'right','#ffffff');
   text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1267,22,780,'center','#c7d1dd');
   text(ctx,'ムダギリ診断',WIDTH/2,1307,29,1000,'center','#f4dd82');
 
@@ -235,21 +226,30 @@ function downloadFile(file:File){
   window.setTimeout(()=>URL.revokeObjectURL(href),1500);
 }
 
-export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,features=[]}:Args):Promise<ShareResult>{
+export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,features=[],target}:Args):Promise<ShareResult>{
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
-  const message=`私のお金タイプは「${identity.full}」だった！ 「${shorten(result.hero,34)}」 あなたはどのTYPE？ #ムダギリ診断 #お金の性格診断`;
+  const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
   const nav=navigator as FileShareNavigator;
   try{
     const file=await createJobShareImage({jobCode,primaryStyle,styleLabel,features});
+    const url=window.location.href;
+    if(target==='x'){
+      window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(message+'\n'+url),'_blank','noopener,noreferrer');
+      return 'text';
+    }
+    if(target==='line'){
+      window.location.href='https://line.me/R/share?text='+encodeURIComponent(message+'\n'+url);
+      return 'text';
+    }
     if(nav.share&&nav.canShare?.({files:[file]})){
       await nav.share({title:'ムダギリ｜お金の性格診断',text:message,files:[file]});
       return 'shared';
     }
     downloadFile(file);
-    try{await navigator.clipboard?.writeText(`${message} ${window.location.href}`)}catch{}
+    try{await navigator.clipboard?.writeText(`${message} ${url}`)}catch{}
     return 'downloaded';
   }catch{
     try{
