@@ -91,7 +91,7 @@ let resumeChecked=false;
 let capturedAdaptive=false;
 let capturedSeparator=false;
 for(let guard=0;guard<80;guard++){
-  const result=page.locator('.mpp-result');
+  const result=page.locator('.mpp17-page');
   if(await result.count()&&await result.isVisible())break;
 
   const debug=page.locator('.mpp-debug');
@@ -134,50 +134,50 @@ for(let guard=0;guard<80;guard++){
   }
 }
 
-await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+await page.locator('.mpp17-page').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
-await page.locator('.mpp-result-ssr-card').waitFor({state:'visible',timeout:3000});
-await page.waitForFunction(()=>{const img=document.querySelector('.mpp-result-job-hero .mpp-job-character img');return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0},{timeout:5000});
-await assertJobImageLoaded('.mpp-result-job-hero','result-hero');
+await page.locator('.mpp17-profile').waitFor({state:'visible',timeout:3000});
+await page.waitForFunction(()=>{const img=document.querySelector('.mpp17-portrait .mpp-job-character img');return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0},{timeout:5000});
+await assertJobImageLoaded('.mpp17-portrait','result-hero');
 await page.waitForTimeout(1100);
-await screenshot('05-result-ssr-card');
-const moreScenes=page.locator('.mpp-v9-more');
+await screenshot('05-result-profile');
+const moreScenes=page.locator('.mpp17-more');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(80);
-const visibleMore=await moreScenes.locator('.mpp-v9-more-list .mpp-v9-scene').evaluateAll(nodes=>nodes.filter(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return s.display!=='none'&&s.visibility!=='hidden'&&r.height>0}).length);
-if(visibleMore!==3)throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_NOT_VISIBLE:'+visibleMore);
+const visibleMore=await moreScenes.locator('div > article').evaluateAll(nodes=>nodes.filter(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return s.display!=='none'&&s.visibility!=='hidden'&&r.height>0}).length);
+if(visibleMore!==3)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_NOT_VISIBLE:'+visibleMore);
 await screenshot('05b-result-more-scenes');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(50);
 
-const resultV9Geometry=await page.evaluate(()=>{
-  const hero=document.querySelector('.mpp-result-v4-hero');
-  const body=document.querySelector('.mpp-result-v9');
+const resultV17Geometry=await page.evaluate(()=>{
+  const hero=document.querySelector('.mpp17-profile');
+  const body=document.querySelector('.mpp17-wrap');
   const heroRect=hero?.getBoundingClientRect();
   const bodyRect=body?.getBoundingClientRect();
   return {
     hero:heroRect?{top:heroRect.top,bottom:heroRect.bottom,height:heroRect.height}:null,
     body:bodyRect?{top:bodyRect.top,bottom:bodyRect.bottom,height:bodyRect.height}:null,
     innerHeight,
-    primarySceneCount:document.querySelectorAll('.mpp-v9-scenes .mpp-v9-scene').length,
-    extraSceneCount:document.querySelectorAll('.mpp-v9-more-list .mpp-v9-scene').length,
-    hasMore:Boolean(document.querySelector('.mpp-v9-more')),
-    hasSsrBadge:Boolean(document.querySelector('.mpp-result-ssr-badge')),
-    socialButtons:document.querySelectorAll('.mpp-v15-share-buttons button').length,
-    matchCards:document.querySelectorAll('.mpp-v15-match-list article').length,
+    primarySceneCount:document.querySelectorAll('.mpp17-scene-list > article').length,
+    extraSceneCount:document.querySelectorAll('.mpp17-more > div > article').length,
+    hasMore:Boolean(document.querySelector('.mpp17-more')),
+    socialButtons:document.querySelectorAll('.mpp17-share-buttons button').length,
+    matchCards:document.querySelectorAll('.mpp17-match-list article').length,
+    miniJobs:document.querySelectorAll('.mpp17-mini-jobs > div').length,
   };
 });
-if(!resultV9Geometry.hero||!resultV9Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V9_MISSING:'+JSON.stringify(resultV9Geometry));
-if(resultV9Geometry.primarySceneCount!==3||resultV9Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V9_SCENE_COUNT_BAD:'+JSON.stringify(resultV9Geometry));
-if(!resultV9Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
-if(resultV9Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_SHOULD_BE_GONE');
-if(resultV9Geometry.socialButtons!==4)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV9Geometry));
-if(resultV9Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV9Geometry));
+if(!resultV17Geometry.hero||!resultV17Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V17_MISSING:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.primarySceneCount!==3||resultV17Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
+if(!resultV17Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
+if(resultV17Geometry.socialButtons!==4)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.miniJobs!==8)throw new Error('MONEY_PUBLIC_RESULT_MINI_JOB_BOOK_BAD:'+JSON.stringify(resultV17Geometry));
 
 const resultScrollBefore=await page.evaluate(()=>{
   const root=document.scrollingElement||document.documentElement;
   const htmlStyle=getComputedStyle(document.documentElement),bodyStyle=getComputedStyle(document.body);
-  return {scrollHeight:root.scrollHeight,innerHeight,scrollY,htmlOverflowY:htmlStyle.overflowY,bodyOverflowY:bodyStyle.overflowY,pageHeight:document.querySelector('.mpp-page--result')?.getBoundingClientRect().height||0,cardHeight:document.querySelector('.mpp-result')?.getBoundingClientRect().height||0};
+  return {scrollHeight:root.scrollHeight,innerHeight,scrollY,htmlOverflowY:htmlStyle.overflowY,bodyOverflowY:bodyStyle.overflowY,pageHeight:document.querySelector('.mpp17-page')?.getBoundingClientRect().height||0,cardHeight:document.querySelector('.mpp17-wrap')?.getBoundingClientRect().height||0};
 });
 if(resultScrollBefore.scrollHeight<=resultScrollBefore.innerHeight+100)throw new Error('MONEY_PUBLIC_RESULT_NOT_TALL_ENOUGH:'+JSON.stringify(resultScrollBefore));
 if(resultScrollBefore.htmlOverflowY==='hidden'||resultScrollBefore.bodyOverflowY==='hidden')throw new Error('MONEY_PUBLIC_RESULT_DOCUMENT_SCROLL_LOCKED:'+JSON.stringify(resultScrollBefore));
@@ -187,42 +187,41 @@ const resultScrollY=await page.evaluate(()=>window.scrollY);
 if(resultScrollY<40)throw new Error('MONEY_PUBLIC_RESULT_CANNOT_SCROLL:'+JSON.stringify({resultScrollBefore,resultScrollY}));
 await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 
-const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
+const text=((await page.locator('.mpp17-page').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
 if(text.includes('TYPE UNLOCKED')||text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_LEAK');
-if(!text.includes('こんなこと、ない？'))throw new Error('MONEY_PUBLIC_RESULT_V12_RECOGNITION_MISSING');
-if(!text.includes('ほかの場面も見る'))throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
+if(!text.includes('これ、やりがちじゃない？'))throw new Error('MONEY_PUBLIC_RESULT_V17_RECOGNITION_MISSING');
+if(!text.includes('ほかのあるあるも見る'))throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
 if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
-if(!text.includes('周りからはこう見える')||!text.includes('このタイプの強み'))throw new Error('MONEY_PUBLIC_RESULT_V12_INSIGHT_MISSING');
-if(!text.includes('友だちと比べる'))throw new Error('MONEY_PUBLIC_RESULT_V9_COMPARE_MISSING');
+if(!text.includes('外から見ると、こう見える。')||!text.includes('このタイプの強み'))throw new Error('MONEY_PUBLIC_RESULT_V17_INSIGHT_MISSING');
+if(!text.includes('同じ場面でも、タイプで違う'))throw new Error('MONEY_PUBLIC_RESULT_V17_COMPARE_MISSING');
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
-if(!text.includes('3つの傾向を見てみる'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
-const axisV10=await page.evaluate(()=>({
-  axisCount:document.querySelectorAll('.mpp-axis-v10').length,
-  oldTraitCount:document.querySelectorAll('.mpp-analysis-details .mpp-trait').length,
-  compareCards:document.querySelectorAll('.mpp-v9-compare-grid article').length,
-  compactMore:document.querySelectorAll('.mpp-v9-more-list .mpp-v9-scene--compact').length,
+if(!text.includes('診断の内訳を見る'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
+const axisV17=await page.evaluate(()=>({
+  axisCount:document.querySelectorAll('.mpp17-axis-list article').length,
+  compareCards:document.querySelectorAll('.mpp17-compare-row article').length,
+  compactMore:document.querySelectorAll('.mpp17-more > div > article').length,
 }));
-if(axisV10.axisCount!==3||axisV10.oldTraitCount!==0)throw new Error('MONEY_PUBLIC_AXIS_V10_BAD:'+JSON.stringify(axisV10));
-if(axisV10.compareCards!==2)throw new Error('MONEY_PUBLIC_COMPARE_V10_BAD:'+JSON.stringify(axisV10));
-if(axisV10.compactMore!==3)throw new Error('MONEY_PUBLIC_MORE_COMPACT_BAD:'+JSON.stringify(axisV10));
+if(axisV17.axisCount!==3)throw new Error('MONEY_PUBLIC_AXIS_V17_BAD:'+JSON.stringify(axisV17));
+if(axisV17.compareCards!==2)throw new Error('MONEY_PUBLIC_COMPARE_V17_BAD:'+JSON.stringify(axisV17));
+if(axisV17.compactMore!==3)throw new Error('MONEY_PUBLIC_MORE_V17_BAD:'+JSON.stringify(axisV17));
 const typography=await page.evaluate(()=>({
-  hero:parseFloat(getComputedStyle(document.querySelector('.mpp-result-v4-hero h1')).fontSize),
-  heroLine:parseFloat(getComputedStyle(document.querySelector('.mpp-result-hero-line')).fontSize),
-  scene:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-scenes .mpp-v9-scene>b')).fontSize),
-  voice:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-scenes .mpp-v9-scene blockquote')).fontSize),
-  truth:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-truth b')).fontSize),
+  hero:parseFloat(getComputedStyle(document.querySelector('.mpp17-profile h1')).fontSize),
+  heroLine:parseFloat(getComputedStyle(document.querySelector('.mpp17-hero')).fontSize),
+  voice:parseFloat(getComputedStyle(document.querySelector('.mpp17-scene-list blockquote')).fontSize),
+  scene:parseFloat(getComputedStyle(document.querySelector('.mpp17-scene-list p')).fontSize),
+  truth:parseFloat(getComputedStyle(document.querySelector('.mpp17-core h2')).fontSize),
 }));
-if(typography.hero<28||typography.heroLine<16||typography.scene<15||typography.voice<14||typography.truth<17)throw new Error('MONEY_PUBLIC_V11_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
+if(typography.hero<30||typography.heroLine<16||typography.voice<18||typography.scene<12||typography.truth<22)throw new Error('MONEY_PUBLIC_V17_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
 if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
-if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('結果をシェア')||!text.includes('お金の価値観で見る相性'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
+if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
+if(!text.includes('自分、こういうタイプらしい。')||!text.includes('お金の感覚で見る'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
-await page.getByRole('button',{name:'次のクエストへ進む'}).click();
+await page.getByRole('button',{name:'家計クエストへ進む'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 await screenshot('06-next-routes');
 const routesText=((await page.locator('.mpp-next-routes').textContent())||'').replace(/\s+/g,' ');
@@ -263,7 +262,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV10:true,firstQuestionGeometry,resultV9Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedProfileResult:true,capturedNextRoutes:true,personalizedResult:true,resultV17:true,firstQuestionGeometry,resultV17Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
