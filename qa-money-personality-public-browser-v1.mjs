@@ -163,12 +163,16 @@ const resultV9Geometry=await page.evaluate(()=>{
     extraSceneCount:document.querySelectorAll('.mpp-v9-more-list .mpp-v9-scene').length,
     hasMore:Boolean(document.querySelector('.mpp-v9-more')),
     hasSsrBadge:Boolean(document.querySelector('.mpp-result-ssr-badge')),
+    socialButtons:document.querySelectorAll('.mpp-v15-share-buttons button').length,
+    matchCards:document.querySelectorAll('.mpp-v15-match-list article').length,
   };
 });
 if(!resultV9Geometry.hero||!resultV9Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V9_MISSING:'+JSON.stringify(resultV9Geometry));
 if(resultV9Geometry.primarySceneCount!==3||resultV9Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V9_SCENE_COUNT_BAD:'+JSON.stringify(resultV9Geometry));
 if(!resultV9Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
-if(!resultV9Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_MISSING');
+if(resultV9Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_SHOULD_BE_GONE');
+if(resultV9Geometry.socialButtons!==4)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV9Geometry));
+if(resultV9Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV9Geometry));
 
 const resultScrollBefore=await page.evaluate(()=>{
   const root=document.scrollingElement||document.documentElement;
@@ -185,7 +189,7 @@ await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 
 const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
-if(!text.includes('TYPE UNLOCKED')||!text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_MISSING');
+if(text.includes('TYPE UNLOCKED')||text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_LEAK');
 if(!text.includes('こんなこと、ない？'))throw new Error('MONEY_PUBLIC_RESULT_V12_RECOGNITION_MISSING');
 if(!text.includes('ほかの場面も見る'))throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
 if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
@@ -212,7 +216,7 @@ const typography=await page.evaluate(()=>({
 if(typography.hero<28||typography.heroLine<16||typography.scene<15||typography.voice<14||typography.truth<17)throw new Error('MONEY_PUBLIC_V11_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
 if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
 if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('タイプカードをシェアする'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
+if(!text.includes('結果をシェア')||!text.includes('お金の価値観で見る相性'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
@@ -222,7 +226,7 @@ await page.getByRole('button',{name:'次のクエストへ進む'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 await screenshot('06-next-routes');
 const routesText=((await page.locator('.mpp-next-routes').textContent())||'').replace(/\s+/g,' ');
-if(!routesText.includes('SSR ACQUIRED')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
+if(!routesText.includes('YOUR MONEY TYPE')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
 if(!routesText.includes('32TYPE図鑑'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_CTA_MISSING:'+routesText);
 await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
