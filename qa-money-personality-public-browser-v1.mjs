@@ -215,7 +215,7 @@ const typography=await page.evaluate(()=>({
 if(typography.hero<30||typography.heroLine<16||typography.voice<18||typography.scene<12||typography.truth<22)throw new Error('MONEY_PUBLIC_V17_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
 if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
 if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('自分、こういうタイプらしい。')||!text.includes('お金の感覚で見る'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
+if(!text.includes('このカードを、そのままシェア。')||!text.includes('お金の感覚で見る'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
