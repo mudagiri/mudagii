@@ -124,15 +124,22 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <section className="mpp17-share" id="mpp17-share">
         <div className="mpp17-share-preview">
-          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>{identity.code}</b></div>
-          <JobCharacterCard jobCode={jobCode} variant="compact"/>
-          <div><small>私は</small><h2>{identity.compact}</h2><p>{content.hero}</p><div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div></div>
-          <footer>ムダギリ｜お金の性格診断</footer>
+          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
+          <div className="mpp17-share-code">{identity.code}</div>
+          <div className="mpp17-share-art"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
+          <div className="mpp17-share-type">
+            <small>あなたのお金タイプ</small>
+            <h2>{identity.jobName}</h2>
+            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span>を大事にするタイプ</div>
+            <p>{content.hero}</p>
+            <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
+          </div>
+          <footer><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></footer>
         </div>
         <div className="mpp17-share-copy">
           <small>08 / SHARE</small>
           <h2>このカードを、そのままシェア。</h2>
-          <p>上の診断結果カードと同じTYPE・一言・ハッシュタグを画像にします。金額や収入は載りません。</p>
+          <p>TYPE・キャラ・一言・ハッシュタグを1枚に。金額や収入は載りません。</p>
         </div>
         <div className="mpp17-share-buttons">
           <button onClick={()=>onShare('x')}>𝕏</button>
