@@ -17,6 +17,7 @@ assert(RESULT_V9_SCENE_COUNT===192,`RESULT_V9_SCENE_COUNT_BAD:${RESULT_V9_SCENE_
 
 const publicUi=fs.readFileSync('./src/features/money-personality/MoneyPersonalityPublic.tsx','utf8');
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx','utf8');
+const shareImageUi=fs.readFileSync('./src/features/money-personality/job-share-image-v1.ts','utf8');
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
 assert(publicUi.includes("resultV10InsightFor(job,style)"),'PUBLIC_RESULT_V10_INSIGHT_NOT_WIRED');
@@ -100,3 +101,7 @@ console.log(JSON.stringify({
   rawSelfTalkGuard:true,
   audienceNeutralSelfTalk:true,
 },null,2));
+
+assert(resultUi.includes('mpp17-tags'),'V17_PROFILE_HASHTAGS_MISSING');
+assert(resultUi.includes('mpp17-share-tags'),'V17_SHARE_PREVIEW_HASHTAGS_MISSING');
+assert(shareImageUi.includes("result.scenes.slice(0,3).map(scene=>tagLabel(scene.label))"),'V17_SHARE_HASHTAGS_MISSING');
