@@ -193,6 +193,15 @@ if(!text.includes('見え方のズレ')||!text.includes('武器 → 暴走 → �
 if(!text.includes('友だちと比べる'))throw new Error('MONEY_PUBLIC_RESULT_V9_COMPARE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
+const axisV10=await page.evaluate(()=>({
+  axisCount:document.querySelectorAll('.mpp-axis-v10').length,
+  oldTraitCount:document.querySelectorAll('.mpp-analysis-details .mpp-trait').length,
+  compareCards:document.querySelectorAll('.mpp-v9-compare-grid article').length,
+  compactMore:document.querySelectorAll('.mpp-v9-more-list .mpp-v9-scene--compact').length,
+}));
+if(axisV10.axisCount!==3||axisV10.oldTraitCount!==0)throw new Error('MONEY_PUBLIC_AXIS_V10_BAD:'+JSON.stringify(axisV10));
+if(axisV10.compareCards!==2)throw new Error('MONEY_PUBLIC_COMPARE_V10_BAD:'+JSON.stringify(axisV10));
+if(axisV10.compactMore!==3)throw new Error('MONEY_PUBLIC_MORE_COMPACT_BAD:'+JSON.stringify(axisV10));
 if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
 if(!text.includes('このTYPEカードをシェア'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
@@ -220,7 +229,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV9:true,firstQuestionGeometry,resultV9Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV10:true,firstQuestionGeometry,resultV9Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
