@@ -5,16 +5,13 @@ import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from '
 import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type SeparatorId} from './separatorDataV1';
 import {
   buildCoreTraitSideMap,buildPublicCoreOrder,displayScore,FACTOR_PUBLIC_LABEL,getOrCreatePublicParticipantId,
-  JOB_NUMBER,newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
+  newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
-import {moneyTypeCode} from './money-type-code-v1';
-import {moneyTypeIdentity} from './money-type-identity-v1';
 import ResultJourneyV1 from './ResultJourneyV1';
-import ResultV9 from './ResultV9';
+import ResultV17 from './ResultV17';
 import {resultV9For} from './resultV9Content';
 import {resultV10InsightFor} from './resultV10Insight';
-import JobCharacterCard from './JobCharacterCard';
 import JobEncyclopediaV1 from './JobEncyclopediaV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -70,48 +67,31 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
  const meta=STYLE_META[style];
- const typeCode=moneyTypeCode(job,style);
- const identity=moneyTypeIdentity(job,style);
  const v9=resultV9For(job,style);
  const insight=resultV10InsightFor(job,style);
 
- useEffect(()=>{if(handoff!=='result')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];const previous=nodes.map(el=>({el,cssText:el.style.cssText}));html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}for(const el of [page,card])if(el){el.style.setProperty('height','auto','important');el.style.setProperty('min-height',el===page?'100dvh':'0','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow','visible','important');el.style.setProperty('overflow-y','visible','important');el.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText});html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active')}},[handoff]);
+ useEffect(()=>{if(handoff!=='result')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[handoff]);
 
  if(handoff==='book')return <main className="mpp-page mpp-page--guild"><JobEncyclopediaV1 unlocked={job} primaryStyle={style} onClose={()=>setHandoff('result')}/></main>;
  if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
 
  const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.scenes[0].voice,v9.scenes[1].voice],target})};
- const axes=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
+ const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
+ const axes=axisDefs.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return {title,left,right,lean,pos}});
 
- return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style} data-money-type={typeCode}>
-  <section className="mpp-card mpp-result">
-   <div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div>
-   <section className="mpp-result-v4-hero mpp-result-ssr-card">
-    <div className="mpp-kicker">お金の性格診断 · 1 / 32</div>
-    <div className="mpp-result-type-code"><strong>{typeCode}</strong><span>JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</span></div>
-    <div className="mpp-result-job-hero"><JobCharacterCard jobCode={job} variant="hero" className="mpp-result-job-character"/></div>
-    <div className="mpp-result-label">あなたのお金タイプ</div>
-    <h1>{identity.compact}</h1>
-    <p className="mpp-result-hero-line">{v9.hero}</p>
-   </section>
-
-   <ResultV9 content={v9} insight={insight} jobCode={job} primaryStyle={style} secondaryStyle={secondary} onShare={share} onOpenBook={()=>setHandoff('book')}/>
-
-   <details className="mpp-analysis-details">
-    <summary>診断の内訳を見る <small>3つの傾向</small></summary>
-    <div className="mpp-axis-block">
-     <h2>3つの傾向を見てみる</h2>
-     {axes.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return <div className="mpp-axis-v10" key={title}><header><b>{title}</b><small>{lean}</small></header><div className="mpp-axis-v10-labels"><span>{left}</span><span>{right}</span></div><div className="mpp-axis-v10-track" aria-label={`${title}: ${lean}`}><i style={{left:pos+'%'}}/></div></div>})}
-    </div>
-   </details>
-
-   <div className="mpp-one-action"><span>次にやるなら、これ</span><b>{v9.nextMove}</b></div>
-   <div className="mpp-result-v4-chapter-label">次のステップ</div>
-   <div className="mpp-next-quest"><span>NEXT</span><b>次は、実際の家計を見てみよう。</b><p>お金タイプはもう分かった。次は、実際の支出を見ながら改善できるところを探します。</p></div>
-   <button className="mpp-primary" onClick={()=>setHandoff('journey')}>家計クエストへ進む</button>
-   <button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-   {debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V10_RESONANCE'},null,2)}</pre>}
-  </section>
- </main>
+ return <>
+  <ResultV17
+   content={v9}
+   insight={insight}
+   jobCode={job}
+   primaryStyle={style}
+   secondaryStyle={secondary}
+   axes={axes}
+   onShare={share}
+   onOpenBook={()=>setHandoff('book')}
+   onHousehold={()=>setHandoff('journey')}
+   onRestart={onRestart}
+  />
+  {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V17_EDITORIAL'},null,2)}</pre>}
+ </>;
 }
-
