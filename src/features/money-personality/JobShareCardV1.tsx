@@ -14,16 +14,19 @@ export default function JobShareCardV1({jobCode,primaryStyle,onShare}:Props){
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
+  const tags=result.scenes.slice(0,3).map(scene=>'#'+scene.label.replace(/\p{Extended_Pictographic}/gu,'').replace(/[\s　]/g,'').replace(/[・/]/g,'').replace(/^[#]+/,''));
   return <section className="mpp-job-share" data-job={jobCode} data-money-type={typeCode} style={{'--job-accent':asset.accent} as React.CSSProperties}>
     <div className="mpp-job-share-card" aria-label={`${typeCode} ${asset.name} シェアカード`}>
-      <header className="mpp-job-share-header"><span>MUDAGIRI / MONEY TYPE</span><b>1 OF 32</b></header>
+      <div className="mpp-job-share-jobbg" aria-hidden="true"/>
+      <div className="mpp-job-share-diamond" aria-hidden="true"/>
+      <div className="mpp-job-share-edge" aria-hidden="true"/>
+      <header className="mpp-job-share-header"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></header>
       <div className="mpp-job-share-code">{typeCode}</div>
       <div className="mpp-job-share-style">{identity.styleTypeLabel}</div>
-      <JobCharacterCard jobCode={jobCode} variant="hero"/>
-      <div className="mpp-job-share-copy"><small>お金タイプ</small><h2>{identity.compact}</h2><p>{result.hero}</p></div>
-      <div className="mpp-job-share-identity"><span>{typeCode}</span><i/><span>32 TYPE</span><i/><span>CLASS {String(asset.jobNumber).padStart(2,'0')}</span></div>
-      <div className="mpp-job-share-hook"><small>友だちは何TYPE？</small><strong>同じ場面でどう決めるか、比べてみる。</strong></div>
-      <footer><b>ムダギリ診断</b><span>#ムダギリ診断　#お金の性格診断</span></footer>
+      <div className="mpp-job-share-portrait"><div className="mpp-job-share-reticle" aria-hidden="true"/><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
+      <div className="mpp-job-share-copy"><small>あなたのお金タイプ</small><h2>{identity.compact}</h2><p>{result.hero}</p></div>
+      <div className="mpp-job-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
+      <footer><b>ムダギリ｜お金の性格診断</b><span>{asset.animal}</span></footer>
     </div>
     {onShare&&<button className="mpp-primary mpp-job-share-button" onClick={onShare}>「{typeCode}」をシェアする</button>}
   </section>;
