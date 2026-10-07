@@ -1,0 +1,1 @@
+export const MONEY_TYPE_NEIGHBORS_VERSION='V1';
