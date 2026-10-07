@@ -202,8 +202,17 @@ const axisV10=await page.evaluate(()=>({
 if(axisV10.axisCount!==3||axisV10.oldTraitCount!==0)throw new Error('MONEY_PUBLIC_AXIS_V10_BAD:'+JSON.stringify(axisV10));
 if(axisV10.compareCards!==2)throw new Error('MONEY_PUBLIC_COMPARE_V10_BAD:'+JSON.stringify(axisV10));
 if(axisV10.compactMore!==3)throw new Error('MONEY_PUBLIC_MORE_COMPACT_BAD:'+JSON.stringify(axisV10));
+const typography=await page.evaluate(()=>({
+  hero:parseFloat(getComputedStyle(document.querySelector('.mpp-result-v4-hero h1')).fontSize),
+  heroLine:parseFloat(getComputedStyle(document.querySelector('.mpp-result-hero-line')).fontSize),
+  scene:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-scenes .mpp-v9-scene>b')).fontSize),
+  voice:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-scenes .mpp-v9-scene blockquote')).fontSize),
+  truth:parseFloat(getComputedStyle(document.querySelector('.mpp-v9-truth b')).fontSize),
+}));
+if(typography.hero<28||typography.heroLine<16||typography.scene<15||typography.voice<14||typography.truth<17)throw new Error('MONEY_PUBLIC_V11_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
+if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
 if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('このTYPEカードをシェア'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
+if(!text.includes('TYPEカードをシェアする'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
