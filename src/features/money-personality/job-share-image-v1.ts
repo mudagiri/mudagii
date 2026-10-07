@@ -173,7 +173,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   canvas.height=HEIGHT;
   const ctx=canvas.getContext('2d');
   if(!ctx)throw new Error('canvas unavailable');
-  const foil=await loadImage('./assets/foils/v2/MUDAGIRI_DIAMOND_HOLO_V2.svg');
+  const foil=await loadImage('./assets/foils/v3/MUDAGIRI_DIAMOND_HOLO_V3.svg');
 
   const bg=ctx.createLinearGradient(0,0,WIDTH,HEIGHT);
   bg.addColorStop(0,deep);
