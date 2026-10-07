@@ -1,16 +1,26 @@
 import React from 'react';
+import type {JobCode,StyleId} from './classifierV1';
 import type {V9TypeResult} from './resultV9Content';
 import type {ResultV10Insight} from './resultV10Insight';
+import {moneyTypeNeighbors} from './money-type-neighbors-v1';
+import {moneyTypeCode} from './money-type-code-v1';
+import JobCharacterCard from './JobCharacterCard';
 import './result-v9.css';
 import './result-v11-polish.css';
 import './result-v12-jp.css';
 import './result-v13-world.css';
 import './result-v14-household-grade.css';
+import './result-v15-social.css';
 
+type ShareTarget='x'|'instagram'|'threads'|'line';
 type Props={
   content:V9TypeResult;
-  onShare:()=>void;
   insight:ResultV10Insight;
+  jobCode:JobCode;
+  primaryStyle:StyleId;
+  secondaryStyle:StyleId;
+  onShare:(target:ShareTarget)=>void;
+  onOpenBook:()=>void;
 };
 
 function SceneCard({scene,compact=false}:{scene:V9TypeResult['scenes'][number];compact?:boolean}){
@@ -21,9 +31,15 @@ function SceneCard({scene,compact=false}:{scene:V9TypeResult['scenes'][number];c
   </article>;
 }
 
-export default function ResultV9({content,onShare,insight}:Props){
+export default function ResultV9({content,insight,jobCode,primaryStyle,secondaryStyle,onShare,onOpenBook}:Props){
   const primary=content.scenes.slice(0,3);
   const more=content.scenes.slice(3);
+  const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
+  const neighborRows=[
+    {key:'close',label:'かなり近い',value:neighbors.close},
+    {key:'similar',label:'似てる',value:neighbors.similar},
+    {key:'contrast',label:'対照的',value:neighbors.contrast},
+  ] as const;
   return <div className="mpp-result-v9">
     <section className="mpp-v9-real">
       <div className="mpp-v9-kicker">あるある</div>
@@ -67,12 +83,31 @@ export default function ResultV9({content,onShare,insight}:Props){
         <article><small>あなた</small><b>{insight.compare.you}</b></article>
         <article><small>近いタイプなら</small><b>{insight.compare.other}</b></article>
       </div>
-      <div className="mpp-v9-compare-share">
-        <small>友だちは何タイプ？</small>
-        <b>同じ場面で比べると、違いがもっと分かりやすい。</b>
-        <button className="mpp-secondary" onClick={onShare}>タイプカードをシェアする</button>
-      </div>
     </section>
 
+    <section className="mpp-v15-match">
+      <div className="mpp-v9-kicker">お金の価値観で見る相性</div>
+      <h2>近いタイプ、意外と違うタイプ。</h2>
+      <p className="mpp-v15-match-lead">恋愛や人間関係の相性ではなく、診断上の「お金の考え方の近さ」です。</p>
+      <div className="mpp-v15-match-list">
+        {neighborRows.map(({key,label,value})=><article key={key} className={`is-${key}`}>
+          <JobCharacterCard jobCode={value.jobCode} variant="compact"/>
+          <div><small>{label}</small><b>{value.title}</b><span>{moneyTypeCode(value.jobCode,value.style)}</span><p>{value.reason}</p></div>
+        </article>)}
+      </div>
+      <button className="mpp-secondary mpp-v15-book-button" onClick={onOpenBook}>32タイプ図鑑を見る</button>
+    </section>
+
+    <section className="mpp-v15-share">
+      <div className="mpp-v9-kicker">結果をシェア</div>
+      <h2>「自分、こういうタイプらしい。」</h2>
+      <p>金額や収入は出さず、タイプ名と診断の一言だけをカードにします。</p>
+      <div className="mpp-v15-share-buttons">
+        <button onClick={()=>onShare('x')}>𝕏</button>
+        <button onClick={()=>onShare('instagram')}>Instagram</button>
+        <button onClick={()=>onShare('threads')}>Threads</button>
+        <button onClick={()=>onShare('line')}>LINE</button>
+      </div>
+    </section>
   </div>;
 }
