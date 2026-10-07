@@ -585,3 +585,164 @@ html body #root .mpp17-wrap{
   .mpp17-mini-jobs{grid-template-columns:repeat(4,1fr)}
   .mpp17-share-buttons{grid-template-columns:1fr 1fr}
 }
+
+
+/* ---------- V17.1 RARE TYPE CARD ---------- */
+.mpp17-profile{
+  margin:16px 0 32px!important;
+  padding:22px 22px 20px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-radius:28px!important;
+  color:#f8f8fb!important;
+  background:
+    radial-gradient(circle at 50% 33%,color-mix(in srgb,var(--mpp17-accent) 30%,transparent),transparent 28%),
+    radial-gradient(circle at 14% 12%,rgba(255,255,255,.07),transparent 22%),
+    linear-gradient(155deg,#171820 0%,#111319 58%,#090b0f 100%)!important;
+  box-shadow:
+    0 24px 54px rgba(25,22,20,.20),
+    inset 0 0 0 1px rgba(255,255,255,.035)!important;
+}
+.mpp17-profile::before{
+  content:"";
+  position:absolute;
+  inset:1px;
+  border:1px solid color-mix(in srgb,var(--mpp17-accent) 42%,rgba(255,255,255,.22));
+  border-radius:26px;
+  pointer-events:none;
+  opacity:.8;
+}
+.mpp17-profile::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  height:auto;
+  background:
+    linear-gradient(112deg,transparent 12%,rgba(255,255,255,.07) 24%,transparent 35%),
+    radial-gradient(circle at 86% 12%,rgba(255,255,255,.06),transparent 24%);
+  pointer-events:none;
+}
+.mpp17-card-edge{
+  position:absolute;
+  inset:7px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.045);
+  pointer-events:none;
+}
+.mpp17-profile .mpp17-topline{
+  position:relative;
+  z-index:2;
+  color:rgba(255,255,255,.58)!important;
+}
+.mpp17-profile .mpp17-topline b{color:rgba(255,255,255,.68)!important}
+.mpp17-profile .mpp17-code{
+  position:relative;
+  z-index:2;
+  color:#fff!important;
+  font-size:20px!important;
+  letter-spacing:.12em!important;
+}
+.mpp17-profile .mpp17-portrait{
+  min-height:245px!important;
+  margin:-8px auto -10px!important;
+}
+.mpp17-profile .mpp17-portrait::before{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--mpp17-accent) 26%,transparent),transparent 66%);
+  filter:blur(2px);
+}
+.mpp17-profile .mpp17-portrait .mpp-job-character{
+  position:relative;
+  z-index:2;
+  width:min(64vw,260px)!important;
+  filter:
+    drop-shadow(0 18px 22px rgba(0,0,0,.38))
+    drop-shadow(0 0 16px color-mix(in srgb,var(--mpp17-accent) 24%,transparent))!important;
+}
+.mpp17-profile .mpp17-type-label{color:rgba(255,255,255,.55)!important}
+.mpp17-profile h1{
+  position:relative;
+  z-index:2;
+  color:#fff!important;
+  font-size:clamp(36px,9vw,46px)!important;
+}
+.mpp17-profile .mpp17-value{color:rgba(255,255,255,.74)!important}
+.mpp17-profile .mpp17-value span{
+  background:color-mix(in srgb,var(--mpp17-accent) 20%,rgba(255,255,255,.08))!important;
+  color:#fff!important;
+  border:1px solid color-mix(in srgb,var(--mpp17-accent) 46%,rgba(255,255,255,.14))!important;
+}
+.mpp17-profile .mpp17-hero{
+  position:relative;
+  z-index:2;
+  color:#f3f3f6!important;
+  font-size:17px!important;
+}
+.mpp17-profile .mpp17-tags{
+  position:relative;
+  z-index:2;
+}
+.mpp17-profile .mpp17-tags span{
+  border:1px solid rgba(255,255,255,.11)!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#f4f4f7!important;
+}
+.mpp17-card-foot{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:18px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.52);
+  font-size:9px;
+  font-weight:850;
+}
+.mpp17-card-foot b{
+  color:rgba(255,255,255,.68);
+  font-size:9px;
+}
+
+/* Share preview mirrors the rare card instead of inventing another design. */
+.mpp17-share-preview{
+  border-color:rgba(255,255,255,.11)!important;
+  color:#fff!important;
+  background:
+    radial-gradient(circle at 18% 28%,color-mix(in srgb,var(--mpp17-accent) 28%,transparent),transparent 25%),
+    linear-gradient(155deg,#171820,#0c0e13)!important;
+}
+.mpp17-share-head{color:rgba(255,255,255,.58)!important}
+.mpp17-share-head b{color:#fff!important}
+.mpp17-share-preview>div:nth-of-type(2)>small{color:rgba(255,255,255,.55)!important}
+.mpp17-share-preview h2{color:#fff!important}
+.mpp17-share-preview p{color:rgba(255,255,255,.76)!important}
+.mpp17-share-preview footer{
+  border-top-color:rgba(255,255,255,.08)!important;
+  color:rgba(255,255,255,.5)!important;
+}
+.mpp17-share-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:8px;
+}
+.mpp17-share-tags span{
+  padding:4px 6px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  color:#f3f3f5;
+  font-size:8px;
+  font-weight:850;
+}
+
+@media(max-width:390px){
+  .mpp17-profile{margin-top:12px!important;padding-inline:18px!important}
+  .mpp17-profile .mpp17-portrait{min-height:232px!important}
+}
