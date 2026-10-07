@@ -173,6 +173,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   canvas.height=HEIGHT;
   const ctx=canvas.getContext('2d');
   if(!ctx)throw new Error('canvas unavailable');
+  const foil=await loadImage('./assets/foils/v2/MUDAGIRI_DIAMOND_HOLO_V2.svg');
 
   const bg=ctx.createLinearGradient(0,0,WIDTH,HEIGHT);
   bg.addColorStop(0,deep);
@@ -184,13 +185,19 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
 
   roundedRect(ctx,46,46,WIDTH-92,HEIGHT-92,46);
   const panel=ctx.createLinearGradient(0,46,WIDTH,HEIGHT-46);
-  panel.addColorStop(0,'rgba(10,16,32,.54)');
-  panel.addColorStop(.5,'rgba(3,8,20,.72)');
-  panel.addColorStop(1,'rgba(0,2,10,.88)');
+  panel.addColorStop(0,deep);
+  panel.addColorStop(.48,'#17181b');
+  panel.addColorStop(1,'#08090c');
   ctx.fillStyle=panel;
   ctx.fill();
   drawJobMotif(ctx,jobCode,accent);
-  drawDiamondFoil(ctx);
+  ctx.save();
+  roundedRect(ctx,46,46,WIDTH-92,HEIGHT-92,46);
+  ctx.clip();
+  ctx.globalCompositeOperation='screen';
+  ctx.globalAlpha=.66;
+  ctx.drawImage(foil,46,46,WIDTH-92,HEIGHT-92);
+  ctx.restore();
   ctx.lineWidth=6;
   ctx.strokeStyle='#f2d56f';
   ctx.shadowColor='#f2d56f';
