@@ -7,6 +7,7 @@ const STYLES:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
 const FORBIDDEN=['浪費家','ズボラ','ケチ','衝動買い','何も考えない','必ずこうする','絶対こうする'];
 const VAGUE=['こっち','そっち','あっち','こちら','どっち'];
 const GENERIC=['今必要な理由','必要な理由は見えている','条件を確認して決める','何を優先して決める','選んでよかったと思えそう','今の自分は何を優先'];
+const ABSTRACT_SELF_TALK=['効く','価値','判断','優先','満足','安心ライン','現在地','配分','最適','前進'];
 function assert(ok:unknown,msg:string):asserts ok{if(!ok)throw new Error(msg)}
 
 assert(RESULT_V9_TYPE_COUNT===32,`RESULT_V9_TYPE_COUNT_BAD:${RESULT_V9_TYPE_COUNT}`);
@@ -33,6 +34,7 @@ let types=0;
 let scenes=0;
 let maxHit=0;
 let maxVoice=0;
+const primaryVoices=new Set<string>();
 for(const job of JOBS){
   for(const style of STYLES){
     types++;
@@ -51,6 +53,10 @@ for(const job of JOBS){
       maxHit=Math.max(maxHit,s.hit.length);maxVoice=Math.max(maxVoice,s.voice.length);
       assert(s.hit.length>=18&&s.hit.length<=68,`V9_HIT_LENGTH_BAD:${job}-${style}:${i}:${s.hit.length}`);
       assert(s.voice.length>=10&&s.voice.length<=55,`V9_VOICE_LENGTH_BAD:${job}-${style}:${i}:${s.voice.length}`);
+      if(i<3){
+        primaryVoices.add(s.voice);
+        for(const word of ABSTRACT_SELF_TALK)assert(!s.voice.includes(word),`V9_PRIMARY_VOICE_TOO_DIAGNOSTIC:${job}-${style}:${i}:${word}:${s.voice}`);
+      }
     });
   }
 }
@@ -59,6 +65,7 @@ assert(scenes===192,'V9_SCENES_BAD');
 assert(heroes.size===32,`V9_HERO_NOT_UNIQUE:${heroes.size}`);
 assert(truths.size===32,`V9_TRUTH_NOT_UNIQUE:${truths.size}`);
 assert(signatures.size===32,`V9_TYPE_SIGNATURE_NOT_UNIQUE:${signatures.size}`);
+assert(primaryVoices.size===96,`V9_PRIMARY_VOICE_NOT_UNIQUE:${primaryVoices.size}`);
 
 console.log(JSON.stringify({
   ok:true,
@@ -68,10 +75,12 @@ console.log(JSON.stringify({
   uniqueHeroes:heroes.size,
   uniqueTruths:truths.size,
   uniqueTypeSignatures:signatures.size,
+  uniquePrimaryVoices:primaryVoices.size,
   maxHit,
   maxVoice,
   noGeneratedFallback:true,
   moreScenesHumanFirst:true,
   vaguePointerGuard:true,
   genericTemplateGuard:true,
+  rawSelfTalkGuard:true,
 },null,2));
