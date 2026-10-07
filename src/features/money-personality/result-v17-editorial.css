@@ -746,3 +746,250 @@ html body #root .mpp17-wrap{
   .mpp17-profile{margin-top:12px!important;padding-inline:18px!important}
   .mpp17-profile .mpp17-portrait{min-height:232px!important}
 }
+
+
+/* ---------- V17.2 VISUAL RESET ----------
+   Screenshot-driven correction: compact collectible card, stronger hierarchy,
+   less beige/rounded-card sameness, more editorial rhythm. */
+html,body,#root{background:#f6f6f3!important}
+html body #root .mpp17-page{
+  background:
+    radial-gradient(circle at 50% -6%,color-mix(in srgb,var(--mpp17-accent) 7%,transparent),transparent 24%),
+    #f6f6f3!important;
+}
+html body #root .mpp17-wrap{width:min(100%,500px)!important;padding:0 14px!important}
+
+/* Top card should fit as a collectible, not consume the whole screen. */
+.mpp17-profile{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:auto auto 198px auto auto auto auto!important;
+  gap:0!important;
+  min-height:0!important;
+  margin:14px 0 34px!important;
+  padding:18px 18px 16px!important;
+  border-radius:22px!important;
+  background:
+    linear-gradient(125deg,rgba(255,255,255,.035),transparent 24%),
+    radial-gradient(circle at 52% 35%,color-mix(in srgb,var(--mpp17-accent) 30%,transparent),transparent 28%),
+    linear-gradient(155deg,#17181d 0%,#0d0f14 72%,#08090c 100%)!important;
+  box-shadow:0 18px 44px rgba(18,18,20,.16)!important;
+}
+.mpp17-profile::before{
+  inset:1px!important;
+  border:1px solid color-mix(in srgb,var(--mpp17-accent) 32%,rgba(255,255,255,.10))!important;
+  border-radius:21px!important;
+}
+.mpp17-profile::after{
+  background:
+    linear-gradient(118deg,transparent 12%,rgba(255,255,255,.035) 23%,transparent 32%),
+    radial-gradient(circle at 88% 10%,rgba(255,255,255,.045),transparent 22%)!important;
+}
+.mpp17-card-edge{display:none!important}
+.mpp17-profile .mpp17-topline{
+  font-size:8.5px!important;
+  letter-spacing:.09em!important;
+  color:rgba(255,255,255,.46)!important;
+}
+.mpp17-profile .mpp17-code{
+  margin-top:10px!important;
+  font-size:17px!important;
+  letter-spacing:.13em!important;
+}
+.mpp17-profile .mpp17-portrait{
+  min-height:198px!important;
+  height:198px!important;
+  margin:-4px 0 -2px!important;
+}
+.mpp17-profile .mpp17-portrait::before{
+  width:220px!important;
+  height:220px!important;
+  opacity:.82!important;
+}
+.mpp17-profile .mpp17-portrait .mpp-job-character{
+  width:min(58vw,218px)!important;
+  max-height:196px!important;
+}
+.mpp17-profile .mpp17-type-label{
+  margin-top:2px!important;
+  color:rgba(255,255,255,.43)!important;
+  font-size:9px!important;
+}
+.mpp17-profile h1{
+  margin:2px 0 0!important;
+  font-size:clamp(30px,7.8vw,37px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.04em!important;
+}
+.mpp17-profile .mpp17-value{
+  margin-top:7px!important;
+  font-size:10.5px!important;
+}
+.mpp17-profile .mpp17-value span{
+  padding:4px 8px!important;
+  font-size:10px!important;
+}
+.mpp17-profile .mpp17-hero{
+  margin-top:11px!important;
+  font-size:14px!important;
+  line-height:1.62!important;
+}
+.mpp17-profile .mpp17-tags{
+  gap:5px!important;
+  margin-top:10px!important;
+}
+.mpp17-profile .mpp17-tags span{
+  padding:5px 8px!important;
+  font-size:9px!important;
+  background:rgba(255,255,255,.045)!important;
+  border-color:rgba(255,255,255,.09)!important;
+}
+.mpp17-card-foot{
+  margin-top:12px!important;
+  padding-top:9px!important;
+  font-size:8px!important;
+}
+
+/* Editorial section headers: remove the school-workbook numbered circles. */
+.mpp17-page section:not(.mpp17-profile){margin-bottom:38px!important}
+.mpp17-page section>header{
+  position:relative!important;
+  display:block!important;
+  margin-bottom:15px!important;
+  padding-top:12px!important;
+  border-top:1px solid #d9d9d3!important;
+}
+.mpp17-page section>header>span{
+  width:auto!important;
+  height:auto!important;
+  display:block!important;
+  margin-bottom:5px!important;
+  border-radius:0!important;
+  background:none!important;
+  color:#9b9d9f!important;
+  font-size:9px!important;
+  letter-spacing:.12em!important;
+  text-align:left!important;
+}
+.mpp17-page section>header>span::after{content:" / 08";opacity:.55}
+.mpp17-page section>header small{
+  margin-bottom:3px!important;
+  color:#989a9d!important;
+  font-size:9.5px!important;
+  font-weight:800!important;
+}
+.mpp17-page section>header h2,
+.mpp17-share-copy h2,
+.mpp17-book-copy h2{
+  font-size:27px!important;
+  line-height:1.23!important;
+  letter-spacing:-.045em!important;
+}
+
+/* Recognition becomes magazine-like rather than form-like. */
+.mpp17-recognition{padding-top:0!important}
+.mpp17-scene-list{border-top:0!important}
+.mpp17-scene-list article{
+  padding:17px 0 16px!important;
+  border-bottom:1px solid #deded8!important;
+}
+.mpp17-scene-list article:first-child{padding-top:6px!important}
+.mpp17-scene-list article>small{
+  color:#777a7f!important;
+  font-size:10px!important;
+}
+.mpp17-scene-list blockquote{
+  position:relative!important;
+  margin:7px 0 7px!important;
+  padding-left:14px!important;
+  color:#111216!important;
+  font-size:18px!important;
+  line-height:1.52!important;
+}
+.mpp17-scene-list blockquote::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.15em;
+  bottom:.15em;
+  width:3px;
+  border-radius:3px;
+  background:var(--mpp17-accent);
+}
+.mpp17-scene-list p{
+  color:#696c71!important;
+  font-size:12px!important;
+  line-height:1.7!important;
+}
+
+/* Core insight: slimmer, cleaner, one dramatic dark block. */
+.mpp17-core{
+  margin-top:6px!important;
+  padding:23px 20px 22px!important;
+  border-radius:20px!important;
+  background:#17181c!important;
+}
+.mpp17-core::after{
+  width:140px!important;
+  height:140px!important;
+  opacity:.34!important;
+}
+.mpp17-core h2{
+  margin-top:6px!important;
+  font-size:20px!important;
+  line-height:1.66!important;
+}
+
+/* Reduce rounded white-card repetition. */
+.mpp17-strength,
+.mpp17-book-preview,
+.mpp17-next{
+  border-radius:20px!important;
+}
+.mpp17-gap-pair article,
+.mpp17-compare-row article,
+.mpp17-match-list article{
+  border-radius:14px!important;
+}
+.mpp17-match-list article{
+  padding:10px!important;
+}
+.mpp17-book-preview{
+  background:#ecece7!important;
+}
+.mpp17-mini-jobs>div{
+  border-radius:10px!important;
+}
+
+/* Share preview should look like a real mini collectible card. */
+.mpp17-share-preview{
+  border-radius:18px!important;
+  box-shadow:0 12px 26px rgba(20,20,22,.11)!important;
+}
+.mpp17-share-tags span{
+  padding:3px 6px!important;
+  font-size:7.5px!important;
+}
+
+/* Less toy-like buttons. */
+.mpp17-button,
+.mpp17-share-buttons button{
+  border-radius:11px!important;
+}
+.mpp17-button--dark,
+.mpp17-button--accent{
+  background:#181a1f!important;
+}
+.mpp17-share-buttons button{
+  border-color:#d4d4cf!important;
+  background:#fff!important;
+}
+
+@media(max-width:390px){
+  html body #root .mpp17-wrap{padding-inline:12px!important}
+  .mpp17-profile{margin-top:10px!important;padding:16px 16px 14px!important}
+  .mpp17-profile .mpp17-portrait{height:190px!important;min-height:190px!important}
+  .mpp17-profile .mpp17-portrait .mpp-job-character{width:min(60vw,210px)!important;max-height:188px!important}
+  .mpp17-profile h1{font-size:31px!important}
+  .mpp17-profile .mpp17-hero{font-size:13.5px!important}
+}
