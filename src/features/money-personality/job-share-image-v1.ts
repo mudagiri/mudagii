@@ -1,6 +1,8 @@
 import type {JobCode,StyleId} from './classifierV1';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
+import {moneyTypeIdentity} from './money-type-identity-v1';
+import {resultV9For} from './resultV9Content';
 
 type ShareResult='shared'|'downloaded'|'text';
 type SharePayload={title?:string;text?:string;url?:string;files?:File[]};
@@ -78,6 +80,8 @@ function drawStar(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:
 export async function createJobShareImage({jobCode,primaryStyle,styleLabel,features=[]}:Args){
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
+  const identity=moneyTypeIdentity(jobCode,primaryStyle);
+  const result=resultV9For(jobCode,primaryStyle);
   const accent=asset.accent;
   const secondary=SECONDARY[jobCode];
   const deep=DEEP[jobCode];
@@ -168,7 +172,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   ctx.shadowBlur=28;
   text(ctx,typeCode,WIDTH/2,270,116,1000,'center','#ffffff');
   ctx.restore();
-  text(ctx,`${styleLabel} STYLE`,WIDTH/2,351,31,950,'center','#f7f4ff');
+  text(ctx,identity.styleTypeLabel,WIDTH/2,351,31,950,'center','#f7f4ff');
 
   const img=await loadImage(asset.file);
   const boxW=620,boxH=455;
@@ -182,9 +186,9 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   ctx.restore();
 
   text(ctx,asset.name,WIDTH/2,870,66,1000,'center','#ffffff');
-  text(ctx,asset.tagline,WIDTH/2,930,28,780,'center','#e8edf3');
+  text(ctx,shorten(result.hero,30),WIDTH/2,930,27,820,'center','#e8edf3');
 
-  const cardFeatures=features.slice(0,3);
+  const cardFeatures=(features.length?features:[result.scenes[0].voice]).slice(0,2);
   if(cardFeatures.length){
     roundedRect(ctx,100,970,WIDTH-200,172,28);
     const traits=ctx.createLinearGradient(100,970,980,1142);
@@ -234,7 +238,9 @@ function downloadFile(file:File){
 export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,features=[]}:Args):Promise<ShareResult>{
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
-  const message=`私のお金タイプは「${typeCode}｜${asset.name}」だった！ ${styleLabel} STYLE｜あなたはどのTYPE？ #ムダギリ診断 #お金の性格診断`;
+  const identity=moneyTypeIdentity(jobCode,primaryStyle);
+  const result=resultV9For(jobCode,primaryStyle);
+  const message=`私のお金タイプは「${identity.full}」だった！ 「${shorten(result.hero,34)}」 あなたはどのTYPE？ #ムダギリ診断 #お金の性格診断`;
   const nav=navigator as FileShareNavigator;
   try{
     const file=await createJobShareImage({jobCode,primaryStyle,styleLabel,features});
