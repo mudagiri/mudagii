@@ -4,6 +4,7 @@ import type {ResultV10Insight} from './resultV10Insight';
 import './result-v9.css';
 import './result-v11-polish.css';
 import './result-v12-jp.css';
+import './result-v13-world.css';
 
 type Props={
   content:V9TypeResult;
