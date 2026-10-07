@@ -2,20 +2,23 @@ import React from 'react';
 import type {JobCode,StyleId} from './classifierV1';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
+import {moneyTypeIdentity} from './money-type-identity-v1';
 import './result-next-routes-v1.css';
 
 type Props={jobCode:JobCode;primaryStyle:StyleId;onHousehold:()=>void;onLine:()=>void;onShare:()=>void;onOpenBook:()=>void};
 
 export default function ResultNextRoutesV1({jobCode,primaryStyle,onHousehold,onLine,onShare,onOpenBook}:Props){
-  const asset=jobCharacterAsset(jobCode);const typeCode=moneyTypeCode(jobCode,primaryStyle);
+  const asset=jobCharacterAsset(jobCode);
+  const typeCode=moneyTypeCode(jobCode,primaryStyle);
+  const identity=moneyTypeIdentity(jobCode,primaryStyle);
   return <section className="mpp-next-routes" style={{'--job-accent':asset.accent} as React.CSSProperties}>
     <div className="mpp-next-routes-kicker">SSR ACQUIRED / {typeCode}</div>
-    <h2>{asset.name}を獲得！<br/><span>次、どうする？</span></h2>
-    <p className="mpp-next-routes-lead">あなたのTYPEは32タイプのうち「{typeCode}」。結果を見せる、他のCLASSをのぞく、そのまま実際の家計を攻略する——好きなルートを選べます。</p>
+    <h2>{identity.compact}を獲得！<br/><span>次、どうする？</span></h2>
+    <p className="mpp-next-routes-lead">あなたのTYPEは <b>{identity.full}</b>。友だちと比べる、32TYPE図鑑を見る、そのまま実際の家計を攻略する。好きなルートを選べます。</p>
 
     <div className="mpp-next-routes-social">
-      <button className="mpp-social-action mpp-social-action--share" onClick={onShare}><small>MY TYPE</small><b>{typeCode}をシェア</b><span>「あなたはどのTYPE？」で友だちと比べる →</span></button>
-      <button className="mpp-social-action" onClick={onOpenBook}><small>CLASS BOOK</small><b>他の7CLASSを見る</b><span>未解放CLASSをのぞく →</span></button>
+      <button className="mpp-social-action mpp-social-action--share" onClick={onShare}><small>MY TYPE</small><b>{typeCode}をシェア</b><span>友だちとTYPEを比べる →</span></button>
+      <button className="mpp-social-action" onClick={onOpenBook}><small>TYPE BOOK</small><b>32TYPE図鑑を見る</b><span>友だちのTYPEを探す →</span></button>
     </div>
 
     <div className="mpp-next-routes-divider"><span>NEXT QUEST</span></div>
