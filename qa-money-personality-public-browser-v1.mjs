@@ -186,13 +186,13 @@ await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
 if(!text.includes('TYPE UNLOCKED')||!text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_MISSING');
-if(!text.includes('こんな瞬間、ない？'))throw new Error('MONEY_PUBLIC_RESULT_V9_RECOGNITION_MISSING');
+if(!text.includes('こんなこと、ない？'))throw new Error('MONEY_PUBLIC_RESULT_V12_RECOGNITION_MISSING');
 if(!text.includes('ほかの場面も見る'))throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
 if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
-if(!text.includes('見え方のズレ')||!text.includes('武器 → 暴走 → 戻し方'))throw new Error('MONEY_PUBLIC_RESULT_V9_INSIGHT_MISSING');
+if(!text.includes('周りからはこう見える')||!text.includes('このタイプの強み'))throw new Error('MONEY_PUBLIC_RESULT_V12_INSIGHT_MISSING');
 if(!text.includes('友だちと比べる'))throw new Error('MONEY_PUBLIC_RESULT_V9_COMPARE_MISSING');
-if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
-if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
+if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
+if(!text.includes('3つの傾向を見てみる'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV10=await page.evaluate(()=>({
   axisCount:document.querySelectorAll('.mpp-axis-v10').length,
   oldTraitCount:document.querySelectorAll('.mpp-analysis-details .mpp-trait').length,
@@ -212,7 +212,7 @@ const typography=await page.evaluate(()=>({
 if(typography.hero<28||typography.heroLine<16||typography.scene<15||typography.voice<14||typography.truth<17)throw new Error('MONEY_PUBLIC_V11_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
 if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
 if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('TYPEカードをシェアする'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
+if(!text.includes('タイプカードをシェアする'))throw new Error('MONEY_PUBLIC_INLINE_SHARE_CTA_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
