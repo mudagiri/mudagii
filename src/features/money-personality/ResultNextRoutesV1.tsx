@@ -12,12 +12,12 @@ export default function ResultNextRoutesV1({jobCode,primaryStyle,onHousehold,onL
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   return <section className="mpp-next-routes" style={{'--job-accent':asset.accent} as React.CSSProperties}>
-    <div className="mpp-next-routes-kicker">SSR ACQUIRED / {typeCode}</div>
-    <h2>{identity.compact}を獲得！<br/><span>次、どうする？</span></h2>
+    <div className="mpp-next-routes-kicker">YOUR MONEY TYPE / {typeCode}</div>
+    <h2>{identity.compact}だった！<br/><span>次、どうする？</span></h2>
     <p className="mpp-next-routes-lead">あなたのTYPEは <b>{identity.full}</b>。友だちと比べる、32TYPE図鑑を見る、そのまま実際の家計を攻略する。好きなルートを選べます。</p>
 
     <div className="mpp-next-routes-social">
-      <button className="mpp-social-action mpp-social-action--share" onClick={onShare}><small>MY TYPE</small><b>{typeCode}をシェア</b><span>友だちとTYPEを比べる →</span></button>
+      <button className="mpp-social-action mpp-social-action--share" onClick={onShare}><small>MY TYPE</small><b>{typeCode}をシェア</b><span>友だちとタイプを比べる →</span></button>
       <button className="mpp-social-action" onClick={onOpenBook}><small>TYPE BOOK</small><b>32TYPE図鑑を見る</b><span>友だちのTYPEを探す →</span></button>
     </div>
 
