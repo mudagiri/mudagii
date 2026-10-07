@@ -19,6 +19,8 @@ const publicUi=fs.readFileSync('./src/features/money-personality/MoneyPersonalit
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx','utf8');
 const shareImageUi=fs.readFileSync('./src/features/money-personality/job-share-image-v1.ts','utf8');
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
+assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRED');
+assert(resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_MUDAGIRI_WORLD_BEATS_INCOMPLETE');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
 assert(publicUi.includes("resultV10InsightFor(job,style)"),'PUBLIC_RESULT_V10_INSIGHT_NOT_WIRED');
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
