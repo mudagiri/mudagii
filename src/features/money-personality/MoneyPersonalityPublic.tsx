@@ -67,7 +67,6 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  const [handoff,setHandoff]=useState<'result'|'journey'>('result');
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
- const secondary=evaluation.style.secondary!;
  const meta=STYLE_META[style];
  const typeCode=moneyTypeCode(job,style);
  const identity=moneyTypeIdentity(job,style);
