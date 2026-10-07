@@ -7,6 +7,7 @@ import {moneyTypeCode} from './money-type-code-v1';
 import {moneyTypeNeighbors} from './money-type-neighbors-v1';
 import {jobCharacterAsset,JOB_CHARACTER_ASSETS} from './job-character-assets-v1';
 import JobCharacterCard from './JobCharacterCard';
+import ResultWorldBeatV1 from './ResultWorldBeatV1';
 import './result-v17-editorial.css';
 
 type ShareTarget='x'|'instagram'|'threads'|'line';
@@ -42,6 +43,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
   return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent} as React.CSSProperties}>
     <div className="mpp17-wrap">
+
+      <ResultWorldBeatV1 beat="complete"/>
 
       <section className="mpp17-profile" aria-label="あなたのお金タイプ">
         <div className="mpp17-card-edge" aria-hidden="true"/>
@@ -103,6 +106,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         </div>
       </section>
 
+      <ResultWorldBeatV1 beat="compare"/>
+
       <section className="mpp17-match">
         <header><span>06</span><div><small>お金の感覚で見る</small><h2>近いタイプ、真逆のタイプ。</h2></div></header>
         <p className="mpp17-note">恋愛相性ではなく、診断上の「お金の考え方の近さ」です。</p>
@@ -155,6 +160,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           {axes.map(axis=><article key={axis.title}><header><b>{axis.title}</b><small>{axis.lean}</small></header><div className="mpp17-axis-labels"><span>{axis.left}</span><span>{axis.right}</span></div><div className="mpp17-axis-track"><i style={{left:axis.pos+'%'}}/></div></article>)}
         </div>
       </details>
+
+      <ResultWorldBeatV1 beat="next"/>
 
       <section className="mpp17-next">
         <small>次にやるなら、これ</small>
