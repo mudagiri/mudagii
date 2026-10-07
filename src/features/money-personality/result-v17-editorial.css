@@ -1129,9 +1129,9 @@ html body #root .mpp17-page::before{
   inset:0;
   z-index:-2;
   pointer-events:none;
-  opacity:.055;
+  opacity:.11;
   background:
-    var(--mpp-bg-guild) top center/760px auto repeat-y;
+    var(--mpp-bg-guild) top center/720px auto repeat-y;
   mix-blend-mode:multiply;
 }
 html body #root .mpp17-page::after{
@@ -1140,7 +1140,7 @@ html body #root .mpp17-page::after{
   inset:0;
   z-index:-1;
   pointer-events:none;
-  opacity:.20;
+  opacity:.14;
   background-image:
     linear-gradient(rgba(83,67,45,.035) 1px,transparent 1px),
     linear-gradient(90deg,rgba(83,67,45,.03) 1px,transparent 1px);
