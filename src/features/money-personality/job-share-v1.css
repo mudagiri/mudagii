@@ -126,3 +126,42 @@
   border-color:color-mix(in srgb,var(--job-accent) 58%,#e9cc91)!important;
   box-shadow:0 0 0 28px color-mix(in srgb,var(--job-accent) 7%,transparent),0 0 0 56px color-mix(in srgb,var(--job-accent) 4%,transparent)!important
 }
+
+
+/* ---------- SHARE CARD V2.3 EDGE FOIL ---------- */
+.mpp-job-share-card{
+  border:3px solid color-mix(in srgb,var(--job-accent) 56%,#d8ad58)!important;
+  background:
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--job-accent) 34%,rgba(190,121,42,.10)),transparent 43%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--job-accent) 32%,#3e2716) 0%,
+      color-mix(in srgb,var(--job-accent) 18%,#281b14) 36%,
+      #0b0b0d 100%)!important;
+}
+.mpp-job-share-diamond{
+  opacity:.94!important;
+  background-image:url('/assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.28) contrast(1.08) brightness(1.05)!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  animation:none!important;
+}
+.mpp-job-share-edge{
+  inset:6px!important;
+  border:2px solid rgba(229,183,90,.86)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,245,213,.15),inset 0 0 15px rgba(229,154,58,.07),0 0 7px rgba(238,184,81,.16)!important;
+}
+.mpp-job-share-jobbg{opacity:1!important}
+.mpp-job-share-portrait{min-height:304px!important}
+.mpp-job-share-portrait .mpp-job-character--hero{
+  width:min(78vw,330px)!important;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px color-mix(in srgb,var(--job-accent) 18%,transparent))!important;
+}
+.mpp-job-share-reticle{
+  width:min(77vw,322px)!important;
+  opacity:.72!important;
+}
