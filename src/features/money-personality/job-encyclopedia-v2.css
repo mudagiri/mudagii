@@ -1,0 +1,10 @@
+.mpp-job-book-rule small{display:block;margin-bottom:3px;color:rgba(255,255,255,.52);font-size:8px;font-weight:900;letter-spacing:.12em}
+.mpp-job-book-grid article.is-visible{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.025)}
+.mpp-job-book-grid article.is-visible .mpp-job-character{opacity:.78;filter:saturate(.78)}
+.mpp-job-book-typechips{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}
+.mpp-job-book-typechips>div{min-width:0;padding:5px 3px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.12)}
+.mpp-job-book-typechips strong{display:block;color:#eef3f5;font-size:9px;letter-spacing:.04em}
+.mpp-job-book-typechips small{display:block;margin-top:1px;color:rgba(255,255,255,.46);font-size:7px}
+.mpp-job-book-typechips>div.is-mine{border-color:var(--job-accent);background:rgba(255,255,255,.06);box-shadow:0 0 14px rgba(255,255,255,.08)}
+.mpp-job-book-typechips>div.is-mine strong,.mpp-job-book-typechips>div.is-mine small{color:var(--job-accent)}
+@media(max-width:390px){.mpp-job-book{padding-inline:14px}.mpp-job-book-grid{gap:8px}.mpp-job-book-grid article{padding-inline:6px}.mpp-job-book-typechips strong{font-size:8.5px}}
