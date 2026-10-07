@@ -86,9 +86,9 @@ export default function ResultV9({content,primaryStyle,secondaryStyle,onShare}:P
     <details className="mpp-v9-secondary">
       <summary>同じTYPEの中の「あなたらしさ」も見る</summary>
       <div>
-        <small>PRIMARY</small>
+        <small>いちばん強い軸</small>
         <b>{STYLE_JA[primaryStyle]}：「{STYLE_HOOK[primaryStyle]}」</b>
-        <small>SECONDARY</small>
+        <small>次に出やすい軸</small>
         <b>{STYLE_JA[secondaryStyle]}：「{STYLE_HOOK[secondaryStyle]}」も少し残りやすい</b>
         <p>公開TYPEは変わりません。これは同じTYPEの中で出る細かい違いです。</p>
       </div>
