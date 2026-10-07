@@ -60,6 +60,12 @@ export default function ResultV9({content,primaryStyle,secondaryStyle,onShare}:P
       </div>
     </section>
 
+    <section className="mpp-v9-share">
+      <small>「これ俺じゃんw」があったら</small>
+      <b>熱があるうちに、そのままTYPEカードを送る。</b>
+      <button className="mpp-secondary" onClick={onShare}>このTYPEカードをシェア</button>
+    </section>
+
     <section className="mpp-v9-weapon">
       <div className="mpp-v9-kicker">武器 → 暴走 → 戻し方</div>
       <h2>{content.weapon.name}</h2>
@@ -88,10 +94,5 @@ export default function ResultV9({content,primaryStyle,secondaryStyle,onShare}:P
       </div>
     </details>
 
-    <section className="mpp-v9-share">
-      <small>「これ俺じゃんw」があったら</small>
-      <b>友だちにもTYPEを見せて比べてみる。</b>
-      <button className="mpp-secondary" onClick={onShare}>このTYPEカードをシェア</button>
-    </section>
   </div>;
 }
