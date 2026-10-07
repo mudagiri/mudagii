@@ -46,7 +46,7 @@ function text(ctx:CanvasRenderingContext2D,value:string,x:number,y:number,size:n
   ctx.restore();
 }
 
-function tagLabel(value:string){return '#'+value.replace(/[\s　]/g,'').replace(/[・/]/g,'');}
+function tagLabel(value:string){return '#'+value.replace(/\p{Extended_Pictographic}/gu,'').replace(/[\s　]/g,'').replace(/[・/]/g,'').replace(/^[#]+/,'');}
 
 function shorten(value:string,max=27){
   const clean=value.replace(/\s+/g,'').trim();
