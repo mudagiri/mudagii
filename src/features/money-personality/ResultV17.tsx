@@ -52,7 +52,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <ResultWorldBeatV1 beat="complete"/>
 
-      <section className="mpp17-profile" aria-label="あなたのお金タイプ">
+      <section className="mpp17-profile" data-job={jobCode} aria-label="あなたのお金タイプ">
         <div className="mpp17-holo-foil" aria-hidden="true"/>
         <img className="mpp17-holo-texture" src="./assets/foils/v1/MUDAGIRI_PRISM_HOLO_V1.svg" alt="" aria-hidden="true"/>
         <div className="mpp17-card-edge" aria-hidden="true"/>
