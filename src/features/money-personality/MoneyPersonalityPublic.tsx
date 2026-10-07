@@ -67,6 +67,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
  const meta=STYLE_META[style];
+ const styleJa={DRIVE:'前進',ENJOY:'満足',SECURE:'安心',OPTIMIZE:'ムダなし'}[style];
  const typeCode=moneyTypeCode(job,style);
  const v9=resultV9For(job,style);
 
@@ -88,7 +89,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     <div className="mpp-result-label">あなたのお金タイプ / JOB</div>
     <h1>{evaluation.jobName}</h1>
     <p className="mpp-result-hero-line">{v9.hero}</p>
-    <div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label} STYLE</span></div>
+    <div className="mpp-result-v4-styleline"><span>{meta.icon} 価値観：{styleJa}</span></div>
     <div className="mpp-result-v4-scrollcue">このTYPE、どこまで当たってる？</div>
    </section>
 
