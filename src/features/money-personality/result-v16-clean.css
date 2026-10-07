@@ -1,0 +1,440 @@
+/* Result V16 CLEAN
+   One visual system only. No stacked themes, no Mincho, no RPG-gold overload.
+   Goal: modern personality-result UI that still feels like Mudagiri. */
+
+:root{
+  --mpp16-bg:#0b1020;
+  --mpp16-bg-2:#0f1729;
+  --mpp16-panel:#121b2d;
+  --mpp16-panel-soft:#101827;
+  --mpp16-line:rgba(255,255,255,.08);
+  --mpp16-text:#f7f9fc;
+  --mpp16-muted:#9aa7b8;
+  --mpp16-accent:#8e7dff;
+  --mpp16-cyan:#55c7d8;
+  --mpp16-gold:#e7c96f;
+  --mpp16-font:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+}
+
+html body #root .mpp-page--result,
+html body #root .mpp-page--result *{
+  font-family:var(--mpp16-font)!important;
+  box-sizing:border-box;
+}
+
+html body #root .mpp-page.mpp-page--result{
+  padding:18px 0 calc(56px + env(safe-area-inset-bottom))!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(142,125,255,.13),transparent 24%),
+    linear-gradient(180deg,var(--mpp16-bg) 0%,#0a111d 100%)!important;
+}
+
+html body #root .mpp-page--result .mpp-result{
+  width:min(100%,500px)!important;
+  margin:0 auto!important;
+  padding:0 14px 36px!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* TYPE HERO */
+html body #root .mpp-page--result .mpp-result-ssr-card{
+  margin:0 0 16px!important;
+  padding:18px 18px 20px!important;
+  border:1px solid var(--mpp16-line)!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(circle at 82% 12%,rgba(142,125,255,.14),transparent 28%),
+    radial-gradient(circle at 18% 84%,rgba(85,199,216,.07),transparent 31%),
+    linear-gradient(180deg,#141d30,#101827)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.20)!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-card::before,
+html body #root .mpp-page--result .mpp-result-ssr-card::after,
+html body #root .mpp-page--result .mpp-result-ssr-badge{display:none!important}
+
+html body #root .mpp-page--result .mpp-kicker{
+  margin-bottom:8px!important;
+  color:var(--mpp16-muted)!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+html body #root .mpp-page--result .mpp-result-type-code{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  margin:0 0 4px!important;
+}
+html body #root .mpp-page--result .mpp-result-type-code strong{
+  color:#fff!important;
+  font-size:28px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  letter-spacing:.02em!important;
+}
+html body #root .mpp-page--result .mpp-result-type-code span{
+  padding:5px 8px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.035)!important;
+  color:#aab4c3!important;
+  font-size:9px!important;
+  font-weight:800!important;
+}
+html body #root .mpp-page--result .mpp-result-job-hero{
+  min-height:0!important;
+  margin:6px 0 4px!important;
+  text-align:center!important;
+}
+html body #root .mpp-page--result .mpp-result-job-hero::before{
+  background:radial-gradient(circle,rgba(142,125,255,.14),transparent 67%)!important;
+}
+html body #root .mpp-page--result .mpp-result-job-character{
+  width:min(57vw,220px)!important;
+}
+html body #root .mpp-page--result .mpp-result-label{
+  margin:2px 0 2px!important;
+  color:#8f9baa!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  text-align:left!important;
+}
+html body #root .mpp-page--result .mpp-result-v4-hero h1{
+  max-width:none!important;
+  margin:0 0 8px!important;
+  color:#fff!important;
+  font-size:clamp(29px,8vw,38px)!important;
+  font-weight:950!important;
+  line-height:1.18!important;
+  letter-spacing:-.025em!important;
+  text-align:left!important;
+  word-break:keep-all!important;
+}
+html body #root .mpp-page--result .mpp-result-hero-line{
+  max-width:none!important;
+  margin:0!important;
+  color:#dfe5ed!important;
+  font-size:15.5px!important;
+  font-weight:720!important;
+  line-height:1.7!important;
+  text-align:left!important;
+}
+html body #root .mpp-page--result .mpp-result-v4-scrollcue{display:none!important}
+
+/* BODY WRAPPER */
+html body #root .mpp-result-v9{padding:0!important}
+html body #root .mpp-result-v9 section{
+  margin:0 0 14px!important;
+  border-radius:20px!important;
+}
+html body #root .mpp-result-v9 section::before,
+html body #root .mpp-result-v9 section::after{display:none!important}
+
+html body #root .mpp-v9-kicker{
+  margin:0 0 6px!important;
+  color:#8795a8!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.04em!important;
+}
+
+/* SHARED CARD SURFACE */
+html body #root .mpp-v9-real,
+html body #root .mpp-v9-gap,
+html body #root .mpp-v9-weapon,
+html body #root .mpp-v9-compare,
+html body #root .mpp-v15-match,
+html body #root .mpp-v15-share{
+  padding:17px 15px!important;
+  border:1px solid var(--mpp16-line)!important;
+  background:linear-gradient(180deg,var(--mpp16-panel),var(--mpp16-panel-soft))!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+
+html body #root .mpp-v9-real h2,
+html body #root .mpp-v9-weapon h2,
+html body #root .mpp-v9-compare h2,
+html body #root .mpp-v15-match h2,
+html body #root .mpp-v15-share h2{
+  margin:0 0 12px!important;
+  color:var(--mpp16-text)!important;
+  font-size:22px!important;
+  font-weight:900!important;
+  line-height:1.32!important;
+  letter-spacing:-.02em!important;
+}
+
+/* REAL LIFE */
+html body #root .mpp-v9-scenes{
+  border-top:1px solid rgba(255,255,255,.06)!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene{
+  padding:14px 0!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.06)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene>small{
+  margin-bottom:6px!important;
+  color:#9dadbf!important;
+  font-size:10.5px!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene>b{
+  color:#f4f6f9!important;
+  font-size:15px!important;
+  font-weight:760!important;
+  line-height:1.74!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene blockquote{
+  margin:7px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--mpp16-gold)!important;
+  font-size:14.5px!important;
+  font-weight:760!important;
+  line-height:1.64!important;
+}
+html body #root .mpp-v9-more>summary{
+  min-height:46px!important;
+  margin-top:10px!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  border-radius:12px!important;
+  background:#0d1522!important;
+  color:#d8dee7!important;
+  font-size:12px!important;
+}
+
+/* MAIN INSIGHT */
+html body #root .mpp-v9-truth{
+  padding:18px!important;
+  border:1px solid rgba(142,125,255,.24)!important;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(142,125,255,.10),transparent 30%),
+    linear-gradient(180deg,#171d34,#13192b)!important;
+  box-shadow:none!important;
+}
+html body #root .mpp-v9-truth::before,
+html body #root .mpp-v9-truth::after{display:none!important}
+html body #root .mpp-v9-truth small{
+  display:block!important;
+  margin-bottom:6px!important;
+  color:#a99cff!important;
+  font-size:10px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-v9-truth b{
+  color:#fff!important;
+  font-size:17.5px!important;
+  font-weight:850!important;
+  line-height:1.7!important;
+}
+
+/* GAP / STRENGTH / COMPARE */
+html body #root .mpp-v9-gap-grid,
+html body #root .mpp-v9-compare-grid{
+  gap:8px!important;
+}
+html body #root .mpp-v9-gap-grid article,
+html body #root .mpp-v9-weapon-line article,
+html body #root .mpp-v9-compare-grid article{
+  padding:12px!important;
+  border:1px solid rgba(255,255,255,.06)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.02)!important;
+}
+html body #root .mpp-v9-gap-grid small,
+html body #root .mpp-v9-weapon-line small,
+html body #root .mpp-v9-compare-grid small{
+  color:#8796a8!important;
+  font-size:9.5px!important;
+}
+html body #root .mpp-v9-gap-grid b,
+html body #root .mpp-v9-compare-grid b{
+  color:#f5f7fa!important;
+  font-size:13.5px!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-v9-weapon-line p{
+  margin:4px 0 0!important;
+  color:#dbe1e9!important;
+  font-size:13.5px!important;
+  line-height:1.65!important;
+}
+html body #root .mpp-v9-control{
+  margin-top:10px!important;
+  padding:11px 12px!important;
+  border:1px solid rgba(231,201,111,.16)!important;
+  border-radius:12px!important;
+  background:rgba(231,201,111,.045)!important;
+}
+html body #root .mpp-v9-control b{
+  color:#f5e6ad!important;
+  font-size:13.5px!important;
+  line-height:1.6!important;
+}
+
+/* MATCH */
+html body #root .mpp-v15-match-lead{
+  margin:0 0 12px!important;
+  color:#98a6b7!important;
+  font-size:11px!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-v15-match-list{
+  display:grid!important;
+  gap:8px!important;
+}
+html body #root .mpp-v15-match-list article{
+  display:grid!important;
+  grid-template-columns:58px 1fr!important;
+  gap:10px!important;
+  align-items:center!important;
+  padding:10px!important;
+  border:1px solid rgba(255,255,255,.06)!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.02)!important;
+}
+html body #root .mpp-v15-match-list .mpp-job-character{
+  width:54px!important;
+  height:54px!important;
+}
+html body #root .mpp-v15-match-list small{
+  color:#8e9caf!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-v15-match-list b{
+  display:block!important;
+  margin:1px 0 0!important;
+  color:#f7f8fb!important;
+  font-size:13.5px!important;
+}
+html body #root .mpp-v15-match-list span{
+  display:inline-block!important;
+  margin-top:2px!important;
+  color:#d7c477!important;
+  font-size:9.5px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-v15-match-list p{
+  margin:4px 0 0!important;
+  color:#aeb8c5!important;
+  font-size:10.5px!important;
+  line-height:1.5!important;
+}
+html body #root .mpp-v15-book-button{width:100%!important;margin-top:10px!important}
+
+/* SHARE */
+html body #root .mpp-v15-share p{
+  margin:0 0 12px!important;
+  color:#9da9b8!important;
+  font-size:11.5px!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-v15-share-buttons{
+  display:grid!important;
+  grid-template-columns:repeat(4,1fr)!important;
+  gap:7px!important;
+}
+html body #root .mpp-v15-share-buttons button{
+  min-height:46px!important;
+  padding:0 6px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:12px!important;
+  background:#0d1522!important;
+  color:#f6f8fb!important;
+  font-size:10.5px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-v15-share-buttons button:first-child{font-size:18px!important}
+
+/* LOWER DETAIL */
+html body #root .mpp-analysis-details{
+  margin:0 0 14px!important;
+}
+html body #root .mpp-analysis-details>summary{
+  min-height:48px!important;
+  padding:12px 13px!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  border-radius:13px!important;
+  background:#0f1826!important;
+  color:#cfd6df!important;
+  font-size:12px!important;
+}
+html body #root .mpp-analysis-details .mpp-axis-block{
+  border:0!important;
+  background:transparent!important;
+}
+html body #root .mpp-axis-v10{
+  border:1px solid rgba(255,255,255,.06)!important;
+  background:#0f1826!important;
+}
+html body #root .mpp-one-action{
+  margin:0 0 14px!important;
+  padding:15px!important;
+  border:1px solid rgba(231,201,111,.14)!important;
+  border-radius:16px!important;
+  background:#111927!important;
+}
+html body #root .mpp-one-action span{
+  color:#8f9bac!important;
+  font-size:10px!important;
+}
+html body #root .mpp-one-action b{
+  color:#fff!important;
+  font-size:14px!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-result-v4-chapter-label{
+  margin:18px 0 7px!important;
+  color:#8694a6!important;
+  font-size:10px!important;
+}
+html body #root .mpp-next-quest{
+  min-height:auto!important;
+  margin:0 0 12px!important;
+  padding:16px!important;
+  border:1px solid rgba(85,199,216,.14)!important;
+  border-radius:16px!important;
+  background:#101a2a!important;
+}
+html body #root .mpp-next-quest>b{
+  color:#fff!important;
+  font-size:17px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-next-quest p{
+  color:#aab5c3!important;
+  font-size:12px!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-page--result button.mpp-primary,
+html body #root .mpp-page--result button.mpp-secondary{
+  min-height:50px!important;
+  border-radius:13px!important;
+  font-size:13px!important;
+  font-weight:900!important;
+}
+html body #root .mpp-page--result button.mpp-primary{
+  border:0!important;
+  background:linear-gradient(180deg,#f0d372,#dcb84d)!important;
+  color:#201a0c!important;
+  box-shadow:none!important;
+}
+html body #root .mpp-page--result button.mpp-secondary{
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:#0e1724!important;
+  color:#edf1f6!important;
+}
+
+@media(max-width:390px){
+  html body #root .mpp-page--result .mpp-result{padding-inline:10px!important}
+  html body #root .mpp-v15-share-buttons{grid-template-columns:1fr 1fr!important}
+  html body #root .mpp-page--result .mpp-result-v4-hero h1{font-size:29px!important}
+}
