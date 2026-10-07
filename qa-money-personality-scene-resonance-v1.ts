@@ -27,10 +27,12 @@ assert(resultUi.includes('content.scenes.slice(3)'),'V9_EXTRA_SCENES_NOT_THREE')
 assert(resultUi.includes('ほかの場面も見る'),'V9_MORE_SCENES_MISSING');
 assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
 assert(resultUi.includes('友だちと比べる'),'V9_COMPARE_MISSING');
-assert(resultUi.includes('タイプカードをシェアする'),'V12_SHARE_CTA_MISSING');
+assert(resultUi.includes("onShare('x')")&&resultUi.includes("onShare('instagram')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('line')"),'V15_SOCIAL_SHARE_TARGETS_MISSING');
 assert(resultUi.includes("compact?' mpp-v9-scene--compact':''"),'V10_MORE_SCENES_NOT_COMPACT');
 assert(resultUi.includes('insight.compare.scene'),'V10_CONCRETE_COMPARE_NOT_WIRED');
-assert(resultUi.includes("import './result-v11-polish.css'"),'V11_POLISH_CSS_NOT_LOADED');
+assert(resultUi.includes("import './result-v15-social.css'"),'V15_SOCIAL_CSS_NOT_LOADED');
+assert(resultUi.includes('お金の価値観で見る相性'),'V15_VALUE_MATCH_MISSING');
+assert(resultUi.includes('32タイプ図鑑を見る'),'V15_TYPE_BOOK_CTA_MISSING');
 assert(!resultUi.includes('mpp-v9-secondary'),'V11_SECONDARY_SHOULD_NOT_BE_IN_MAIN_RESULT');
 
 const heroes=new Set<string>();
