@@ -2515,3 +2515,150 @@ html body #root .mpp17-page{
 @media(prefers-reduced-motion:reduce){
   .mpp17-holo-foil{animation:none!important;background-position:52% 44%!important}
 }
+
+
+/* ---------- V17.17 MATERIAL DIAMOND HOLO ----------
+   Real-device correction: the previous CSS mask became a repeating triangle wallpaper.
+   This version keeps dark JOB-colored card stock and overlays a sparse transparent foil material. */
+.mpp17-profile{
+  background:
+    radial-gradient(circle at 50% 29%,color-mix(in srgb,var(--mpp17-accent) 30%,transparent) 0%,transparent 39%),
+    radial-gradient(circle at 16% 12%,rgba(255,255,255,.045),transparent 23%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 24%,#2b2824) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 16%,#1a1a1d) 37%,
+      color-mix(in srgb,var(--mpp17-accent) 9%,#101116) 72%,
+      #090a0d 100%)!important;
+}
+
+/* The actual diamond film. The SVG itself is mostly transparent. */
+.mpp17-holo-texture{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  opacity:.68!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.12) contrast(1.02)!important;
+  transform:none!important;
+  animation:none!important;
+  -webkit-mask-image:linear-gradient(180deg,#000 0 56%,rgba(0,0,0,.78) 76%,rgba(0,0,0,.48) 100%)!important;
+  mask-image:linear-gradient(180deg,#000 0 56%,rgba(0,0,0,.78) 76%,rgba(0,0,0,.48) 100%)!important;
+}
+
+/* Holo-foil div is now only the moving light reflection, not the pattern. */
+.mpp17-holo-foil{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  border-radius:20px!important;
+  opacity:.52!important;
+  mix-blend-mode:screen!important;
+  background:
+    linear-gradient(107deg,
+      transparent 0 37%,
+      rgba(74,205,255,.025) 41%,
+      rgba(255,255,255,.20) 47%,
+      rgba(255,225,145,.065) 50%,
+      rgba(130,235,210,.035) 53%,
+      transparent 59% 100%)!important;
+  background-size:190% 100%!important;
+  background-position:-70% 0!important;
+  filter:none!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+.mpp17-holo-foil::before,.mpp17-holo-foil::after{display:none!important}
+
+/* Remove the old giant radial burst. Keep the character as the focal point. */
+.mpp17-profile .mpp17-portrait::before{
+  opacity:.62!important;
+  width:250px!important;
+  height:250px!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,.055) 0 18%,
+      color-mix(in srgb,var(--mpp17-accent) 18%,transparent) 19% 31%,
+      transparent 32% 40%,
+      color-mix(in srgb,var(--mpp17-accent) 48%,#e6d8b9) 41% 42%,
+      transparent 43% 53%,
+      color-mix(in srgb,var(--mpp17-accent) 30%,transparent) 54% 55%,
+      transparent 56% 100%)!important;
+  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--mpp17-accent) 22%,transparent))!important;
+}
+.mpp17-profile .mpp17-portrait::after{opacity:.28!important}
+
+/* SHARE PREVIEW: same physical card material as the result card. */
+.mpp17-share-preview{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border:2px solid color-mix(in srgb,var(--mpp17-accent) 62%,#dfcfaa)!important;
+  background:
+    radial-gradient(circle at 50% 29%,color-mix(in srgb,var(--mpp17-accent) 28%,transparent),transparent 39%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 22%,#292620) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 14%,#18191d) 45%,
+      #090a0d 100%)!important;
+  box-shadow:0 20px 44px rgba(20,17,13,.26),inset 0 0 0 1px rgba(255,255,255,.07)!important;
+}
+.mpp17-share-preview>*:not(.mpp17-share-jobbg):not(.mpp17-share-holo):not(.mpp17-share-glint){
+  position:relative!important;
+  z-index:3!important;
+}
+.mpp17-share-jobbg,.mpp17-share-holo,.mpp17-share-glint{
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  border-radius:18px!important;
+}
+.mpp17-share-jobbg{z-index:1!important;opacity:.74!important;mix-blend-mode:screen!important}
+.mpp17-share-holo{
+  z-index:2!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  opacity:.62!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.1)!important;
+  -webkit-mask-image:linear-gradient(180deg,#000 0 58%,rgba(0,0,0,.72) 78%,rgba(0,0,0,.42) 100%)!important;
+  mask-image:linear-gradient(180deg,#000 0 58%,rgba(0,0,0,.72) 78%,rgba(0,0,0,.42) 100%)!important;
+}
+.mpp17-share-glint{
+  z-index:2!important;
+  opacity:.46!important;
+  mix-blend-mode:screen!important;
+  background:linear-gradient(107deg,transparent 0 38%,rgba(255,255,255,.17) 47%,rgba(255,224,145,.055) 51%,transparent 60% 100%)!important;
+}
+
+/* Share-card JOB motifs */
+.mpp17-share-preview[data-job="FDM"] .mpp17-share-jobbg{background:repeating-conic-gradient(from -12deg at 50% 34%,rgba(255,225,108,.14) 0 1.6deg,transparent 1.6deg 18deg)}
+.mpp17-share-preview[data-job="FDP"] .mpp17-share-jobbg{background:linear-gradient(rgba(130,224,116,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(130,224,116,.075) 1px,transparent 1px);background-size:34px 34px}
+.mpp17-share-preview[data-job="FNM"] .mpp17-share-jobbg{background:radial-gradient(circle at 18% 22%,rgba(218,241,255,.85) 0 1px,transparent 2px),radial-gradient(circle at 34% 40%,rgba(218,241,255,.72) 0 1.4px,transparent 2.4px),radial-gradient(circle at 60% 20%,rgba(218,241,255,.78) 0 1px,transparent 2px),radial-gradient(circle at 82% 38%,rgba(218,241,255,.72) 0 1.4px,transparent 2.4px)}
+.mpp17-share-preview[data-job="FNP"] .mpp17-share-jobbg{background:repeating-radial-gradient(ellipse at 50% -8%,transparent 0 35px,rgba(91,236,222,.13) 36px 38px,transparent 39px 61px)}
+.mpp17-share-preview[data-job="IDM"] .mpp17-share-jobbg{background:repeating-radial-gradient(circle at 50% 34%,transparent 0 34px,rgba(255,157,129,.11) 35px 37px,transparent 38px 62px)}
+.mpp17-share-preview[data-job="IDP"] .mpp17-share-jobbg{
+  background:
+    repeating-radial-gradient(circle at 50% 34%,transparent 0 34px,rgba(230,199,121,.14) 35px 36.5px,transparent 37.5px 61px),
+    repeating-conic-gradient(from 0deg at 50% 34%,rgba(236,205,128,.15) 0 .8deg,transparent .8deg 22.5deg),
+    radial-gradient(circle at 50% 34%,rgba(193,151,70,.14),transparent 42%)
+}
+.mpp17-share-preview[data-job="INM"] .mpp17-share-jobbg{background:repeating-conic-gradient(from 9deg at 50% 34%,rgba(191,130,255,.13) 0 1deg,transparent 1deg 15deg),repeating-radial-gradient(circle at 50% 34%,transparent 0 39px,rgba(190,129,255,.12) 40px 42px,transparent 43px 68px)}
+.mpp17-share-preview[data-job="INP"] .mpp17-share-jobbg{background:repeating-linear-gradient(154deg,transparent 0 28px,rgba(143,220,255,.11) 29px 31px,transparent 32px 62px)}
+
+@keyframes mpp17-material-glint{
+  from{background-position:-80% 0}
+  to{background-position:120% 0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-holo-foil{animation:mpp17-material-glint 5.8s ease-in-out infinite alternate!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-holo-foil{animation:none!important;background-position:40% 0!important}
+}
