@@ -46,6 +46,8 @@ function text(ctx:CanvasRenderingContext2D,value:string,x:number,y:number,size:n
   ctx.restore();
 }
 
+function tagLabel(value:string){return '#'+value.replace(/[\s　]/g,'').replace(/[・/]/g,'');}
+
 function shorten(value:string,max=27){
   const clean=value.replace(/\s+/g,'').trim();
   return clean.length>max?`${clean.slice(0,max)}…`:clean;
@@ -83,6 +85,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
+  const tags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label));
   const accent=asset.accent;
   const secondary=SECONDARY[jobCode];
   const deep=DEEP[jobCode];
@@ -155,7 +158,7 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   text(ctx,'ムダギリ｜お金の性格診断',92,105,25,900,'left','#f4f7fb');
   text(ctx,'1 / 32',WIDTH-92,105,22,900,'right','#b8c4d1');
 
-  text(ctx,'わたしのお金タイプ',WIDTH/2,162,26,850,'center','#cbd5e1');
+  text(ctx,'あなたのお金タイプ',WIDTH/2,162,26,850,'center','#cbd5e1');
 
   text(ctx,typeCode,WIDTH/2,252,108,1000,'center','#ffffff');
   ctx.save();
@@ -179,23 +182,30 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   text(ctx,shorten(result.hero,34),WIDTH/2,850,30,850,'center','#f1f4f8');
   text(ctx,'こんなタイプらしい',WIDTH/2,903,21,850,'center','#f0d477');
 
-  const cardFeatures=(features.length?features:[result.scenes[0].voice]).slice(0,2);
-  if(cardFeatures.length){
-    roundedRect(ctx,100,970,WIDTH-200,172,28);
-    const traits=ctx.createLinearGradient(100,970,980,1142);
-    traits.addColorStop(0,`${accent}20`);
-    traits.addColorStop(.45,'rgba(3,10,24,.88)');
-    traits.addColorStop(1,`${secondary}18`);
-    ctx.fillStyle=traits;
+  roundedRect(ctx,102,968,WIDTH-204,132,28);
+  const tagPanel=ctx.createLinearGradient(102,968,978,1100);
+  tagPanel.addColorStop(0,`${accent}18`);
+  tagPanel.addColorStop(.5,'rgba(5,10,18,.82)');
+  tagPanel.addColorStop(1,`${secondary}14`);
+  ctx.fillStyle=tagPanel;
+  ctx.fill();
+  ctx.lineWidth=2;
+  ctx.strokeStyle='rgba(255,255,255,.15)';
+  ctx.stroke();
+  text(ctx,'こんなタイプらしい',136,997,20,900,'left','#d9dee7');
+  let chipX=136;
+  for(const tag of tags){
+    const label=shorten(tag,12);
+    ctx.font='850 23px system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif';
+    const chipW=Math.min(260,ctx.measureText(label).width+36);
+    roundedRect(ctx,chipX,1028,chipW,44,22);
+    ctx.fillStyle='rgba(255,255,255,.075)';
     ctx.fill();
-    ctx.lineWidth=2;
-    ctx.strokeStyle='#e8cb67';
+    ctx.lineWidth=1.5;
+    ctx.strokeStyle='rgba(255,255,255,.13)';
     ctx.stroke();
-    text(ctx,'あるある',136,1002,21,1000,'left','#f5dc82');
-    cardFeatures.forEach((feature,index)=>{
-      text(ctx,'◆',138,1042+index*36,18,950,'left',index%2?secondary:accent);
-      text(ctx,shorten(feature),178,1042+index*36,23,780,'left','#f5f7fb');
-    });
+    text(ctx,label,chipX+chipW/2,1050,21,850,'center','#f7f7fa');
+    chipX+=chipW+12;
   }
 
   const divider=ctx.createLinearGradient(110,0,WIDTH-110,0);
@@ -205,9 +215,9 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   divider.addColorStop(.82,'rgba(242,213,111,.8)');
   divider.addColorStop(1,'rgba(242,213,111,0)');
   ctx.fillStyle=divider;
-  ctx.fillRect(110,1173,WIDTH-220,2);
-  text(ctx,`JOB ${String(asset.jobNumber).padStart(2,'0')} · ${asset.animal}`,110,1215,22,850,'left','#c8d2dd');
-  text(ctx,'友だちは何タイプ？',WIDTH-110,1215,26,950,'right','#ffffff');
+  ctx.fillRect(110,1168,WIDTH-220,2);
+  text(ctx,`JOB ${String(asset.jobNumber).padStart(2,'0')} · ${asset.animal}`,110,1208,22,850,'left','#c8d2dd');
+  text(ctx,'友だちは何タイプ？',WIDTH-110,1208,26,950,'right','#ffffff');
   text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1267,22,780,'center','#c7d1dd');
   text(ctx,'ムダギリ診断',WIDTH/2,1307,29,1000,'center','#f4dd82');
 
@@ -231,7 +241,8 @@ export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,feature
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
-  const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
+  const shareTags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label)).join(' ');
+  const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\n${shareTags}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
   const nav=navigator as FileShareNavigator;
   try{
     const file=await createJobShareImage({jobCode,primaryStyle,styleLabel,features});
