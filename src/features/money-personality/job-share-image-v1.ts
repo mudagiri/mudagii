@@ -249,7 +249,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   ctx.save();
   ctx.strokeStyle=accent+'82';
   ctx.lineWidth=2;
-  ctx.globalAlpha=.54;
+  ctx.globalAlpha=.62;
   for(let r=116;r<=260;r+=48){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke()}
   for(let i=0;i<12;i++){
     const a=(Math.PI*2*i)/12;
