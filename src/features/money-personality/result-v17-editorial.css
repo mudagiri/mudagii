@@ -1108,3 +1108,139 @@ html body #root .mpp17-wrap{width:min(100%,500px)!important;padding:0 14px!impor
   .mpp17-share-art .mpp-job-character{width:min(49vw,172px)!important}
   .mpp17-share-type h2{font-size:23px!important}
 }
+
+
+/* ---------- V17.5 WORLD PAPER BACKGROUND ----------
+   Screenshot-driven: remove sterile white-report feel without going back to dark navy. */
+html,body,#root{
+  background:#ebe6dc!important;
+}
+html body #root .mpp17-page{
+  position:relative!important;
+  isolation:isolate!important;
+  background:
+    radial-gradient(circle at 18% 6%,color-mix(in srgb,var(--mpp17-accent) 7%,transparent),transparent 24%),
+    radial-gradient(circle at 86% 30%,rgba(180,145,83,.07),transparent 28%),
+    linear-gradient(180deg,#f1ede5 0%,#ebe6dc 48%,#e5dfd4 100%)!important;
+}
+html body #root .mpp17-page::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  opacity:.055;
+  background:
+    var(--mpp-bg-guild) top center/760px auto repeat-y;
+  mix-blend-mode:multiply;
+}
+html body #root .mpp17-page::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.20;
+  background-image:
+    linear-gradient(rgba(83,67,45,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(83,67,45,.03) 1px,transparent 1px);
+  background-size:24px 24px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.30),transparent 18%,transparent 82%,rgba(0,0,0,.25));
+}
+
+html body #root .mpp17-wrap{
+  padding-bottom:20px!important;
+}
+
+/* Let sections sit on the world instead of floating on a blank white sheet. */
+.mpp17-recognition,
+.mpp17-gap,
+.mpp17-compare,
+.mpp17-match{
+  padding:18px 16px!important;
+  border:1px solid rgba(94,79,58,.10)!important;
+  border-radius:20px!important;
+  background:rgba(249,247,242,.74)!important;
+  box-shadow:0 10px 24px rgba(63,52,37,.045)!important;
+  backdrop-filter:blur(1.5px)!important;
+}
+.mpp17-recognition{
+  padding-top:16px!important;
+}
+.mpp17-recognition .mpp17-scene-list article:last-child,
+.mpp17-gap,
+.mpp17-compare,
+.mpp17-match{
+  border-bottom-color:rgba(94,79,58,.12)!important;
+}
+
+/* Important blocks get distinct surfaces so the page has rhythm. */
+.mpp17-core{
+  background:
+    radial-gradient(circle at 86% 14%,color-mix(in srgb,var(--mpp17-accent) 18%,transparent),transparent 30%),
+    linear-gradient(160deg,#202126,#15161a)!important;
+  box-shadow:0 16px 34px rgba(27,27,31,.14)!important;
+}
+.mpp17-strength{
+  background:
+    linear-gradient(180deg,rgba(255,253,248,.95),rgba(246,241,231,.94))!important;
+  border-color:color-mix(in srgb,var(--mpp17-accent) 18%,#cfc7b8)!important;
+  box-shadow:0 12px 26px rgba(69,56,36,.05)!important;
+}
+.mpp17-book-preview{
+  background:
+    radial-gradient(circle at 85% 15%,rgba(145,120,78,.08),transparent 26%),
+    linear-gradient(180deg,#e2ddd3,#d8d1c5)!important;
+  border:1px solid rgba(90,74,52,.10)!important;
+  box-shadow:0 12px 26px rgba(69,56,36,.05)!important;
+}
+.mpp17-next{
+  background:
+    linear-gradient(180deg,rgba(251,248,241,.96),rgba(238,232,220,.94))!important;
+  border-color:rgba(94,79,58,.10)!important;
+  box-shadow:0 12px 26px rgba(69,56,36,.05)!important;
+}
+
+/* White cards become warm paper; still readable, less SaaS-like. */
+.mpp17-gap-pair article,
+.mpp17-compare-row article,
+.mpp17-match-list article,
+.mpp17-mini-jobs>div,
+.mpp17-share-buttons button,
+.mpp17-more>div{
+  background:rgba(255,253,248,.90)!important;
+  border-color:rgba(100,84,62,.12)!important;
+}
+.mpp17-strength-grid article,
+.mpp17-next-quest{
+  background:rgba(232,226,214,.68)!important;
+}
+
+/* Editorial separators now feel like chapter rules. */
+.mpp17-page section>header{
+  border-top-color:rgba(93,76,52,.18)!important;
+}
+.mpp17-details summary{
+  border-top-color:rgba(93,76,52,.18)!important;
+  border-bottom-color:rgba(93,76,52,.18)!important;
+}
+.mpp17-scene-list article{
+  border-bottom-color:rgba(93,76,52,.15)!important;
+}
+
+/* Keep the rare card visually anchored to the warmer world. */
+.mpp17-profile{
+  box-shadow:
+    0 20px 46px rgba(34,29,22,.20),
+    0 0 0 1px rgba(255,255,255,.03) inset!important;
+}
+.mpp17-world-beat{
+  box-shadow:0 14px 30px rgba(48,38,24,.13)!important;
+}
+
+@media(max-width:390px){
+  .mpp17-recognition,
+  .mpp17-gap,
+  .mpp17-compare,
+  .mpp17-match{padding:16px 13px!important}
+}
