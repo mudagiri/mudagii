@@ -5,6 +5,7 @@ import './result-v9.css';
 import './result-v11-polish.css';
 import './result-v12-jp.css';
 import './result-v13-world.css';
+import './result-v14-household-grade.css';
 
 type Props={
   content:V9TypeResult;
