@@ -102,7 +102,7 @@ function drawJobMotif(ctx:CanvasRenderingContext2D,jobCode:JobCode,accent:string
     ctx.globalAlpha=.18;ctx.lineWidth=1;
     for(let x=150;x<930;x+=64){ctx.beginPath();ctx.moveTo(x,160);ctx.lineTo(x,790);ctx.stroke()}
     for(let y=180;y<800;y+=64){ctx.beginPath();ctx.moveTo(150,y);ctx.lineTo(930,y);ctx.stroke()}
-    ctx.globalAlpha=.54;for(const [x,y] of [[250,280],[390,410],[560,300],[730,430],[835,265]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()}
+    ctx.globalAlpha=.62;for(const [x,y] of [[250,280],[390,410],[560,300],[730,430],[835,265]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()}
   }else if(jobCode==='FNM'){
     ctx.globalAlpha=.62;
     const pts=[[170,230],[285,360],[410,255],[565,400],[710,245],[860,390]] as const;
@@ -204,7 +204,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   roundedRect(ctx,42,42,WIDTH-84,HEIGHT-84,48);
   ctx.clip();
   ctx.globalCompositeOperation='screen';
-  ctx.globalAlpha=.74;
+  ctx.globalAlpha=.82;
   ctx.drawImage(foil,42,42,WIDTH-84,HEIGHT-84);
 
   const glint=ctx.createLinearGradient(-120,920,1120,180);
@@ -221,15 +221,15 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
 
   roundedRect(ctx,42,42,WIDTH-84,HEIGHT-84,48);
   ctx.lineWidth=5;
-  ctx.strokeStyle='#c8a85f';
+  ctx.strokeStyle='#d3aa5e';
   ctx.shadowColor=accent;
-  ctx.shadowBlur=12;
+  ctx.shadowBlur=14;
   ctx.stroke();
   ctx.shadowBlur=0;
 
   roundedRect(ctx,58,58,WIDTH-116,HEIGHT-116,38);
   ctx.lineWidth=1.6;
-  ctx.strokeStyle='rgba(244,220,166,.52)';
+  ctx.strokeStyle='rgba(244,216,157,.62)';
   ctx.stroke();
 
   text(ctx,'MUDAGIRI / MONEY TYPE',84,102,21,900,'left','#d8c89e');
@@ -245,7 +245,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   ctx.stroke();
   text(ctx,'✦ CARD ACQUIRED',389,168,18,900,'center','#f7dfc2');
 
-  const cx=WIDTH/2,cy=475;
+  const cx=WIDTH/2,cy=480;
   ctx.save();
   ctx.strokeStyle=accent+'82';
   ctx.lineWidth=2;
@@ -260,42 +260,42 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   }
   ctx.restore();
 
-  const boxW=700,boxH=470;
+  const boxW=740,boxH=500;
   const scale=Math.min(boxW/img.naturalWidth,boxH/img.naturalHeight);
   const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
   ctx.save();
   ctx.imageSmoothingEnabled=false;
   ctx.shadowColor=accent;
   ctx.shadowBlur=34;
-  ctx.drawImage(img,(WIDTH-w)/2,270+(boxH-h)/2,w,h);
+  ctx.drawImage(img,(WIDTH-w)/2,250+(boxH-h)/2,w,h);
   ctx.restore();
 
-  text(ctx,'あなたのお金タイプ',84,780,20,800,'left','#b8b2aa');
-  text(ctx,identity.jobName,84,835,58,1000,'left','#ffffff');
+  text(ctx,'あなたのお金タイプ',84,790,20,800,'left','#b8b2aa');
+  text(ctx,identity.jobName,84,848,60,1000,'left','#ffffff');
 
-  roundedRect(ctx,84,875,112,44,22);
+  roundedRect(ctx,84,888,112,44,22);
   ctx.fillStyle='rgba(193,151,70,.22)';
   ctx.fill();
   ctx.lineWidth=1.4;
   ctx.strokeStyle=accent+'88';
   ctx.stroke();
-  text(ctx,identity.styleLabel,140,897,20,900,'center','#f8ead0');
-  text(ctx,'を大事にするタイプ',214,897,22,850,'left','#e7e3db');
+  text(ctx,identity.styleLabel,140,910,20,900,'center','#f8ead0');
+  text(ctx,'を大事にするタイプ',214,910,22,850,'left','#e7e3db');
 
-  text(ctx,shorten(result.hero,31),84,958,28,850,'left','#f5f3ef');
+  text(ctx,shorten(result.hero,31),84,975,28,850,'left','#f5f3ef');
 
   let chipX=84;
   for(const tag of tags){
     const label=shorten(tag,11);
     ctx.font='850 19px system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif';
     const chipW=Math.min(244,ctx.measureText(label).width+34);
-    roundedRect(ctx,chipX,1000,chipW,43,21);
+    roundedRect(ctx,chipX,1018,chipW,43,21);
     ctx.fillStyle='rgba(255,255,255,.055)';
     ctx.fill();
     ctx.lineWidth=1.2;
     ctx.strokeStyle='rgba(255,255,255,.16)';
     ctx.stroke();
-    text(ctx,label,chipX+chipW/2,1022,18,850,'center','#f7f5f1');
+    text(ctx,label,chipX+chipW/2,1040,18,850,'center','#f7f5f1');
     chipX+=chipW+12;
   }
 
@@ -306,12 +306,10 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   divider.addColorStop(.84,'rgba(220,190,120,.38)');
   divider.addColorStop(1,'rgba(220,190,120,0)');
   ctx.fillStyle=divider;
-  ctx.fillRect(78,1114,WIDTH-156,1.5);
+  ctx.fillRect(78,1178,WIDTH-156,1.5);
 
-  text(ctx,'ムダギリ｜お金の性格診断',84,1160,19,850,'left','#d2cbc0');
-  text(ctx,asset.animal,WIDTH-84,1160,19,850,'right','#d2cbc0');
-  text(ctx,'#ムダギリ診断  #お金の性格診断',WIDTH/2,1227,18,780,'center','#aaa39a');
-  text(ctx,'ムダギリ診断',WIDTH/2,1271,24,1000,'center','#d8be78');
+  text(ctx,'ムダギリ｜お金の性格診断',84,1220,19,850,'left','#d2cbc0');
+  text(ctx,asset.animal,WIDTH-84,1220,19,850,'right','#d2cbc0');
 
   const blob=await canvasBlob(canvas);
   return new File([blob],'mudagiri-'+typeCode+'.png',{type:'image/png'});
