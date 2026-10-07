@@ -205,6 +205,6 @@ PASS only if all are true:
 
 ## 8. Frozen design decision
 
-战術ハンター is the current calibration sample only.
+戦術ハンター is the current calibration sample only.
 Its bronze/web/reticle treatment must NOT be copied literally to the other 7 JOBs.
 What is shared is the material system and composition; what changes is the JOB color, motif, and atmosphere.
