@@ -1,5 +1,4 @@
 import React from 'react';
-import type {StyleId} from './classifierV1';
 import type {V9TypeResult} from './resultV9Content';
 import type {ResultV10Insight} from './resultV10Insight';
 import './result-v9.css';
@@ -7,24 +6,8 @@ import './result-v11-polish.css';
 
 type Props={
   content:V9TypeResult;
-  primaryStyle:StyleId;
-  secondaryStyle:StyleId;
   onShare:()=>void;
   insight:ResultV10Insight;
-};
-
-const STYLE_JA:Record<StyleId,string>={
-  DRIVE:'前進',
-  ENJOY:'満足',
-  SECURE:'安心',
-  OPTIMIZE:'ムダなし',
-};
-
-const STYLE_HOOK:Record<StyleId,string>={
-  DRIVE:'今より前に進めるか',
-  ENJOY:'払ったあとも満足できるか',
-  SECURE:'決めたあとも安心できるか',
-  OPTIMIZE:'今の用途にムダがないか',
 };
 
 function SceneCard({scene,compact=false}:{scene:V9TypeResult['scenes'][number];compact?:boolean}){
