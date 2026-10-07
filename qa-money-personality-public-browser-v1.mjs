@@ -227,6 +227,14 @@ if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.visib
 await screenshot('07-type-book-32');
 await page.getByRole('button',{name:'獲得画面に戻る'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
+await page.locator('.mpp-social-action--share').click();
+await page.locator('.mpp-job-share').waitFor({state:'visible',timeout:3000});
+const shareCardText=((await page.locator('.mpp-job-share-card').textContent())||'').replace(/\s+/g,' ');
+if(!shareCardText.includes('32 TYPE')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
+if(/DRIVE STYLE|ENJOY STYLE|SECURE STYLE|OPTIMIZE STYLE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_ENGLISH_STYLE_LEAK:'+shareCardText);
+await screenshot('08-share-identity-card');
+await page.getByRole('button',{name:'次のクエストを選ぶ'}).click();
+await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
