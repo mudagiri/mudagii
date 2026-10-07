@@ -8,12 +8,10 @@ import {
   JOB_NUMBER,newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
-import {buildMoneyResultExperienceV2} from './resultExperienceV2';
-import {buildMoneyResultExperienceV5} from './resultNarrativeV5';
-import {resultVividScenario} from './resultScenarioV1';
 import {moneyTypeCode} from './money-type-code-v1';
 import ResultJourneyV1 from './ResultJourneyV1';
-import ResultCompetitiveV6 from './ResultCompetitiveV6';
+import ResultV9 from './ResultV9';
+import {resultV9For} from './resultV9Content';
 import JobCharacterCard from './JobCharacterCard';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -64,11 +62,53 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
 function separatorSelectedClass(selected:string|null,value:string){return selected===value?'selected':''}
 
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
- const [handoff,setHandoff]=useState<'result'|'journey'>('result');const job=evaluation.jobCode!;const style=evaluation.style.primary!;const secondary=evaluation.style.secondary!;const meta=STYLE_META[style];const sub=STYLE_META[secondary];const typeCode=moneyTypeCode(job,style);const content=buildMoneyResultExperienceV5(evaluation,buildMoneyResultExperienceV2(evaluation));const vivid=resultVividScenario(job,style);
+ const [handoff,setHandoff]=useState<'result'|'journey'>('result');
+ const job=evaluation.jobCode!;
+ const style=evaluation.style.primary!;
+ const secondary=evaluation.style.secondary!;
+ const meta=STYLE_META[style];
+ const typeCode=moneyTypeCode(job,style);
+ const v9=resultV9For(job,style);
+
  useEffect(()=>{if(handoff!=='result')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];const previous=nodes.map(el=>({el,cssText:el.style.cssText}));html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}for(const el of [page,card])if(el){el.style.setProperty('height','auto','important');el.style.setProperty('min-height',el===page?'100dvh':'0','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow','visible','important');el.style.setProperty('overflow-y','visible','important');el.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText});html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active')}},[handoff]);
+
  if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
- const share=async()=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:content.resonanceChecks})};
- const axes=[['時間視野','FUTURE','IMMEDIATE',content.patterns[0]],['判断根拠','DELIBERATION','INTUITION',content.patterns[1]],['把握リズム','MONITORING','PERIODIC',content.patterns[2]]] as const;
- return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style} data-money-type={typeCode}><section className="mpp-card mpp-result"><div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div><section className="mpp-result-v4-hero mpp-result-ssr-card"><div className="mpp-result-ssr-badge"><b>SSR</b><span>TYPE UNLOCKED · 1 OF 32</span></div><div className="mpp-kicker">お金の性格診断 / RESULT</div><div className="mpp-job-no">{typeCode} · JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</div><div className="mpp-result-job-hero"><JobCharacterCard jobCode={job} variant="hero" className="mpp-result-job-character"/></div><div className="mpp-result-label">あなたのお金タイプ / JOB</div><h1>{evaluation.jobName}</h1><p className="mpp-result-hero-line">{content.heroLine}</p><div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label} STYLE</span></div><section className="mpp-result-v4-hit"><span>これ、ある？</span><ul>{content.resonanceChecks.map((line,i)=><li key={i}>{line}</li>)}</ul></section><div className="mpp-result-v4-scrollcue">このタイプを詳しく見る</div></section><button className="mpp-secondary mpp-result-card-share" onClick={share}>このTYPEカードをシェア</button><section className="mpp-vivid-scene"><div className="mpp-vivid-kicker">SCENE / ある日のあなた</div><h2>{vivid.title}</h2><p>{vivid.body}</p><blockquote><span>その時、頭の中では</span><b>「{vivid.innerVoice}」</b></blockquote><div className="mpp-vivid-mirror"><div><small>周りから見ると</small><p>{vivid.outsideView}</p></div><div><small>でも本人の中では</small><p>{vivid.insideView}</p></div></div></section><ResultCompetitiveV6 jobCode={job} primaryStyle={style} secondaryStyle={secondary}/>
- <div className="mpp-result-v4-section-title">YOUR MONEY MANUAL</div><section className="mpp-result-v4-identity"><span>このタイプの正体</span><b>{content.identityTitle}</b><p>{content.typeMeaning}</p></section><div className="mpp-result-companion mpp-result-companion--tight"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt=""/></div><div className="mpp-dialogue"><b>ムダギリくん</b><p>「{content.mudagiriLine}」</p></div><section className="mpp-style-synthesis"><header><span>あなたの価値観を詳しく見ると</span><b>{meta.icon} {meta.label} を軸に、{sub.icon} {sub.label} の傾向もあります</b></header><p>{content.styleSynthesis}</p></section><div className="mpp-result-profile"><div><span>WEAPON</span><b>{content.weapon}</b></div><div><span>強み</span><p>{content.strength}</p></div><div><span>ハマりやすい罠</span><p>{content.blindSpot}</p></div><div><span>攻略法</span><p>{content.strategy}</p></div></div><details className="mpp-analysis-details"><summary>診断の内訳を見る <small>3軸ステータス</small></summary><div className="mpp-axis-block"><h2>あなたの3軸ステータス</h2>{axes.map(([title,a,b,insight])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b><em>{insight.badge}</em></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div><p className="mpp-axis-copy">{insight.text}</p></div>})}</div></details><div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{content.oneAction}</b></div><div className="mpp-result-v4-chapter-label">NEXT QUEST</div><div className="mpp-next-quest"><span>NEXT</span><b>このTYPEのまま、次の冒険へ。</b><p>TYPEカードはもう獲得済み。ここから図鑑を見たり、そのまま家計診断へ進めます。</p></div><button className="mpp-primary" onClick={()=>setHandoff('journey')}>次のクエストへ進む</button><button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>{debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:content.version,resultNarrativeVersion:content.resultVersion},null,2)}</pre>}</section></main>
+
+ const share=async()=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.hero,v9.scenes[0].hit]})};
+ const axes=[['時間視野','FUTURE','IMMEDIATE'],['判断根拠','DELIBERATION','INTUITION'],['把握リズム','MONITORING','PERIODIC']] as const;
+
+ return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style} data-money-type={typeCode}>
+  <section className="mpp-card mpp-result">
+   <div className="mpp-unlock-burst" aria-hidden="true"><i/><i/><i/></div>
+   <section className="mpp-result-v4-hero mpp-result-ssr-card">
+    <div className="mpp-result-ssr-badge"><b>SSR</b><span>TYPE UNLOCKED · 1 OF 32</span></div>
+    <div className="mpp-kicker">お金の性格診断 / RESULT</div>
+    <div className="mpp-job-no">{typeCode} · JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</div>
+    <div className="mpp-result-job-hero"><JobCharacterCard jobCode={job} variant="hero" className="mpp-result-job-character"/></div>
+    <div className="mpp-result-label">あなたのお金タイプ / JOB</div>
+    <h1>{evaluation.jobName}</h1>
+    <p className="mpp-result-hero-line">{v9.hero}</p>
+    <div className="mpp-result-v4-styleline"><span>{meta.icon} {meta.label} STYLE</span></div>
+    <div className="mpp-result-v4-scrollcue">このTYPE、どこまで当たってる？</div>
+   </section>
+
+   <ResultV9 content={v9} primaryStyle={style} secondaryStyle={secondary} onShare={share}/>
+
+   <details className="mpp-analysis-details">
+    <summary>診断の内訳を見る <small>3軸ステータス</small></summary>
+    <div className="mpp-axis-block">
+     <h2>あなたの3軸ステータス</h2>
+     {axes.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div></div>})}
+    </div>
+   </details>
+
+   <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{v9.nextMove}</b></div>
+   <div className="mpp-result-v4-chapter-label">NEXT QUEST</div>
+   <div className="mpp-next-quest"><span>NEXT</span><b>このTYPEのまま、次の冒険へ。</b><p>TYPEカードは獲得済み。図鑑で比べるか、そのまま家計診断へ進めます。</p></div>
+   <button className="mpp-primary" onClick={()=>setHandoff('journey')}>次のクエストへ進む</button>
+   <button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
+   {debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V9_HUMAN_FIRST'},null,2)}</pre>}
+  </section>
+ </main>
 }
+
