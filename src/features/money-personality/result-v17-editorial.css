@@ -1705,3 +1705,66 @@ html body #root .mpp17-page{
   }
 }
 
+
+
+/* ---------- V17.10 TYPE-COLORED HOLO BASE ----------
+   Real-device correction: the previous hologram colored only the effects.
+   The card field itself now carries the JOB color, with STYLE as the spectral tint. */
+.mpp17-profile{
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 28%,#2a2630) 0%,
+      color-mix(in srgb,var(--mpp17-style-accent) 16%,color-mix(in srgb,var(--mpp17-accent) 22%,#171820)) 34%,
+      color-mix(in srgb,var(--mpp17-accent) 14%,#101218) 68%,
+      color-mix(in srgb,var(--mpp17-accent) 8%,#090b0f) 100%),
+    radial-gradient(circle at 50% 27%,
+      color-mix(in srgb,var(--mpp17-accent) 58%,transparent) 0%,
+      color-mix(in srgb,var(--mpp17-style-accent) 24%,transparent) 31%,
+      transparent 58%),
+    linear-gradient(118deg,
+      color-mix(in srgb,var(--mpp17-style-accent) 15%,transparent),
+      transparent 28% 66%,
+      color-mix(in srgb,var(--mpp17-secondary-accent) 11%,transparent))!important;
+}
+
+/* Give the upper collectible area a visibly colored foil field, while the lower copy stays darker. */
+.mpp17-profile::before{
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 16%,rgba(255,255,255,.03)) 0%,
+      color-mix(in srgb,var(--mpp17-style-accent) 9%,transparent) 44%,
+      rgba(0,0,0,.06) 72%,
+      rgba(0,0,0,.18) 100%)!important;
+  border-color:color-mix(in srgb,var(--mpp17-accent) 82%,#ffe9b7)!important;
+}
+
+/* Make the foil itself visibly prismatic instead of white-on-black. */
+.mpp17-profile::after{
+  background:
+    linear-gradient(112deg,
+      transparent 0 13%,
+      color-mix(in srgb,var(--mpp17-accent) 32%,transparent) 22%,
+      color-mix(in srgb,var(--mpp17-style-accent) 34%,rgba(255,255,255,.08)) 34%,
+      rgba(255,244,214,.24) 46%,
+      color-mix(in srgb,var(--mpp17-secondary-accent) 28%,rgba(255,255,255,.06)) 57%,
+      color-mix(in srgb,var(--mpp17-accent) 26%,transparent) 68%,
+      transparent 80% 100%),
+    repeating-linear-gradient(
+      122deg,
+      transparent 0 18px,
+      color-mix(in srgb,var(--mpp17-style-accent) 8%,rgba(255,255,255,.02)) 18px 19px,
+      transparent 19px 38px
+    )!important;
+  opacity:.42!important;
+}
+
+/* Character stage gets its own color bloom so each JOB reads differently even in a screenshot. */
+.mpp17-profile .mpp17-portrait{
+  background:
+    radial-gradient(circle at 50% 52%,
+      color-mix(in srgb,var(--mpp17-accent) 28%,transparent) 0 28%,
+      color-mix(in srgb,var(--mpp17-style-accent) 14%,transparent) 38%,
+      transparent 68%)!important;
+  border-radius:50%;
+}
+
