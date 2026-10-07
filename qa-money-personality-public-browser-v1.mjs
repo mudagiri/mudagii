@@ -142,23 +142,25 @@ await assertJobImageLoaded('.mpp-result-job-hero','result-hero');
 await page.waitForTimeout(1100);
 await screenshot('05-result-ssr-card');
 
-const resultV4Geometry=await page.evaluate(()=>{
+const resultV9Geometry=await page.evaluate(()=>{
   const hero=document.querySelector('.mpp-result-v4-hero');
-  const hit=document.querySelector('.mpp-result-v4-hit');
+  const body=document.querySelector('.mpp-result-v9');
   const heroRect=hero?.getBoundingClientRect();
-  const hitRect=hit?.getBoundingClientRect();
+  const bodyRect=body?.getBoundingClientRect();
   return {
     hero:heroRect?{top:heroRect.top,bottom:heroRect.bottom,height:heroRect.height}:null,
-    hit:hitRect?{top:hitRect.top,bottom:hitRect.bottom,height:hitRect.height}:null,
+    body:bodyRect?{top:bodyRect.top,bottom:bodyRect.bottom,height:bodyRect.height}:null,
     innerHeight,
-    checkCount:document.querySelectorAll('.mpp-result-v4-hit li').length,
+    primarySceneCount:document.querySelectorAll('.mpp-v9-scenes .mpp-v9-scene').length,
+    extraSceneCount:document.querySelectorAll('.mpp-v9-more-list .mpp-v9-scene').length,
+    hasMore:Boolean(document.querySelector('.mpp-v9-more')),
     hasSsrBadge:Boolean(document.querySelector('.mpp-result-ssr-badge')),
   };
 });
-if(!resultV4Geometry.hero||!resultV4Geometry.hit)throw new Error('MONEY_PUBLIC_RESULT_V4_HERO_MISSING:'+JSON.stringify(resultV4Geometry));
-if(resultV4Geometry.checkCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_CHECK_COUNT_BAD:'+JSON.stringify(resultV4Geometry));
-if(!resultV4Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_MISSING');
-if(resultV4Geometry.hit.bottom>resultV4Geometry.innerHeight+220)throw new Error('MONEY_PUBLIC_RESULT_SSR_CARD_TOO_TALL:'+JSON.stringify(resultV4Geometry));
+if(!resultV9Geometry.hero||!resultV9Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V9_MISSING:'+JSON.stringify(resultV9Geometry));
+if(resultV9Geometry.primarySceneCount!==3||resultV9Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V9_SCENE_COUNT_BAD:'+JSON.stringify(resultV9Geometry));
+if(!resultV9Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
+if(!resultV9Geometry.hasSsrBadge)throw new Error('MONEY_PUBLIC_RESULT_SSR_BADGE_MISSING');
 
 const resultScrollBefore=await page.evaluate(()=>{
   const root=document.scrollingElement||document.documentElement;
@@ -176,10 +178,11 @@ await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 const text=((await page.locator('.mpp-result').textContent())||'').replace(/\s+/g,' ');
 if(!text.includes('あなたのお金タイプ'))throw new Error('MONEY_PUBLIC_RESULT_TYPE_LABEL_MISSING');
 if(!text.includes('TYPE UNLOCKED')||!text.includes('SSR'))throw new Error('MONEY_PUBLIC_RESULT_SSR_COPY_MISSING');
-if(!text.includes('これ、ある？'))throw new Error('MONEY_PUBLIC_RESULT_V4_RESONANCE_MISSING');
-if(!text.includes('YOUR MONEY MANUAL')||!text.includes('このタイプの正体'))throw new Error('MONEY_PUBLIC_RESULT_V4_MANUAL_MISSING');
-if(!text.includes('あなたの価値観を詳しく見ると'))throw new Error('MONEY_PUBLIC_STYLE_SYNTHESIS_MISSING');
-if(!text.includes('WEAPON')||!text.includes('強み')||!text.includes('ハマりやすい罠')||!text.includes('攻略法'))throw new Error('MONEY_PUBLIC_PERSONALIZED_PROFILE_MISSING');
+if(!text.includes('こんな瞬間、ない？'))throw new Error('MONEY_PUBLIC_RESULT_V9_RECOGNITION_MISSING');
+if(!text.includes('ほかの場面も見る'))throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_MISSING');
+if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
+if(!text.includes('見え方のズレ')||!text.includes('武器 → 暴走 → 戻し方'))throw new Error('MONEY_PUBLIC_RESULT_V9_INSIGHT_MISSING');
+if(!text.includes('友だちと比べる'))throw new Error('MONEY_PUBLIC_RESULT_V9_COMPARE_MISSING');
 if(!text.includes('YOUR NEXT MOVE'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('あなたの3軸ステータス'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 if(!text.includes('次のクエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
@@ -209,7 +212,7 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV4:true,firstQuestionGeometry,resultV4Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedSsrResult:true,capturedNextRoutes:true,personalizedResult:true,resultV9:true,firstQuestionGeometry,resultV9Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
