@@ -6,11 +6,7 @@ import {moneyTypeNeighbors} from './money-type-neighbors-v1';
 import {moneyTypeCode} from './money-type-code-v1';
 import JobCharacterCard from './JobCharacterCard';
 import './result-v9.css';
-import './result-v11-polish.css';
-import './result-v12-jp.css';
-import './result-v13-world.css';
-import './result-v14-household-grade.css';
-import './result-v15-social.css';
+import './result-v16-clean.css';
 
 type ShareTarget='x'|'instagram'|'threads'|'line';
 type Props={
