@@ -26,6 +26,12 @@ type Props={
 };
 
 const JOB_ORDER:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
+const STYLE_HOLO:Record<StyleId,string>={
+  DRIVE:'#ff625f',
+  ENJOY:'#ff86c8',
+  SECURE:'#62d9e8',
+  OPTIMIZE:'#7bdc91',
+};
 
 function cleanTag(value:string){return '#'+value.replace(/\p{Extended_Pictographic}/gu,'').replace(/[\s　]/g,'').replace(/[・/]/g,'').replace(/^[#]+/,'');}
 
@@ -41,7 +47,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
     {label:'対照的',data:neighbors.contrast},
   ] as const;
 
-  return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent} as React.CSSProperties}>
+  return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
     <div className="mpp17-wrap">
 
       <ResultWorldBeatV1 beat="complete"/>
