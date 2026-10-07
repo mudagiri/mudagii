@@ -80,6 +80,85 @@ function drawStar(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:
   ctx.restore();
 }
 
+
+function drawJobMotif(ctx:CanvasRenderingContext2D,jobCode:JobCode,accent:string){
+  const cx=WIDTH/2,cy=505;
+  ctx.save();
+  ctx.strokeStyle=accent;
+  ctx.fillStyle=accent;
+  ctx.globalCompositeOperation='screen';
+  ctx.lineWidth=1.5;
+
+  if(jobCode==='IDP'){
+    ctx.globalAlpha=.30;
+    for(let r=92;r<=300;r+=42){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke()}
+    for(let i=0;i<16;i++){const a=(Math.PI*2*i)/16;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*78,cy+Math.sin(a)*78);ctx.lineTo(cx+Math.cos(a)*318,cy+Math.sin(a)*318);ctx.stroke()}
+    ctx.globalAlpha=.42;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,208,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-250,cy);ctx.lineTo(cx+250,cy);ctx.moveTo(cx,cy-250);ctx.lineTo(cx,cy+250);ctx.stroke();
+  }else if(jobCode==='FDM'){
+    ctx.globalAlpha=.22;
+    for(let i=0;i<18;i++){const a=(Math.PI*2*i)/18;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*90,cy+Math.sin(a)*90);ctx.lineTo(cx+Math.cos(a)*330,cy+Math.sin(a)*330);ctx.stroke()}
+  }else if(jobCode==='FDP'){
+    ctx.globalAlpha=.18;ctx.lineWidth=1;
+    for(let x=150;x<930;x+=64){ctx.beginPath();ctx.moveTo(x,160);ctx.lineTo(x,790);ctx.stroke()}
+    for(let y=180;y<800;y+=64){ctx.beginPath();ctx.moveTo(150,y);ctx.lineTo(930,y);ctx.stroke()}
+    ctx.globalAlpha=.54;for(const [x,y] of [[250,280],[390,410],[560,300],[730,430],[835,265]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()}
+  }else if(jobCode==='FNM'){
+    ctx.globalAlpha=.62;
+    const pts=[[170,230],[285,360],[410,255],[565,400],[710,245],[860,390]] as const;
+    for(const [x,y] of pts){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill()}
+    ctx.globalAlpha=.24;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
+  }else if(jobCode==='FNP'){
+    ctx.globalAlpha=.22;
+    for(let i=0;i<6;i++){const y=300+i*72;ctx.beginPath();ctx.moveTo(90,y);ctx.bezierCurveTo(300,y-55,450,y+55,650,y);ctx.bezierCurveTo(810,y-45,900,y+25,1010,y-10);ctx.stroke()}
+  }else if(jobCode==='IDM'){
+    ctx.globalAlpha=.24;
+    for(let r=90;r<=310;r+=44){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke()}
+  }else if(jobCode==='INM'){
+    ctx.globalAlpha=.25;
+    for(let r=105;r<=305;r+=50){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke()}
+    for(let i=0;i<12;i++){const a=(Math.PI*2*i)/12;ctx.save();ctx.translate(cx+Math.cos(a)*260,cy+Math.sin(a)*260);ctx.rotate(a);ctx.strokeRect(-7,-7,14,14);ctx.restore()}
+  }else{
+    ctx.globalAlpha=.20;ctx.lineWidth=3;
+    for(let i=0;i<7;i++){const y=250+i*70;ctx.beginPath();ctx.moveTo(80,y+75);ctx.quadraticCurveTo(480,y-75,1000,y);ctx.stroke()}
+  }
+  ctx.restore();
+}
+
+function drawDiamondFoil(ctx:CanvasRenderingContext2D){
+  const colors=['#35d7ff','#6978ff','#d44dff','#ff6fae','#ff9b3d','#ffe35a','#55edaa'];
+  ctx.save();
+  roundedRect(ctx,46,46,WIDTH-92,HEIGHT-92,46);
+  ctx.clip();
+  ctx.globalCompositeOperation='screen';
+  const cell=58;
+  for(let row=-1,y=46-cell;y<HEIGHT-46+cell;row++,y+=cell){
+    for(let col=-1,x=46-cell;x<WIDTH-46+cell;col++,x+=cell){
+      const phase=Math.abs((row*7+col*11)%colors.length);
+      const strong=((row*3+col*5)%7===0);
+      ctx.fillStyle=colors[phase];
+      ctx.globalAlpha=strong?.34:.095+(((row+col)&1)?.03:0);
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cell,y);ctx.lineTo(x+cell/2,y+cell/2);ctx.closePath();ctx.fill();
+      ctx.fillStyle=colors[(phase+2)%colors.length];
+      ctx.globalAlpha=strong?.26:.068;
+      ctx.beginPath();ctx.moveTo(x+cell,y);ctx.lineTo(x+cell,y+cell);ctx.lineTo(x+cell/2,y+cell/2);ctx.closePath();ctx.fill();
+      ctx.fillStyle=colors[(phase+4)%colors.length];
+      ctx.globalAlpha=strong?.24:.055;
+      ctx.beginPath();ctx.moveTo(x+cell,y+cell);ctx.lineTo(x,y+cell);ctx.lineTo(x+cell/2,y+cell/2);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.055)';ctx.globalAlpha=.52;ctx.lineWidth=.7;ctx.strokeRect(x,y,cell,cell);
+    }
+  }
+  const sheen=ctx.createLinearGradient(0,180,WIDTH,900);
+  sheen.addColorStop(0,'rgba(255,255,255,0)');
+  sheen.addColorStop(.42,'rgba(120,225,255,.035)');
+  sheen.addColorStop(.5,'rgba(255,255,255,.20)');
+  sheen.addColorStop(.57,'rgba(255,224,135,.065)');
+  sheen.addColorStop(.68,'rgba(190,110,255,.04)');
+  sheen.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.globalAlpha=1;ctx.fillStyle=sheen;ctx.fillRect(46,46,WIDTH-92,HEIGHT-92);
+  ctx.restore();
+}
+
 export async function createJobShareImage({jobCode,primaryStyle,styleLabel,features=[]}:Args){
   const asset=jobCharacterAsset(jobCode);
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
@@ -103,34 +182,6 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   ctx.fillStyle=bg;
   ctx.fillRect(0,0,WIDTH,HEIGHT);
 
-  const glowA=ctx.createRadialGradient(220,190,10,220,190,520);
-  glowA.addColorStop(0,`${accent}7d`);
-  glowA.addColorStop(.36,`${accent}2d`);
-  glowA.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=glowA;
-  ctx.fillRect(0,0,WIDTH,820);
-
-  const glowB=ctx.createRadialGradient(850,510,10,850,510,520);
-  glowB.addColorStop(0,`${secondary}66`);
-  glowB.addColorStop(.42,`${secondary}22`);
-  glowB.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=glowB;
-  ctx.fillRect(300,0,780,1000);
-
-  ctx.save();
-  ctx.translate(WIDTH/2,505);
-  ctx.globalAlpha=.13;
-  for(let i=0;i<18;i++){
-    ctx.rotate(Math.PI/9);
-    const ray=ctx.createLinearGradient(60,0,520,0);
-    ray.addColorStop(0,'rgba(255,255,255,.36)');
-    ray.addColorStop(.35,`${i%2?accent:secondary}66`);
-    ray.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=ray;
-    ctx.fillRect(70,-2,470,4);
-  }
-  ctx.restore();
-
   roundedRect(ctx,46,46,WIDTH-92,HEIGHT-92,46);
   const panel=ctx.createLinearGradient(0,46,WIDTH,HEIGHT-46);
   panel.addColorStop(0,'rgba(10,16,32,.54)');
@@ -138,6 +189,8 @@ export async function createJobShareImage({jobCode,primaryStyle,styleLabel,featu
   panel.addColorStop(1,'rgba(0,2,10,.88)');
   ctx.fillStyle=panel;
   ctx.fill();
+  drawJobMotif(ctx,jobCode,accent);
+  drawDiamondFoil(ctx);
   ctx.lineWidth=6;
   ctx.strokeStyle='#f2d56f';
   ctx.shadowColor='#f2d56f';
