@@ -1,0 +1,257 @@
+/* Result V13 World — result-specific art direction.
+   Goal: stop inheriting the guild-hall look and turn Result into a premium RPG identity reveal.
+   CSS only; diagnosis logic/assets unchanged. */
+
+body #root .mpp-page.mpp-page--result{
+  position:relative!important;
+  isolation:isolate!important;
+  background:
+    radial-gradient(circle at 50% 3%,rgba(150,109,255,.22),transparent 24%),
+    radial-gradient(circle at 88% 16%,rgba(255,205,91,.12),transparent 22%),
+    radial-gradient(circle at 12% 34%,rgba(72,205,191,.08),transparent 24%),
+    linear-gradient(180deg,#101521 0%,#0d121b 28%,#111722 68%,#0a0f17 100%)!important;
+  background-image:
+    radial-gradient(circle at 50% 3%,rgba(150,109,255,.22),transparent 24%),
+    radial-gradient(circle at 88% 16%,rgba(255,205,91,.12),transparent 22%),
+    radial-gradient(circle at 12% 34%,rgba(72,205,191,.08),transparent 24%),
+    linear-gradient(180deg,#101521 0%,#0d121b 28%,#111722 68%,#0a0f17 100%)!important;
+  background-attachment:scroll!important;
+}
+body #root .mpp-page.mpp-page--result::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.42;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:24px 24px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.5) 28%,transparent 72%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.5) 28%,transparent 72%);
+}
+body #root .mpp-page.mpp-page--result::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 10%,rgba(255,238,174,.34) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 78% 7%,rgba(255,238,174,.28) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 88% 22%,rgba(190,177,255,.25) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 10% 26%,rgba(122,222,214,.22) 0 1px,transparent 1.7px);
+  background-size:180px 180px,220px 220px,260px 260px,300px 300px;
+}
+
+body #root .mpp-page--result .mpp-result{
+  position:relative!important;
+  z-index:1!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+
+/* SSR reveal becomes the only "card" that should feel collectible. */
+body #root .mpp-page--result .mpp-result-ssr-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,226,127,.46)!important;
+  background:
+    radial-gradient(circle at 50% 26%,rgba(164,122,255,.22),transparent 35%),
+    radial-gradient(circle at 50% 54%,rgba(245,205,86,.07),transparent 34%),
+    linear-gradient(180deg,rgba(25,29,44,.96),rgba(15,20,31,.98))!important;
+  box-shadow:
+    0 28px 70px rgba(0,0,0,.34),
+    0 0 0 1px rgba(255,255,255,.035) inset,
+    0 0 48px rgba(155,113,255,.08)!important;
+}
+body #root .mpp-page--result .mpp-result-ssr-card::before{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.55;
+  background:
+    conic-gradient(from 15deg,
+      transparent 0 8%,
+      rgba(255,223,128,.07) 10%,
+      transparent 13% 29%,
+      rgba(167,128,255,.08) 32%,
+      transparent 36% 100%);
+  transform:rotate(0deg);
+}
+body #root .mpp-page--result .mpp-result-ssr-card::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-70px;
+  width:280px;
+  height:150px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,214,101,.13),transparent 68%);
+  filter:blur(8px);
+  pointer-events:none;
+}
+body #root .mpp-page--result .mpp-result-ssr-badge{
+  width:max-content;
+  margin-inline:auto;
+  padding:4px 8px;
+  border:1px solid rgba(255,221,116,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+}
+body #root .mpp-page--result .mpp-result-ssr-badge b{
+  color:#ffe38b!important;
+}
+body #root .mpp-page--result .mpp-result-ssr-badge span{
+  color:#d5d8df!important;
+}
+body #root .mpp-page--result .mpp-result-job-hero::before{
+  width:min(66vw,250px)!important;
+  background:radial-gradient(circle,rgba(173,130,255,.17),rgba(255,221,119,.06) 45%,transparent 72%)!important;
+}
+body #root .mpp-page--result .mpp-result-job-character img{
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.46)) drop-shadow(0 0 18px rgba(255,223,130,.08))!important;
+}
+
+/* Result body: editorial sections rather than repeated teal cards. */
+body #root .mpp-result-v9{
+  position:relative;
+}
+body #root .mpp-v9-real,
+body #root .mpp-v9-gap,
+body #root .mpp-v9-weapon,
+body #root .mpp-v9-compare{
+  border:1px solid rgba(255,255,255,.075)!important;
+  background:rgba(18,24,35,.72)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.13)!important;
+  backdrop-filter:blur(8px);
+}
+body #root .mpp-v9-real{
+  background:linear-gradient(180deg,rgba(18,24,35,.82),rgba(16,22,32,.68))!important;
+}
+body #root .mpp-v9-truth{
+  border:1px solid rgba(255,218,101,.28)!important;
+  background:
+    linear-gradient(120deg,rgba(255,217,92,.115),rgba(160,123,255,.065)),
+    rgba(20,24,34,.78)!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.11)!important;
+}
+body #root .mpp-v9-gap{
+  background:
+    linear-gradient(135deg,rgba(115,201,255,.035),rgba(180,123,255,.035)),
+    rgba(18,23,34,.74)!important;
+}
+body #root .mpp-v9-weapon{
+  border-color:rgba(255,215,90,.16)!important;
+  background:
+    linear-gradient(145deg,rgba(255,215,90,.045),transparent 42%),
+    rgba(18,23,34,.76)!important;
+}
+body #root .mpp-v9-compare{
+  border-color:rgba(142,171,255,.16)!important;
+  background:
+    linear-gradient(145deg,rgba(117,142,255,.07),rgba(151,111,255,.035)),
+    rgba(17,22,34,.8)!important;
+}
+
+/* Section separators create a guided scroll rhythm. */
+body #root .mpp-result-v9 section:not(:first-child){
+  position:relative;
+}
+body #root .mpp-result-v9 section:not(:first-child)::before{
+  content:"";
+  position:absolute;
+  top:-13px;
+  left:50%;
+  width:38px;
+  height:1px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(255,219,103,.38),transparent);
+}
+body #root .mpp-v9-kicker{
+  color:#e6ca70!important;
+}
+body #root .mpp-v9-real h2,
+body #root .mpp-v9-weapon h2,
+body #root .mpp-v9-compare h2{
+  color:#fbfbfc!important;
+}
+
+/* Scenes: keep content open, not trapped inside tiles. */
+body #root .mpp-v9-scenes .mpp-v9-scene{
+  border-bottom-color:rgba(255,255,255,.065)!important;
+}
+body #root .mpp-v9-scenes .mpp-v9-scene blockquote{
+  border-left-color:rgba(255,215,90,.58)!important;
+  background:rgba(255,218,101,.045)!important;
+}
+
+/* Comparison cards use light contrast, not more dark rectangles. */
+body #root .mpp-v9-gap-grid article,
+body #root .mpp-v9-weapon-line article,
+body #root .mpp-v9-compare-grid article{
+  border-color:rgba(255,255,255,.055)!important;
+  background:rgba(255,255,255,.025)!important;
+}
+body #root .mpp-v9-compare-grid article:first-child{
+  border-color:rgba(255,219,106,.22)!important;
+  background:rgba(255,219,106,.05)!important;
+}
+
+/* Collapsed analysis and final action stay visually quieter. */
+body #root .mpp-analysis-details>summary{
+  border-color:rgba(255,255,255,.08)!important;
+  background:rgba(17,22,31,.64)!important;
+  backdrop-filter:blur(8px);
+}
+body #root .mpp-axis-v10{
+  border-color:rgba(255,255,255,.07)!important;
+  background:rgba(255,255,255,.02)!important;
+}
+body #root .mpp-one-action{
+  border:1px solid rgba(255,215,90,.17)!important;
+  background:
+    linear-gradient(115deg,rgba(255,215,90,.075),rgba(255,255,255,.015)),
+    rgba(16,21,30,.72)!important;
+}
+body #root .mpp-next-quest{
+  border:1px solid rgba(117,193,255,.15)!important;
+  background:
+    linear-gradient(120deg,rgba(109,158,255,.065),rgba(167,121,255,.04)),
+    rgba(16,21,31,.74)!important;
+}
+body #root .mpp-result-v4-chapter-label{
+  color:#bfc9d2!important;
+}
+body #root .mpp-page--result button.mpp-primary{
+  border-color:rgba(255,230,148,.75)!important;
+  background:linear-gradient(180deg,#f7d66c,#efb84a)!important;
+  color:#17191f!important;
+  box-shadow:0 12px 28px rgba(236,184,75,.14)!important;
+}
+body #root .mpp-page--result button.mpp-secondary{
+  border-color:rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:#f1f3f5!important;
+}
+
+/* Mobile: keep world visible around the content. */
+@media(max-width:430px){
+  body #root .mpp-page.mpp-page--result{
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+  body #root .mpp-page--result .mpp-result{
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+  body #root .mpp-page--result .mpp-result-ssr-card{
+    border-radius:26px!important;
+  }
+}
