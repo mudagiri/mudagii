@@ -2839,3 +2839,170 @@ html body #root .mpp17-page{
   .mpp17-share-art{height:182px!important}
   .mpp17-share-art .mpp-job-character{width:min(54vw,192px)!important}
 }
+
+
+/* ---------- V17.19 EDGE-FOIL STRUCTURAL RESET ----------
+   Make the reference direction unmistakable: clean bronze center, JOB motif in the
+   middle, prism facets concentrated around the outer foil perimeter. */
+.mpp17-profile{
+  background:
+    radial-gradient(circle at 50% 34%,
+      color-mix(in srgb,var(--mpp17-accent) 36%,rgba(190,121,42,.12)) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 16%,transparent) 26%,
+      transparent 48%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 34%,#402817) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 20%,#2a1c14) 30%,
+      color-mix(in srgb,var(--mpp17-accent) 11%,#171313) 69%,
+      #0b0b0d 100%)!important;
+  border:3px solid color-mix(in srgb,var(--mpp17-accent) 58%,#d9ae58)!important;
+  box-shadow:
+    0 28px 68px rgba(31,18,7,.35),
+    0 0 0 1px rgba(255,235,187,.10),
+    0 0 20px color-mix(in srgb,var(--mpp17-accent) 18%,transparent),
+    inset 0 0 36px rgba(182,105,35,.055)!important;
+}
+
+/* Center stays clean: V4 contains foil only at the perimeter. */
+.mpp17-holo-texture{
+  display:block!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  opacity:.94!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.28) contrast(1.08) brightness(1.05)!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+
+/* One realistic reflection pass across the card. */
+.mpp17-holo-foil{
+  opacity:.42!important;
+  background:
+    linear-gradient(108deg,
+      transparent 0 39%,
+      rgba(69,200,255,.02) 42%,
+      rgba(255,255,255,.19) 47%,
+      rgba(255,221,133,.07) 50%,
+      rgba(133,232,201,.03) 53%,
+      transparent 58% 100%)!important;
+  background-size:190% 100%!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+
+/* Double metallic frame like a real premium card. */
+.mpp17-card-edge{
+  inset:6px!important;
+  border:2px solid rgba(229,183,90,.86)!important;
+  border-radius:17px!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,245,213,.15),
+    inset 0 0 15px rgba(229,154,58,.07),
+    0 0 7px rgba(238,184,81,.16)!important;
+}
+.mpp17-card-edge::before{
+  top:7px!important;left:7px!important;
+  width:34px!important;height:34px!important;
+  border-top:3px solid #edc46f!important;
+  border-left:3px solid #edc46f!important;
+}
+.mpp17-card-edge::after{
+  right:7px!important;bottom:7px!important;
+  width:34px!important;height:34px!important;
+  border-right:3px solid #edc46f!important;
+  border-bottom:3px solid #edc46f!important;
+}
+
+/* Keep the central motif above the bronze stock but below foil reflections. */
+.mpp17-job-bg{
+  z-index:1!important;
+  opacity:1!important;
+  mix-blend-mode:screen!important;
+  -webkit-mask-image:linear-gradient(180deg,#000 0 74%,rgba(0,0,0,.82) 86%,transparent 100%)!important;
+  mask-image:linear-gradient(180deg,#000 0 74%,rgba(0,0,0,.82) 86%,transparent 100%)!important;
+}
+
+/* Reference look for hunter: warm web/reticle in the clean middle. */
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg{
+  background:
+    repeating-radial-gradient(circle at 50% 35%,
+      transparent 0 30px,
+      rgba(243,195,99,.30) 31px 32.5px,
+      transparent 33.5px 56px),
+    repeating-conic-gradient(from 0deg at 50% 35%,
+      rgba(245,199,106,.27) 0 .75deg,
+      transparent .75deg 22.5deg),
+    radial-gradient(circle at 50% 35%,rgba(225,142,46,.18) 0 18%,transparent 48%)!important;
+}
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg::before{
+  inset:17% 13% 42%!important;
+  border:1px solid rgba(247,204,117,.28)!important;
+  box-shadow:
+    0 0 0 25px rgba(241,179,72,.050),
+    0 0 0 51px rgba(241,179,72,.030)!important;
+}
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg::after{
+  opacity:.74!important;
+  background:linear-gradient(180deg,transparent,rgba(250,218,150,.42),transparent)!important;
+}
+
+/* Character is the hero; no wallpaper competing behind it. */
+.mpp17-profile .mpp17-portrait::before{
+  width:282px!important;
+  height:282px!important;
+  opacity:.50!important;
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 37px,
+      color-mix(in srgb,var(--mpp17-accent) 27%,rgba(238,196,115,.14)) 38px 39px,
+      transparent 40px 58px)!important;
+  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--mpp17-accent) 17%,transparent))!important;
+}
+.mpp17-profile .mpp17-portrait::after{opacity:.12!important}
+
+/* SHARE preview uses the exact same physical-card hierarchy. */
+.mpp17-share-preview{
+  border:3px solid color-mix(in srgb,var(--mpp17-accent) 56%,#d8ad58)!important;
+  background:
+    radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--mpp17-accent) 34%,rgba(190,121,42,.10)),transparent 43%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-accent) 32%,#3e2716) 0%,
+      color-mix(in srgb,var(--mpp17-accent) 18%,#281b14) 36%,
+      #0b0b0d 100%)!important;
+}
+.mpp17-share-holo{
+  opacity:.94!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.28) contrast(1.08) brightness(1.05)!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+.mpp17-share-glint{opacity:.38!important}
+.mpp17-share-art{height:202px!important}
+.mpp17-share-art .mpp-job-character{width:min(56vw,214px)!important}
+
+/* Keep every JOB distinct while sharing the same premium material system. */
+.mpp17-profile[data-job="FDM"],
+.mpp17-share-preview[data-job="FDM"]{--mpp17-metal:#d7b45c}
+.mpp17-profile[data-job="FDP"],
+.mpp17-share-preview[data-job="FDP"]{--mpp17-metal:#a8c76a}
+.mpp17-profile[data-job="FNM"],
+.mpp17-share-preview[data-job="FNM"]{--mpp17-metal:#8abbe8}
+.mpp17-profile[data-job="FNP"],
+.mpp17-share-preview[data-job="FNP"]{--mpp17-metal:#75cfc4}
+.mpp17-profile[data-job="IDM"],
+.mpp17-share-preview[data-job="IDM"]{--mpp17-metal:#d59b77}
+.mpp17-profile[data-job="IDP"],
+.mpp17-share-preview[data-job="IDP"]{--mpp17-metal:#d3a356}
+.mpp17-profile[data-job="INM"],
+.mpp17-share-preview[data-job="INM"]{--mpp17-metal:#a57de0}
+.mpp17-profile[data-job="INP"],
+.mpp17-share-preview[data-job="INP"]{--mpp17-metal:#83bde8}
+
+@media(max-width:390px){
+  .mpp17-share-art{height:194px!important}
+  .mpp17-share-art .mpp-job-character{width:min(57vw,205px)!important}
+}
