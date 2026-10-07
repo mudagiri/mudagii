@@ -2231,3 +2231,187 @@ html body #root .mpp17-page{
     background-position:42% 0,0 0!important;
   }
 }
+
+
+/* ---------- V17.15 JOB-SPECIFIC CARD BACKGROUNDS ----------
+   The background design itself now changes by JOB. Holo is only a finish layer. */
+.mpp17-job-bg{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  border-radius:20px!important;
+  opacity:.92;
+  mix-blend-mode:screen;
+}
+.mpp17-job-bg::before,
+.mpp17-job-bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* 01 FDM / 先回り司令官 — command rays + tactical chevrons */
+.mpp17-profile[data-job="FDM"] .mpp17-job-bg{
+  background:
+    radial-gradient(circle at 50% 32%,rgba(255,222,92,.18) 0 18%,transparent 38%),
+    repeating-conic-gradient(from -12deg at 50% 34%,
+      rgba(255,225,108,.12) 0 2deg,
+      transparent 2deg 18deg);
+}
+.mpp17-profile[data-job="FDM"] .mpp17-job-bg::after{
+  opacity:.34;
+  background:
+    repeating-linear-gradient(135deg,
+      transparent 0 26px,
+      rgba(255,230,135,.13) 26px 28px,
+      transparent 28px 52px);
+  mask-image:linear-gradient(180deg,#000 0 62%,transparent 92%);
+}
+
+/* 02 FDP / 節目軍師 — strategy grid + linked nodes */
+.mpp17-profile[data-job="FDP"] .mpp17-job-bg{
+  background:
+    linear-gradient(rgba(130,224,116,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(130,224,116,.08) 1px,transparent 1px),
+    radial-gradient(circle at 50% 34%,rgba(122,225,111,.16),transparent 38%);
+  background-size:34px 34px,34px 34px,100% 100%;
+}
+.mpp17-profile[data-job="FDP"] .mpp17-job-bg::after{
+  opacity:.48;
+  background:
+    radial-gradient(circle at 22% 29%,rgba(208,255,185,.8) 0 2px,transparent 3px),
+    radial-gradient(circle at 39% 42%,rgba(208,255,185,.72) 0 2px,transparent 3px),
+    radial-gradient(circle at 61% 27%,rgba(208,255,185,.75) 0 2px,transparent 3px),
+    radial-gradient(circle at 77% 45%,rgba(208,255,185,.65) 0 2px,transparent 3px),
+    linear-gradient(28deg,transparent 0 31%,rgba(190,248,169,.16) 31.3% 31.8%,transparent 32.1%);
+}
+
+/* 03 FNM / 兆しの占星術師 — constellation field */
+.mpp17-profile[data-job="FNM"] .mpp17-job-bg{
+  background:
+    radial-gradient(circle at 16% 22%,rgba(202,235,255,.9) 0 1px,transparent 2px),
+    radial-gradient(circle at 29% 39%,rgba(202,235,255,.72) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 43% 18%,rgba(202,235,255,.82) 0 1px,transparent 2px),
+    radial-gradient(circle at 61% 35%,rgba(202,235,255,.9) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 76% 20%,rgba(202,235,255,.68) 0 1px,transparent 2px),
+    radial-gradient(circle at 86% 42%,rgba(202,235,255,.8) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 50% 34%,rgba(104,190,255,.18),transparent 42%);
+}
+.mpp17-profile[data-job="FNM"] .mpp17-job-bg::after{
+  opacity:.42;
+  background:
+    linear-gradient(31deg,transparent 0 28%,rgba(164,219,255,.18) 28.3% 28.8%,transparent 29.2% 100%),
+    linear-gradient(-24deg,transparent 0 54%,rgba(164,219,255,.14) 54.3% 54.7%,transparent 55.1% 100%);
+  mask-image:linear-gradient(180deg,#000 0 58%,transparent 92%);
+}
+
+/* 04 FNP / ひらめき航海士 — layered wave lines */
+.mpp17-profile[data-job="FNP"] .mpp17-job-bg{
+  background:
+    radial-gradient(ellipse at 50% 30%,rgba(68,225,211,.18),transparent 38%),
+    repeating-radial-gradient(ellipse at 50% -6%,
+      transparent 0 38px,
+      rgba(91,236,222,.12) 39px 41px,
+      transparent 42px 64px);
+}
+.mpp17-profile[data-job="FNP"] .mpp17-job-bg::after{
+  opacity:.34;
+  background:
+    repeating-linear-gradient(165deg,
+      transparent 0 30px,
+      rgba(110,243,229,.11) 30px 32px,
+      transparent 32px 62px);
+}
+
+/* 05 IDM / メリハリ賢者 — concentric wisdom rings */
+.mpp17-profile[data-job="IDM"] .mpp17-job-bg{
+  background:
+    repeating-radial-gradient(circle at 50% 35%,
+      transparent 0 34px,
+      rgba(255,157,129,.11) 35px 37px,
+      transparent 38px 62px),
+    radial-gradient(circle at 50% 34%,rgba(241,132,103,.16),transparent 40%);
+}
+.mpp17-profile[data-job="IDM"] .mpp17-job-bg::after{
+  opacity:.34;
+  background:
+    repeating-conic-gradient(from 8deg at 50% 35%,
+      transparent 0 17deg,
+      rgba(255,187,163,.10) 17.5deg 18.5deg);
+}
+
+/* 06 IDP / 戦術ハンター — spider web + targeting reticle */
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg{
+  background:
+    repeating-radial-gradient(circle at 50% 34%,
+      transparent 0 33px,
+      rgba(230,199,121,.15) 34px 35.5px,
+      transparent 36.5px 61px),
+    repeating-conic-gradient(from 0deg at 50% 34%,
+      rgba(236,205,128,.16) 0 .8deg,
+      transparent .8deg 22.5deg),
+    radial-gradient(circle at 50% 34%,rgba(193,151,70,.17) 0 16%,transparent 43%);
+}
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg::before{
+  inset:19% 19% 48%;
+  border:1px solid rgba(240,212,145,.18);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 22px rgba(240,212,145,.035),
+    0 0 0 45px rgba(240,212,145,.025);
+}
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg::after{
+  left:50%;
+  top:20%;
+  width:1px;
+  height:31%;
+  inset:auto;
+  background:linear-gradient(180deg,transparent,rgba(245,217,150,.28),transparent);
+  box-shadow:
+    -88px 78px 0 rgba(245,217,150,.11),
+    88px 78px 0 rgba(245,217,150,.11);
+}
+
+/* 07 INM / 直感魔導士 — arcane seal */
+.mpp17-profile[data-job="INM"] .mpp17-job-bg{
+  background:
+    repeating-conic-gradient(from 9deg at 50% 34%,
+      rgba(191,130,255,.13) 0 1deg,
+      transparent 1deg 15deg),
+    repeating-radial-gradient(circle at 50% 34%,
+      transparent 0 39px,
+      rgba(190,129,255,.13) 40px 42px,
+      transparent 43px 68px),
+    radial-gradient(circle at 50% 34%,rgba(174,94,255,.17),transparent 41%);
+}
+.mpp17-profile[data-job="INM"] .mpp17-job-bg::after{
+  inset:15% 16% 48%;
+  border:1px solid rgba(215,174,255,.16);
+  transform:rotate(45deg);
+  opacity:.58;
+}
+
+/* 08 INP / 風読み剣士 — wind slashes */
+.mpp17-profile[data-job="INP"] .mpp17-job-bg{
+  background:
+    radial-gradient(ellipse at 48% 30%,rgba(104,210,255,.17),transparent 40%),
+    repeating-linear-gradient(154deg,
+      transparent 0 28px,
+      rgba(143,220,255,.12) 29px 31px,
+      transparent 32px 62px);
+}
+.mpp17-profile[data-job="INP"] .mpp17-job-bg::after{
+  opacity:.44;
+  background:
+    linear-gradient(163deg,transparent 0 24%,rgba(204,240,255,.16) 24.4% 25.3%,transparent 25.7% 100%),
+    linear-gradient(158deg,transparent 0 48%,rgba(204,240,255,.13) 48.3% 49%,transparent 49.4% 100%),
+    linear-gradient(168deg,transparent 0 68%,rgba(204,240,255,.11) 68.3% 69%,transparent 69.4% 100%);
+}
+
+/* Fade every JOB motif before the dense copy area. */
+.mpp17-job-bg{
+  mask-image:linear-gradient(180deg,#000 0 63%,rgba(0,0,0,.72) 72%,transparent 96%);
+}
