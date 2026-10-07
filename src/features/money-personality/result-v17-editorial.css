@@ -936,7 +936,7 @@ html body #root .mpp17-wrap{width:min(100%,500px)!important;padding:0 14px!impor
 }
 .mpp17-core h2{
   margin-top:6px!important;
-  font-size:20px!important;
+  font-size:22px!important;
   line-height:1.66!important;
 }
 
@@ -991,7 +991,7 @@ html body #root .mpp17-wrap{width:min(100%,500px)!important;padding:0 14px!impor
   .mpp17-profile .mpp17-portrait{height:190px!important;min-height:190px!important}
   .mpp17-profile .mpp17-portrait .mpp-job-character{width:min(60vw,210px)!important;max-height:188px!important}
   .mpp17-profile h1{font-size:31px!important}
-  .mpp17-profile .mpp17-hero{font-size:13.5px!important}
+  .mpp17-profile .mpp17-hero{font-size:16px!important}
 }
 
 
