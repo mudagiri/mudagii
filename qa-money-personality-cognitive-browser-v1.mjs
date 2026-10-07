@@ -19,6 +19,12 @@ await page.getByRole('button',{name:'意味が取りづらい'}).click();
 
 let answered=0;
 for(let guard=0;guard<80;guard++){
+  await page.waitForFunction(()=>Boolean(
+    document.querySelector('.mpp-result')||
+    document.querySelector('.mpp-separator-options button')||
+    document.querySelector('.mpp-scale button')||
+    document.querySelector('.mpp-answer-list button')
+  ),{timeout:2500}).catch(()=>{});
   const result=page.locator('.mpp-result');
   if(await result.count()&&await result.isVisible())break;
   const separator=page.locator('.mpp-separator-options button');
