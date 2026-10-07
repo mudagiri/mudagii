@@ -77,3 +77,52 @@
 .mpp-job-share-reticle::before{
   opacity:.45!important;
 }
+
+
+/* ---------- SHARE CARD V2.2 BRONZE REFERENCE ---------- */
+.mpp-job-share-card{
+  border-color:color-mix(in srgb,var(--job-accent) 56%,#d4a95b)!important;
+  background:
+    radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--job-accent) 31%,rgba(186,126,55,.10)),transparent 40%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--job-accent) 28%,#342313) 0%,
+      color-mix(in srgb,var(--job-accent) 16%,#201814) 38%,
+      #0b0b0d 100%)!important;
+  box-shadow:
+    0 22px 52px rgba(26,17,8,.30),
+    0 0 15px color-mix(in srgb,var(--job-accent) 18%,transparent),
+    inset 0 0 0 1px rgba(255,236,194,.075)!important
+}
+.mpp-job-share-diamond{
+  opacity:.80!important;
+  background-image:url('/assets/foils/v3/MUDAGIRI_DIAMOND_HOLO_V3.svg')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  filter:saturate(1.2) contrast(1.04) brightness(1.03)!important;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 42%,rgba(0,0,0,.30) 0 30%,rgba(0,0,0,.64) 52%,#000 76% 100%)!important;
+  mask-image:radial-gradient(ellipse at 50% 42%,rgba(0,0,0,.30) 0 30%,rgba(0,0,0,.64) 52%,#000 76% 100%)!important;
+  animation:none!important;
+}
+.mpp-job-share-edge{
+  inset:6px!important;
+  border:1.5px solid color-mix(in srgb,var(--job-accent) 46%,#f0c66f)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,244,215,.08),inset 0 0 18px rgba(207,137,52,.06),0 0 8px rgba(226,161,74,.09)!important
+}
+.mpp-job-share-jobbg{opacity:1!important}
+.mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{
+  background:
+    repeating-radial-gradient(circle at 50% 36%,transparent 0 31px,rgba(238,190,101,.22) 32px 33.5px,transparent 34.5px 57px),
+    repeating-conic-gradient(from 0deg at 50% 36%,rgba(240,194,105,.20) 0 .8deg,transparent .8deg 22.5deg),
+    radial-gradient(circle at 50% 36%,rgba(216,142,52,.15),transparent 46%)!important
+}
+.mpp-job-share-portrait{min-height:290px!important;margin:-2px auto -12px!important}
+.mpp-job-share-portrait .mpp-job-character--hero{
+  width:min(76vw,320px)!important;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px color-mix(in srgb,var(--job-accent) 20%,transparent))!important
+}
+.mpp-job-share-reticle{
+  width:min(75vw,312px)!important;
+  border-color:color-mix(in srgb,var(--job-accent) 58%,#e9cc91)!important;
+  box-shadow:0 0 0 28px color-mix(in srgb,var(--job-accent) 7%,transparent),0 0 0 56px color-mix(in srgb,var(--job-accent) 4%,transparent)!important
+}
