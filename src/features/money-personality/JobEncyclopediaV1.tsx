@@ -13,7 +13,7 @@ const STYLES:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
 export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unlocked:JobCode;primaryStyle:StyleId;onClose?:()=>void}){
   const mine=moneyTypeIdentity(unlocked,primaryStyle);
   return <section className="mpp-job-book" aria-label="32TYPE図鑑">
-    <header><div><small>8 JOB × 4 価値観 = 32 TYPE</small><h2>32TYPE図鑑</h2></div><span>MY TYPE · 1 / 32</span></header>
+    <header><div><small>8 JOB × 4 価値観 = 32 TYPE</small><h2>32TYPE図鑑</h2></div><span>あなた · 1 / 32</span></header>
     <div className="mpp-job-book-progress" aria-label="1 of 32 types"><i style={{width:'3.125%'}}/></div>
 
     <div className="mpp-job-book-rule">
@@ -26,7 +26,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       {STYLES.map(style=><span key={style} className={style===primaryStyle?'is-mine':''}><b>{STYLE_IDENTITY[style].code}</b>{STYLE_IDENTITY[style].label}</span>)}
     </div>
 
-    <p className="mpp-job-book-lead">キャラは8JOB。そこに4つの価値観が掛け合わさって32TYPEになります。自分のTYPEだけSSR点灯中。</p>
+    <p className="mpp-job-book-lead">キャラは8JOB。そこに4つの価値観が掛け合わさって32TYPEになります。自分のタイプだけハイライトしています。</p>
 
     <div className="mpp-job-book-grid">
       {ORDER.map(code=>{
@@ -37,7 +37,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
           <small>JOB {String(asset.jobNumber).padStart(2,'0')} · {code}</small>
           <b>{asset.name}</b>
           <span>{asset.animal}</span>
-          {isMyJob&&<em>YOUR JOB</em>}
+          {isMyJob&&<em>あなたのJOB</em>}
           <div className="mpp-job-book-typechips">
             {STYLES.map(style=>{
               const codeValue=moneyTypeCode(code,style);
