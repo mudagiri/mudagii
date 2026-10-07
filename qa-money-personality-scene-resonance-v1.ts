@@ -27,11 +27,10 @@ assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_R
 assert(!publicUi.includes('resultVividScenario(job,style)'),'PUBLIC_STILL_RENDERS_LEGACY_VIVID');
 assert(resultUi.includes('content.scenes.slice(0,3)'),'V9_PRIMARY_SCENES_NOT_THREE');
 assert(resultUi.includes('content.scenes.slice(3)'),'V9_EXTRA_SCENES_NOT_THREE');
-assert(resultUi.includes('ほかの場面も見る'),'V9_MORE_SCENES_MISSING');
-assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
-assert(resultUi.includes('友だちと比べる'),'V9_COMPARE_MISSING');
-assert(resultUi.includes("onShare('x')")&&resultUi.includes("onShare('instagram')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('line')"),'V15_SOCIAL_SHARE_TARGETS_MISSING');
 assert(resultUi.includes('ほかのあるあるも見る'),'V17_MORE_SCENES_MISSING');
+assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
+assert(resultUi.includes('同じ場面でも、タイプで違う'),'V17_COMPARE_MISSING');
+assert(resultUi.includes("onShare('x')")&&resultUi.includes("onShare('instagram')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('line')"),'V15_SOCIAL_SHARE_TARGETS_MISSING');
 assert(resultUi.includes('insight.compare.scene'),'V10_CONCRETE_COMPARE_NOT_WIRED');
 assert(resultUi.includes("import './result-v17-editorial.css'"),'V17_EDITORIAL_CSS_NOT_LOADED');
 assert(resultUi.includes('お金の感覚で見る'),'V17_VALUE_MATCH_MISSING');
