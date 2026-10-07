@@ -95,7 +95,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     <div className="mpp-result-v4-scrollcue">{typeCode}、どこまで自分っぽい？</div>
    </section>
 
-   <ResultV9 content={v9} insight={insight} primaryStyle={style} secondaryStyle={secondary} onShare={share}/>
+   <ResultV9 content={v9} insight={insight} onShare={share}/>
 
    <details className="mpp-analysis-details">
     <summary>診断の内訳を見る <small>3軸ステータス</small></summary>
