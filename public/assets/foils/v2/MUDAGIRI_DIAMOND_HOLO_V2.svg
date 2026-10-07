@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1120" viewBox="0 0 720 1120">
+<defs>
+  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#33d9ff" stop-opacity=".72"/>
+    <stop offset=".55" stop-color="#6b73ff" stop-opacity=".42"/>
+    <stop offset="1" stop-color="#cf55ff" stop-opacity=".10"/>
+  </linearGradient>
+  <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffe36a" stop-opacity=".76"/>
+    <stop offset=".5" stop-color="#ff9a43" stop-opacity=".38"/>
+    <stop offset="1" stop-color="#ff67af" stop-opacity=".08"/>
+  </linearGradient>
+  <linearGradient id="g3" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#59efb2" stop-opacity=".56"/>
+    <stop offset=".55" stop-color="#37d9f2" stop-opacity=".34"/>
+    <stop offset="1" stop-color="#8d6cff" stop-opacity=".10"/>
+  </linearGradient>
+  <linearGradient id="g4" x1="0" y1="0" x2="1" y2=".2">
+    <stop offset="0" stop-color="#ffffff" stop-opacity=".42"/>
+    <stop offset=".45" stop-color="#b9e9ff" stop-opacity=".20"/>
+    <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation=".35"/></filter>
+</defs>
+
+<!-- faint etched facets: mostly transparent so card stock remains dominant -->
+<g fill="none" stroke="#fff" stroke-opacity=".055" stroke-width="1">
+  <path d="M0 80L90 20l88 66-76 78zM178 86l95-58 83 78-90 76zM356 106l86-76 96 64-74 92zM538 94l90-56 92 74-92 82z"/>
+  <path d="M20 250l88-78 92 72-84 90zM200 244l88-62 88 74-82 82zM376 256l84-70 98 76-86 86zM558 262l80-68 82 72-74 88z"/>
+  <path d="M0 438l94-90 90 78-86 96zM184 426l92-86 94 92-94 88zM370 432l92-84 100 88-92 96zM562 436l84-82 74 84-64 96z"/>
+  <path d="M10 630l94-94 92 86-88 94zM196 622l92-90 92 96-88 96zM380 628l88-96 96 94-88 102zM564 626l82-90 74 92-68 96z"/>
+  <path d="M0 824l100-96 90 92-94 100zM190 820l94-92 96 96-92 96zM380 824l94-96 94 98-90 98zM568 828l78-100 74 92-66 106z"/>
+  <path d="M18 1010l86-82 94 78-86 94zM198 1006l92-84 92 86-86 94zM382 1012l88-86 96 82-90 98zM566 1014l80-84 74 78-66 102z"/>
+</g>
+
+<!-- sparse bright facets -->
+<g filter="url(#soft)">
+  <polygon points="31,83 90,20 102,164" fill="url(#g1)" opacity=".72"/>
+  <polygon points="273,28 356,106 266,182" fill="url(#g2)" opacity=".46"/>
+  <polygon points="538,94 628,38 628,194" fill="url(#g1)" opacity=".60"/>
+  <polygon points="108,172 200,244 116,334" fill="url(#g3)" opacity=".42"/>
+  <polygon points="288,182 376,256 294,338" fill="url(#g4)" opacity=".44"/>
+  <polygon points="558,262 646,194 646,354" fill="url(#g2)" opacity=".52"/>
+  <polygon points="94,348 184,426 98,522" fill="url(#g2)" opacity=".38"/>
+  <polygon points="370,432 462,348 470,532" fill="url(#g1)" opacity=".64"/>
+  <polygon points="562,436 656,354 656,534" fill="url(#g3)" opacity=".40"/>
+  <polygon points="104,536 196,622 108,716" fill="url(#g1)" opacity=".50"/>
+  <polygon points="380,628 468,532 476,728" fill="url(#g2)" opacity=".46"/>
+  <polygon points="564,626 652,536 652,724" fill="url(#g1)" opacity=".42"/>
+  <polygon points="100,728 190,820 96,920" fill="url(#g3)" opacity=".46"/>
+  <polygon points="284,728 380,824 288,920" fill="url(#g1)" opacity=".54"/>
+  <polygon points="568,828 646,728 654,926" fill="url(#g2)" opacity=".44"/>
+  <polygon points="104,928 198,1006 112,1100" fill="url(#g2)" opacity=".42"/>
+  <polygon points="470,926 566,1014 476,1110" fill="url(#g3)" opacity=".46"/>
+</g>
+
+<!-- small hot flashes -->
+<g fill="#fff">
+  <circle cx="91" cy="21" r="2.5" opacity=".82"/>
+  <circle cx="628" cy="38" r="2.2" opacity=".72"/>
+  <circle cx="462" cy="348" r="2.7" opacity=".75"/>
+  <circle cx="196" cy="622" r="2.1" opacity=".70"/>
+  <circle cx="568" cy="828" r="2.4" opacity=".74"/>
+</g>
+</svg>
