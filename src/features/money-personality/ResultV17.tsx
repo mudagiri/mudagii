@@ -44,7 +44,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
     <div className="mpp17-wrap">
 
       <section className="mpp17-profile" aria-label="あなたのお金タイプ">
-        <div className="mpp17-topline"><span>お金の性格診断</span><b>1 / 32</b></div>
+        <div className="mpp17-card-edge" aria-hidden="true"/>
+        <div className="mpp17-topline"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
         <div className="mpp17-code">{identity.code}</div>
         <div className="mpp17-portrait"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
         <div className="mpp17-type-label">あなたのお金タイプ</div>
@@ -52,6 +53,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span>を大事にするタイプ</div>
         <p className="mpp17-hero">{content.hero}</p>
         <div className="mpp17-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
+        <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
       </section>
 
       <section className="mpp17-recognition">
@@ -120,17 +122,17 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <button className="mpp17-button mpp17-button--dark" onClick={onOpenBook}>32タイプ図鑑を見る</button>
       </section>
 
-      <section className="mpp17-share">
+      <section className="mpp17-share" id="mpp17-share">
         <div className="mpp17-share-preview">
-          <div className="mpp17-share-head"><span>MY MONEY TYPE</span><b>{identity.code}</b></div>
+          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>{identity.code}</b></div>
           <JobCharacterCard jobCode={jobCode} variant="compact"/>
-          <div><small>私は</small><h2>{identity.compact}</h2><p>{content.hero}</p></div>
+          <div><small>私は</small><h2>{identity.compact}</h2><p>{content.hero}</p><div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div></div>
           <footer>ムダギリ｜お金の性格診断</footer>
         </div>
         <div className="mpp17-share-copy">
           <small>08 / SHARE</small>
-          <h2>「自分、こういうタイプらしい。」</h2>
-          <p>金額や収入は載せず、タイプと一言だけを共有します。</p>
+          <h2>このカードを、そのままシェア。</h2>
+          <p>上の診断結果カードと同じTYPE・一言・ハッシュタグを画像にします。金額や収入は載りません。</p>
         </div>
         <div className="mpp17-share-buttons">
           <button onClick={()=>onShare('x')}>𝕏</button>
