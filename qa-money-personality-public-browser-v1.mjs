@@ -214,6 +214,19 @@ await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 await screenshot('06-next-routes');
 const routesText=((await page.locator('.mpp-next-routes').textContent())||'').replace(/\s+/g,' ');
 if(!routesText.includes('SSR ACQUIRED')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
+if(!routesText.includes('32TYPE図鑑'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_CTA_MISSING:'+routesText);
+await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
+await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
+const typeBook=await page.evaluate(()=>({
+  jobs:document.querySelectorAll('.mpp-job-book-grid article').length,
+  typeChips:document.querySelectorAll('.mpp-job-book-typechips>div').length,
+  mine:document.querySelectorAll('.mpp-job-book-typechips>div.is-mine').length,
+  visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
+}));
+if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
+await screenshot('07-type-book-32');
+await page.getByRole('button',{name:'獲得画面に戻る'}).click();
+await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
