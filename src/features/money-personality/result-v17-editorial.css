@@ -1569,3 +1569,139 @@ html body #root .mpp17-page{
   .mpp17-compare,
   .mpp17-match{padding:16px 13px!important}
 }
+
+
+/* ---------- V17.9 HOLOGRAPHIC TYPE SYSTEM ----------
+   8 JOB colors define the base identity; 4 STYLE colors tint the hologram.
+   Secondary STYLE adds only a faint tertiary shift so all 32 combinations feel distinct. */
+.mpp17-profile{
+  background:
+    linear-gradient(118deg,
+      rgba(255,255,255,.07) 0 8%,
+      transparent 18% 38%,
+      color-mix(in srgb,var(--mpp17-style-accent) 8%,transparent) 46%,
+      transparent 58% 73%,
+      color-mix(in srgb,var(--mpp17-secondary-accent) 6%,transparent) 82%,
+      rgba(255,255,255,.025) 100%),
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--mpp17-accent) 46%,transparent),transparent 24%),
+    radial-gradient(circle at 72% 18%,color-mix(in srgb,var(--mpp17-style-accent) 20%,transparent),transparent 26%),
+    radial-gradient(circle at 24% 72%,color-mix(in srgb,var(--mpp17-secondary-accent) 12%,transparent),transparent 30%),
+    linear-gradient(155deg,#191a20 0%,#0b0d12 67%,#05070a 100%)!important;
+}
+
+/* Static prism layer: the card still looks rare in screenshots. */
+.mpp17-profile::after{
+  opacity:.28!important;
+  transform:none!important;
+  background:
+    linear-gradient(116deg,
+      transparent 0 16%,
+      color-mix(in srgb,var(--mpp17-accent) 16%,transparent) 26%,
+      color-mix(in srgb,var(--mpp17-style-accent) 22%,rgba(255,255,255,.06)) 36%,
+      rgba(255,255,255,.20) 46%,
+      color-mix(in srgb,var(--mpp17-secondary-accent) 16%,rgba(255,255,255,.04)) 55%,
+      color-mix(in srgb,var(--mpp17-accent) 12%,transparent) 64%,
+      transparent 76% 100%),
+    repeating-linear-gradient(
+      122deg,
+      transparent 0 20px,
+      rgba(255,255,255,.018) 20px 21px,
+      transparent 21px 42px
+    )!important;
+  mix-blend-mode:screen!important;
+}
+
+/* Job color owns the metal frame; style color appears as the inner spectral edge. */
+.mpp17-profile{
+  border-color:color-mix(in srgb,var(--mpp17-accent) 76%,#f7ddb0)!important;
+  box-shadow:
+    0 28px 68px rgba(28,21,11,.33),
+    0 0 18px color-mix(in srgb,var(--mpp17-accent) 38%,transparent),
+    0 0 46px color-mix(in srgb,var(--mpp17-style-accent) 16%,transparent),
+    inset 0 0 0 1px rgba(255,255,255,.12),
+    inset 0 0 34px color-mix(in srgb,var(--mpp17-style-accent) 7%,transparent)!important;
+}
+.mpp17-card-edge{
+  border-color:color-mix(in srgb,var(--mpp17-accent) 72%,#ffe8b3)!important;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb,var(--mpp17-accent) 22%,transparent),
+      transparent 26% 72%,
+      color-mix(in srgb,var(--mpp17-style-accent) 18%,transparent)) border-box!important;
+  box-shadow:
+    inset 0 0 20px color-mix(in srgb,var(--mpp17-style-accent) 17%,transparent),
+    0 0 14px color-mix(in srgb,var(--mpp17-accent) 26%,transparent)!important;
+}
+
+/* Character aura mixes JOB + STYLE instead of always reading gold. */
+.mpp17-profile .mpp17-portrait::before{
+  background:
+    radial-gradient(circle,
+      color-mix(in srgb,var(--mpp17-style-accent) 18%,rgba(255,255,255,.05)) 0 17%,
+      color-mix(in srgb,var(--mpp17-accent) 34%,transparent) 18% 31%,
+      transparent 42% 46%,
+      color-mix(in srgb,var(--mpp17-accent) 84%,#fff2bd) 47% 48.5%,
+      transparent 49.5% 55%,
+      color-mix(in srgb,var(--mpp17-style-accent) 48%,rgba(255,255,255,.18)) 56% 57%,
+      transparent 58%),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb,var(--mpp17-accent) 66%,var(--mpp17-style-accent)) 0 1.7deg,
+      transparent 1.7deg 11deg
+    )!important;
+  filter:
+    drop-shadow(0 0 12px color-mix(in srgb,var(--mpp17-accent) 52%,transparent))
+    drop-shadow(0 0 30px color-mix(in srgb,var(--mpp17-style-accent) 27%,transparent))
+    drop-shadow(0 0 54px color-mix(in srgb,var(--mpp17-secondary-accent) 10%,transparent))!important;
+}
+
+.mpp17-profile .mpp17-portrait .mpp-job-character{
+  filter:
+    drop-shadow(0 20px 24px rgba(0,0,0,.48))
+    drop-shadow(0 0 13px color-mix(in srgb,var(--mpp17-accent) 48%,transparent))
+    drop-shadow(0 0 28px color-mix(in srgb,var(--mpp17-style-accent) 23%,transparent))!important;
+}
+
+.mpp17-profile .mpp17-code::after{
+  border-color:color-mix(in srgb,var(--mpp17-style-accent) 64%,var(--mpp17-accent))!important;
+  color:color-mix(in srgb,var(--mpp17-style-accent) 38%,#fff)!important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--mpp17-style-accent) 24%,rgba(255,255,255,.09)),
+      color-mix(in srgb,var(--mpp17-accent) 10%,rgba(255,255,255,.02)))!important;
+  box-shadow:
+    0 0 12px color-mix(in srgb,var(--mpp17-style-accent) 22%,transparent),
+    inset 0 0 8px rgba(255,255,255,.08)!important;
+}
+
+/* A subtle spectrum glint across the TYPE title adds foil-card depth without reducing readability. */
+.mpp17-profile h1{
+  background:
+    linear-gradient(96deg,
+      #fff 0 44%,
+      color-mix(in srgb,var(--mpp17-accent) 42%,#fff) 55%,
+      color-mix(in srgb,var(--mpp17-style-accent) 34%,#fff) 66%,
+      #fff 82%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  color:transparent!important;
+  text-shadow:0 0 18px rgba(255,255,255,.06);
+}
+
+@keyframes mpp17-holo-shift{
+  0%{background-position:-120% 0,0 0}
+  100%{background-position:220% 0,0 0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-profile::after{
+    background-size:220% 100%,auto!important;
+    animation:mpp17-holo-shift 4.6s ease-in-out infinite alternate!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-profile::after{
+    animation:none!important;
+    background-position:48% 0,0 0!important;
+  }
+}
+
