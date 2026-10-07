@@ -78,7 +78,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
 
  const share=async()=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.hero,v9.scenes[0].hit]})};
- const axes=[['時間視野','FUTURE','IMMEDIATE'],['判断根拠','DELIBERATION','INTUITION'],['把握リズム','MONITORING','PERIODIC']] as const;
+ const axes=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
 
  return <main className="mpp-page mpp-page--guild mpp-page--result" data-scene="result" data-job={job} data-style={style} data-money-type={typeCode}>
   <section className="mpp-card mpp-result">
@@ -86,7 +86,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
    <section className="mpp-result-v4-hero mpp-result-ssr-card">
     <div className="mpp-result-ssr-badge"><b>SSR</b><span>TYPE UNLOCKED · 1 OF 32</span></div>
     <div className="mpp-kicker">お金の性格診断 / RESULT</div>
-    <div className="mpp-job-no">{typeCode} · JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</div>
+    <div className="mpp-result-type-code"><strong>{typeCode}</strong><span>JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</span></div>
     <div className="mpp-result-job-hero"><JobCharacterCard jobCode={job} variant="hero" className="mpp-result-job-character"/></div>
     <div className="mpp-result-label">あなたのお金タイプ</div>
     <h1>{identity.compact}</h1>
@@ -97,17 +97,17 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
    <ResultV9 content={v9} insight={insight} onShare={share}/>
 
    <details className="mpp-analysis-details">
-    <summary>診断の内訳を見る <small>3軸ステータス</small></summary>
+    <summary>診断の内訳を見る <small>3つの傾向</small></summary>
     <div className="mpp-axis-block">
-     <h2>あなたの3軸ステータス</h2>
+     <h2>3つの傾向を見てみる</h2>
      {axes.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return <div className="mpp-axis-v10" key={title}><header><b>{title}</b><small>{lean}</small></header><div className="mpp-axis-v10-labels"><span>{left}</span><span>{right}</span></div><div className="mpp-axis-v10-track" aria-label={`${title}: ${lean}`}><i style={{left:pos+'%'}}/></div></div>})}
     </div>
    </details>
 
-   <div className="mpp-one-action"><span>YOUR NEXT MOVE</span><b>{v9.nextMove}</b></div>
+   <div className="mpp-one-action"><span>次にやるなら、これ</span><b>{v9.nextMove}</b></div>
    <div className="mpp-result-v4-chapter-label">NEXT QUEST</div>
-   <div className="mpp-next-quest"><span>NEXT</span><b>このTYPEのまま、次の冒険へ。</b><p>TYPEカードは獲得済み。図鑑で比べるか、そのまま家計診断へ進めます。</p></div>
-   <button className="mpp-primary" onClick={()=>setHandoff('journey')}>次のクエストへ進む</button>
+   <div className="mpp-next-quest"><span>NEXT</span><b>次は、実際の家計を見てみよう。</b><p>お金タイプはもう分かった。次は、実際の支出を見ながら改善できるところを探します。</p></div>
+   <button className="mpp-primary" onClick={()=>setHandoff('journey')}>家計クエストへ進む</button>
    <button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
    {debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V10_RESONANCE'},null,2)}</pre>}
   </section>
