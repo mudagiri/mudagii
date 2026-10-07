@@ -54,6 +54,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <section className="mpp17-profile" aria-label="あなたのお金タイプ">
         <div className="mpp17-holo-foil" aria-hidden="true"/>
+        <img className="mpp17-holo-texture" src="./assets/foils/v1/MUDAGIRI_PRISM_HOLO_V1.svg" alt="" aria-hidden="true"/>
         <div className="mpp17-card-edge" aria-hidden="true"/>
         <div className="mpp17-topline"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
         <div className="mpp17-code">{identity.code}</div>
