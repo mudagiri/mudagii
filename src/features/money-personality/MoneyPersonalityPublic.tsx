@@ -12,6 +12,7 @@ import {moneyTypeCode} from './money-type-code-v1';
 import ResultJourneyV1 from './ResultJourneyV1';
 import ResultV9 from './ResultV9';
 import {resultV9For} from './resultV9Content';
+import {resultV10InsightFor} from './resultV10Insight';
 import JobCharacterCard from './JobCharacterCard';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -70,6 +71,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  const styleJa={DRIVE:'前進',ENJOY:'満足',SECURE:'安心',OPTIMIZE:'ムダなし'}[style];
  const typeCode=moneyTypeCode(job,style);
  const v9=resultV9For(job,style);
+ const insight=resultV10InsightFor(job,style);
 
  useEffect(()=>{if(handoff!=='result')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const page=document.querySelector<HTMLElement>('.mpp-page--result');const card=document.querySelector<HTMLElement>('.mpp-page--result .mpp-result');const nodes=[html,body,root,page,card].filter(Boolean) as HTMLElement[];const previous=nodes.map(el=>({el,cssText:el.style.cssText}));html.classList.add('mpp-result-active');body.classList.add('mpp-result-active');root?.classList.add('mpp-result-active');for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}for(const el of [page,card])if(el){el.style.setProperty('height','auto','important');el.style.setProperty('min-height',el===page?'100dvh':'0','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow','visible','important');el.style.setProperty('overflow-y','visible','important');el.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText});html.classList.remove('mpp-result-active');body.classList.remove('mpp-result-active');root?.classList.remove('mpp-result-active')}},[handoff]);
 
@@ -93,13 +95,13 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     <div className="mpp-result-v4-scrollcue">このTYPE、どこまで当たってる？</div>
    </section>
 
-   <ResultV9 content={v9} primaryStyle={style} secondaryStyle={secondary} onShare={share}/>
+   <ResultV9 content={v9} insight={insight} primaryStyle={style} secondaryStyle={secondary} onShare={share}/>
 
    <details className="mpp-analysis-details">
     <summary>診断の内訳を見る <small>3軸ステータス</small></summary>
     <div className="mpp-axis-block">
      <h2>あなたの3軸ステータス</h2>
-     {axes.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);return <div className="mpp-axis" key={title}><header><b>{title}</b></header><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[a]}</span><i><u style={{width:av+'%'}}/></i><strong>{av}</strong></div><div className="mpp-trait"><span>{FACTOR_PUBLIC_LABEL[b]}</span><i><u style={{width:bv+'%'}}/></i><strong>{bv}</strong></div></div>})}
+     {axes.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return <div className="mpp-axis-v10" key={title}><header><b>{title}</b><small>{lean}</small></header><div className="mpp-axis-v10-labels"><span>{left}</span><span>{right}</span></div><div className="mpp-axis-v10-track" aria-label={`${title}: ${lean}`}><i style={{left:pos+'%'}}/></div></div>})}
     </div>
    </details>
 
@@ -108,7 +110,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
    <div className="mpp-next-quest"><span>NEXT</span><b>このTYPEのまま、次の冒険へ。</b><p>TYPEカードは獲得済み。図鑑で比べるか、そのまま家計診断へ進めます。</p></div>
    <button className="mpp-primary" onClick={()=>setHandoff('journey')}>次のクエストへ進む</button>
    <button className="mpp-ghost" onClick={onRestart}>もう一度診断する</button>
-   {debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V9_HUMAN_FIRST'},null,2)}</pre>}
+   {debug&&<pre className="mpp-result-debug">{JSON.stringify({moneyType:typeCode,job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V10_RESONANCE'},null,2)}</pre>}
   </section>
  </main>
 }
