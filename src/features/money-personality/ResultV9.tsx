@@ -3,6 +3,7 @@ import type {StyleId} from './classifierV1';
 import type {V9TypeResult} from './resultV9Content';
 import type {ResultV10Insight} from './resultV10Insight';
 import './result-v9.css';
+import './result-v11-polish.css';
 
 type Props={
   content:V9TypeResult;
@@ -34,7 +35,7 @@ function SceneCard({scene,compact=false}:{scene:V9TypeResult['scenes'][number];c
   </article>;
 }
 
-export default function ResultV9({content,primaryStyle,secondaryStyle,onShare,insight}:Props){
+export default function ResultV9({content,onShare,insight}:Props){
   const primary=content.scenes.slice(0,3);
   const more=content.scenes.slice(3);
   return <div className="mpp-result-v9">
@@ -62,12 +63,6 @@ export default function ResultV9({content,primaryStyle,secondaryStyle,onShare,in
       </div>
     </section>
 
-    <section className="mpp-v9-share">
-      <small>友だちは何TYPE？</small>
-      <b>同じ場面で、どう決めるか比べてみる。</b>
-      <button className="mpp-secondary" onClick={onShare}>このTYPEカードをシェア</button>
-    </section>
-
     <section className="mpp-v9-weapon">
       <div className="mpp-v9-kicker">武器 → 暴走 → 戻し方</div>
       <h2>{insight.weapon.name}</h2>
@@ -86,18 +81,12 @@ export default function ResultV9({content,primaryStyle,secondaryStyle,onShare,in
         <article><small>あなた</small><b>{insight.compare.you}</b></article>
         <article><small>近いTYPEだと</small><b>{insight.compare.other}</b></article>
       </div>
-    </section>
-
-    <details className="mpp-v9-secondary">
-      <summary>同じTYPEの中の「あなたらしさ」も見る</summary>
-      <div>
-        <small>いちばん強い軸</small>
-        <b>{STYLE_JA[primaryStyle]}：「{STYLE_HOOK[primaryStyle]}」</b>
-        <small>次に出やすい軸</small>
-        <b>{STYLE_JA[secondaryStyle]}：「{STYLE_HOOK[secondaryStyle]}」も少し残りやすい</b>
-        <p>公開TYPEは変わりません。これは同じTYPEの中で出る細かい違いです。</p>
+      <div className="mpp-v9-compare-share">
+        <small>友だちは何TYPE？</small>
+        <b>同じ場面で比べると、違いがもっと分かりやすい。</b>
+        <button className="mpp-secondary" onClick={onShare}>TYPEカードをシェアする</button>
       </div>
-    </details>
+    </section>
 
   </div>;
 }
