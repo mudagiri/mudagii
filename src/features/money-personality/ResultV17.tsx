@@ -26,7 +26,7 @@ type Props={
 
 const JOB_ORDER:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
 
-function cleanTag(value:string){return '#'+value.replace(/[\s　]/g,'').replace(/[・/]/g,'');}
+function cleanTag(value:string){return '#'+value.replace(/\p{Extended_Pictographic}/gu,'').replace(/[\s　]/g,'').replace(/[・/]/g,'').replace(/^[#]+/,'');}
 
 export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,onOpenBook,onHousehold,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
