@@ -9,6 +9,7 @@ import {
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
 import {moneyTypeCode} from './money-type-code-v1';
+import {moneyTypeIdentity} from './money-type-identity-v1';
 import ResultJourneyV1 from './ResultJourneyV1';
 import ResultV9 from './ResultV9';
 import {resultV9For} from './resultV9Content';
@@ -68,8 +69,8 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
  const meta=STYLE_META[style];
- const styleJa={DRIVE:'前進',ENJOY:'満足',SECURE:'安心',OPTIMIZE:'ムダなし'}[style];
  const typeCode=moneyTypeCode(job,style);
+ const identity=moneyTypeIdentity(job,style);
  const v9=resultV9For(job,style);
  const insight=resultV10InsightFor(job,style);
 
@@ -88,11 +89,10 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
     <div className="mpp-kicker">お金の性格診断 / RESULT</div>
     <div className="mpp-job-no">{typeCode} · JOB {String(JOB_NUMBER[job]).padStart(2,'0')}</div>
     <div className="mpp-result-job-hero"><JobCharacterCard jobCode={job} variant="hero" className="mpp-result-job-character"/></div>
-    <div className="mpp-result-label">あなたのお金タイプ / JOB</div>
-    <h1>{evaluation.jobName}</h1>
+    <div className="mpp-result-label">あなたのお金タイプ</div>
+    <h1>{identity.compact}</h1>
     <p className="mpp-result-hero-line">{v9.hero}</p>
-    <div className="mpp-result-v4-styleline"><span>{meta.icon} 価値観：{styleJa}</span></div>
-    <div className="mpp-result-v4-scrollcue">このTYPE、どこまで当たってる？</div>
+    <div className="mpp-result-v4-scrollcue">{typeCode}、どこまで自分っぽい？</div>
    </section>
 
    <ResultV9 content={v9} insight={insight} primaryStyle={style} secondaryStyle={secondary} onShare={share}/>
