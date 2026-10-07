@@ -141,6 +141,14 @@ await page.waitForFunction(()=>{const img=document.querySelector('.mpp-result-jo
 await assertJobImageLoaded('.mpp-result-job-hero','result-hero');
 await page.waitForTimeout(1100);
 await screenshot('05-result-ssr-card');
+const moreScenes=page.locator('.mpp-v9-more');
+await moreScenes.locator('summary').click();
+await page.waitForTimeout(80);
+const visibleMore=await moreScenes.locator('.mpp-v9-more-list .mpp-v9-scene').evaluateAll(nodes=>nodes.filter(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return s.display!=='none'&&s.visibility!=='hidden'&&r.height>0}).length);
+if(visibleMore!==3)throw new Error('MONEY_PUBLIC_RESULT_V9_MORE_NOT_VISIBLE:'+visibleMore);
+await screenshot('05b-result-more-scenes');
+await moreScenes.locator('summary').click();
+await page.waitForTimeout(50);
 
 const resultV9Geometry=await page.evaluate(()=>{
   const hero=document.querySelector('.mpp-result-v4-hero');
