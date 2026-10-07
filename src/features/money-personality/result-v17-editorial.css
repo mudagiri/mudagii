@@ -1254,6 +1254,169 @@ html body #root .mpp17-page{
   padding-bottom:calc(20px + env(safe-area-inset-bottom))!important;
 }
 
+/* ---------- V17.7 RARE CARD REVEAL ----------
+   Real-device pass: keep the editorial page calm, but make the earned TYPE card feel collectible. */
+.mpp17-profile{
+  isolation:isolate!important;
+  border-color:color-mix(in srgb,var(--mpp17-accent) 38%,rgba(255,255,255,.16))!important;
+  box-shadow:
+    0 24px 56px rgba(28,23,16,.24),
+    0 0 30px color-mix(in srgb,var(--mpp17-accent) 14%,transparent),
+    inset 0 0 0 1px rgba(255,255,255,.045)!important;
+}
+.mpp17-card-edge{
+  display:block!important;
+  inset:5px!important;
+  z-index:4!important;
+  border-radius:18px!important;
+  border:1px solid color-mix(in srgb,var(--mpp17-accent) 34%,rgba(255,255,255,.12))!important;
+  box-shadow:
+    inset 0 0 18px color-mix(in srgb,var(--mpp17-accent) 8%,transparent),
+    0 0 10px color-mix(in srgb,var(--mpp17-accent) 8%,transparent)!important;
+  opacity:.9!important;
+}
+.mpp17-card-edge::before,
+.mpp17-card-edge::after{
+  content:"";
+  position:absolute;
+  width:18px;
+  height:18px;
+  pointer-events:none;
+  opacity:.9;
+}
+.mpp17-card-edge::before{
+  top:5px;
+  left:5px;
+  border-top:2px solid color-mix(in srgb,var(--mpp17-accent) 68%,#f3dca3);
+  border-left:2px solid color-mix(in srgb,var(--mpp17-accent) 68%,#f3dca3);
+}
+.mpp17-card-edge::after{
+  right:5px;
+  bottom:5px;
+  border-right:2px solid color-mix(in srgb,var(--mpp17-accent) 68%,#f3dca3);
+  border-bottom:2px solid color-mix(in srgb,var(--mpp17-accent) 68%,#f3dca3);
+}
+
+/* One-time foil sweep on reveal. */
+.mpp17-profile::after{
+  z-index:5!important;
+  opacity:0;
+  background:
+    linear-gradient(
+      112deg,
+      transparent 0 34%,
+      rgba(255,255,255,.03) 39%,
+      color-mix(in srgb,var(--mpp17-accent) 22%,rgba(255,255,255,.20)) 46%,
+      rgba(255,255,255,.17) 50%,
+      transparent 58% 100%
+    )!important;
+  transform:translateX(-72%);
+  mix-blend-mode:screen;
+}
+
+/* The job is summoned from a restrained rune/halo instead of simply sitting on black. */
+.mpp17-profile .mpp17-portrait{
+  isolation:isolate!important;
+  overflow:visible!important;
+}
+.mpp17-profile .mpp17-portrait::before{
+  z-index:0!important;
+  width:224px!important;
+  height:224px!important;
+  opacity:.9!important;
+  filter:
+    drop-shadow(0 0 12px color-mix(in srgb,var(--mpp17-accent) 22%,transparent))
+    drop-shadow(0 0 26px color-mix(in srgb,var(--mpp17-accent) 10%,transparent))!important;
+  background:
+    radial-gradient(circle,
+      color-mix(in srgb,var(--mpp17-accent) 18%,transparent) 0 23%,
+      transparent 42% 47%,
+      color-mix(in srgb,var(--mpp17-accent) 52%,rgba(255,255,255,.18)) 48% 49%,
+      transparent 50% 57%,
+      rgba(255,255,255,.09) 58% 59%,
+      transparent 60%),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb,var(--mpp17-accent) 34%,rgba(255,255,255,.10)) 0 1.2deg,
+      transparent 1.2deg 14deg
+    )!important;
+}
+.mpp17-profile .mpp17-portrait::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  width:238px;
+  height:176px;
+  pointer-events:none;
+  opacity:.68;
+  background:
+    radial-gradient(circle at 10% 52%,rgba(255,255,255,.78) 0 1px,transparent 2.2px),
+    radial-gradient(circle at 22% 18%,color-mix(in srgb,var(--mpp17-accent) 80%,#fff) 0 1.5px,transparent 2.8px),
+    radial-gradient(circle at 35% 74%,rgba(255,255,255,.62) 0 1px,transparent 2.4px),
+    radial-gradient(circle at 64% 14%,rgba(255,255,255,.70) 0 1px,transparent 2.5px),
+    radial-gradient(circle at 77% 68%,color-mix(in srgb,var(--mpp17-accent) 78%,#fff) 0 1.5px,transparent 2.8px),
+    radial-gradient(circle at 91% 38%,rgba(255,255,255,.65) 0 1px,transparent 2.4px);
+}
+.mpp17-profile .mpp17-portrait .mpp-job-character{
+  z-index:2!important;
+  filter:
+    drop-shadow(0 18px 22px rgba(0,0,0,.42))
+    drop-shadow(0 0 12px color-mix(in srgb,var(--mpp17-accent) 28%,transparent))
+    drop-shadow(0 0 28px color-mix(in srgb,var(--mpp17-accent) 12%,transparent))!important;
+}
+
+/* A quiet discovery badge gives the card an earned-state cue without leaking QA-only rarity copy. */
+.mpp17-profile .mpp17-code::after{
+  content:"✦ DISCOVERED";
+  display:inline-flex;
+  align-items:center;
+  margin-left:10px;
+  padding:3px 7px 2px;
+  transform:translateY(-2px);
+  border:1px solid color-mix(in srgb,var(--mpp17-accent) 52%,rgba(255,255,255,.18));
+  border-radius:999px;
+  color:color-mix(in srgb,var(--mpp17-accent) 58%,#fff);
+  background:color-mix(in srgb,var(--mpp17-accent) 11%,rgba(255,255,255,.025));
+  font-size:7px;
+  font-weight:950;
+  line-height:1.3;
+  letter-spacing:.12em;
+  vertical-align:middle;
+}
+
+@keyframes mpp17-card-reveal{
+  0%{opacity:0;transform:translateY(16px) scale(.972);filter:brightness(.72) saturate(.78)}
+  58%{opacity:1;transform:translateY(-2px) scale(1.006);filter:brightness(1.08) saturate(1.08)}
+  100%{opacity:1;transform:none;filter:none}
+}
+@keyframes mpp17-foil-sweep{
+  0%,18%{opacity:0;transform:translateX(-78%)}
+  34%{opacity:.8}
+  67%{opacity:.48}
+  100%{opacity:0;transform:translateX(78%)}
+}
+@keyframes mpp17-rune-turn{
+  from{transform:rotate(0deg) scale(.94)}
+  to{transform:rotate(360deg) scale(.94)}
+}
+@keyframes mpp17-spark-drift{
+  from{transform:translate3d(0,4px,0) scale(.96);opacity:.42}
+  to{transform:translate3d(0,-5px,0) scale(1.04);opacity:.78}
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-profile{animation:mpp17-card-reveal .72s cubic-bezier(.18,.82,.22,1) both}
+  .mpp17-profile::after{animation:mpp17-foil-sweep 1.25s .28s ease-out 1 both}
+  .mpp17-profile .mpp17-portrait::before{animation:mpp17-rune-turn 18s linear infinite}
+  .mpp17-profile .mpp17-portrait::after{animation:mpp17-spark-drift 2.8s ease-in-out infinite alternate}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-profile,
+  .mpp17-profile::after,
+  .mpp17-profile .mpp17-portrait::before,
+  .mpp17-profile .mpp17-portrait::after{animation:none!important}
+  .mpp17-profile::after{opacity:.12;transform:none}
+}
+
 @media(max-width:390px){
   .mpp17-recognition,
   .mpp17-gap,
