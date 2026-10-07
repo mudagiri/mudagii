@@ -20,10 +20,10 @@ export default function ResultJourneyV1({jobCode,primaryStyle,styleLabel,househo
  const saveClass=useCallback(()=>{try{localStorage.setItem(CLASS_KEY,jobCode)}catch{}},[jobCode]);
  const goHousehold=useCallback(()=>{saveClass();window.location.href=householdUrl},[saveClass,householdUrl]);
  const share=useCallback(async()=>{
-  setShareStatus('SSRカード画像を作成中…');
+  setShareStatus('タイプカード画像を作成中…');
   const result=await shareJobTypeImage({jobCode,primaryStyle,styleLabel});
-  if(result==='shared')setShareStatus('SSRカードを共有しました。');
-  else if(result==='downloaded')setShareStatus('この端末では画像共有が使えないため、SSRカード画像を保存しました。');
+  if(result==='shared')setShareStatus('タイプカードを共有しました。');
+  else if(result==='downloaded')setShareStatus('この端末では画像共有が使えないため、タイプカード画像を保存しました。');
   else setShareStatus('画像共有が使えないため、TYPE情報を共有しました。');
  },[jobCode,primaryStyle,styleLabel]);
  const addLine=useCallback(()=>{
@@ -32,7 +32,7 @@ export default function ResultJourneyV1({jobCode,primaryStyle,styleLabel,househo
   if(LINE_URL){window.location.href=LINE_URL;return}
   setStep('routes');
  },[jobCode,primaryStyle,saveClass,typeCode]);
- if(step==='share')return <main className="mpp-page mpp-page--guild"><section className="mpp-card"><div className="mpp-result-v4-chapter-label">MY TYPE CARD</div><JobShareCardV1 jobCode={jobCode} primaryStyle={primaryStyle} styleLabel={styleLabel} onShare={share}/>{shareStatus&&<p className="mpp-share-status" role="status" aria-live="polite">{shareStatus}</p>}<button className="mpp-secondary" onClick={()=>setStep('book')}>JOB図鑑を見る</button><button className="mpp-primary" onClick={()=>setStep('routes')}>次のクエストを選ぶ</button><button className="mpp-ghost" onClick={onBack}>診断結果に戻る</button></section></main>;
+ if(step==='share')return <main className="mpp-page mpp-page--guild"><section className="mpp-card"><div className="mpp-result-v4-chapter-label">MY TYPE CARD</div><JobShareCardV1 jobCode={jobCode} primaryStyle={primaryStyle} styleLabel={styleLabel} onShare={share}/>{shareStatus&&<p className="mpp-share-status" role="status" aria-live="polite">{shareStatus}</p>}<button className="mpp-secondary" onClick={()=>setStep('book')}>32タイプ図鑑を見る</button><button className="mpp-primary" onClick={()=>setStep('routes')}>次のクエストを選ぶ</button><button className="mpp-ghost" onClick={onBack}>診断結果に戻る</button></section></main>;
  if(step==='book')return <main className="mpp-page mpp-page--guild"><JobEncyclopediaV1 unlocked={jobCode} primaryStyle={primaryStyle} onClose={()=>setStep('routes')}/></main>;
  if(step==='line')return <LineBonusPreviewV1 jobCode={jobCode} onAddLine={addLine} onSkip={goHousehold}/>;
  return <main className="mpp-page mpp-page--guild"><section className="mpp-card"><ResultNextRoutesV1 jobCode={jobCode} primaryStyle={primaryStyle} onHousehold={goHousehold} onLine={()=>setStep('line')} onShare={()=>setStep('share')} onOpenBook={()=>setStep('book')}/><button className="mpp-ghost" onClick={onBack}>診断結果に戻る</button></section></main>;
