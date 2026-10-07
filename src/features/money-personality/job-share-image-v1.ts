@@ -175,7 +175,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   if(!ctx)throw new Error('canvas unavailable');
 
   const [foil,img]=await Promise.all([
-    loadImage('./assets/foils/v3/MUDAGIRI_DIAMOND_HOLO_V3.svg'),
+    loadImage('./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg'),
     loadImage(asset.file),
   ]);
 
