@@ -1238,6 +1238,22 @@ html body #root .mpp17-wrap{
   box-shadow:0 14px 30px rgba(48,38,24,.13)!important;
 }
 
+/* ---------- V17.6 DEVICE FINAL POLISH ----------
+   Real-device pass: cleaner Japanese wrapping and a tighter finish after NEXT QUEST. */
+.mpp17-next>h2{
+  word-break:auto-phrase;
+  text-wrap:pretty;
+}
+.mpp17-next{
+  margin-bottom:0!important;
+}
+html body #root .mpp17-wrap{
+  padding-bottom:6px!important;
+}
+html body #root .mpp17-page{
+  padding-bottom:calc(20px + env(safe-area-inset-bottom))!important;
+}
+
 @media(max-width:390px){
   .mpp17-recognition,
   .mpp17-gap,
