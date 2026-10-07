@@ -16,8 +16,8 @@ assert(RESULT_V9_TYPE_COUNT===32,`RESULT_V9_TYPE_COUNT_BAD:${RESULT_V9_TYPE_COUN
 assert(RESULT_V9_SCENE_COUNT===192,`RESULT_V9_SCENE_COUNT_BAD:${RESULT_V9_SCENE_COUNT}`);
 
 const publicUi=fs.readFileSync('./src/features/money-personality/MoneyPersonalityPublic.tsx','utf8');
-const resultUi=fs.readFileSync('./src/features/money-personality/ResultV9.tsx','utf8');
-assert(publicUi.includes("import ResultV9 from './ResultV9'"),'PUBLIC_RESULT_V9_NOT_WIRED');
+const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx','utf8');
+assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
 assert(publicUi.includes("resultV10InsightFor(job,style)"),'PUBLIC_RESULT_V10_INSIGHT_NOT_WIRED');
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
@@ -28,12 +28,12 @@ assert(resultUi.includes('ほかの場面も見る'),'V9_MORE_SCENES_MISSING');
 assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
 assert(resultUi.includes('友だちと比べる'),'V9_COMPARE_MISSING');
 assert(resultUi.includes("onShare('x')")&&resultUi.includes("onShare('instagram')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('line')"),'V15_SOCIAL_SHARE_TARGETS_MISSING');
-assert(resultUi.includes("compact?' mpp-v9-scene--compact':''"),'V10_MORE_SCENES_NOT_COMPACT');
+assert(resultUi.includes('ほかのあるあるも見る'),'V17_MORE_SCENES_MISSING');
 assert(resultUi.includes('insight.compare.scene'),'V10_CONCRETE_COMPARE_NOT_WIRED');
-assert(resultUi.includes("import './result-v16-clean.css'"),'V16_CLEAN_CSS_NOT_LOADED');
-assert(resultUi.includes('お金の価値観で見る相性'),'V15_VALUE_MATCH_MISSING');
-assert(resultUi.includes('32タイプ図鑑を見る'),'V15_TYPE_BOOK_CTA_MISSING');
-assert(!resultUi.includes('mpp-v9-secondary'),'V11_SECONDARY_SHOULD_NOT_BE_IN_MAIN_RESULT');
+assert(resultUi.includes("import './result-v17-editorial.css'"),'V17_EDITORIAL_CSS_NOT_LOADED');
+assert(resultUi.includes('お金の感覚で見る'),'V17_VALUE_MATCH_MISSING');
+assert(resultUi.includes('32タイプ図鑑を見る'),'V17_TYPE_BOOK_CTA_MISSING');
+assert(!resultUi.includes('SSR'),'V17_SSR_SHOULD_NOT_BE_IN_MAIN_RESULT');
 
 const heroes=new Set<string>();
 const truths=new Set<string>();
