@@ -2031,3 +2031,69 @@ html body #root .mpp17-page{
     animation:mpp17-foil-diffraction-strong 4.8s ease-in-out infinite alternate!important;
   }
 }
+
+
+/* ---------- V17.13 ASSET-BASED PRISM FOIL ----------
+   Android correction: use an actual transparent foil texture asset instead of relying
+   on CSS blend gradients as the primary hologram. */
+.mpp17-holo-foil{
+  opacity:.16!important;
+  background:none!important;
+  animation:none!important;
+}
+
+.mpp17-holo-texture{
+  position:absolute!important;
+  inset:-2%!important;
+  width:104%!important;
+  height:104%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  opacity:.82!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.38) contrast(1.08) brightness(1.07)!important;
+  transform:translate3d(0,0,0) scale(1.015);
+  transform-origin:center;
+}
+
+/* The actual content stays crisp over the foil texture. */
+.mpp17-profile > :not(.mpp17-holo-foil):not(.mpp17-holo-texture):not(.mpp17-card-edge){
+  position:relative;
+  z-index:3;
+}
+.mpp17-card-edge{z-index:4!important}
+
+/* Remove the old dominant pink-style cast from the character stage. */
+.mpp17-profile .mpp17-portrait{
+  background:
+    radial-gradient(circle at 50% 52%,
+      color-mix(in srgb,var(--mpp17-accent) 22%,transparent) 0 29%,
+      rgba(255,255,255,.025) 40%,
+      transparent 68%)!important;
+}
+
+@keyframes mpp17-texture-tilt{
+  0%{
+    transform:translate3d(-2.2%,-1.0%,0) scale(1.065) rotate(-.35deg);
+    filter:saturate(1.30) contrast(1.07) brightness(1.04) hue-rotate(-7deg);
+  }
+  48%{
+    transform:translate3d(1.6%,.6%,0) scale(1.075) rotate(.22deg);
+    filter:saturate(1.50) contrast(1.10) brightness(1.12) hue-rotate(7deg);
+  }
+  100%{
+    transform:translate3d(-.5%,1.5%,0) scale(1.07) rotate(-.12deg);
+    filter:saturate(1.36) contrast(1.08) brightness(1.06) hue-rotate(-3deg);
+  }
+}
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-holo-texture{
+    animation:mpp17-texture-tilt 5.6s ease-in-out infinite alternate!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-holo-texture{animation:none!important}
+}
