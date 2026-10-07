@@ -8,6 +8,7 @@ const FORBIDDEN=['浪費家','ズボラ','ケチ','衝動買い','何も考え�
 const VAGUE=['こっち','そっち','あっち','こちら','どっち'];
 const GENERIC=['今必要な理由','必要な理由は見えている','条件を確認して決める','何を優先して決める','選んでよかったと思えそう','今の自分は何を優先'];
 const ABSTRACT_SELF_TALK=['効く','価値','判断','優先','満足','安心ライン','現在地','配分','最適','前進'];
+const AUDIENCE_PRONOUNS=['俺','僕','私'];
 function assert(ok:unknown,msg:string):asserts ok{if(!ok)throw new Error(msg)}
 
 assert(RESULT_V9_TYPE_COUNT===32,`RESULT_V9_TYPE_COUNT_BAD:${RESULT_V9_TYPE_COUNT}`);
@@ -56,6 +57,7 @@ for(const job of JOBS){
       if(i<3){
         primaryVoices.add(s.voice);
         for(const word of ABSTRACT_SELF_TALK)assert(!s.voice.includes(word),`V9_PRIMARY_VOICE_TOO_DIAGNOSTIC:${job}-${style}:${i}:${word}:${s.voice}`);
+        for(const word of AUDIENCE_PRONOUNS)assert(!s.voice.includes(word),`V9_PRIMARY_VOICE_AUDIENCE_PRONOUN:${job}-${style}:${i}:${word}:${s.voice}`);
       }
     });
   }
@@ -83,4 +85,5 @@ console.log(JSON.stringify({
   vaguePointerGuard:true,
   genericTemplateGuard:true,
   rawSelfTalkGuard:true,
+  audienceNeutralSelfTalk:true,
 },null,2));
