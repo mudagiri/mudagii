@@ -199,7 +199,7 @@ if(!text.includes('同じ場面でも、考えることが違う'))throw new Err
 const resultStyleDetail=page.locator('.mpp17-style-detail');
 await resultStyleDetail.locator('summary').click();
 const expandedStyleText=(await resultStyleDetail.textContent())||'';
-if(!expandedStyleText.includes('詳しく見る')||!expandedStyleText.includes('このSTYLE'))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
+if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(できることを増やしたい|楽しいことに使いたい|あとで困りたくない|余計な出費はしたくない)/.test(expandedStyleText))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('なんでこのタイプになった？'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV17=await page.evaluate(()=>({
