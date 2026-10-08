@@ -94,6 +94,13 @@ let capturedSeparator=false;
 for(let guard=0;guard<80;guard++){
   const result=page.locator('.mpp17-page');
   if(await result.count()&&await result.isVisible())break;
+  if(await page.locator('.mpp-class-unlock').count()){
+    await page.getByRole('button',{name:'結果を見る'}).waitFor({state:'visible',timeout:10000});
+    await screenshot('05-ssr-job-unlock');
+    await page.getByRole('button',{name:'結果を見る'}).click();
+    await page.locator('.mpp17-page').waitFor({state:'visible',timeout:6000});
+    break;
+  }
 
   const debug=page.locator('.mpp-debug');
   const debugText=await debug.count()?await debug.innerText():'';
