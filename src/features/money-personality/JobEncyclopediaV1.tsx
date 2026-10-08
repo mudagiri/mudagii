@@ -5,6 +5,8 @@ import {moneyTypeCode} from './money-type-code-v1';
 import {moneyTypeIdentity,STYLE_IDENTITY} from './money-type-identity-v1';
 import {resultV9For} from './resultV9Content';
 import JobCharacterCard from './JobCharacterCard';
+import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
+import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './job-encyclopedia-v2.css';
 
 const ORDER:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
@@ -83,6 +85,8 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       </div>
       <div className="mpp-job-book-count"><strong>32</strong><span>TYPES</span></div>
     </header>
+
+    <div className="mpp-job-book-guide-talk"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.resultDialogue} alt="ムダギリくん"/><div><small>ムダギリくん</small><p>32タイプって聞くと多そうだけど、見るのは3つのクセと4つの本音だけ。すぐ分かるぞ。</p></div></div>
 
     <div className="mpp-job-book-mycard">
       <div><small>YOUR TYPE</small><b>{mine.code}</b></div>
