@@ -273,6 +273,19 @@ if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
+// X sharing must happen inside the user's click activation, and use the public intro URL.
+await page.evaluate(()=>{
+  window.__mudagiriShareProbe=null;
+  window.open=(url,target)=>{
+    window.__mudagiriShareProbe={url:String(url),target:String(target)};
+    return null;
+  };
+});
+await page.getByRole('button',{name:'𝕏 に文章で投稿'}).click();
+const shareProbe=await page.evaluate(()=>window.__mudagiriShareProbe);
+if(!shareProbe?.url?.startsWith('https://twitter.com/intent/tweet?text=')||shareProbe.target!=='_blank')throw new Error('MONEY_PUBLIC_X_SHARE_NOT_SYNCHRONOUS:'+JSON.stringify(shareProbe));
+const shareMessage=new URL(shareProbe.url).searchParams.get('text')||'';
+if(!shareMessage.includes('adaptive=money-type')||!shareMessage.includes('あなたは何タイプ？')||shareMessage.includes('resumeResult=')||shareMessage.includes('debug='))throw new Error('MONEY_PUBLIC_X_SHARE_URL_BAD:'+shareMessage);
 await page.getByRole('button',{name:'32タイプ図鑑を見る'}).click();
 await page.waitForURL(url=>new URL(url).searchParams.get('book')==='1',{timeout:5000});
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
