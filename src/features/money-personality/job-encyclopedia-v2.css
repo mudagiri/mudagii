@@ -678,7 +678,7 @@ body:has(.mpp-book-page),
 html:has(.mpp-book-page),
 body:has(.mpp-book-page){
   overflow:hidden!important;
-  touch-action:none!important;
+  touch-action:pan-y!important;
 }
 #root:has(.mpp-book-page){
   overflow:visible!important;
@@ -691,4 +691,27 @@ body:has(.mpp-book-page){
 .mpp-book-page button{
   touch-action:manipulation!important;
   pointer-events:auto!important;
+}
+
+
+/* ---------- ENCYCLOPEDIA V3.5 TOUCH PAN FIX ----------
+   Android real-device fix: ancestor touch-action:none blocks finger panning
+   even when the child itself has overflow-y:auto. */
+html:has(.mpp-book-page),
+body:has(.mpp-book-page),
+#root:has(.mpp-book-page){
+  touch-action:pan-y!important;
+}
+
+.mpp-book-page{
+  touch-action:pan-y!important;
+  overscroll-behavior-y:contain!important;
+}
+
+.mpp-book-page .mpp-job-book{
+  touch-action:pan-y!important;
+}
+
+.mpp-book-page button{
+  touch-action:manipulation!important;
 }
