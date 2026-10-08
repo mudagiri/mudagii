@@ -91,7 +91,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           </article>)}
         </div>
         <details className="mpp17-more" onToggle={event=>{if(event.currentTarget.open)onExplore('scenes')}}>
-          <summary><span className="mpp-disclosure-title">別の場面も見てみる <em>＋4</em></span><DisclosureCue/></summary>
+          <summary><span className="mpp-disclosure-title">ほかのあるあるも見る <em>＋4</em></span><DisclosureCue/></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
       </section>
