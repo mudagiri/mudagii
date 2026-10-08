@@ -46,7 +46,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
   const tags=content.scenes.slice(0,3).map(s=>cleanTag(s.label));
-  const more=content.scenes.slice(3);
+  const more=content.scenes.slice(2);
   const matches=[
     {label:'かなり近い',data:neighbors.close},
     {label:'似てる',data:neighbors.similar},
@@ -77,14 +77,14 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       <section className="mpp17-recognition">
         <header><span>01</span><div><small>まずは、あるある</small><h2>これ、やりがちじゃない？</h2></div></header>
         <div className="mpp17-scene-list">
-          {content.scenes.slice(0,3).map(scene=><article key={scene.label}>
+          {content.scenes.slice(0,2).map(scene=><article key={scene.label}>
             <small>{scene.label}</small>
             <blockquote>「{scene.voice}」</blockquote>
             <p>{scene.hit}</p>
           </article>)}
         </div>
         <details className="mpp17-more">
-          <summary>ほかのあるあるも見る <span>＋3</span></summary>
+          <summary>ほかのあるあるも見る <span>＋4</span></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
       </section>
@@ -107,7 +107,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <footer><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></footer>
         </div>
         <div className="mpp17-share-copy">
-          <small>08 / SHARE</small>
+          <small>SHARE / シェアカード</small>
           <h2>これ、友だちに見せたくない？</h2>
           <p>タイプとキャラだけが入った画像をシェアできるよ。収入や金額は出ません。</p>
         </div>
@@ -178,7 +178,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <MudagiriBeat line="友だちのも見てみ。たぶん全然違うぞ。" visual={PERSONALITY_SCENE_VISUALS.share}/>
       <section className="mpp17-book-preview">
-        <div className="mpp17-book-copy"><small>07 / 32タイプ図鑑</small><h2>友だちは、どのタイプ？</h2><p>3つのお金のクセで8つのJOBに分かれて、最後に4つのSTYLEがつきます。気になるタイプをのぞいてみよう。</p></div>
+        <div className="mpp17-book-copy"><small>TYPE BOOK / 32タイプ図鑑</small><h2>友だちは、どのタイプ？</h2><p>3つのお金のクセで8つのJOBに分かれて、最後に4つのSTYLEがつきます。気になるタイプをのぞいてみよう。</p></div>
         <div className="mpp17-mini-jobs" aria-hidden="true">
           {JOB_ORDER.map(code=><div key={code} className={code===jobCode?'is-you':''}><JobCharacterCard jobCode={code} variant="compact"/><span>{JOB_CHARACTER_ASSETS[code].name}</span></div>)}
         </div>
