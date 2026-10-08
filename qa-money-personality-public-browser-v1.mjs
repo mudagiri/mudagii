@@ -186,7 +186,8 @@ const resultV17Geometry=await page.evaluate(()=>{
 if(!resultV17Geometry.hero||!resultV17Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V17_MISSING:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.primarySceneCount!==3||resultV17Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
 if(!resultV17Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
-if(resultV17Geometry.socialButtons!==4)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.socialButtons!==3)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
+if(await page.locator('.mpp17-share-button--primary').count()!==1)throw new Error('MONEY_PUBLIC_NATIVE_IMAGE_SHARE_CTA_MISSING');
 if(resultV17Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.miniJobs!==8)throw new Error('MONEY_PUBLIC_RESULT_MINI_JOB_BOOK_BAD:'+JSON.stringify(resultV17Geometry));
 
