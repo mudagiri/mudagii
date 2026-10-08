@@ -217,7 +217,7 @@ const humanDesign=await page.evaluate(()=>{
     family:color(speech,'fontFamily')
   };
 });
-const channels=value=>(value.match(/[\\d.]+/g)||[]).map(Number);
+const channels=value=>(value.match(/[0-9.]+/g)||[]).map(Number);
 const bg=channels(humanDesign.panelBackground),panel=channels(humanDesign.panelText),speech=channels(humanDesign.speechText);
 if(bg.length<3||bg.slice(0,3).some(v=>v<230)||(bg[3]!==undefined&&bg[3]<.95)||panel.slice(0,3).some(v=>v>120)||speech.slice(0,3).some(v=>v>120))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_CONTRAST_BAD:'+JSON.stringify(humanDesign));
 if(humanDesign.descriptionSize<13||humanDesign.speechSize<13||humanDesign.sceneSize<13||!humanDesign.family.includes('Noto Sans JP'))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_TYPO_BAD:'+JSON.stringify(humanDesign));
