@@ -20,7 +20,7 @@ import './mudagiri-motion.css';
 import './personality-mudagiri.css';
 import './money-personality-polish-v3.css';
 import './money-personality-device-final-v6.css';
-import './money-result-v4.css';
+import './money-personality-optical-audit-v1.css';
 import './money-personality-human-design-v1.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
