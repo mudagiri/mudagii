@@ -37,9 +37,9 @@ assert(shareImageUi.includes('function publicShareUrl()')&&shareImageUi.includes
 assert(shareImageUi.indexOf("if(target==='x')")<shareImageUi.indexOf('const file=await createJobShareImage'),'TEXT_SHARING_NEEDLESS_CANVAS_RENDER');
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
 assert(!publicUi.includes('resultVividScenario(job,style)'),'PUBLIC_STILL_RENDERS_LEGACY_VIVID');
-assert(resultUi.includes('content.scenes.slice(0,3)'),'V9_PRIMARY_SCENES_NOT_THREE');
-assert(resultUi.includes('content.scenes.slice(3)'),'V9_EXTRA_SCENES_NOT_THREE');
-assert(resultUi.includes('ほかのあるあるも見る'),'V17_MORE_SCENES_MISSING');
+assert(resultUi.includes('content.scenes.slice(0,2)'),'V9_PRIMARY_SCENES_NOT_TWO');
+assert(resultUi.includes('content.scenes.slice(2)'),'V9_EXTRA_SCENES_NOT_FOUR');
+assert(resultUi.includes('ほかのあるあるも見る')&&resultUi.includes('＋4'),'V17_MORE_SCENES_MISSING');
 assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
 assert(resultUi.includes('同じ場面でも、考えることが違う'),'V17_COMPARE_MISSING');
 assert(resultUi.includes("onShare('native')")&&resultUi.includes("onShare('x')")&&resultUi.includes("onShare('line')"),'V17_IMAGE_AND_TEXT_SHARE_TARGETS_MISSING');
