@@ -23,6 +23,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
   const mine=moneyTypeIdentity(unlocked,primaryStyle);
   const [selected,setSelected]=useState<SelectedType|null>(null);
   const [activeStyle,setActiveStyle]=useState<StyleId>(primaryStyle);
+  const [expandedStyle,setExpandedStyle]=useState<StyleId|null>(null);
   const topRef=useRef<HTMLElement|null>(null);
   const surfaceRef=useRef<HTMLDivElement|null>(null);
   const touchYRef=useRef<number|null>(null);
@@ -113,12 +114,18 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       <p>同じJOBでも、最後に大事にしたいことは人それぞれ。</p>
     </div>
     <div className="mpp-job-book-style-key" aria-label="4つのお金の価値観">
-      {STYLES.map(style=><button key={style} type="button" className={style===activeStyle?'is-active':''} onClick={()=>setActiveStyle(style)} aria-pressed={style===activeStyle}>
-        <b>{STYLE_IDENTITY[style].code} · {STYLE_IDENTITY[style].label}</b>
-        <span>{STYLE_IDENTITY[style].voice}</span>
+      {STYLES.map(style=><button key={style} type="button" className={style===activeStyle?'is-active':''} onClick={()=>{setActiveStyle(style);setExpandedStyle(expandedStyle===style?null:style)}} aria-pressed={style===activeStyle} aria-expanded={expandedStyle===style}>
+        <b>{STYLE_IDENTITY[style].label}</b>
+        <span>{STYLE_IDENTITY[style].short}</span>
       </button>)}
     </div>
-    <p className="mpp-job-book-style-hint">今は <b>{STYLE_IDENTITY[activeStyle].label}</b> を選択中。JOBをタップすると、その組み合わせの特徴が見られます。</p>
+    {expandedStyle&&<div className="mpp-job-book-style-explain" aria-live="polite">
+      <div className="mpp-job-book-style-explain-head"><strong>{STYLE_IDENTITY[expandedStyle].label}</strong><span>{STYLE_IDENTITY[expandedStyle].short}</span></div>
+      <p>{STYLE_IDENTITY[expandedStyle].description}</p>
+      <blockquote>「{STYLE_IDENTITY[expandedStyle].example}」</blockquote>
+      <button type="button" onClick={()=>setExpandedStyle(null)}>説明を閉じる</button>
+    </div>}
+    <p className="mpp-job-book-style-hint">今は <b>{STYLE_IDENTITY[activeStyle].label}</b> を選択中。上のSTYLEをタップすると詳しい意味が見られます。JOBをタップすると組み合わせの特徴が見られます。</p>
 
     <div className="mpp-job-book-grid">
       {ORDER.map(code=>{
@@ -142,7 +149,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
             {STYLES.map(style=>{
               const codeValue=moneyTypeCode(code,style);
               const isMine=code===unlocked&&style===primaryStyle;
-              return <button key={style} type="button" className={[isMine?'is-mine':'',style===activeStyle?'is-active':''].filter(Boolean).join(' ')} onClick={()=>{setActiveStyle(style);openType(code,style)}} aria-label={codeValue+' '+STYLE_IDENTITY[style].label+'の詳細を見る'}>
+              return <button key={style} type="button" className={[isMine?'is-mine':'',style===activeStyle?'is-active':''].filter(Boolean).join(' ')} onClick={()=>{setActiveStyle(style);setExpandedStyle(null);openType(code,style)}} aria-label={codeValue+' '+STYLE_IDENTITY[style].label+'の詳細を見る'}>
                 <strong>{codeValue}</strong>
                 <small>{STYLE_IDENTITY[style].label}</small>
               </button>;
@@ -154,7 +161,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
 
     <div className="mpp-job-book-howto">
       <b>TYPEコードはこう読む</b>
-      <p>最初の3文字が「いつものお金のクセ」、最後の1文字が「使う時に大事にしたいこと」。たとえば IDP-E なら、戦術ハンター × 楽しさ。</p>
+      <p>最初の3文字が「いつものお金のクセ」、最後の1文字が「お金を使う時に大事にしたいこと」。たとえば IDP-E なら、戦術ハンター × ENJOY。</p>
     </div>
 
     <p className="mpp-job-book-social">#ムダギリ診断　#お金の性格診断</p>
@@ -172,7 +179,12 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
 
         <small className="mpp-job-book-detail-label">お金の性格TYPE</small>
         <h3>{detail.identity.jobName}</h3>
-        <div className="mpp-job-book-detail-style"><b>{detail.identity.styleLabel}</b><span>{STYLE_IDENTITY[selected!.style].voice}</span></div>
+        <div className="mpp-job-book-detail-style"><b>{detail.identity.styleLabel}</b><span>{STYLE_IDENTITY[selected!.style].short}</span></div>
+        <details className="mpp-job-book-detail-style-more">
+          <summary>このSTYLEの意味を見る</summary>
+          <p>{STYLE_IDENTITY[selected!.style].description}</p>
+          <blockquote>「{STYLE_IDENTITY[selected!.style].example}」</blockquote>
+        </details>
         <p className="mpp-job-book-detail-hero">{detail.result.hero}</p>
 
         <div className="mpp-job-book-detail-scenes">
