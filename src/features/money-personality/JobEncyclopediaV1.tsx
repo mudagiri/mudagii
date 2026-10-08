@@ -139,6 +139,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
               <b>{asset.name}</b>
               <span>{asset.animal}</span>
               <p className="mpp-job-book-motif">{asset.motifReason}</p>
+              <span className="mpp-job-open-hint">詳細を見る ›</span>
             </div>
             <i aria-hidden="true">›</i>
           </button>
