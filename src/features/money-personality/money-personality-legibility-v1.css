@@ -187,6 +187,17 @@ html body #root .mpp-job-book .mpp-disclosure-state{
   letter-spacing:0!important;
   transform:none!important;
 }
+/* Explicitly override old STYLE summary span colors inside the dark cue. */
+html body #root .mpp17-page details .mpp-disclosure-state,
+html body #root .mpp17-page details .mpp-disclosure-state span,
+html body #root .mpp17-page details .mpp-disclosure-state b,
+html body #root .mpp-job-book details .mpp-disclosure-state,
+html body #root .mpp-job-book details .mpp-disclosure-state span,
+html body #root .mpp-job-book details .mpp-disclosure-state b{
+  color:#fffaf0!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#fffaf0!important;
+}
 html body #root .mpp17-page .mpp-disclosure-state b,
 html body #root .mpp-job-book .mpp-disclosure-state b{
   margin-left:3px;
