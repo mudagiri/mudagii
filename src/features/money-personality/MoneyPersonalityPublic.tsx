@@ -4,11 +4,12 @@ import {itemById,type PilotItem} from './pilotLogic';
 import {evaluateMoneyPersonality,type JobCode,type SeparatorAnswers,type StyleId,type TraitAnswers} from './classifierV1';
 import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type SeparatorId} from './separatorDataV1';
 import {
-  buildCoreTraitSideMap,buildPublicCoreOrder,displayScore,FACTOR_PUBLIC_LABEL,getOrCreatePublicParticipantId,
+  buildCoreTraitSideMap,buildPublicCoreOrder,getOrCreatePublicParticipantId,
   newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,
 } from './publicFlowV1';
 import ResultV17 from './ResultV17';
+import {buildResultAxisRows,buildResultBalanceNote} from './resultAxisPresentationV1';
 import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
 import {resultV9For} from './resultV9Content';
 import {resultV10InsightFor} from './resultV10Insight';
@@ -161,8 +162,8 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    if(target==='instagram')setShareStatus(result==='downloaded'?'画像を保存したよ。Instagramでストーリーや投稿に添付してね。':result==='cancelled'?'保存をキャンセルしました。':'画像の保存に失敗しました。');
   }catch{setShareStatus('共有に失敗しました。もう一度試してね。')}
  };
- const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
- const axes=axisDefs.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return {title,left,right,lean,pos}});
+ const axes=buildResultAxisRows(evaluation);
+ const balanceNote=buildResultBalanceNote(evaluation);
 
  return <>
   <ResultV17
@@ -172,6 +173,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    primaryStyle={style}
    secondaryStyle={secondary}
    axes={axes}
+    balanceNote={balanceNote}
    onShare={share}
    shareStatus={shareStatus}
    onExplore={kind=>recordMoneyTypeFunnel(kind==='scenes'?'scenes_expanded':'style_expanded',sessionId)}
