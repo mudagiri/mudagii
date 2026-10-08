@@ -35,11 +35,17 @@ const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
   'type_book_opened','household_cta_clicked',
 ];
 
+// Count milestones only once per session; keep share attempts as repeatable actions.
+const SINGLE_SESSION_MILESTONES=new Set<MoneyTypeFunnelEvent>([
+  'intro_started','ssr_claimed','result_seen',
+]);
+
 export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:string,target?:'native'|'x'|'line'){
   if(!sessionId||!VALID_EVENTS.includes(event))return;
   try{
     const parsed=JSON.parse(localStorage.getItem(MONEY_TYPE_FUNNEL_KEY)||'[]') as unknown;
     const list=Array.isArray(parsed)?parsed.filter(x=>x&&typeof x==='object'&&x.version===MONEY_TYPE_FUNNEL_VERSION&&typeof x.sessionId==='string'&&VALID_EVENTS.includes(x.event)):[] as MoneyTypeFunnelEntry[];
+    if(SINGLE_SESSION_MILESTONES.has(event)&&list.some(x=>x.sessionId===sessionId&&x.event===event))return;
     const entry:MoneyTypeFunnelEntry={
       version:MONEY_TYPE_FUNNEL_VERSION,sessionId,event,at:new Date().toISOString(),
       ...(target?{target}:{}),
