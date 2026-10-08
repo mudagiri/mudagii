@@ -17,6 +17,7 @@ export type MoneyTypeFunnelEvent=
   |'share_image_downloaded'
   |'share_text_handoff'
   |'share_cancelled'
+  |'line_bonus_preview_opened'
   |'type_book_opened'
   |'household_cta_clicked';
 
@@ -32,7 +33,7 @@ const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
   'intro_started','intro_resumed','ssr_claimed','result_seen',
   'scenes_expanded','style_expanded','share_attempt',
   'share_native_sheet_resolved','share_image_downloaded','share_text_handoff','share_cancelled',
-  'type_book_opened','household_cta_clicked',
+  'line_bonus_preview_opened','type_book_opened','household_cta_clicked',
 ];
 
 // Count milestones only once per session; keep share attempts as repeatable actions.
