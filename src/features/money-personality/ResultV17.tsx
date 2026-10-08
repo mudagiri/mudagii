@@ -23,6 +23,7 @@ type Props={
   axes:AxisRow[];
   onShare:(target:ShareTarget)=>void;
   shareStatus:string;
+  onExplore:(kind:'scenes'|'style')=>void;
   onOpenBook:()=>void;
   onHousehold:()=>void;
   onRestart:()=>void;
@@ -41,7 +42,7 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
   return <div className="mpp17-mudagiri-beat"><MoneyPersonalityMudagiri visual={visual} alt="ムダギリくん"/><div className="mpp17-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div></div>;
 }
 
-export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onOpenBook,onHousehold,onRestart}:Props){
+export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
@@ -83,7 +84,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
             <p>{scene.hit}</p>
           </article>)}
         </div>
-        <details className="mpp17-more">
+        <details className="mpp17-more" onToggle={event=>{if(event.currentTarget.open)onExplore('scenes')}}>
           <summary>ほかのあるあるも見る <span>＋4</span></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
@@ -120,7 +121,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         {shareStatus&&<p className="mpp17-share-status" role="status" aria-live="polite">{shareStatus}</p>}
       </section>
 
-      <details className="mpp17-style-detail">
+      <details className="mpp17-style-detail" onToggle={event=>{if(event.currentTarget.open)onExplore('style')}}>
         <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span aria-hidden="true">＋</span></summary>
         <div className="mpp17-style-detail-body">
           <b>{STYLE_IDENTITY[primaryStyle].short}</b>
