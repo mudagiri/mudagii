@@ -1,0 +1,93 @@
+name: Deploy Money Personality Hidden Preview Direct
+
+on:
+  push:
+    branches: ["feature/money-personality-pilot"]
+    paths:
+      - "src/features/money-personality/**"
+      - "qa-money-personality-*.mjs"
+      - "qa-money-personality-*.ts"
+      - "scripts/prepare-money-personality-preview-og.mjs"
+      - ".github/workflows/deploy-money-personality-hidden-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-money-preview-direct-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout production main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-site
+
+      - name: Checkout pilot branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/money-personality-pilot
+          path: pilot-site
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            main-site/package-lock.json
+            pilot-site/package-lock.json
+
+      - name: Build current production root
+        working-directory: main-site
+        env:
+          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build pilot candidate
+        working-directory: pilot-site
+        env:
+          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: |
+          npm ci
+          npm run build
+          npm run qa:money-pilot
+
+      - name: Assemble production root + hidden pilot preview
+        run: |
+          mkdir -p site
+          cp -R main-site/dist/. site/
+          mkdir -p site/pilot/money-type
+          cp -R pilot-site/dist/. site/pilot/money-type/
+          git -C pilot-site rev-parse HEAD > site/pilot/money-type/REVISION_SHA.txt
+          node pilot-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/money-type/index.html
+          test -f site/index.html
+          test -f site/pilot/money-type/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          name: github-pages-money-preview-direct-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ./site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy production root with hidden pilot preview
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-money-preview-${{ github.run_id }}-${{ github.run_attempt }}
