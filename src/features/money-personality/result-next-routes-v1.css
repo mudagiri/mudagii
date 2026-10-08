@@ -1,1 +1,38 @@
 .mpp-next-routes{--job-accent:#f4c95d;margin:26px 0 6px;padding:22px 16px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--job-accent) 8%,transparent),transparent 38%),rgba(5,11,24,.62);text-align:left}.mpp-next-routes-kicker{font-size:9px;font-weight:900;letter-spacing:.18em;color:var(--job-accent)}.mpp-next-routes h2{margin:5px 0 6px;font-size:clamp(22px,6.8vw,30px);line-height:1.2}.mpp-next-routes h2 span{opacity:.72}.mpp-next-routes-lead{margin:0 0 15px;font-size:12px;line-height:1.75;opacity:.72}.mpp-next-routes-social{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.mpp-social-action{min-width:0;padding:13px 11px;border:1px solid rgba(255,255,255,.11);border-radius:15px;background:rgba(255,255,255,.035);color:#fff;text-align:left;cursor:pointer}.mpp-social-action--share{border-color:color-mix(in srgb,var(--job-accent) 32%,rgba(255,255,255,.12));background:color-mix(in srgb,var(--job-accent) 7%,rgba(255,255,255,.035))}.mpp-social-action small{display:block;margin-bottom:4px;font-size:7px;font-weight:900;letter-spacing:.14em;opacity:.55}.mpp-social-action b{display:block;font-size:13px;line-height:1.35}.mpp-social-action span{display:block;margin-top:5px;font-size:9px;line-height:1.45;opacity:.58}.mpp-next-routes-divider{display:flex;align-items:center;gap:9px;margin:17px 0 4px;color:rgba(255,255,255,.42);font-size:8px;font-weight:900;letter-spacing:.16em}.mpp-next-routes-divider:before,.mpp-next-routes-divider:after{content:"";height:1px;flex:1;background:rgba(255,255,255,.09)}.mpp-route-card{position:relative;display:block;width:100%;margin:10px 0 0;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.045);color:#fff;text-align:left;cursor:pointer}.mpp-route-card small{display:block;margin-bottom:4px;font-size:8px;font-weight:900;letter-spacing:.16em;opacity:.6}.mpp-route-card b{display:block;padding-right:62px;font-size:17px;line-height:1.35}.mpp-route-card p{margin:6px 0 9px;font-size:11px;line-height:1.65;opacity:.66}.mpp-route-card em{font-size:11px;font-style:normal;font-weight:900;color:var(--job-accent)}.mpp-route-card--quest{border-color:color-mix(in srgb,var(--job-accent) 42%,rgba(255,255,255,.12));background:linear-gradient(135deg,color-mix(in srgb,var(--job-accent) 10%,rgba(255,255,255,.04)),rgba(255,255,255,.035))}.mpp-route-badge,.mpp-route-gift{position:absolute;right:12px;top:12px;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:1000}.mpp-route-badge{background:var(--job-accent);color:#07101f}.mpp-route-gift{border:1px solid rgba(91,211,127,.32);background:rgba(91,211,127,.1);color:#8be7a4}.mpp-route-card--line em{color:#8be7a4}.mpp-next-routes-bonus{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin:12px 0 0;font-size:9px;opacity:.68}.mpp-next-routes-bonus strong{width:100%;text-align:center;color:#8be7a4}.mpp-next-routes-bonus i{width:3px;height:3px;border-radius:50%;background:currentColor}@media(max-width:390px){.mpp-next-routes{padding-inline:13px}.mpp-next-routes-social{grid-template-columns:1fr}.mpp-route-card b{padding-right:0;margin-top:20px}.mpp-route-badge,.mpp-route-gift{left:12px;right:auto}}
+
+.mpp-next-routes-mudagiri{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr);
+  align-items:end;
+  gap:8px;
+  margin:12px 0 16px;
+}
+.mpp-next-routes-mudagiri .mpp-mudagiri{
+  width:62px!important;
+  margin:0!important;
+}
+.mpp-next-routes-mudagiri>div{
+  position:relative;
+  padding:10px 11px;
+  border:1px solid color-mix(in srgb,var(--job-accent) 22%,rgba(255,255,255,.09));
+  border-radius:14px 14px 14px 5px;
+  background:rgba(255,255,255,.035);
+}
+.mpp-next-routes-mudagiri small{
+  display:block;
+  margin-bottom:2px;
+  color:color-mix(in srgb,var(--job-accent) 72%,#fff);
+  font-size:7px;
+  font-weight:950;
+}
+.mpp-next-routes-mudagiri p{
+  margin:0;
+  color:#f4f1e9;
+  font-size:11.5px;
+  font-weight:850;
+  line-height:1.5;
+}
+@media(max-width:390px){
+  .mpp-next-routes-mudagiri{grid-template-columns:56px minmax(0,1fr)}
+  .mpp-next-routes-mudagiri .mpp-mudagiri{width:56px!important}
+}
