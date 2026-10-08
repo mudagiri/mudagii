@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - feature/money-personality-pilot
+      - fix/money-personality-result-calibration-20261009
   pull_request:
     branches:
       - main
+      - feature/money-personality-pilot
     paths:
       - 'src/features/money-personality/**'
       - 'qa-money-personality-*.ts'
@@ -54,5 +56,7 @@ jobs:
         run: npm run qa:money-result-personas
       - name: Everyday scene resonance QA
         run: npm run qa:money-scenes
+      - name: Result calibration and 32 TYPE scene QA
+        run: npm run qa:money-calibration
       - name: Pilot QA
         run: npm run qa:money-pilot
