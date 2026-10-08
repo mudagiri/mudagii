@@ -23,6 +23,10 @@ const bookUi=fs.readFileSync('./src/features/money-personality/JobEncyclopediaV1
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
 assert(publicUi.includes("import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1'")&&publicUi.includes('<AdventurerClassUnlockV1'),'PUBLIC_SSR_UNLOCK_NOT_WIRED');
 assert(publicUi.includes('REVEAL_KEY')&&publicUi.includes('sessionId'), 'PUBLIC_SSR_UNLOCK_SESSION_MEMORY_MISSING');
+const opticalCss=fs.readFileSync('./src/features/money-personality/money-personality-optical-audit-v1.css','utf8');
+assert(publicUi.includes("import './money-personality-optical-audit-v1.css'"),'PUBLIC_OPTICAL_GEOMETRY_STYLES_NOT_WIRED');
+assert(!publicUi.includes("import './money-result-v4.css'")&&!publicUi.includes("import './result-vivid-scene-v1.css'"),'PUBLIC_LEGACY_RESULT_CSS_STILL_BUNDLED');
+assert(opticalCss.includes('data-pose=\'IDLE_01\'')&&opticalCss.includes('grid-template-columns:84px minmax(0,1fr)'),'OPTICAL_AUDIT_CRITICAL_RULES_MISSING');
 assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRED');
 assert(!resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_WORLD_BEATS_NOT_POST_REWARD');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
