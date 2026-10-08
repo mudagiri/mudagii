@@ -16,6 +16,7 @@ export type MoneyTypeFunnelEvent=
   |'share_native_sheet_resolved'
   |'share_image_downloaded'
   |'share_text_handoff'
+  |'share_cancelled'
   |'type_book_opened'
   |'household_cta_clicked';
 
@@ -30,7 +31,7 @@ export type MoneyTypeFunnelEntry={
 const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
   'intro_started','intro_resumed','ssr_claimed','result_seen',
   'scenes_expanded','style_expanded','share_attempt',
-  'share_native_sheet_resolved','share_image_downloaded','share_text_handoff',
+  'share_native_sheet_resolved','share_image_downloaded','share_text_handoff','share_cancelled',
   'type_book_opened','household_cta_clicked',
 ];
 
