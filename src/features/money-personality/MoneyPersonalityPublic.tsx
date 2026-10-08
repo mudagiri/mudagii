@@ -144,7 +144,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
 
  if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{recordMoneyTypeFunnel('ssr_claimed',sessionId);try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
 
- const share=async(target:'native'|'x'|'line')=>{
+ const share=async(target:'native'|'x'|'line'|'threads'|'instagram')=>{
   recordMoneyTypeFunnel('share_attempt',sessionId,target);
   setShareStatus('');
   try{
@@ -154,6 +154,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    if(result==='cancelled')recordMoneyTypeFunnel('share_cancelled',sessionId,target);
    if(target!=='native'&&result==='text')recordMoneyTypeFunnel('share_text_handoff',sessionId,target);
    if(target==='native')setShareStatus(result==='downloaded'?'画像カードを保存しました。SNSから画像を添付してね。':result==='shared'?'共有画面に画像カードを渡しました。':result==='cancelled'?'共有をキャンセルしました。':'画像を共有できませんでした。');
+   if(target==='instagram')setShareStatus(result==='downloaded'?'画像を保存したよ。Instagramでストーリーや投稿に添付してね。':result==='cancelled'?'保存をキャンセルしました。':'画像の保存に失敗しました。');
   }catch{setShareStatus('共有に失敗しました。もう一度試してね。')}
  };
  const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
