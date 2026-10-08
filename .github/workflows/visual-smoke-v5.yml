@@ -2,10 +2,14 @@ name: V5 Visual Smoke
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feature/money-personality-pilot"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+
+concurrency:
+  group: visual-smoke-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
