@@ -47,6 +47,14 @@ try{
       if(await page.locator('.mpp-class-unlock').count()){
         sawSSR=true;
         await page.getByRole('button',{name:'結果を見る'}).waitFor({state:'visible',timeout:16000});
+        await page.waitForFunction(()=>{
+          const img=document.querySelector('.mpp-class-unlock .mpp-job-character img');
+          const card=document.querySelector('.mpp-class-unlock .mpp-job-character');
+          if(!(img instanceof HTMLImageElement)||!img.complete||img.naturalWidth<10||!card)return false;
+          const s=getComputedStyle(card),r=card.getBoundingClientRect();
+          return r.width>=120&&r.height>=120&&Number.parseFloat(s.opacity||'0')>=0.95;
+        },{timeout:8000});
+        await page.waitForTimeout(150);
         await page.screenshot({path:`${OUT}/03-${vp.name}-ssr.png`,fullPage:true});
         await page.getByRole('button',{name:'結果を見る'}).tap();
         break;
