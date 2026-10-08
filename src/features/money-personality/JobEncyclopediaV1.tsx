@@ -24,20 +24,23 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
     const el=surfaceRef.current;
     if(!el)return;
 
+    const isDetailTarget=(target:EventTarget|null)=>target instanceof Element&&!!target.closest('.mpp-job-book-detail');
+
     const onTouchStart=(event:TouchEvent)=>{
-      if(event.touches.length!==1)return;
+      if(event.touches.length!==1||isDetailTarget(event.target)){touchYRef.current=null;return}
       touchYRef.current=event.touches[0].clientY;
     };
     const onTouchMove=(event:TouchEvent)=>{
-      if(event.touches.length!==1||touchYRef.current===null)return;
+      if(event.touches.length!==1||touchYRef.current===null||isDetailTarget(event.target))return;
       const y=event.touches[0].clientY;
       const delta=touchYRef.current-y;
-      if(Math.abs(delta)<1)return;
+      if(Math.abs(delta)<2)return;
       const max=Math.max(0,el.scrollHeight-el.clientHeight);
+      if(max<=0){touchYRef.current=y;return}
       const next=Math.max(0,Math.min(max,el.scrollTop+delta));
       if(next!==el.scrollTop){
         el.scrollTop=next;
-        event.preventDefault();
+        if(event.cancelable)event.preventDefault();
       }
       touchYRef.current=y;
     };
