@@ -96,6 +96,12 @@ for(let guard=0;guard<80;guard++){
   if(await result.count()&&await result.isVisible())break;
   if(await page.locator('.mpp-class-unlock').count()){
     await page.getByRole('button',{name:'結果を見る'}).waitFor({state:'visible',timeout:10000});
+    await page.waitForFunction(()=>{
+      const el=document.querySelector('.mpp-class-unlock .mpp-job-character');
+      const img=el?.querySelector('img');
+      return img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0&&el.getBoundingClientRect().width>=120&&parseFloat(getComputedStyle(el).opacity)>=0.95;
+    },{timeout:8000});
+    await page.waitForTimeout(120);
     await screenshot('05-ssr-job-unlock');
     await page.getByRole('button',{name:'結果を見る'}).click();
     await page.locator('.mpp17-page').waitFor({state:'visible',timeout:6000});
