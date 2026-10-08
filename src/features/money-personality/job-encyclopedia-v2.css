@@ -582,3 +582,52 @@ html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-jobcopy,
 html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-jobcopy *{
   pointer-events:none!important;
 }
+
+
+/* ---------- ENCYCLOPEDIA V3.3 DOCUMENT SCROLL ----------
+   Real-device fix: no nested/fixed scroller. The book is a normal document page. */
+.mpp-book-page{
+  position:relative!important;
+  inset:auto!important;
+  z-index:auto!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  touch-action:auto!important;
+  pointer-events:auto!important;
+  -webkit-overflow-scrolling:auto!important;
+  background:
+    linear-gradient(180deg,rgba(5,6,10,.74),rgba(9,9,11,.58) 38%,rgba(9,9,11,.90)),
+    url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp') center top/cover no-repeat!important;
+}
+.mpp-book-page .mpp-job-book{
+  position:relative!important;
+  width:min(100%,560px)!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  touch-action:auto!important;
+  pointer-events:auto!important;
+}
+html:has(.mpp-book-page),
+body:has(.mpp-book-page),
+#root:has(.mpp-book-page){
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
