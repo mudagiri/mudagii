@@ -1,0 +1,205 @@
+/* MONEY PERSONALITY / LEGIBILITY V1
+   Purpose: a single readable-label and disclosure layer for Chapter 1.
+   Do not apply this typography to the FROZEN household diagnosis.
+   Story cards keep their decorative foil headings; explanatory text must be readable.
+*/
+
+/* Question control — actual WebKit computed size must be >= 44px. */
+html body #root .mpp-page .mpp-header{
+  grid-template-columns:44px minmax(0,1fr) auto;
+}
+html body #root .mpp-page .mpp-header button.mpp-back{
+  box-sizing:border-box!important;
+  flex:none!important;
+  width:44px!important;
+  min-width:44px!important;
+  max-width:none!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  display:grid;
+  place-items:center;
+  font-size:21px!important;
+}
+html body #root .mpp-page .mpp-header span{font-size:12px!important;letter-spacing:.06em}
+html body #root .mpp-page .mpp-header small{font-size:12.5px!important;line-height:1.5}
+html body #root .mpp-page .mpp-kicker,
+html body #root .mpp-page .mpp-meta span{font-size:12.5px!important;line-height:1.5}
+html body #root .mpp-page .mpp-family-label,
+html body #root .mpp-page .mpp-poles b{font-size:13.5px!important;line-height:1.55}
+html body #root .mpp-page .mpp-scale button span{font-size:12px!important;line-height:1.4}
+html body #root .mpp-page .mpp-footnote,
+html body #root .mpp-page .mpp-intro-note,
+html body #root .mpp-page .mpp-intro-copy p{font-size:14px!important;line-height:1.75!important}
+html body #root .mpp-page .mpp-progress-talk{font-size:13px!important;line-height:1.55!important}
+
+/* Result reading hierarchy — no microscopic informational labels. */
+html body #root .mpp17-page section>header small,
+html body #root .mpp17-page .mpp17-share-copy>small,
+html body #root .mpp17-page .mpp17-book-copy>small{font-size:12.5px!important;line-height:1.55!important}
+html body #root .mpp17-page .mpp17-scene-list article>small,
+html body #root .mpp17-page .mpp17-more article>small,
+html body #root .mpp17-page .mpp17-gap-pair small,
+html body #root .mpp17-page .mpp17-strength-grid small,
+html body #root .mpp17-page .mpp17-compare-row small,
+html body #root .mpp17-page .mpp17-match-list small,
+html body #root .mpp17-page .mpp17-axis-list header small,
+html body #root .mpp17-page .mpp17-core>small,
+html body #root .mpp17-page .mpp17-next>small{font-size:12px!important;line-height:1.55!important}
+html body #root .mpp17-page .mpp17-scene-list p,
+html body #root .mpp17-page .mpp17-strength-grid p,
+html body #root .mpp17-page .mpp17-match-list p,
+html body #root .mpp17-page .mpp17-book-copy p,
+html body #root .mpp17-page .mpp17-next-quest p,
+html body #root .mpp17-page .mpp17-share-copy p,
+html body #root .mpp17-page .mpp17-note{font-size:14px!important;line-height:1.75!important}
+html body #root .mpp17-page .mpp17-gap-pair b,
+html body #root .mpp17-page .mpp17-compare-row b,
+html body #root .mpp17-page .mpp17-more b{font-size:15px!important;line-height:1.65!important}
+html body #root .mpp17-page .mpp17-axis-labels,
+html body #root .mpp17-page .mpp17-axis-list header b{font-size:12.5px!important;line-height:1.55!important}
+html body #root .mpp17-page .mpp17-match-list span,
+html body #root .mpp17-page .mpp17-mini-jobs span,
+html body #root .mpp17-page .mpp17-restart{font-size:12px!important;line-height:1.5!important}
+html body #root .mpp17-page .mpp17-share-buttons button:not(.mpp17-share-button--primary){
+  min-height:48px;
+  padding:10px 12px;
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+
+/* Shared affordance: the entire summary is a clear tap surface. */
+html body #root .mpp17-page details.mpp17-more>summary,
+html body #root .mpp17-page details.mpp17-style-detail>summary,
+html body #root .mpp17-page details.mpp17-details>summary,
+html body #root .mpp-job-book details.mpp-job-book-detail-style-more>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:58px!important;
+  padding:12px 14px!important;
+  box-sizing:border-box;
+  border:1px solid #c7ac78!important;
+  border-radius:12px!important;
+  background:#f9f1e1!important;
+  color:#342c1e!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1.5!important;
+  cursor:pointer;
+  touch-action:manipulation;
+  list-style:none;
+}
+html body #root .mpp17-page details>summary::-webkit-details-marker,
+html body #root .mpp-job-book details>summary::-webkit-details-marker{display:none}
+html body #root .mpp17-page details>summary:focus-visible,
+html body #root .mpp-job-book details>summary:focus-visible{
+  outline:3px solid #b77a22!important;
+  outline-offset:3px;
+}
+html body #root .mpp17-page details[open]>summary,
+html body #root .mpp-job-book details[open]>summary{
+  background:#eee0c3!important;
+  border-color:#ad843f!important;
+}
+html body #root .mpp17-page .mpp-disclosure-title,
+html body #root .mpp-job-book .mpp-job-book-detail-style-more>summary>span:first-child{
+  display:block;
+  min-width:0;
+  flex:1;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1.55!important;
+  color:#342c1e!important;
+}
+html body #root .mpp17-page .mpp-disclosure-title small{
+  display:block;
+  margin-top:3px;
+  color:#66563e!important;
+  font-size:12.5px!important;
+  font-weight:650!important;
+}
+html body #root .mpp17-page .mpp-disclosure-title em{
+  font-size:13px!important;
+  font-weight:750!important;
+  font-style:normal;
+}
+html body #root .mpp17-page .mpp-disclosure-state,
+html body #root .mpp-job-book .mpp-disclosure-state{
+  display:inline-flex;
+  flex:none;
+  align-items:center;
+  justify-content:center;
+  min-width:68px;
+  min-height:34px;
+  padding:5px 9px;
+  border-radius:9px;
+  background:#342c1e!important;
+  color:#fffaf0!important;
+  font-size:12.5px!important;
+  font-weight:800!important;
+  letter-spacing:0!important;
+  transform:none!important;
+}
+html body #root .mpp17-page .mpp-disclosure-state b,
+html body #root .mpp-job-book .mpp-disclosure-state b{
+  margin-left:3px;
+  font-size:17px;
+  font-weight:700;
+}
+html body #root .mpp17-page .mpp-disclosure-open,
+html body #root .mpp-job-book .mpp-disclosure-open{display:none}
+html body #root .mpp17-page details[open] .mpp-disclosure-closed,
+html body #root .mpp-job-book details[open] .mpp-disclosure-closed{display:none}
+html body #root .mpp17-page details[open] .mpp-disclosure-open,
+html body #root .mpp-job-book details[open] .mpp-disclosure-open{display:inline}
+html body #root .mpp17-page .mpp17-style-detail[open] summary .mpp-disclosure-state,
+html body #root .mpp17-page .mpp17-style-detail[open] summary .mpp-disclosure-state span{
+  transform:none!important;
+}
+html body #root .mpp17-page .mpp17-more>div,
+html body #root .mpp17-page .mpp17-style-detail-body,
+html body #root .mpp17-page .mpp17-axis-list{padding:14px!important}
+
+/* Encyclopedia: readable instructional labels and TYPE selectors. */
+html body #root .mpp-job-book .mpp-job-book-hero p,
+html body #root .mpp-job-book .mpp-job-book-guide-talk p,
+html body #root .mpp-job-book .mpp-job-book-guide-head p,
+html body #root .mpp-job-book .mpp-job-book-style-intro p,
+html body #root .mpp-job-book .mpp-job-book-howto p,
+html body #root .mpp-job-book .mpp-job-book-detail-hero,
+html body #root .mpp-job-book .mpp-job-book-detail-note p,
+html body #root .mpp-job-book .mpp-job-book-detail-motif p,
+html body #root .mpp-job-book .mpp-job-book-style-explain p,
+html body #root .mpp-job-book .mpp-job-book-detail-style-more p{font-size:14px!important;line-height:1.7!important}
+html body #root .mpp-job-book .mpp-job-book-guide-talk small,
+html body #root .mpp-job-book .mpp-job-book-guide-head small,
+html body #root .mpp-job-book .mpp-job-book-style-intro small,
+html body #root .mpp-job-book .mpp-job-book-detail-note small,
+html body #root .mpp-job-book .mpp-job-book-detail-motif small{font-size:12px!important;line-height:1.5!important}
+html body #root .mpp-job-book .mpp-job-book-axes article>span,
+html body #root .mpp-job-book .mpp-job-book-axes article>b,
+html body #root .mpp-job-book .mpp-job-book-axes article>p,
+html body #root .mpp-job-book .mpp-job-book-formula,
+html body #root .mpp-job-book .mpp-job-book-jobcopy span,
+html body #root .mpp-job-book .mpp-job-book-motif{font-size:12.5px!important;line-height:1.6!important}
+html body #root .mpp-job-book .mpp-job-book-style-key button b,
+html body #root .mpp-job-book .mpp-job-book-typechips strong{font-size:13px!important;line-height:1.5!important}
+html body #root .mpp-job-book .mpp-job-book-style-key button span,
+html body #root .mpp-job-book .mpp-job-book-typechips small{font-size:12px!important;line-height:1.5!important}
+html body #root .mpp-job-book .mpp-job-book-detail-style span,
+html body #root .mpp-job-book .mpp-job-book-detail-style-more blockquote{font-size:13px!important;line-height:1.6!important}
+html body #root .mpp-job-book .mpp-job-book-style-key button,
+html body #root .mpp-job-book .mpp-job-book-typechips button{
+  min-height:44px;
+  touch-action:manipulation;
+}
+@media(max-width:390px){
+  html body #root .mpp-page .mpp-header{gap:6px;padding-inline:5px}
+  html body #root .mpp-job-book .mpp-job-book-typechips{gap:5px}
+}
+@media(prefers-reduced-motion:reduce){
+  html body #root .mpp17-page .mpp-disclosure-state,
+  html body #root .mpp-job-book .mpp-disclosure-state{transition:none!important}
+}
