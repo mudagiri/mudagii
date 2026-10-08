@@ -421,3 +421,107 @@ html,body,#root{overscroll-behavior-y:auto}
 }
 .mpp-job-book-detail-backdrop{pointer-events:auto!important;touch-action:pan-y!important}
 .mpp-job-book-detail{pointer-events:auto!important}
+
+
+/* ---------- ENCYCLOPEDIA V3.1 FIXED SCROLLER ----------
+   Independent viewport scroller: do not rely on parent/result/body scroll state. */
+.mpp-book-page{
+  position:fixed!important;
+  inset:0!important;
+  z-index:9998!important;
+  display:block!important;
+  width:100%!important;
+  height:100dvh!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:0!important;
+  margin:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  background:
+    linear-gradient(180deg,rgba(5,6,10,.74),rgba(9,9,11,.58) 38%,rgba(9,9,11,.90)),
+    url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp') center top/cover no-repeat fixed!important;
+}
+.mpp-book-page::before,
+.mpp-book-page::after{pointer-events:none!important}
+.mpp-book-page .mpp-job-book{
+  position:relative!important;
+  z-index:1!important;
+  width:min(100%,560px)!important;
+  min-height:max(100dvh,100%)!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+}
+
+/* STYLE FILTERS ARE REAL BUTTONS */
+.mpp-job-book-style-key button{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  min-width:0!important;
+  min-height:48px!important;
+  padding:7px 4px!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.025)!important;
+  color:rgba(255,255,255,.48)!important;
+  font:inherit!important;
+  text-align:center!important;
+  cursor:pointer!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.mpp-job-book-style-key button b{
+  display:block!important;
+  margin-bottom:2px!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+.mpp-job-book-style-key button.is-active{
+  border-color:rgba(229,196,118,.55)!important;
+  background:linear-gradient(180deg,rgba(229,196,118,.15),rgba(229,196,118,.06))!important;
+  color:#f1d27f!important;
+  box-shadow:0 0 0 1px rgba(229,196,118,.08),inset 0 0 16px rgba(229,196,118,.05)!important;
+}
+.mpp-job-book-style-key button:active{transform:translateY(1px)}
+.mpp-job-book-style-hint{
+  margin:-8px 2px 14px!important;
+  color:rgba(255,255,255,.50)!important;
+  font-size:9px!important;
+  line-height:1.55!important;
+}
+.mpp-job-book-style-hint b{color:#e4c474!important}
+
+/* Active STYLE column is visible across all eight JOBs. */
+.mpp-job-book-typechips>button.is-active{
+  border-color:color-mix(in srgb,var(--job-accent) 42%,rgba(255,255,255,.10))!important;
+  background:color-mix(in srgb,var(--job-accent) 7%,rgba(0,0,0,.16))!important;
+}
+.mpp-job-book-typechips>button.is-active strong{
+  color:color-mix(in srgb,var(--job-accent) 72%,#fff)!important;
+}
+.mpp-job-book-typechips>button.is-mine.is-active{
+  border-color:var(--job-accent)!important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--job-accent) 16%,transparent),inset 0 0 14px color-mix(in srgb,var(--job-accent) 8%,transparent)!important;
+}
+
+/* No decorative layer is allowed to eat taps. */
+.mpp-job-book *,
+.mpp-job-book *::before,
+.mpp-job-book *::after{box-sizing:border-box}
+.mpp-job-book-jobhead,
+.mpp-job-book-typechips>button,
+.mpp-job-book-style-key>button,
+.mpp-job-book-close,
+.mpp-job-book-detail-close{
+  pointer-events:auto!important;
+}
