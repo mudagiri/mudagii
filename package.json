@@ -35,6 +35,7 @@
     "qa:money-result-content": "npx --yes tsx@4.20.6 qa-money-personality-result-content-v1.ts",
     "qa:money-result-personas": "npx --yes tsx@4.20.6 qa-money-personality-result-personas-v1.ts",
     "qa:money-scenes": "npx --yes tsx@4.20.6 qa-money-personality-scene-resonance-v1.ts",
+    "qa:money-calibration": "npx --yes tsx@4.20.6 qa-money-personality-result-calibration-v1.ts",
     "qa:money-cognitive": "npx --yes tsx@4.20.6 qa-money-personality-cognitive-v1.ts"
   },
   "dependencies": {

@@ -3484,3 +3484,8 @@ html body #root .mpp17-page{
   .mpp17-profile .mpp17-value{max-width:95%;flex-wrap:wrap}
   .mpp17-share-value{flex-wrap:wrap}
 }
+
+/* Calibration notes: readable on phones and not disguised as badges. */
+.mpp17-balance-note{margin:12px 3px 6px;padding:12px 14px;border:1px solid #d6c8ab;border-radius:12px;background:#fffaf0;color:#494138;font-size:14px;line-height:1.65}
+.mpp17-balance-note b{font-weight:800;color:#72501d}
+.mpp17-scene-context{margin:4px 0 12px;color:#62584a;font-size:14px;line-height:1.6}

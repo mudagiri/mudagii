@@ -538,8 +538,147 @@ const V9:Record<TypeKey,V9TypeResult>={
   },
 };
 
+/** Editorial order of the first two recognisable moments for each 32 TYPE.
+ * Don't presume the user has experienced hotels, alcohol, specific careers etc.
+ * All six original texts are preserved; no inputs or classification are changed.
+ */
+const EVERYDAY_FIRST:Record<TypeKey,readonly [number,number]>={
+  "FDM-D": [
+    2,
+    3
+  ],
+  "FDM-E": [
+    2,
+    4
+  ],
+  "FDM-S": [
+    4,
+    5
+  ],
+  "FDM-O": [
+    2,
+    0
+  ],
+  "FDP-D": [
+    3,
+    0
+  ],
+  "FDP-E": [
+    4,
+    2
+  ],
+  "FDP-S": [
+    0,
+    5
+  ],
+  "FDP-O": [
+    1,
+    0
+  ],
+  "FNM-D": [
+    0,
+    3
+  ],
+  "FNM-E": [
+    0,
+    2
+  ],
+  "FNM-S": [
+    1,
+    0
+  ],
+  "FNM-O": [
+    4,
+    1
+  ],
+  "FNP-D": [
+    3,
+    5
+  ],
+  "FNP-E": [
+    1,
+    5
+  ],
+  "FNP-S": [
+    3,
+    2
+  ],
+  "FNP-O": [
+    1,
+    5
+  ],
+  "IDM-D": [
+    4,
+    3
+  ],
+  "IDM-E": [
+    3,
+    0
+  ],
+  "IDM-S": [
+    3,
+    1
+  ],
+  "IDM-O": [
+    2,
+    0
+  ],
+  "IDP-D": [
+    3,
+    4
+  ],
+  "IDP-E": [
+    5,
+    0
+  ],
+  "IDP-S": [
+    0,
+    5
+  ],
+  "IDP-O": [
+    1,
+    0
+  ],
+  "INM-D": [
+    0,
+    3
+  ],
+  "INM-E": [
+    1,
+    0
+  ],
+  "INM-S": [
+    0,
+    2
+  ],
+  "INM-O": [
+    0,
+    3
+  ],
+  "INP-D": [
+    4,
+    2
+  ],
+  "INP-E": [
+    0,
+    5
+  ],
+  "INP-S": [
+    0,
+    1
+  ],
+  "INP-O": [
+    0,
+    2
+  ]
+};
+
 export function resultV9For(jobCode:JobCode,style:StyleId):V9TypeResult{
-  return V9[`${jobCode}-${STYLE_CODE[style]}` as TypeKey];
+  const key=`${jobCode}-${STYLE_CODE[style]}` as TypeKey;
+  const x=V9[key], [first,second]=EVERYDAY_FIRST[key];
+  // Stable copy. Never mutate the source library shared by all sessions.
+  const scenes=[x.scenes[first],x.scenes[second],...x.scenes.filter((_,index)=>index!==first&&index!==second)] as V9TypeResult['scenes'];
+  return {...x,scenes};
 }
 
 export const RESULT_V9_TYPE_COUNT=Object.keys(V9).length;
