@@ -235,21 +235,21 @@ const typeBook=await page.evaluate(()=>({
   mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
   styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
   visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
-  htmlOverflowY:getComputedStyle(document.documentElement).overflowY,
-  bodyOverflowY:getComputedStyle(document.body).overflowY,
-  docHeight:(document.scrollingElement||document.documentElement).scrollHeight,
-  viewport:innerHeight,
+  pageOverflowY:getComputedStyle(document.querySelector('.mpp-book-page')).overflowY,
+  pageScrollHeight:document.querySelector('.mpp-book-page')?.scrollHeight||0,
+  pageClientHeight:document.querySelector('.mpp-book-page')?.clientHeight||0,
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
-if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.docHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+if(typeBook.pageOverflowY==='hidden'||typeBook.pageScrollHeight<=typeBook.pageClientHeight+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
-const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
-await page.evaluate(()=>window.scrollTo({top:Math.min(700,(document.scrollingElement||document.documentElement).scrollHeight-innerHeight),behavior:'auto'}));
-await page.waitForTimeout(100);
-const scrollAfter=await page.evaluate(()=>window.scrollY);
+const bookPage=page.locator('.mpp-book-page');
+const scrollBefore=await bookPage.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight}));
+await bookPage.evaluate(el=>{el.scrollTop=Math.min(900,el.scrollHeight-el.clientHeight)});
+await page.waitForTimeout(120);
+const scrollAfter=await bookPage.evaluate(el=>el.scrollTop);
 if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL:'+JSON.stringify({scrollBefore,scrollAfter}));
 
-await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
+await bookPage.evaluate(el=>{el.scrollTop=0});
 await page.waitForTimeout(80);
 
 const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
