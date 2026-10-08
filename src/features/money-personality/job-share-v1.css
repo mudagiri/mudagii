@@ -266,3 +266,13 @@
 @media(prefers-reduced-motion:reduce){
   .mpp-job-share-card::after,.mpp-job-share-jobbg{animation:none!important}
 }
+
+/* Keep the RPG job title large and the meaning of the English STYLE readable. */
+.mpp-job-share-style-caption{
+  margin:2px 0 10px;
+  color:rgba(255,255,255,.84);
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:0;
+  line-height:1.5;
+}
