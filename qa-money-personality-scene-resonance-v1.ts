@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import {resultV9For,RESULT_V9_TYPE_COUNT,RESULT_V9_SCENE_COUNT} from './src/features/money-personality/resultV9Content';
 import {resultV10InsightFor} from './src/features/money-personality/resultV10Insight';
+import {STYLE_IDENTITY} from './src/features/money-personality/money-type-identity-v1';
 import type {JobCode,StyleId} from './src/features/money-personality/classifierV1';
 
 const JOBS:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
@@ -18,6 +19,7 @@ assert(RESULT_V9_SCENE_COUNT===192,`RESULT_V9_SCENE_COUNT_BAD:${RESULT_V9_SCENE_
 const publicUi=fs.readFileSync('./src/features/money-personality/MoneyPersonalityPublic.tsx','utf8');
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx','utf8');
 const shareImageUi=fs.readFileSync('./src/features/money-personality/job-share-image-v1.ts','utf8');
+const bookUi=fs.readFileSync('./src/features/money-personality/JobEncyclopediaV1.tsx','utf8');
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
 assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRED');
 assert(resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_MUDAGIRI_WORLD_BEATS_INCOMPLETE');
@@ -29,13 +31,24 @@ assert(resultUi.includes('content.scenes.slice(0,3)'),'V9_PRIMARY_SCENES_NOT_THR
 assert(resultUi.includes('content.scenes.slice(3)'),'V9_EXTRA_SCENES_NOT_THREE');
 assert(resultUi.includes('ほかのあるあるも見る'),'V17_MORE_SCENES_MISSING');
 assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
-assert(resultUi.includes('同じ場面でも、タイプで違う'),'V17_COMPARE_MISSING');
+assert(resultUi.includes('同じ場面でも、考えることが違う'),'V17_COMPARE_MISSING');
 assert(resultUi.includes("onShare('x')")&&resultUi.includes("onShare('instagram')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('line')"),'V15_SOCIAL_SHARE_TARGETS_MISSING');
 assert(resultUi.includes('insight.compare.scene'),'V10_CONCRETE_COMPARE_NOT_WIRED');
 assert(resultUi.includes("import './result-v17-editorial.css'"),'V17_EDITORIAL_CSS_NOT_LOADED');
-assert(resultUi.includes('お金の感覚で見る'),'V17_VALUE_MATCH_MISSING');
+assert(resultUi.includes('友だちと比べるなら')&&resultUi.includes('お金の考え方が近いかどうかです。'),'V17_VALUE_MATCH_MISSING');
 assert(resultUi.includes('32タイプ図鑑を見る'),'V17_TYPE_BOOK_CTA_MISSING');
 assert(!resultUi.includes('SSR'),'V17_SSR_SHOULD_NOT_BE_IN_MAIN_RESULT');
+assert(resultUi.includes('mpp17-style-detail')&&resultUi.includes('STYLE_IDENTITY[primaryStyle].description'),'V17_STYLE_EXPLANATION_MISSING');
+assert(resultUi.includes('STYLE_IDENTITY[primaryStyle].short'),'V17_STYLE_JAPANESE_SUBTITLE_MISSING');
+assert(bookUi.includes('mpp-job-book-style-explain')&&bookUi.includes('STYLE_IDENTITY[expandedStyle].description'),'ENCYCLOPEDIA_STYLE_EXPLANATION_MISSING');
+assert(shareImageUi.includes('STYLE_IDENTITY[primaryStyle].short'),'SHARE_IMAGE_STYLE_SUBTITLE_MISSING');
+assert(!shareImageUi.includes('を大事にするタイプ'),'SHARE_IMAGE_LEGACY_STYLE_COPY');
+for(const [id,code,label] of [['DRIVE','D','できることを増やしたい'],['ENJOY','E','楽しいことに使いたい'],['SECURE','S','あとで困りたくない'],['OPTIMIZE','O','余計な出費はしたくない']] as const){
+  const value=STYLE_IDENTITY[id];
+  assert(value.code===code&&value.label===id&&value.short===label,`STYLE_IDENTITY_MISMATCH:${id}`);
+  assert(value.description.length>=30&&value.example.length>=8,`STYLE_DETAIL_EMPTY:${id}`);
+}
+
 
 const heroes=new Set<string>();
 const truths=new Set<string>();
