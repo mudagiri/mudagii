@@ -1,4 +1,5 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import type {JobCode,StyleId} from './classifierV1';
 import {JOB_CHARACTER_ASSETS} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
@@ -22,26 +23,16 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
   useEffect(()=>{
     const html=document.documentElement;
     const body=document.body;
-    const root=document.getElementById('root');
-    const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));
-
-    for(const el of [html,body]){
-      el.style.setProperty('height','auto','important');
-      el.style.setProperty('min-height','100%','important');
-      el.style.setProperty('max-height','none','important');
-      el.style.setProperty('overflow-x','hidden','important');
-      el.style.setProperty('overflow-y','auto','important');
-      el.style.setProperty('touch-action','pan-y','important');
-    }
-    if(root){
-      root.style.setProperty('height','auto','important');
-      root.style.setProperty('min-height','100%','important');
-      root.style.setProperty('max-height','none','important');
-      root.style.setProperty('overflow','visible','important');
-      root.style.setProperty('touch-action','pan-y','important');
-    }
-    window.scrollTo({top:0,behavior:'auto'});
-    return ()=>previous.forEach(({el,cssText})=>{el.style.cssText=cssText});
+    const previousHtml=html.style.cssText;
+    const previousBody=body.style.cssText;
+    html.style.setProperty('overflow','hidden','important');
+    body.style.setProperty('overflow','hidden','important');
+    html.style.setProperty('touch-action','pan-y','important');
+    body.style.setProperty('touch-action','pan-y','important');
+    return ()=>{
+      html.style.cssText=previousHtml;
+      body.style.cssText=previousBody;
+    };
   },[]);
 
   const detail=useMemo(()=>{
@@ -54,7 +45,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
 
   const openType=(jobCode:JobCode,style:StyleId)=>setSelected({jobCode,style});
 
-  return <section ref={topRef} className="mpp-job-book" aria-label="32TYPE図鑑">
+  const book=<section ref={topRef} className="mpp-job-book" aria-label="32TYPE図鑑">
     <header className="mpp-job-book-hero">
       <div>
         <small>COLLECTION / 8 JOB × 4 STYLE</small>
@@ -143,4 +134,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       </article>
     </div>}
   </section>;
+
+  if(typeof document==='undefined')return book;
+  return createPortal(<div className="mpp-job-book-portal">{book}</div>,document.body);
 }
