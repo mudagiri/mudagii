@@ -24,7 +24,7 @@ assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V
 assert(publicUi.includes("import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1'")&&publicUi.includes('<AdventurerClassUnlockV1'),'PUBLIC_SSR_UNLOCK_NOT_WIRED');
 assert(publicUi.includes('REVEAL_KEY')&&publicUi.includes('sessionId'), 'PUBLIC_SSR_UNLOCK_SESSION_MEMORY_MISSING');
 assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRED');
-assert(resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_MUDAGIRI_WORLD_BEATS_INCOMPLETE');
+assert(!resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_WORLD_BEATS_NOT_POST_REWARD');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
 assert(publicUi.includes("resultV10InsightFor(job,style)"),'PUBLIC_RESULT_V10_INSIGHT_NOT_WIRED');
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
@@ -41,6 +41,8 @@ assert(resultUi.includes('友だちと比べるなら')&&resultUi.includes('お�
 assert(resultUi.includes('32タイプ図鑑を見る'),'V17_TYPE_BOOK_CTA_MISSING');
 assert(!resultUi.includes('SSR'),'V17_SSR_SHOULD_NOT_BE_IN_MAIN_RESULT');
 assert(resultUi.includes('mpp17-style-detail')&&resultUi.includes('STYLE_IDENTITY[primaryStyle].description'),'V17_STYLE_EXPLANATION_MISSING');
+assert(resultUi.indexOf('className="mpp17-recognition"')<resultUi.indexOf('className="mpp17-share"')&&resultUi.indexOf('className="mpp17-share"')<resultUi.indexOf('className="mpp17-core"'),'V17_SHARE_NOT_AT_EMOTIONAL_PEAK');
+assert(resultUi.indexOf('className="mpp17-share"')<resultUi.indexOf('className="mpp17-style-detail"'),'V17_EXPLANATION_INTERRUPTS_SHARE');
 assert(resultUi.includes('STYLE_IDENTITY[primaryStyle].short'),'V17_STYLE_JAPANESE_SUBTITLE_MISSING');
 assert(bookUi.includes('mpp-job-book-style-explain')&&bookUi.includes('STYLE_IDENTITY[expandedStyle].description'),'ENCYCLOPEDIA_STYLE_EXPLANATION_MISSING');
 assert(shareImageUi.includes('STYLE_IDENTITY[primaryStyle].short'),'SHARE_IMAGE_STYLE_SUBTITLE_MISSING');
