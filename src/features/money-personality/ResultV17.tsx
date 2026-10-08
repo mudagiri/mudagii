@@ -62,7 +62,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-holo-foil" aria-hidden="true"/>
         <img className="mpp17-holo-texture" src="./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg" alt="" aria-hidden="true"/>
         <div className="mpp17-card-edge" aria-hidden="true"/>
-        <div className="mpp17-topline"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
+        <div className="mpp17-topline"><span>MUDAGIRI / MONEY TYPE</span><b>32 TYPES</b></div>
         <div className="mpp17-code">{identity.code}</div>
         <div className="mpp17-portrait"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
         <div className="mpp17-type-label">あなたのお金タイプ</div>
@@ -95,7 +95,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <div className="mpp17-share-jobbg" aria-hidden="true"/>
           <img className="mpp17-share-holo" src="./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg" alt="" aria-hidden="true"/>
           <div className="mpp17-share-glint" aria-hidden="true"/>
-          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
+          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>32 TYPES</b></div>
           <div className="mpp17-share-code">{identity.code}</div>
           <div className="mpp17-share-art"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
           <div className="mpp17-share-type">
