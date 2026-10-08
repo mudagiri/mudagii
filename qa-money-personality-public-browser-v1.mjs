@@ -196,6 +196,10 @@ if(!text.includes('ほかのあるあるも見る'))throw new Error('MONEY_PUBLI
 if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
 if(!text.includes('外から見ると、こう見える。')||!text.includes('このタイプの強み'))throw new Error('MONEY_PUBLIC_RESULT_V17_INSIGHT_MISSING');
 if(!text.includes('同じ場面でも、考えることが違う'))throw new Error('MONEY_PUBLIC_RESULT_V17_COMPARE_MISSING');
+const resultStyleDetail=page.locator('.mpp17-style-detail');
+await resultStyleDetail.locator('summary').click();
+const expandedStyleText=(await resultStyleDetail.textContent())||'';
+if(!expandedStyleText.includes('詳しく見る')||!expandedStyleText.includes('このSTYLE'))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('なんでこのタイプになった？'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV17=await page.evaluate(()=>({
@@ -273,16 +277,19 @@ if(scrollAfter<120)throw new Error('MONEY_PUBLIC_TYPE_BOOK_TOUCH_SCROLL_FAILED:'
 await surface.evaluate(el=>{el.scrollTop=0});
 await page.waitForTimeout(80);
 
-const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
+const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'ENJOY'});
 await enjoyButton.click();
 const enjoyActive=await enjoyButton.evaluate(el=>el.classList.contains('is-active')&&el.getAttribute('aria-pressed')==='true');
 if(!enjoyActive)throw new Error('MONEY_PUBLIC_TYPE_BOOK_STYLE_NOT_INTERACTIVE');
+const styleExplain=page.locator('.mpp-job-book-style-explain');
+await styleExplain.waitFor({state:'visible',timeout:2500});
+if(!((await styleExplain.textContent())||'').includes('楽しいことに使いたい'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_STYLE_EXPLANATION_MISSING');
 
 const idpEnjoy=page.locator('.mpp-job-book-typechips>button').filter({hasText:'IDP-E'});
 await idpEnjoy.click();
 await page.locator('.mpp-job-book-detail').waitFor({state:'visible',timeout:2000});
 const detailText=((await page.locator('.mpp-job-book-detail').textContent())||'').replace(/\s+/g,' ');
-if(!detailText.includes('戦術ハンター')||!detailText.includes('満足'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_DETAIL_BAD:'+detailText);
+if(!detailText.includes('戦術ハンター')||!detailText.includes('ENJOY')||!detailText.includes('楽しいことに使いたい'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_DETAIL_BAD:'+detailText);
 await page.getByRole('button',{name:'詳細を閉じる'}).click();
 await page.locator('.mpp-job-book-detail').waitFor({state:'detached',timeout:2000}).catch(()=>{});
 
@@ -295,7 +302,7 @@ await page.locator('.mpp-social-action--share').click();
 await page.locator('.mpp-job-share').waitFor({state:'visible',timeout:3000});
 const shareCardText=((await page.locator('.mpp-job-share-card').textContent())||'').replace(/\s+/g,' ');
 if(!shareCardText.includes('1 / 32')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
-if(/DRIVE STYLE|ENJOY STYLE|SECURE STYLE|OPTIMIZE STYLE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_ENGLISH_STYLE_LEAK:'+shareCardText);
+if(!/DRIVE|ENJOY|SECURE|OPTIMIZE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_STYLE_ENGLISH_MISSING:'+shareCardText);
 await screenshot('08-share-identity-card');
 await page.getByRole('button',{name:'次のクエストを選ぶ'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
