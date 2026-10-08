@@ -234,6 +234,20 @@ html body #root .mpp-job-book .mpp-job-book-style-key button span,
 html body #root .mpp-job-book .mpp-job-book-typechips small{font-size:12px!important;line-height:1.5!important}
 html body #root .mpp-job-book .mpp-job-book-detail-style span,
 html body #root .mpp-job-book .mpp-job-book-detail-style-more blockquote{font-size:13px!important;line-height:1.6!important}
+html body #root .mpp-job-book .mpp-job-open-hint{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  margin-top:7px;
+  padding:5px 9px;
+  border:1px solid rgba(239,195,101,.45);
+  border-radius:7px;
+  background:rgba(239,195,101,.13);
+  color:#f8dfa3!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  line-height:1.45!important;
+}
 html body #root .mpp-job-book .mpp-job-book-style-key button,
 html body #root .mpp-job-book .mpp-job-book-typechips button{
   min-height:44px;
