@@ -89,8 +89,8 @@ try{
     });
     assert(readable.more>=15&&readable.style>=15&&readable.axis>=15&&readable.body>=14&&readable.moreTap>=56&&readable.styleTap>=56&&readable.axisTap>=56&&readable.shareCount===5,'IOS_WEBKIT_DETAILS_OR_READABILITY_BAD:'+JSON.stringify(readable));
     await page.locator('.mpp17-style-detail summary').tap();
-    const disclosure=await page.locator('.mpp17-style-detail').evaluate(el=>({open:el.open,closed:getComputedStyle(el.querySelector('.mpp-disclosure-closed')).display,opened:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display}));
-    assert(disclosure.open&&disclosure.closed==='none'&&disclosure.opened!=='none','IOS_WEBKIT_DISCLOSURE_NOT_OBVIOUS:'+JSON.stringify(disclosure));
+    const disclosure=await page.locator('.mpp17-style-detail').evaluate(el=>({open:el.open,closed:getComputedStyle(el.querySelector('.mpp-disclosure-closed')).display,opened:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display,textColor:getComputedStyle(el.querySelector('.mpp-disclosure-open')).color,background:getComputedStyle(el.querySelector('.mpp-disclosure-state')).backgroundColor}));
+    assert(disclosure.open&&disclosure.closed==='none'&&disclosure.opened!=='none'&&disclosure.textColor==='rgb(255, 250, 240)','IOS_WEBKIT_DISCLOSURE_NOT_OBVIOUS:'+JSON.stringify(disclosure));
     await page.screenshot({path:`${OUT}/05-${vp.name}-share.png`,fullPage:false});
     await page.reload({waitUntil:'networkidle'});
     await page.locator('.mpp17-page').waitFor({state:'visible',timeout:9000});
