@@ -12,6 +12,7 @@ import ResultV17 from './ResultV17';
 import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
 import {resultV9For} from './resultV9Content';
 import {resultV10InsightFor} from './resultV10Insight';
+import {recordMoneyTypeFunnel} from './money-type-funnel-v1';
 import JobEncyclopediaV1 from './JobEncyclopediaV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -111,7 +112,7 @@ export default function MoneyPersonalityPublic(){
  const coreAnswered=coreOrder.filter(x=>state.answers[x.item_id]!==undefined).length;const adaptiveAnswered=Math.max(0,Object.keys(state.answers).length-coreAnswered);const separatorAnswered=Object.keys(state.separators).length;const progress=publicProgress(coreAnswered,adaptiveAnswered,separatorAnswered,done);
  useEffect(()=>{saveState(state)},[state]);useEffect(()=>{if(timerRef.current)window.clearTimeout(timerRef.current);setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)}},[targetKey]);
  if(standaloneBook)return <main className="mpp-book-standalone"><JobEncyclopediaV1 unlocked={requestedBookJob!} primaryStyle={requestedBookStyle!} onClose={()=>{window.location.href=moneyTypeReturnUrl()}}/></main>;
- const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
+ const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;const startNew=()=>{const fresh={...blankState(),startedAt:new Date().toISOString()};recordMoneyTypeFunnel('intro_started',fresh.sessionId);setState(fresh);setActive(true)};const resume=()=>{recordMoneyTypeFunnel('intro_resumed',state.sessionId);setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
  const goBack=()=>{if(committing||state.history.length===0)return;const last=state.history[state.history.length-1];setState(s=>{const history=s.history.slice(0,-1);if(last.kind==='trait'){const answers={...s.answers};delete answers[last.id];return {...s,answers,history,screenCount:Math.max(0,s.screenCount-1)}}const separators={...s.separators};delete (separators as Record<string,unknown>)[last.id];return {...s,separators,history,screenCount:Math.max(0,s.screenCount-1)}})};
  const commitTrait=(choice:Choice)=>{if(!targetItem||committing)return;setSelected(choice);setCommitting(true);const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;const traitValue=targetItem.family==='BIPOLAR'?normalizePublicBipolarResponse(choice.value,presentation!):choice.value;timerRef.current=window.setTimeout(()=>setState(s=>({...s,answers:{...s.answers,[targetItem.item_id]:traitValue},history:[...s.history,{kind:'trait',id:targetItem.item_id}],screenCount:s.screenCount+1})),130)};
  const commitSeparator=(id:SeparatorId,value:string)=>{if(committing)return;setSeparatorSelected(value);setCommitting(true);timerRef.current=window.setTimeout(()=>setState(s=>({...s,separators:{...s.separators,[id]:value} as SeparatorAnswers,history:[...s.history,{kind:'separator',id}],screenCount:s.screenCount+1})),130)};
@@ -135,16 +136,21 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
  const secondary=evaluation.style.secondary!;
  const v9=resultV9For(job,style);
  const insight=resultV10InsightFor(job,style);
+ useEffect(()=>{if(revealSeen)recordMoneyTypeFunnel('result_seen',sessionId)},[revealSeen,sessionId]);
 
  useEffect(()=>{const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[]);
 
- if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
+ if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{recordMoneyTypeFunnel('ssr_claimed',sessionId);try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
 
  const share=async(target:'native'|'x'|'line')=>{
+  recordMoneyTypeFunnel('share_attempt',sessionId,target);
   setShareStatus('');
   try{
    const {shareJobTypeImage}=await import('./job-share-image-v1');
    const result=await shareJobTypeImage({jobCode:job,primaryStyle:style,target});
+   if(result==='shared')recordMoneyTypeFunnel('share_native_sheet_resolved',sessionId,target);
+   if(result==='downloaded')recordMoneyTypeFunnel('share_image_downloaded',sessionId,target);
+   if(target!=='native'&&result==='text')recordMoneyTypeFunnel('share_text_handoff',sessionId,target);
    if(target==='native')setShareStatus(result==='downloaded'?'画像カードを保存しました。SNSから画像を添付してね。':result==='shared'?'共有画面に画像カードを渡しました。':'画像を共有できませんでした。');
   }catch{setShareStatus('共有に失敗しました。もう一度試してね。')}
  };
@@ -161,8 +167,9 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    axes={axes}
    onShare={share}
    shareStatus={shareStatus}
-   onOpenBook={()=>{window.location.href=moneyTypeBookUrl(job,style)}}
-   onHousehold={()=>{try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
+   onExplore={kind=>recordMoneyTypeFunnel(kind==='scenes'?'scenes_expanded':'style_expanded',sessionId)}
+   onOpenBook={()=>{recordMoneyTypeFunnel('type_book_opened',sessionId);window.location.href=moneyTypeBookUrl(job,style)}}
+   onHousehold={()=>{recordMoneyTypeFunnel('household_cta_clicked',sessionId);try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
    onRestart={onRestart}
   />
   {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V17_EDITORIAL'},null,2)}</pre>}
