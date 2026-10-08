@@ -149,6 +149,14 @@ await page.waitForFunction(()=>{const img=document.querySelector('.mpp17-portrai
 await assertJobImageLoaded('.mpp17-portrait','result-hero');
 await page.waitForTimeout(1100);
 await screenshot('05-result-profile');
+await page.reload({waitUntil:'networkidle'});
+await page.locator('.mpp17-page').waitFor({state:'visible',timeout:6000});
+if(await page.locator('.mpp-class-unlock').count())throw new Error('MONEY_PUBLIC_SSR_REPEATS_AFTER_RELOAD');
+const payoffOrder=await page.evaluate(()=>{
+  const selectors=['.mpp17-profile','.mpp17-recognition','.mpp17-share','.mpp17-style-detail','.mpp17-core'];
+  return selectors.map(selector=>({selector,top:document.querySelector(selector)?.getBoundingClientRect().top||0}));
+});
+if(payoffOrder.some((p,i)=>i>0&&p.top<=payoffOrder[i-1].top))throw new Error('MONEY_PUBLIC_PAYOFF_ORDER_BAD:'+JSON.stringify(payoffOrder));
 const moreScenes=page.locator('.mpp17-more');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(80);
