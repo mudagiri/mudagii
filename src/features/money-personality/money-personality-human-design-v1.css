@@ -1,0 +1,402 @@
+/*
+ * MUDAGIRI / HUMAN DESIGN PASS V1
+ * Explicitly scoped to the Money Personality pilot.
+ * No font downloads, no layout resets, no classifier changes.
+ * One Japanese reading family; display emphasis reserved for titles and TYPE codes.
+ */
+:root{
+  --mpp-ui-font:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  --mpp-display-font:"Hiragino Kaku Gothic ProN","Noto Sans JP","Hiragino Sans",Meiryo,sans-serif;
+  --mpp17-font:var(--mpp-ui-font);
+  --mdg-type-ink:#292823;
+  --mdg-type-muted:#645f57;
+  --mdg-type-line:#dad4c8;
+  --mdg-type-paper:#fffdf8;
+  --mdg-type-gold:#d3ac66;
+}
+
+/* I. Reading voice — normal sentences should not look like headlines. */
+.mpp-page,
+.mpp-page button,
+.mpp-page input,
+.mpp-line-bonus,
+.mpp-job-book,
+.mpp-job-book button,
+.mpp17-page,
+.mpp17-page button{
+  font-family:var(--mpp-ui-font);
+  font-synthesis:none;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.mpp-page p,.mpp-job-book p,.mpp17-page p{
+  overflow-wrap:break-word;
+  line-break:strict;
+}
+.mpp-page :is(h1,h2,h3),
+.mpp-job-book :is(h2,h3),
+.mpp17-page :is(h1,h2,h3){
+  font-family:var(--mpp-display-font);
+  text-wrap:pretty;
+}
+.mpp-page button:focus-visible,
+.mpp-job-book button:focus-visible,
+.mpp17-page button:focus-visible,
+.mpp17-page summary:focus-visible,
+.mpp-job-book summary:focus-visible{
+  outline:3px solid #e8b957;
+  outline-offset:3px;
+}
+
+/* II. Intro and questions — warm dialogue, not tiny condensed UI captions. */
+html body #root .mpp-page .mpp-intro-copy>b{
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1.55!important;
+}
+html body #root .mpp-page .mpp-intro-copy p{
+  font-size:14px!important;
+  font-weight:500!important;
+  line-height:1.8!important;
+}
+html body #root .mpp-page .mpp-points p,
+html body #root .mpp-page .mpp-intro-note{
+  font-size:12.5px!important;
+  font-weight:600!important;
+  line-height:1.65!important;
+}
+html body #root .mpp-page .mpp-family-label,
+html body #root .mpp-page .mpp-header small{
+  font-size:12px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+}
+html body #root .mpp-page .mpp-scenario,
+html body #root .mpp-page .mpp-question-card h2{
+  font-family:var(--mpp-display-font)!important;
+  font-weight:800!important;
+  letter-spacing:-.025em!important;
+  line-height:1.55!important;
+}
+html body #root .mpp-page .mpp-poles span,
+html body #root .mpp-page .mpp-answer-list button span{
+  font-size:13px!important;
+  font-weight:650!important;
+  line-height:1.5!important;
+}
+html body #root .mpp-page .mpp-scale button span{
+  font-size:10px!important;
+  font-weight:650!important;
+  line-height:1.3!important;
+  overflow-wrap:anywhere;
+}
+html body #root .mpp-page .mpp-footnote{
+  font-size:12px!important;
+  font-weight:550!important;
+  line-height:1.6!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card>.mpp-measurement-companion .mpp-progress-talk{
+  font-size:12px!important;
+  font-weight:650!important;
+  line-height:1.45!important;
+}
+
+/* III. Result editorial canvas — fix dark-on-dark / light-on-light mistakes. */
+html body #root .mpp17-page .mpp17-mudagiri-talk{
+  border:1px solid var(--mdg-type-line)!important;
+  background:var(--mdg-type-paper)!important;
+  color:var(--mdg-type-ink)!important;
+  box-shadow:0 3px 10px rgba(40,32,20,.045)!important;
+}
+html body #root .mpp17-page .mpp17-mudagiri-talk::before{
+  border-color:var(--mdg-type-line)!important;
+  background:var(--mdg-type-paper)!important;
+}
+html body #root .mpp17-page .mpp17-mudagiri-talk small{
+  color:#80632c!important;
+  font-size:11px!important;
+  font-weight:750!important;
+  letter-spacing:0!important;
+}
+html body #root .mpp17-page .mpp17-mudagiri-talk p{
+  color:var(--mdg-type-ink)!important;
+  font-size:14px!important;
+  font-weight:650!important;
+  line-height:1.65!important;
+}
+html body #root .mpp17-page .mpp17-style-detail{
+  border:1px solid var(--mdg-type-line)!important;
+  border-radius:15px!important;
+  background:var(--mdg-type-paper)!important;
+  color:var(--mdg-type-ink)!important;
+  box-shadow:0 3px 10px rgba(40,32,20,.035);
+}
+html body #root .mpp17-page .mpp17-style-detail summary{
+  min-height:48px;
+  color:var(--mdg-type-ink)!important;
+  font-size:13px!important;
+  font-weight:750!important;
+  line-height:1.5!important;
+}
+html body #root .mpp17-page .mpp17-style-detail summary span{
+  color:#79684b!important;
+  font-size:17px!important;
+  font-weight:500!important;
+  transition:transform .18s ease;
+}
+html body #root .mpp17-page .mpp17-style-detail[open] summary span{
+  transform:rotate(45deg);
+}
+html body #root .mpp17-page .mpp17-style-detail[open] summary{
+  border-bottom:1px solid var(--mdg-type-line)!important;
+}
+html body #root .mpp17-page .mpp17-style-detail-body b{
+  color:var(--mdg-type-ink)!important;
+  font-size:14px!important;
+  font-weight:800!important;
+}
+html body #root .mpp17-page .mpp17-style-detail-body p{
+  color:var(--mdg-type-muted)!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  line-height:1.8!important;
+}
+html body #root .mpp17-page .mpp17-style-detail-body blockquote{
+  color:#494138!important;
+  background:#f6f0e5!important;
+  border-left:3px solid #ba9253!important;
+  font-size:13px!important;
+  line-height:1.65!important;
+}
+
+/* Let the character card feel rare; let the paragraphs feel human. */
+html body #root .mpp17-page section>header small,
+html body #root .mpp17-page .mpp17-share-copy>small,
+html body #root .mpp17-page .mpp17-book-copy>small{
+  font-size:11px!important;
+  font-weight:700!important;
+  letter-spacing:.015em!important;
+}
+html body #root .mpp17-page section>header h2,
+html body #root .mpp17-page .mpp17-share-copy h2,
+html body #root .mpp17-page .mpp17-book-copy h2{
+  font-size:clamp(22px,5.8vw,26px)!important;
+  font-weight:800!important;
+  line-height:1.35!important;
+  letter-spacing:-.025em!important;
+}
+html body #root .mpp17-page .mpp17-scene-list blockquote{
+  font-size:18px!important;
+  font-weight:800!important;
+  line-height:1.65!important;
+}
+html body #root .mpp17-page .mpp17-scene-list p,
+html body #root .mpp17-page .mpp17-note,
+html body #root .mpp17-page .mpp17-share-copy p,
+html body #root .mpp17-page .mpp17-book-copy p,
+html body #root .mpp17-page .mpp17-next-quest p{
+  font-size:13.5px!important;
+  font-weight:500!important;
+  line-height:1.8!important;
+}
+html body #root .mpp17-page .mpp17-profile h1,
+html body #root .mpp17-page .mpp17-share-type h2{
+  font-family:var(--mpp-display-font)!important;
+  font-weight:850!important;
+  letter-spacing:-.035em!important;
+}
+html body #root .mpp17-page .mpp17-button{
+  min-height:52px;
+  font-size:15px!important;
+  font-weight:800!important;
+}
+html body #root .mpp17-page .mpp17-more summary,
+html body #root .mpp17-page .mpp17-details summary{
+  font-size:13px!important;
+  font-weight:750!important;
+}
+
+/* IV. The dark encyclopedia: replace 6–9px labels with a legible type scale. */
+.mpp-job-book{
+  font-family:var(--mpp-ui-font)!important;
+}
+.mpp-job-book-hero h2{
+  font-family:var(--mpp-display-font)!important;
+  font-weight:850;
+  letter-spacing:-.035em;
+}
+.mpp-job-book-hero small,
+.mpp-job-book-mycard small,
+.mpp-job-book-guide-head small,
+.mpp-job-book-style-intro small,
+.mpp-job-book-jobcopy small,
+.mpp-job-book-detail-top,
+.mpp-job-book-detail-label,
+.mpp-job-book-detail-note small,
+.mpp-job-book-detail-motif small{
+  font-size:11px!important;
+  font-weight:750!important;
+  letter-spacing:.025em!important;
+  line-height:1.5!important;
+}
+.mpp-job-book-hero p,
+.mpp-job-book-guide-head p,
+.mpp-job-book-style-intro p,
+.mpp-job-book-style-hint,
+.mpp-job-book-howto p,
+.mpp-job-book-detail-note p,
+.mpp-job-book-detail-motif p{
+  color:rgba(255,255,255,.78)!important;
+  font-size:13px!important;
+  font-weight:500!important;
+  line-height:1.75!important;
+}
+.mpp-job-book-guide-talk small,
+.mpp-job-book-count span{
+  font-size:10px!important;
+  letter-spacing:.02em!important;
+  font-weight:750!important;
+}
+.mpp-job-book-guide-talk p{
+  font-size:13px!important;
+  font-weight:600!important;
+  line-height:1.6!important;
+}
+.mpp-job-book-mycard>span{
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.mpp-job-book-axes article{
+  grid-template-columns:55px minmax(0,1fr);
+  gap:5px 9px;
+  align-items:start;
+}
+.mpp-job-book-axes article>span{
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.mpp-job-book-axes article>b{
+  font-size:12px!important;
+  line-height:1.45;
+}
+.mpp-job-book-axes article>p{
+  grid-column:1/-1;
+  color:rgba(255,255,255,.81)!important;
+  font-size:12px!important;
+  line-height:1.6!important;
+}
+.mpp-job-book-formula{
+  font-size:12px!important;
+  line-height:1.6;
+  justify-content:flex-start;
+}
+.mpp-job-book-style-key button{
+  min-height:88px;
+  text-align:left;
+  padding:12px 11px;
+  border-color:rgba(255,255,255,.16);
+}
+.mpp-job-book-style-key button b{
+  font-size:15px!important;
+  font-weight:850!important;
+  letter-spacing:.01em!important;
+}
+.mpp-job-book-style-key button span{
+  color:rgba(255,255,255,.78)!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  line-height:1.55!important;
+}
+.mpp-job-book-style-explain p,
+.mpp-job-book-detail-style-more p{
+  font-size:13px!important;
+  line-height:1.8!important;
+}
+.mpp-job-book-style-explain blockquote,
+.mpp-job-book-detail-style-more blockquote{
+  font-size:13px!important;
+}
+.mpp-job-book-style-explain>button{
+  min-height:40px;
+  font-size:12px!important;
+}
+.mpp-job-book-jobcopy b{font-size:18px!important;font-weight:800!important}
+.mpp-job-book-jobcopy span,.mpp-job-book-motif{
+  color:rgba(255,255,255,.68)!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.mpp-job-book-typechips>button{min-height:48px}
+.mpp-job-book-typechips strong{font-size:12px!important;font-weight:850!important}
+.mpp-job-book-typechips small{
+  font-size:10px!important;
+  color:rgba(255,255,255,.72)!important;
+}
+.mpp-job-book-grid article>em{
+  font-size:10px!important;
+  font-weight:800!important;
+}
+.mpp-job-book-detail h3{font-family:var(--mpp-display-font)!important;font-weight:850}
+.mpp-job-book-detail-style{flex-wrap:wrap;font-size:12px!important;line-height:1.5}
+.mpp-job-book-detail-style span{font-size:12px!important}
+.mpp-job-book-detail-hero{
+  font-size:16px!important;
+  font-weight:750!important;
+  line-height:1.7!important;
+}
+.mpp-job-book-detail-scenes span,
+.mpp-job-book-detail footer{
+  font-size:11px!important;
+  line-height:1.5!important;
+}
+.mpp-job-book-detail-style-more{
+  font-size:12px!important;
+}
+.mpp-job-book-detail-close{
+  width:44px;
+  height:44px;
+}
+
+/* V. Next-quest decisions: protect the actual Japanese message. */
+.mpp-next-routes-kicker,
+.mpp-social-action small,
+.mpp-next-routes-divider,
+.mpp-route-card small,
+.mpp-next-routes-mudagiri small,
+.mpp-line-bonus-kicker{
+  font-size:11px!important;
+  font-weight:750!important;
+  letter-spacing:.02em!important;
+}
+.mpp-next-routes-lead,
+.mpp-social-action span,
+.mpp-route-card p,
+.mpp-next-routes-mudagiri p{
+  font-size:13px!important;
+  font-weight:550!important;
+  line-height:1.7!important;
+  opacity:1;
+}
+.mpp-social-action b,.mpp-route-card b{
+  font-size:16px!important;
+  font-weight:800!important;
+  line-height:1.45!important;
+}
+.mpp-social-action,.mpp-route-card{min-height:48px;touch-action:manipulation}
+.mpp-route-badge,.mpp-route-gift{font-size:11px!important;font-weight:850!important}
+.mpp-line-bonus>section h1{font-family:var(--mpp-display-font)!important}
+.mpp-line-bonus>section li,.mpp-line-bonus>section p{
+  font-size:13px!important;
+  line-height:1.7!important;
+}
+@media(max-width:760px){
+  .mpp-job-book-style-key{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:390px){
+  .mpp-job-book-style-key button{padding:11px 10px}
+  .mpp-job-book-typechips{gap:4px;padding-inline:6px}
+  html body #root .mpp-page .mpp-intro-copy p{font-size:13.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html body #root .mpp17-page .mpp17-style-detail summary span{transition:none}
+}
