@@ -27,6 +27,10 @@ assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRE
 assert(!resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_WORLD_BEATS_NOT_POST_REWARD');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
 assert(publicUi.includes("resultV10InsightFor(job,style)"),'PUBLIC_RESULT_V10_INSIGHT_NOT_WIRED');
+assert(!publicUi.includes("import ResultJourneyV1 from './ResultJourneyV1'"),'PUBLIC_HOUSEHOLD_STILL_HAS_DUPLICATE_JOURNEY');
+assert(publicUi.includes("window.location.href=householdUrl()"),'PUBLIC_HOUSEHOLD_CTA_NOT_DIRECT');
+assert(shareImageUi.includes('function publicShareUrl()')&&shareImageUi.includes("url.searchParams.set('adaptive','money-type')"),'SHARE_PUBLIC_URL_NOT_CLEAN');
+assert(shareImageUi.indexOf("if(target==='x')")<shareImageUi.indexOf('const file=await createJobShareImage'),'TEXT_SHARING_NEEDLESS_CANVAS_RENDER');
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
 assert(!publicUi.includes('resultVividScenario(job,style)'),'PUBLIC_STILL_RENDERS_LEGACY_VIVID');
 assert(resultUi.includes('content.scenes.slice(0,3)'),'V9_PRIMARY_SCENES_NOT_THREE');
