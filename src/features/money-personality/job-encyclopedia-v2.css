@@ -593,7 +593,7 @@ body.mpp-book-native-scroll-active{
   font-size:11px;
 }
 .mpp-job-book-detail-style-more summary{font-weight:850;cursor:pointer;touch-action:manipulation}
-@media(max-width:600px){
+@media(max-width:760px){
   .mpp-job-book-style-key{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .mpp-job-book-style-key button{min-height:76px;padding:11px 8px}
   .mpp-job-book-style-key button b{font-size:13px}
