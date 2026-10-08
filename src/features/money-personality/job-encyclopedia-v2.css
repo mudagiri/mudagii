@@ -631,3 +631,64 @@ body:has(.mpp-book-page),
   pointer-events:auto!important;
   -webkit-overflow-scrolling:touch!important;
 }
+
+
+/* ---------- ENCYCLOPEDIA V3.4 REAL DEVICE SCROLLER ----------
+   Android-safe: the encyclopedia owns its viewport and its scroll. */
+.mpp-book-page{
+  position:fixed!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  z-index:2147483000!important;
+  display:block!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:0!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  background:
+    linear-gradient(180deg,rgba(5,6,10,.74),rgba(9,9,11,.58) 38%,rgba(9,9,11,.90)),
+    url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp') center top/cover no-repeat!important;
+}
+
+.mpp-book-page .mpp-job-book{
+  position:relative!important;
+  display:block!important;
+  width:min(100%,560px)!important;
+  height:max-content!important;
+  min-height:calc(100dvh + 320px)!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding-bottom:calc(56px + env(safe-area-inset-bottom))!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+}
+
+/* Make the page itself the only scroll owner while open. */
+html:has(.mpp-book-page),
+body:has(.mpp-book-page){
+  overflow:hidden!important;
+  touch-action:none!important;
+}
+#root:has(.mpp-book-page){
+  overflow:visible!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+
+/* Buttons remain tappable inside the scroll container. */
+.mpp-book-page button{
+  touch-action:manipulation!important;
+  pointer-events:auto!important;
+}
