@@ -37,6 +37,13 @@ jobs:
         run: npm ci
       - name: Typecheck and build
         run: npm run build
+      - name: Verify chapter-specific OGP without changing production index
+        run: |
+          cp dist/index.html /tmp/money-personality-og.html
+          node scripts/prepare-money-personality-preview-og.mjs /tmp/money-personality-og.html
+          grep -q 'お金の性格診断｜ムダギリ診断（32タイプ）' /tmp/money-personality-og.html
+          grep -q 'property="og:url"' /tmp/money-personality-og.html
+          grep -q 'twitter:description' /tmp/money-personality-og.html
       - name: Public flow QA
         run: npm run qa:money-public-flow
       - name: Engine QA
