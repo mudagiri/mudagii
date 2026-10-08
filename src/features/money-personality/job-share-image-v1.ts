@@ -246,7 +246,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   ctx.stroke();
 
   text(ctx,'MUDAGIRI / MONEY TYPE',84,102,21,900,'left',metal);
-  text(ctx,'1 / 32',WIDTH-84,102,21,900,'right','#e4e0d7');
+  text(ctx,'32 TYPES',WIDTH-84,102,21,900,'right','#e4e0d7');
 
   text(ctx,typeCode,86,171,43,900,'left','#ffffff');
 
