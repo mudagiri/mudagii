@@ -9,6 +9,11 @@ import './job-encyclopedia-v2.css';
 
 const ORDER:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
 const STYLES:StyleId[]=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
+const AXIS_GUIDE=[
+  {code:'F / I',title:'時間の向き',left:'先のことまで考えたい',right:'今の状況を大事にしたい'},
+  {code:'D / N',title:'決め方',left:'比べてから決めたい',right:'しっくりきた方を選びたい'},
+  {code:'M / P',title:'確認のしかた',left:'普段から見ておきたい',right:'必要な時だけ見ればいい'},
+] as const;
 
 type SelectedType={jobCode:JobCode;style:StyleId};
 
@@ -84,12 +89,32 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       <span>{mine.jobName} × {mine.styleLabel}</span>
     </div>
 
-    <div className="mpp-job-book-style-key" aria-label="価値観コード">
+    <section className="mpp-job-book-guide" aria-label="32タイプの見方">
+      <div className="mpp-job-book-guide-head">
+        <small>HOW IT WORKS</small>
+        <h3>まず3つのクセで、8つのJOBに分かれます。</h3>
+        <p>難しく考えなくてOK。お金を使う時の「いつもの自分」を3方向から見ています。</p>
+      </div>
+      <div className="mpp-job-book-axes">
+        {AXIS_GUIDE.map(axis=><article key={axis.code}>
+          <span>{axis.code}</span><b>{axis.title}</b>
+          <p>{axis.left}<i>↔</i>{axis.right}</p>
+        </article>)}
+      </div>
+      <div className="mpp-job-book-formula"><b>3つのクセ → 8 JOB</b><i>＋</i><b>お金を使う時の本音 → 4 STYLE</b><strong>＝ 32 TYPE</strong></div>
+    </section>
+
+    <div className="mpp-job-book-style-intro">
+      <small>4 STYLE / お金を使う時、何を大事にする？</small>
+      <p>同じJOBでも、最後に大事にしたいことは人それぞれ。</p>
+    </div>
+    <div className="mpp-job-book-style-key" aria-label="4つのお金の価値観">
       {STYLES.map(style=><button key={style} type="button" className={style===activeStyle?'is-active':''} onClick={()=>setActiveStyle(style)} aria-pressed={style===activeStyle}>
-        <b>{STYLE_IDENTITY[style].code}</b>{STYLE_IDENTITY[style].label}
+        <b>{STYLE_IDENTITY[style].code} · {STYLE_IDENTITY[style].label}</b>
+        <span>{STYLE_IDENTITY[style].voice}</span>
       </button>)}
     </div>
-    <p className="mpp-job-book-style-hint"><b>{STYLE_IDENTITY[activeStyle].label}</b> の32TYPEを見ています。JOBカードをタップすると詳細が開きます。</p>
+    <p className="mpp-job-book-style-hint">今は <b>{STYLE_IDENTITY[activeStyle].label}</b> を選択中。JOBをタップすると、その組み合わせの特徴が見られます。</p>
 
     <div className="mpp-job-book-grid">
       {ORDER.map(code=>{
@@ -124,8 +149,8 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
     </div>
 
     <div className="mpp-job-book-howto">
-      <b>コードの見方</b>
-      <p>最初の3文字がJOB、最後の1文字が価値観。友だちのTYPEコードを見せ合って、その場で比較できます。</p>
+      <b>TYPEコードはこう読む</b>
+      <p>最初の3文字が「いつものお金のクセ」、最後の1文字が「使う時に大事にしたいこと」。たとえば IDP-E なら、戦術ハンター × 楽しさ。</p>
     </div>
 
     <p className="mpp-job-book-social">#ムダギリ診断　#お金の性格診断</p>
@@ -143,7 +168,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
 
         <small className="mpp-job-book-detail-label">お金の性格TYPE</small>
         <h3>{detail.identity.jobName}</h3>
-        <div className="mpp-job-book-detail-style"><b>{detail.identity.styleLabel}</b>を大事にするタイプ</div>
+        <div className="mpp-job-book-detail-style"><b>{detail.identity.styleLabel}</b><span>{STYLE_IDENTITY[selected!.style].voice}</span></div>
         <p className="mpp-job-book-detail-hero">{detail.result.hero}</p>
 
         <div className="mpp-job-book-detail-scenes">
