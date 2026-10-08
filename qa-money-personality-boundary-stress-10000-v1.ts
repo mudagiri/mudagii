@@ -78,7 +78,7 @@ function run(x:Latent,noise=.77,separatorNoise=.32){
       const key=id as keyof SeparatorAnswers;
       if(separators[key]===undefined){
         // TypeScript needs the union value tied to each separator key.
-        (separators as Record<string,string>)[id]=separatorChoice(id,evaluation,x,separatorNoise);
+        (separators as unknown as Record<string,string>)[id]=separatorChoice(id,evaluation,x,separatorNoise);
         advanced=true;
       }
     }
