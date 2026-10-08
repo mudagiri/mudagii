@@ -21,6 +21,7 @@ type Props={
   primaryStyle:StyleId;
   secondaryStyle:StyleId;
   axes:AxisRow[];
+  balanceNote:string|null;
   onShare:(target:ShareTarget)=>void;
   shareStatus:string;
   onExplore:(kind:'scenes'|'style')=>void;
@@ -45,7 +46,7 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
 
 function DisclosureCue(){return <span className="mpp-disclosure-state" aria-hidden="true"><span className="mpp-disclosure-closed">開く <b>⌄</b></span><span className="mpp-disclosure-open">閉じる <b>⌃</b></span></span>}
 
-export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onLineBonus,onRestart}:Props){
+export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,balanceNote,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onLineBonus,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
@@ -77,9 +78,11 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       </section>
 
 
+      {balanceNote&&<p className="mpp17-balance-note"><b>ムダギリくん：</b>{balanceNote}</p>}
       <MudagiriBeat line="ちょっと待って。これ、やってない？w"/>
       <section className="mpp17-recognition">
-        <header><span>01</span><div><small>まずは、あるある</small><h2>これ、やりがちじゃない？</h2></div></header>
+        <header><span>01</span><div><small>まずは、あるある</small><h2>こんな時、心当たりある？</h2></div></header>
+        <p className="mpp17-scene-context">場面はあくまで例。「この考え方、分かる！」を探してみてね。</p>
         <div className="mpp17-scene-list">
           {content.scenes.slice(0,2).map(scene=><article key={scene.label}>
             <small>{scene.label}</small>
@@ -88,7 +91,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           </article>)}
         </div>
         <details className="mpp17-more" onToggle={event=>{if(event.currentTarget.open)onExplore('scenes')}}>
-          <summary><span className="mpp-disclosure-title">ほかのあるあるも見る <em>＋4</em></span><DisclosureCue/></summary>
+          <summary><span className="mpp-disclosure-title">別の場面も見てみる <em>＋4</em></span><DisclosureCue/></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
       </section>
