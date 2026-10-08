@@ -25,7 +25,7 @@ export type MoneyTypeFunnelEntry={
   sessionId:string;
   event:MoneyTypeFunnelEvent;
   at:string;
-  target?:'native'|'x'|'line';
+  target?:'native'|'x'|'line'|'threads'|'instagram';
 };
 
 const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
@@ -40,7 +40,7 @@ const SINGLE_SESSION_MILESTONES=new Set<MoneyTypeFunnelEvent>([
   'intro_started','ssr_claimed','result_seen',
 ]);
 
-export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:string,target?:'native'|'x'|'line'){
+export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:string,target?:'native'|'x'|'line'|'threads'|'instagram'){
   if(!sessionId||!VALID_EVENTS.includes(event))return;
   try{
     const parsed=JSON.parse(localStorage.getItem(MONEY_TYPE_FUNNEL_KEY)||'[]') as unknown;
