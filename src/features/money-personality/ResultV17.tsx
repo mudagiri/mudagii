@@ -62,7 +62,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-portrait"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
         <div className="mpp17-type-label">あなたのお金タイプ</div>
         <h1>{identity.jobName}</h1>
-        <div className="mpp17-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span>を大事にするタイプ</div>
+        <div className="mpp17-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].voice}</b></div>
         <p className="mpp17-hero">{content.hero}</p>
         <div className="mpp17-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
         <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
@@ -129,7 +129,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       </section>
 
       <section className="mpp17-book-preview">
-        <div className="mpp17-book-copy"><small>07 / 32タイプ図鑑</small><h2>友だちは、どのタイプ？</h2><p>8つのJOB × 4つの価値観。キャラから気になるタイプをのぞけます。</p></div>
+        <div className="mpp17-book-copy"><small>07 / 32タイプ図鑑</small><h2>友だちは、どのタイプ？</h2><p>3つのお金のクセで8つのJOBに分かれて、最後に4つのSTYLEがつきます。気になるタイプをのぞいてみよう。</p></div>
         <div className="mpp17-mini-jobs" aria-hidden="true">
           {JOB_ORDER.map(code=><div key={code} className={code===jobCode?'is-you':''}><JobCharacterCard jobCode={code} variant="compact"/><span>{JOB_CHARACTER_ASSETS[code].name}</span></div>)}
         </div>
@@ -147,7 +147,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <div className="mpp17-share-type">
             <small>あなたのお金タイプ</small>
             <h2>{identity.jobName}</h2>
-            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span>を大事にするタイプ</div>
+            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].voice}</b></div>
             <p>{content.hero}</p>
             <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
           </div>
@@ -178,7 +178,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       <section className="mpp17-next">
         <small>次にやるなら、これ</small>
         <h2>{content.nextMove}</h2>
-        <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>性格が分かったら、次は実際の支出。削る前提ではなく、変えやすいところだけ探します。</p></div>
+        <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>次は、実際に払ってるお金を見てみよう。全部を削るんじゃなく、変えやすそうな所だけ探します。</p></div>
         <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む</button>
         <button className="mpp17-restart" onClick={onRestart}>もう一度診断する</button>
       </section>
