@@ -184,10 +184,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   const ctx=canvas.getContext('2d');
   if(!ctx)throw new Error('canvas unavailable');
 
-  const [foil,img]=await Promise.all([
-    loadImage('./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg'),
-    loadImage(asset.file),
-  ]);
+  const img=await loadImage(asset.file);
 
   ctx.fillStyle='#07080b';
   ctx.fillRect(0,0,WIDTH,HEIGHT);
@@ -210,21 +207,26 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
 
   drawJobMotif(ctx,jobCode,accent);
 
+  // Static share PNG: render the prettiest frame of the JOB light motion.
   ctx.save();
   roundedRect(ctx,42,42,WIDTH-84,HEIGHT-84,48);
   ctx.clip();
   ctx.globalCompositeOperation='screen';
-  ctx.globalAlpha=.82;
-  ctx.drawImage(foil,42,42,WIDTH-84,HEIGHT-84);
 
-  const glint=ctx.createLinearGradient(-120,920,1120,180);
+  const aura=ctx.createRadialGradient(WIDTH/2,465,60,WIDTH/2,465,430);
+  aura.addColorStop(0,accent+'26');
+  aura.addColorStop(.52,accent+'0f');
+  aura.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=aura;
+  ctx.fillRect(42,42,WIDTH-84,860);
+
+  const glint=ctx.createLinearGradient(-100,980,1150,160);
   glint.addColorStop(0,'rgba(255,255,255,0)');
-  glint.addColorStop(.43,'rgba(110,220,255,.02)');
-  glint.addColorStop(.50,'rgba(255,255,255,.18)');
-  glint.addColorStop(.54,'rgba(255,222,135,.06)');
-  glint.addColorStop(.60,'rgba(180,120,255,.03)');
+  glint.addColorStop(.45,'rgba(255,255,255,0)');
+  glint.addColorStop(.50,'rgba(255,255,255,.14)');
+  glint.addColorStop(.54,accent+'18');
+  glint.addColorStop(.60,'rgba(255,255,255,0)');
   glint.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.globalAlpha=1;
   ctx.fillStyle=glint;
   ctx.fillRect(42,42,WIDTH-84,HEIGHT-84);
   ctx.restore();
