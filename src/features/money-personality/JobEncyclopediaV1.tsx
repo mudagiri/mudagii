@@ -82,7 +82,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       <div>
         <small>COLLECTION / 8 JOB × 4 STYLE</small>
         <h2>32TYPE図鑑</h2>
-        <p>気になるカードをタップすると、そのTYPEの特徴を見られます。</p>
+        <p>気になるJOBをタップして、どんなタイプかのぞいてみよう。</p>
       </div>
       <div className="mpp-job-book-count"><strong>32</strong><span>TYPES</span></div>
     </header>
@@ -98,7 +98,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       <div className="mpp-job-book-guide-head">
         <small>HOW IT WORKS</small>
         <h3>まず3つのクセで、8つのJOBに分かれます。</h3>
-        <p>難しく考えなくてOK。お金を使う時の「いつもの自分」を3方向から見ています。</p>
+        <p>お金を使うときの「いつもの自分」を、3つのクセで見ていくよ。</p>
       </div>
       <div className="mpp-job-book-axes">
         {AXIS_GUIDE.map(axis=><article key={axis.code}>
@@ -125,7 +125,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
       <blockquote>「{STYLE_IDENTITY[expandedStyle].example}」</blockquote>
       <button type="button" onClick={()=>setExpandedStyle(null)}>説明を閉じる</button>
     </div>}
-    <p className="mpp-job-book-style-hint">今は <b>{STYLE_IDENTITY[activeStyle].label}</b> を選択中。上のSTYLEをタップすると詳しい意味が見られます。JOBをタップすると組み合わせの特徴が見られます。</p>
+    <p className="mpp-job-book-style-hint"><b>{STYLE_IDENTITY[activeStyle].label}</b> を選択中。STYLEはタップで説明、JOBはタップで組み合わせを見られるよ。</p>
 
     <div className="mpp-job-book-grid">
       {ORDER.map(code=>{
