@@ -101,74 +101,8 @@ html body #root .mpp-page.mpp-page--guild .mpp-question-card>.mpp-measurement-co
   line-height:1.45!important;
 }
 
-/* III. Result editorial canvas — fix dark-on-dark / light-on-light mistakes. */
-html body #root .mpp17-page .mpp17-mudagiri-talk{
-  border:1px solid var(--mdg-type-line)!important;
-  background:var(--mdg-type-paper)!important;
-  color:var(--mdg-type-ink)!important;
-  box-shadow:0 3px 10px rgba(40,32,20,.045)!important;
-}
-html body #root .mpp17-page .mpp17-mudagiri-talk::before{
-  border-color:var(--mdg-type-line)!important;
-  background:var(--mdg-type-paper)!important;
-}
-html body #root .mpp17-page .mpp17-mudagiri-talk small{
-  color:#80632c!important;
-  font-size:11px!important;
-  font-weight:750!important;
-  letter-spacing:0!important;
-}
-html body #root .mpp17-page .mpp17-mudagiri-talk p{
-  color:var(--mdg-type-ink)!important;
-  font-size:14px!important;
-  font-weight:650!important;
-  line-height:1.65!important;
-}
-html body #root .mpp17-page .mpp17-style-detail{
-  border:1px solid var(--mdg-type-line)!important;
-  border-radius:15px!important;
-  background:var(--mdg-type-paper)!important;
-  color:var(--mdg-type-ink)!important;
-  box-shadow:0 3px 10px rgba(40,32,20,.035);
-}
-html body #root .mpp17-page .mpp17-style-detail summary{
-  min-height:48px;
-  color:var(--mdg-type-ink)!important;
-  font-size:13px!important;
-  font-weight:750!important;
-  line-height:1.5!important;
-}
-html body #root .mpp17-page .mpp17-style-detail summary span{
-  color:#79684b!important;
-  font-size:17px!important;
-  font-weight:500!important;
-  transition:transform .18s ease;
-}
-html body #root .mpp17-page .mpp17-style-detail[open] summary span{
-  transform:rotate(45deg);
-}
-html body #root .mpp17-page .mpp17-style-detail[open] summary{
-  border-bottom:1px solid var(--mdg-type-line)!important;
-}
-html body #root .mpp17-page .mpp17-style-detail-body b{
-  color:var(--mdg-type-ink)!important;
-  font-size:14px!important;
-  font-weight:800!important;
-}
-html body #root .mpp17-page .mpp17-style-detail-body p{
-  color:var(--mdg-type-muted)!important;
-  font-size:14px!important;
-  font-weight:500!important;
-  line-height:1.8!important;
-}
-html body #root .mpp17-page .mpp17-style-detail-body blockquote{
-  color:#494138!important;
-  background:#f6f0e5!important;
-  border-left:3px solid #ba9253!important;
-  font-size:13px!important;
-  line-height:1.65!important;
-}
-
+/* III. Result dialogue and STYLE panel belong to result-v17-editorial.css.
+   This overrides layer now retains only shared typography hierarchy. */
 /* Let the character card feel rare; let the paragraphs feel human. */
 html body #root .mpp17-page section>header small,
 html body #root .mpp17-page .mpp17-share-copy>small,
