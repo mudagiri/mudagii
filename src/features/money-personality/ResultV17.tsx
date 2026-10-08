@@ -67,11 +67,19 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-portrait"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
         <div className="mpp17-type-label">あなたのお金タイプ</div>
         <h1>{identity.jobName}</h1>
-        <div className="mpp17-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].voice}</b></div>
+        <div className="mpp17-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].short}</b></div>
         <p className="mpp17-hero">{content.hero}</p>
         <div className="mpp17-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
         <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
       </section>
+      <details className="mpp17-style-detail">
+        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span>詳しく見る ＋</span></summary>
+        <div className="mpp17-style-detail-body">
+          <b>{STYLE_IDENTITY[primaryStyle].short}</b>
+          <p>{STYLE_IDENTITY[primaryStyle].description}</p>
+          <blockquote>「{STYLE_IDENTITY[primaryStyle].example}」</blockquote>
+        </div>
+      </details>
 
       <MudagiriBeat line="ちょっと待って。これ、やってない？w"/>
       <section className="mpp17-recognition">
@@ -119,7 +127,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <header><span>05</span><div><small>同じ場面でも、考えることが違う</small><h2>{insight.compare.scene}</h2></div></header>
         <div className="mpp17-compare-row">
           <article className="is-you"><small>あなた</small><b>{insight.compare.you}</b></article>
-          <article><small>近いタイプ</small><b>{insight.compare.other.replaceAll('満足タイプ','楽しさタイプ').replaceAll('ムダなしタイプ','納得タイプ')}</b></article>
+          <article><small>近いタイプ</small><b>{insight.compare.other}</b></article>
         </div>
       </section>
 
@@ -156,7 +164,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <div className="mpp17-share-type">
             <small>あなたのお金タイプ</small>
             <h2>{identity.jobName}</h2>
-            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].voice}</b></div>
+            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].short}</b></div>
             <p>{content.hero}</p>
             <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
           </div>
