@@ -26,6 +26,7 @@ type Props={
   onExplore:(kind:'scenes'|'style')=>void;
   onOpenBook:()=>void;
   onHousehold:()=>void;
+  onLineBonus:()=>void;
   onRestart:()=>void;
 };
 
@@ -44,7 +45,7 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
 
 function DisclosureCue(){return <span className="mpp-disclosure-state" aria-hidden="true"><span className="mpp-disclosure-closed">開く <b>⌄</b></span><span className="mpp-disclosure-open">閉じる <b>⌃</b></span></span>}
 
-export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onRestart}:Props){
+export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onLineBonus,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
@@ -207,6 +208,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <h2>{content.nextMove}</h2>
         <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>12カテゴリの支出から、見直せそうなところを一緒に探そう。全部を削る必要はないよ。</p></div>
         <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む</button>
+        <div className="mpp17-line-bonus-entry"><span>LINE特典</span><h3>あなたのJOB専用・お金の攻略ガイド</h3><p>自分の強みや、ハマりやすい出費のクセを深掘りできる特典を準備中。</p><button type="button" onClick={onLineBonus}>特典の中身を見る <span aria-hidden="true">›</span></button><small>家計診断はLINE登録なしで進められます。</small></div>
         <button className="mpp17-restart" onClick={onRestart}>もう一度診断する</button>
       </section>
 
