@@ -13,6 +13,7 @@ import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
 import {resultV9For} from './resultV9Content';
 import {resultV10InsightFor} from './resultV10Insight';
 import {recordMoneyTypeFunnel} from './money-type-funnel-v1';
+import {shareJobTypeImage} from './job-share-image-v1';
 import JobEncyclopediaV1 from './JobEncyclopediaV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -146,7 +147,6 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
   recordMoneyTypeFunnel('share_attempt',sessionId,target);
   setShareStatus('');
   try{
-   const {shareJobTypeImage}=await import('./job-share-image-v1');
    const result=await shareJobTypeImage({jobCode:job,primaryStyle:style,target});
    if(result==='shared')recordMoneyTypeFunnel('share_native_sheet_resolved',sessionId,target);
    if(result==='downloaded')recordMoneyTypeFunnel('share_image_downloaded',sessionId,target);
