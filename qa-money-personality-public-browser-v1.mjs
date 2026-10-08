@@ -228,6 +228,7 @@ const routesText=((await page.locator('.mpp-next-routes').textContent())||'').re
 if(!routesText.includes('YOUR MONEY TYPE')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
 if(!routesText.includes('32TYPE図鑑'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_CTA_MISSING:'+routesText);
 await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
+await page.waitForURL(url=>new URL(url).searchParams.get('book')==='1',{timeout:5000});
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
 // fold-like encyclopedia viewport: wide mobile screens must still remain a one-column vertical collection.
 await page.setViewportSize({width:690,height:844});
@@ -243,11 +244,12 @@ const typeBook=await page.evaluate(()=>({
   bodyOverflowY:getComputedStyle(document.body).overflowY,
   bodyTouchAction:getComputedStyle(document.body).touchAction,
   rootDisplay:getComputedStyle(document.getElementById('root')).display,
+  standalone:!!document.querySelector('.mpp-book-standalone'),
   docScrollHeight:(document.scrollingElement||document.documentElement).scrollHeight,
   viewport:innerHeight,
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8||typeBook.gridColumns!==1)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
-if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.bodyTouchAction==='none'||typeBook.rootDisplay!=='none'||typeBook.docScrollHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.bodyTouchAction==='none'||typeBook.rootDisplay==='none'||!typeBook.standalone||typeBook.docScrollHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
 const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
 const viewportNow=page.viewportSize();
@@ -276,6 +278,8 @@ await page.locator('.mpp-job-book-detail').waitFor({state:'detached',timeout:200
 
 await screenshot('07-type-book-32');
 await page.getByRole('button',{name:'獲得画面に戻る'}).click();
+await page.getByRole('button',{name:'家計クエストへ進む'}).waitFor({state:'visible',timeout:5000});
+await page.getByRole('button',{name:'家計クエストへ進む'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 await page.locator('.mpp-social-action--share').click();
 await page.locator('.mpp-job-share').waitFor({state:'visible',timeout:3000});
