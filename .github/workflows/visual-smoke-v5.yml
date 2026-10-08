@@ -52,6 +52,10 @@ jobs:
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
         run: node qa-money-personality-cognitive-browser-v1.mjs
+      - name: Run iPhone WebKit Safari-engine responsive smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-money-personality-ios-webkit-v1.mjs
       - name: Upload screenshots and geometry report
         if: always()
         uses: actions/upload-artifact@v4
