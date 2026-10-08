@@ -78,6 +78,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
               <small>JOB {String(asset.jobNumber).padStart(2,'0')} · {code}</small>
               <b>{asset.name}</b>
               <span>{asset.animal}</span>
+              <p className="mpp-job-book-motif">{asset.motifReason}</p>
             </div>
             <i aria-hidden="true">›</i>
           </button>
@@ -130,6 +131,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
           <p>{detail.result.scenes[0]?.hit}</p>
         </div>
 
+        <div className="mpp-job-book-detail-motif"><small>WHY THIS ANIMAL?</small><p>{detail.asset.motifReason}</p></div>
         <footer><span>JOB {String(detail.asset.jobNumber).padStart(2,'0')}</span><b>{detail.asset.animal}</b></footer>
       </article>
     </div>}
