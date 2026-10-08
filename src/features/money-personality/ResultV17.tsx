@@ -55,8 +55,6 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
   return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
     <div className="mpp17-wrap">
 
-      <ResultWorldBeatV1 beat="complete"/>
-
       <section className="mpp17-profile" data-job={jobCode} aria-label="あなたのお金タイプ">
         <div className="mpp17-job-bg" aria-hidden="true"/>
         <div className="mpp17-holo-foil" aria-hidden="true"/>
@@ -72,14 +70,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
         <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
       </section>
-      <details className="mpp17-style-detail">
-        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span aria-hidden="true">＋</span></summary>
-        <div className="mpp17-style-detail-body">
-          <b>{STYLE_IDENTITY[primaryStyle].short}</b>
-          <p>{STYLE_IDENTITY[primaryStyle].description}</p>
-          <blockquote>「{STYLE_IDENTITY[primaryStyle].example}」</blockquote>
-        </div>
-      </details>
+
 
       <MudagiriBeat line="ちょっと待って。これ、やってない？w"/>
       <section className="mpp17-recognition">
@@ -96,6 +87,45 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
       </section>
+
+      <section className="mpp17-share" id="mpp17-share">
+        <div className="mpp17-share-preview" data-job={jobCode}>
+          <div className="mpp17-share-jobbg" aria-hidden="true"/>
+          <img className="mpp17-share-holo" src="./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg" alt="" aria-hidden="true"/>
+          <div className="mpp17-share-glint" aria-hidden="true"/>
+          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
+          <div className="mpp17-share-code">{identity.code}</div>
+          <div className="mpp17-share-art"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
+          <div className="mpp17-share-type">
+            <small>あなたのお金タイプ</small>
+            <h2>{identity.jobName}</h2>
+            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].short}</b></div>
+            <p>{content.hero}</p>
+            <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
+          </div>
+          <footer><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></footer>
+        </div>
+        <div className="mpp17-share-copy">
+          <small>08 / SHARE</small>
+          <h2>これ、友だちに見せたくない？</h2>
+          <p>収入や金額は出ません。タイプとキャラだけ、そのままシェアできます。</p>
+        </div>
+        <div className="mpp17-share-buttons">
+          <button onClick={()=>onShare('x')}>𝕏</button>
+          <button onClick={()=>onShare('instagram')}>Instagram</button>
+          <button onClick={()=>onShare('threads')}>Threads</button>
+          <button onClick={()=>onShare('line')}>LINE</button>
+        </div>
+      </section>
+
+      <details className="mpp17-style-detail">
+        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span aria-hidden="true">＋</span></summary>
+        <div className="mpp17-style-detail-body">
+          <b>{STYLE_IDENTITY[primaryStyle].short}</b>
+          <p>{STYLE_IDENTITY[primaryStyle].description}</p>
+          <blockquote>「{STYLE_IDENTITY[primaryStyle].example}」</blockquote>
+        </div>
+      </details>
 
       <MudagiriBeat line="やっぱりな。たぶんここがお前のクセ。"/>
       <section className="mpp17-core">
@@ -153,35 +183,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <button className="mpp17-button mpp17-button--dark" onClick={onOpenBook}>32タイプ図鑑を見る</button>
       </section>
 
-      <section className="mpp17-share" id="mpp17-share">
-        <div className="mpp17-share-preview" data-job={jobCode}>
-          <div className="mpp17-share-jobbg" aria-hidden="true"/>
-          <img className="mpp17-share-holo" src="./assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg" alt="" aria-hidden="true"/>
-          <div className="mpp17-share-glint" aria-hidden="true"/>
-          <div className="mpp17-share-head"><span>MUDAGIRI / MONEY TYPE</span><b>1 / 32</b></div>
-          <div className="mpp17-share-code">{identity.code}</div>
-          <div className="mpp17-share-art"><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
-          <div className="mpp17-share-type">
-            <small>あなたのお金タイプ</small>
-            <h2>{identity.jobName}</h2>
-            <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].short}</b></div>
-            <p>{content.hero}</p>
-            <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
-          </div>
-          <footer><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></footer>
-        </div>
-        <div className="mpp17-share-copy">
-          <small>08 / SHARE</small>
-          <h2>これ、友だちに見せたくない？</h2>
-          <p>収入や金額は出ません。タイプとキャラだけ、そのままシェアできます。</p>
-        </div>
-        <div className="mpp17-share-buttons">
-          <button onClick={()=>onShare('x')}>𝕏</button>
-          <button onClick={()=>onShare('instagram')}>Instagram</button>
-          <button onClick={()=>onShare('threads')}>Threads</button>
-          <button onClick={()=>onShare('line')}>LINE</button>
-        </div>
-      </section>
+
 
       <details className="mpp17-details">
         <summary>なんでこのタイプになった？ <span>3つのクセを見る</span></summary>
