@@ -400,3 +400,45 @@ html body #root .mpp17-page .mpp17-details summary{
 @media(prefers-reduced-motion:reduce){
   html body #root .mpp17-page .mpp17-style-detail summary span{transition:none}
 }
+
+/* Give the STYLE name and its Japanese meaning equal legibility on collectible cards. */
+html body #root .mpp17-page .mpp17-profile .mpp17-value{
+  max-width:100%;
+  flex-wrap:wrap;
+  gap:6px;
+  font-size:13px!important;
+  font-weight:700!important;
+}
+html body #root .mpp17-page .mpp17-profile .mpp17-value span{
+  font-size:12px!important;
+  font-weight:850!important;
+  letter-spacing:.025em!important;
+}
+html body #root .mpp17-page .mpp17-profile .mpp17-value b{
+  font-size:13px!important;
+  font-weight:650!important;
+  line-height:1.5!important;
+}
+html body #root .mpp17-page .mpp17-profile .mpp17-hero{
+  font-size:15.5px!important;
+  line-height:1.7!important;
+  font-weight:650!important;
+}
+html body #root .mpp17-page .mpp17-profile .mpp17-tags span{
+  font-size:10.5px!important;
+  font-weight:700!important;
+}
+html body #root .mpp17-page .mpp17-share-value{
+  flex-wrap:wrap;
+  gap:6px!important;
+  font-size:11.5px!important;
+  line-height:1.5!important;
+}
+html body #root .mpp17-page .mpp17-share-value b{
+  font-weight:650!important;
+}
+.mpp-job-share-style-caption{
+  font-size:13px!important;
+  font-weight:650!important;
+  line-height:1.6!important;
+}
