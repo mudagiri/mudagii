@@ -224,6 +224,8 @@ const resultStyleDetail=page.locator('.mpp17-style-detail');
 await resultStyleDetail.locator('summary').click();
 const detailCue=await resultStyleDetail.evaluate(el=>({summarySize:parseFloat(getComputedStyle(el.querySelector('summary')).fontSize),summaryHeight:el.querySelector('summary').getBoundingClientRect().height,closeVisible:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display!=='none'}));
 if(detailCue.summarySize<15||detailCue.summaryHeight<56||!detailCue.closeVisible)throw new Error('MONEY_PUBLIC_STYLE_DETAIL_DISCOVERABILITY_BAD:'+JSON.stringify(detailCue));
+const cueTextColor=await resultStyleDetail.locator('.mpp-disclosure-open').evaluate(el=>getComputedStyle(el).color);
+if(cueTextColor!=='rgb(255, 250, 240)')throw new Error('MONEY_PUBLIC_DISCLOSURE_CLOSED_TEXT_CONTRAST_BAD:'+cueTextColor);
 const expandedStyleText=(await resultStyleDetail.textContent())||'';
 if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(できることを増やしたい|楽しいことに使いたい|あとで困りたくない|余計な出費はしたくない)/.test(expandedStyleText))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
 await page.waitForTimeout(100);
