@@ -219,6 +219,9 @@ if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(でき�
 await page.waitForTimeout(100);
 const funnel=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_money_type_funnel_v1')||'[]'));
 const funnelEvents=new Set(funnel.map(x=>x.event));
+for(const event of ['intro_started','ssr_claimed','result_seen']){
+  if(funnel.filter(x=>x.event===event).length!==1)throw new Error('MONEY_PUBLIC_FUNNEL_MILESTONE_DUPLICATED:'+event+':'+JSON.stringify(funnel));
+}
 for(const event of ['intro_started','intro_resumed','ssr_claimed','result_seen','scenes_expanded','style_expanded']){
   if(!funnelEvents.has(event))throw new Error('MONEY_PUBLIC_FUNNEL_EVENT_MISSING:'+event+':'+JSON.stringify(funnel));
 }
