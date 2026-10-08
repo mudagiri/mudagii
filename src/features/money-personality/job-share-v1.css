@@ -223,3 +223,46 @@
 .mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{
   background:linear-gradient(163deg,transparent 0 22%,color-mix(in srgb,var(--share-motif) 16%,transparent) 22.5% 23.4%,transparent 23.9% 100%),linear-gradient(158deg,transparent 0 45%,color-mix(in srgb,var(--share-motif) 14%,transparent) 45.4% 46.2%,transparent 46.7% 100%),linear-gradient(168deg,transparent 0 66%,color-mix(in srgb,var(--share-motif) 12%,transparent) 66.4% 67.2%,transparent 67.7% 100%)!important
 }
+
+
+/* ---------- SHARE CARD V2.5 JOB LIGHT MOTION ---------- */
+.mpp-job-share-diamond{display:none!important}
+.mpp-job-share-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  border-radius:24px;
+  opacity:.22;
+  mix-blend-mode:screen;
+  background:linear-gradient(108deg,transparent 0 42%,rgba(255,255,255,.11) 48%,transparent 55% 100%);
+  background-size:190% 100%;
+}
+.mpp-job-share-jobbg{
+  transform-origin:50% 36%;
+  will-change:transform,opacity,filter,background-position;
+}
+@keyframes mppShareFdm{0%,100%{opacity:.64;transform:scale(.985)}48%{opacity:1;transform:scale(1.025)}}
+@keyframes mppShareFdp{0%,100%{opacity:.64;filter:brightness(.94)}48%{opacity:.96;filter:brightness(1.2)}}
+@keyframes mppShareFnm{0%,100%{opacity:.66;filter:brightness(.92)}35%{opacity:.98;filter:brightness(1.28)}72%{opacity:.76;filter:brightness(1.04)}}
+@keyframes mppShareFnp{0%{background-position:0 0;opacity:.62}50%{background-position:0 16px;opacity:.94}100%{background-position:0 0;opacity:.62}}
+@keyframes mppShareIdm{0%,100%{transform:scale(.97);opacity:.64}50%{transform:scale(1.035);opacity:.94}}
+@keyframes mppShareIdp{0%,100%{transform:scale(1.025);opacity:.64;filter:brightness(.94)}42%{transform:scale(.985);opacity:1;filter:brightness(1.24)}}
+@keyframes mppShareInm{0%{transform:rotate(0deg) scale(.99);opacity:.66}50%{opacity:.96}100%{transform:rotate(360deg) scale(1.01);opacity:.66}}
+@keyframes mppShareInp{0%{background-position:-26px 0;opacity:.58}52%{background-position:18px 0;opacity:.95}100%{background-position:48px 0;opacity:.62}}
+@keyframes mppShareGlint{from{background-position:-90% 0}to{background-position:120% 0}}
+@media(prefers-reduced-motion:no-preference){
+  .mpp-job-share-card::after{animation:mppShareGlint 5.6s ease-in-out infinite alternate}
+  .mpp-job-share[data-job="FDM"] .mpp-job-share-jobbg{animation:mppShareFdm 3.4s ease-in-out infinite}
+  .mpp-job-share[data-job="FDP"] .mpp-job-share-jobbg{animation:mppShareFdp 3.1s ease-in-out infinite}
+  .mpp-job-share[data-job="FNM"] .mpp-job-share-jobbg{animation:mppShareFnm 4.2s ease-in-out infinite}
+  .mpp-job-share[data-job="FNP"] .mpp-job-share-jobbg{animation:mppShareFnp 3.8s ease-in-out infinite}
+  .mpp-job-share[data-job="IDM"] .mpp-job-share-jobbg{animation:mppShareIdm 3.6s ease-in-out infinite}
+  .mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{animation:mppShareIdp 2.9s ease-in-out infinite}
+  .mpp-job-share[data-job="INM"] .mpp-job-share-jobbg{animation:mppShareInm 12s linear infinite}
+  .mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{animation:mppShareInp 3.2s ease-in-out infinite}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp-job-share-card::after,.mpp-job-share-jobbg{animation:none!important}
+}
