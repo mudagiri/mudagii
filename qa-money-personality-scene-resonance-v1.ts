@@ -19,7 +19,11 @@ assert(RESULT_V9_SCENE_COUNT===192,`RESULT_V9_SCENE_COUNT_BAD:${RESULT_V9_SCENE_
 const publicUi=fs.readFileSync('./src/features/money-personality/MoneyPersonalityPublic.tsx','utf8');
 const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx','utf8');
 const shareImageUi=fs.readFileSync('./src/features/money-personality/job-share-image-v1.ts','utf8');
+const resultCss=fs.readFileSync('./src/features/money-personality/result-v17-editorial.css','utf8');
+const humanCss=fs.readFileSync('./src/features/money-personality/money-personality-human-design-v1.css','utf8');
 const bookUi=fs.readFileSync('./src/features/money-personality/JobEncyclopediaV1.tsx','utf8');
+assert(resultCss.includes('background:#fffdf8;')&&resultCss.includes('.mpp17-mudagiri-talk')&&resultCss.includes('.mpp17-style-detail'), 'RESULT_DIALOGUE_STYLE_CANVAS_NOT_OWNED');
+assert(!humanCss.includes('html body #root .mpp17-page .mpp17-mudagiri-talk{')&&!humanCss.includes('html body #root .mpp17-page .mpp17-style-detail{'), 'DUPLICATE_RESULT_DIALOGUE_OVERRIDES_RETURNED');
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
 assert(publicUi.includes("import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1'")&&publicUi.includes('<AdventurerClassUnlockV1'),'PUBLIC_SSR_UNLOCK_NOT_WIRED');
 assert(publicUi.includes('REVEAL_KEY')&&publicUi.includes('sessionId'), 'PUBLIC_SSR_UNLOCK_SESSION_MEMORY_MISSING');
