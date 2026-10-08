@@ -4,7 +4,7 @@ import {moneyTypeCode} from './money-type-code-v1';
 import {moneyTypeIdentity,STYLE_IDENTITY} from './money-type-identity-v1';
 import {resultV9For} from './resultV9Content';
 
-type ShareResult='shared'|'downloaded'|'text';
+type ShareResult='shared'|'downloaded'|'text'|'cancelled';
 type SharePayload={title?:string;text?:string;url?:string;files?:File[]};
 type FileShareNavigator=Navigator&{
   share?:(data?:SharePayload)=>Promise<void>;
@@ -339,6 +339,8 @@ function downloadFile(file:File){
   window.setTimeout(()=>URL.revokeObjectURL(href),1500);
 }
 
+function shareWasCancelled(error:unknown){return !!error&&typeof error==='object'&&'name' in error&&error.name==='AbortError'}
+
 /** Share a clean link to the public intro, not the sender's result/debug state. */
 function publicShareUrl(){
   const url=new URL(window.location.href);
@@ -372,11 +374,14 @@ export async function shareJobTypeImage({jobCode,primaryStyle,target}:Args):Prom
     downloadFile(file);
     try{await navigator.clipboard?.writeText(`${message} ${url}`)}catch{}
     return 'downloaded';
-  }catch{
+  }catch(error){
+    if(shareWasCancelled(error))return 'cancelled';
     try{
       if(nav.share){await nav.share({title:'ムダギリ｜お金の性格診断',text:message,url});return 'text'}
       await navigator.clipboard?.writeText(`${message} ${url}`);
-    }catch{}
+    }catch(fallbackError){
+      if(shareWasCancelled(fallbackError))return 'cancelled';
+    }
     return 'text';
   }
 }
