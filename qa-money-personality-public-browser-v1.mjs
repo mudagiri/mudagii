@@ -229,8 +229,12 @@ if(!routesText.includes('YOUR MONEY TYPE')||!routesText.includes('家計クエ�
 if(!routesText.includes('32TYPE図鑑'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_CTA_MISSING:'+routesText);
 await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
+// fold-like encyclopedia viewport: wide mobile screens must still remain a one-column vertical collection.
+await page.setViewportSize({width:690,height:844});
+await page.waitForTimeout(80);
 const typeBook=await page.evaluate(()=>({
   jobs:document.querySelectorAll('.mpp-job-book-grid article').length,
+  gridColumns:getComputedStyle(document.querySelector('.mpp-job-book-grid')).gridTemplateColumns.split(' ').filter(Boolean).length,
   typeChips:document.querySelectorAll('.mpp-job-book-typechips>button').length,
   mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
   styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
@@ -240,7 +244,7 @@ const typeBook=await page.evaluate(()=>({
   portalScrollHeight:document.querySelector('.mpp-job-book-portal')?.scrollHeight||0,
   portalClientHeight:document.querySelector('.mpp-job-book-portal')?.clientHeight||0,
 }));
-if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
+if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8||typeBook.gridColumns!==1)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
 if(typeBook.portalOverflowY==='hidden'||typeBook.portalTouchAction==='none'||typeBook.portalScrollHeight<=typeBook.portalClientHeight+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
 const portal=page.locator('.mpp-job-book-portal');
