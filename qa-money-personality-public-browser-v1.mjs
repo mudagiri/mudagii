@@ -216,6 +216,13 @@ const resultStyleDetail=page.locator('.mpp17-style-detail');
 await resultStyleDetail.locator('summary').click();
 const expandedStyleText=(await resultStyleDetail.textContent())||'';
 if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(できることを増やしたい|楽しいことに使いたい|あとで困りたくない|余計な出費はしたくない)/.test(expandedStyleText))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
+await page.waitForTimeout(100);
+const funnel=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_money_type_funnel_v1')||'[]'));
+const funnelEvents=new Set(funnel.map(x=>x.event));
+for(const event of ['intro_started','intro_resumed','ssr_claimed','result_seen','scenes_expanded','style_expanded']){
+  if(!funnelEvents.has(event))throw new Error('MONEY_PUBLIC_FUNNEL_EVENT_MISSING:'+event+':'+JSON.stringify(funnel));
+}
+if(funnel.some(x=>Object.keys(x).some(key=>!['version','sessionId','event','at','target'].includes(key))))throw new Error('MONEY_PUBLIC_FUNNEL_SENSITIVE_DATA:'+JSON.stringify(funnel));
 const humanDesign=await page.evaluate(()=>{
   const stylePanel=document.querySelector('.mpp17-style-detail');
   const detail=document.querySelector('.mpp17-style-detail-body p');
@@ -359,6 +366,10 @@ if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultC
 
 await page.getByRole('button',{name:'家計クエストへ進む'}).click();
 await page.waitForURL(url=>!new URL(url).searchParams.has('adaptive'),{timeout:8000});
+const finalFunnel=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_money_type_funnel_v1')||'[]'));
+for(const event of ['type_book_opened','household_cta_clicked']){
+  if(!finalFunnel.some(x=>x.event===event))throw new Error('MONEY_PUBLIC_FUNNEL_CONVERSION_EVENT_MISSING:'+event);
+}
 const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedProfileResult:true,directHousehold:true,earlyShare:true,personalizedResult:true,resultV17:true,firstQuestionGeometry,resultV17Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
