@@ -22,7 +22,7 @@ export default function AdventurerClassUnlockV1({jobCode,primaryStyle,onComplete
   const reveal=current.key==='celebrate';
   return <main className={`mpp-transition-scene mpp-class-unlock${reveal?' is-job-revealed':''}`} data-scene="class-unlock" data-job={jobCode} data-money-type={typeCode}>
     <section className="mpp-transition-card">
-      <div className="mpp-transition-copy">{current.key==='think'?'YOUR MONEY TYPE → QUEST CLASS':current.key==='unlock'?'CLASS SIGNAL FOUND':'SSR / MONEY TYPE ACQUIRED'}</div>
+      <div className="mpp-transition-copy">{current.key==='think'?'お金のクセを読み取り中…':current.key==='unlock'?'JOBを発見！':'JOB獲得！'}</div>
       {reveal?<>
         <div className="mpp-ssr-rarity">SSR</div>
         <div className="mpp-ssr-type-code">{typeCode}</div>
