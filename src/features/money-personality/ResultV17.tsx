@@ -42,6 +42,8 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
   return <div className="mpp17-mudagiri-beat"><MoneyPersonalityMudagiri visual={visual} alt="ムダギリくん"/><div className="mpp17-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div></div>;
 }
 
+function DisclosureCue(){return <span className="mpp-disclosure-state" aria-hidden="true"><span className="mpp-disclosure-closed">開く <b>⌄</b></span><span className="mpp-disclosure-open">閉じる <b>⌃</b></span></span>}
+
 export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
@@ -85,7 +87,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           </article>)}
         </div>
         <details className="mpp17-more" onToggle={event=>{if(event.currentTarget.open)onExplore('scenes')}}>
-          <summary>ほかのあるあるも見る <span>＋4</span></summary>
+          <summary><span className="mpp-disclosure-title">ほかのあるあるも見る <em>＋4</em></span><DisclosureCue/></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
       </section>
@@ -122,7 +124,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       </section>
 
       <details className="mpp17-style-detail" onToggle={event=>{if(event.currentTarget.open)onExplore('style')}}>
-        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span aria-hidden="true">＋</span></summary>
+        <summary><span className="mpp-disclosure-title"><strong>{STYLE_IDENTITY[primaryStyle].label}</strong> の意味をもっと知る <small>{STYLE_IDENTITY[primaryStyle].short}</small></span><DisclosureCue/></summary>
         <div className="mpp17-style-detail-body">
           <b>{STYLE_IDENTITY[primaryStyle].short}</b>
           <p>{STYLE_IDENTITY[primaryStyle].description}</p>
@@ -189,7 +191,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
 
       <details className="mpp17-details">
-        <summary>なんでこのタイプになった？ <span>3つのクセを見る</span></summary>
+        <summary><span className="mpp-disclosure-title">なんでこのタイプになった？ <small>3つのクセを見る</small></span><DisclosureCue/></summary>
         <div className="mpp17-axis-list">
           {axes.map(axis=><article key={axis.title}><header><b>{axis.title}</b><small>{axis.lean}</small></header><div className="mpp17-axis-labels"><span>{axis.left}</span><span>{axis.right}</span></div><div className="mpp17-axis-track"><i style={{left:axis.pos+'%'}}/></div></article>)}
         </div>
