@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {LIKERT_SCALE_LABELS} from './pilotData';
 import {itemById,type PilotItem} from './pilotLogic';
-import {evaluateMoneyPersonality,type SeparatorAnswers,type TraitAnswers} from './classifierV1';
+import {evaluateMoneyPersonality,type JobCode,type SeparatorAnswers,type StyleId,type TraitAnswers} from './classifierV1';
 import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type SeparatorId} from './separatorDataV1';
 import {
   buildCoreTraitSideMap,buildPublicCoreOrder,displayScore,FACTOR_PUBLIC_LABEL,getOrCreatePublicParticipantId,
@@ -34,17 +34,36 @@ const blankState=():StoredState=>({version:PUBLIC_MONEY_TYPE_VERSION,sessionId:n
 function loadState():StoredState{try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(x&&x.version===PUBLIC_MONEY_TYPE_VERSION&&x.answers&&x.separators)return {...blankState(),...x,history:Array.isArray(x.history)?x.history:[]} as StoredState}catch{}return blankState()}
 function saveState(x:StoredState){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(x))}catch{}}
 function householdUrl(){const path=window.location.pathname.replace(/\/(?:pilot\/money-type|money-type)\/?$/,'/');return path||'/'}
+const BOOK_JOBS=new Set<JobCode>(['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP']);
+const BOOK_STYLES=new Set<StyleId>(['DRIVE','ENJOY','SECURE','OPTIMIZE']);
+function moneyTypeBookUrl(job:JobCode,style:StyleId){
+ const url=new URL(window.location.href);
+ url.searchParams.set('book','1');
+ url.searchParams.set('job',job);
+ url.searchParams.set('style',style);
+ url.searchParams.delete('resumeResult');
+ return url.pathname+'?'+url.searchParams.toString();
+}
+function moneyTypeReturnUrl(){
+ const url=new URL(window.location.href);
+ url.searchParams.delete('book');
+ url.searchParams.delete('job');
+ url.searchParams.delete('style');
+ url.searchParams.set('resumeResult','1');
+ return url.pathname+'?'+url.searchParams.toString();
+}
 function progressComment(screenCount:number,coreAnswered:number,adaptiveAnswered:number){if(adaptiveAnswered===1)return 'あと少し！ここからは、迷ったところだけ確認していくぞ。';if(coreAnswered===27)return 'あともう少し！考えすぎず、いつもの自分でいこう。';if(coreAnswered===20)return 'ここまで来た！お金のクセがかなり見えてきたぞ。';if(coreAnswered===10)return 'いい感じ！だいぶ輪郭が見えてきたぞ。';if(screenCount===0)return '正解はないぞ。理想より、普段の自分で選んでくれ！';return ''}
 function QuestionCompanion({visual,line}:{visual:MudagiriVisual;line?:string}){return <div className={`mpp-measurement-companion${line?' has-talk':''}`}><MoneyPersonalityMudagiri visual={visual} alt=""/>{line&&<div className="mpp-progress-talk">{line}</div>}</div>}
 
 export default function MoneyPersonalityPublic(){
- const params=useMemo(()=>new URLSearchParams(window.location.search),[]);const debug=params.get('debug')==='1';
+ const params=useMemo(()=>new URLSearchParams(window.location.search),[]);const debug=params.get('debug')==='1';const requestedBookJob=params.get('job') as JobCode|null;const requestedBookStyle=params.get('style') as StyleId|null;const standaloneBook=params.get('book')==='1'&&!!requestedBookJob&&!!requestedBookStyle&&BOOK_JOBS.has(requestedBookJob)&&BOOK_STYLES.has(requestedBookStyle);
  const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);const coreOrder=useMemo(()=>buildPublicCoreOrder(participantId),[participantId]);const coreSideMap=useMemo(()=>buildCoreTraitSideMap(participantId,coreOrder),[participantId,coreOrder]);
- const [state,setState]=useState<StoredState>(()=>loadState());const [active,setActive]=useState(false);const [selected,setSelected]=useState<Choice|null>(null);const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);const [committing,setCommitting]=useState(false);const timerRef=useRef<number|null>(null);
+ const [state,setState]=useState<StoredState>(()=>loadState());const [active,setActive]=useState(()=>params.get('resumeResult')==='1');const [selected,setSelected]=useState<Choice|null>(null);const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);const [committing,setCommitting]=useState(false);const timerRef=useRef<number|null>(null);
  const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
  const pendingCore=coreOrder.find(q=>state.answers[q.item_id]===undefined)??null;const adaptiveIds=useMemo(()=>orderAdaptiveItemIds(evaluation.adaptive.nextItemIds.filter(id=>state.answers[id]===undefined),participantId),[evaluation.adaptive.nextItemIds,state.answers,participantId]);const pendingAdaptiveId=!pendingCore?(adaptiveIds[0]??null):null;const pendingSeparatorId=!pendingCore&&!pendingAdaptiveId?evaluation.adaptive.separatorIds.find(id=>state.separators[id as keyof SeparatorAnswers]===undefined)??null:null;const targetItem=pendingCore??(pendingAdaptiveId?itemById(pendingAdaptiveId):null);const done=!pendingCore&&!pendingAdaptiveId&&!pendingSeparatorId&&evaluation.complete;const targetKey=targetItem?.item_id??pendingSeparatorId??(done?'RESULT':'NONE');
  const coreAnswered=coreOrder.filter(x=>state.answers[x.item_id]!==undefined).length;const adaptiveAnswered=Math.max(0,Object.keys(state.answers).length-coreAnswered);const separatorAnswered=Object.keys(state.separators).length;const progress=publicProgress(coreAnswered,adaptiveAnswered,separatorAnswered,done);
  useEffect(()=>{saveState(state)},[state]);useEffect(()=>{if(timerRef.current)window.clearTimeout(timerRef.current);setSelected(null);setSeparatorSelected(null);setCommitting(false);window.scrollTo({top:0,behavior:'auto'});return ()=>{if(timerRef.current)window.clearTimeout(timerRef.current)}},[targetKey]);
+ if(standaloneBook)return <main className="mpp-book-standalone"><JobEncyclopediaV1 unlocked={requestedBookJob!} primaryStyle={requestedBookStyle!} onClose={()=>{window.location.href=moneyTypeReturnUrl()}}/></main>;
  const hasSavedProgress=state.history.length>0||Object.keys(state.answers).length>0||Object.keys(state.separators).length>0;const startNew=()=>{setState({...blankState(),startedAt:new Date().toISOString()});setActive(true)};const resume=()=>{setState(s=>({...s,startedAt:s.startedAt||new Date().toISOString()}));setActive(true)};
  const goBack=()=>{if(committing||state.history.length===0)return;const last=state.history[state.history.length-1];setState(s=>{const history=s.history.slice(0,-1);if(last.kind==='trait'){const answers={...s.answers};delete answers[last.id];return {...s,answers,history,screenCount:Math.max(0,s.screenCount-1)}}const separators={...s.separators};delete (separators as Record<string,unknown>)[last.id];return {...s,separators,history,screenCount:Math.max(0,s.screenCount-1)}})};
  const commitTrait=(choice:Choice)=>{if(!targetItem||committing)return;setSelected(choice);setCommitting(true);const presentation=targetItem.family==='BIPOLAR'?publicBipolarPresentation(targetItem,participantId,coreSideMap):null;const traitValue=targetItem.family==='BIPOLAR'?normalizePublicBipolarResponse(choice.value,presentation!):choice.value;timerRef.current=window.setTimeout(()=>setState(s=>({...s,answers:{...s.answers,[targetItem.item_id]:traitValue},history:[...s.history,{kind:'trait',id:targetItem.item_id}],screenCount:s.screenCount+1})),130)};
@@ -88,7 +107,7 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
    secondaryStyle={secondary}
    axes={axes}
    onShare={share}
-   onOpenBook={()=>setHandoff('book')}
+   onOpenBook={()=>{window.location.href=moneyTypeBookUrl(job,style)}}
    onHousehold={()=>setHandoff('journey')}
    onRestart={onRestart}
   />
