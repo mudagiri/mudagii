@@ -68,20 +68,17 @@
 
 /* Portal owns scrolling. It is mounted directly under <body>, outside #root. */
 .mpp-job-book-portal{
-  position:fixed;
-  inset:0;
+  position:relative;
   z-index:2147483000;
-  width:100vw;
-  height:100dvh;
-  overflow-x:hidden;
-  overflow-y:auto;
-  overscroll-behavior-y:contain;
+  display:block;
+  width:100%;
+  min-height:100dvh;
+  overflow:visible;
   touch-action:pan-y;
-  -webkit-overflow-scrolling:touch;
   background:#07090c;
 }
 .mpp-job-book-portal>.mpp-job-book{
-  min-height:calc(100dvh + 1px);
+  min-height:100dvh;
 }
 
 
@@ -133,7 +130,7 @@
     min-height:148px!important;
   }
   .mpp-job-book-portal{
-    overflow-y:scroll!important;
+    overflow:visible!important;
     touch-action:pan-y!important;
   }
 }
