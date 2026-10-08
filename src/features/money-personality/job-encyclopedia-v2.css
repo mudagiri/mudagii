@@ -160,3 +160,24 @@ body.mpp-book-native-scroll-active{
   overflow:visible!important;
   touch-action:pan-y!important;
 }
+
+
+/* DIRECT TOUCH SCROLL FALLBACK — the encyclopedia surface itself owns a scrollTop
+   so Android touch-drag can be driven directly even if document scrolling is blocked. */
+.mpp-job-book-standalone-surface{
+  height:100dvh!important;
+  min-height:0!important;
+  max-height:100dvh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain!important;
+  touch-action:none!important;
+  -webkit-overflow-scrolling:auto!important;
+}
+.mpp-job-book-standalone-surface>.mpp-job-book{
+  min-height:max-content!important;
+  height:auto!important;
+}
+.mpp-job-book-standalone-surface button{
+  touch-action:manipulation!important;
+}
