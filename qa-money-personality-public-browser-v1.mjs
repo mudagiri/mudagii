@@ -15,6 +15,7 @@ const context=await browser.newContext({
   colorScheme:'dark',
 });
 const page=await context.newPage();
+const cdp=await context.newCDPSession(page);
 page.on('pageerror',err=>{throw err});
 
 async function noHorizontalOverflow(label){
@@ -240,27 +241,36 @@ const typeBook=await page.evaluate(()=>({
   mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
   styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
   visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
-  htmlOverflowY:getComputedStyle(document.documentElement).overflowY,
-  bodyOverflowY:getComputedStyle(document.body).overflowY,
-  bodyTouchAction:getComputedStyle(document.body).touchAction,
-  rootDisplay:getComputedStyle(document.getElementById('root')).display,
+  htmlOverflow:getComputedStyle(document.documentElement).overflow,
+  bodyOverflow:getComputedStyle(document.body).overflow,
+  rootOverflow:getComputedStyle(document.getElementById('root')).overflow,
+  surfaceOverflowY:getComputedStyle(document.querySelector('.mpp-job-book-standalone-surface')).overflowY,
+  surfaceTouchAction:getComputedStyle(document.querySelector('.mpp-job-book-standalone-surface')).touchAction,
+  surfaceScrollHeight:document.querySelector('.mpp-job-book-standalone-surface')?.scrollHeight||0,
+  surfaceClientHeight:document.querySelector('.mpp-job-book-standalone-surface')?.clientHeight||0,
   standalone:!!document.querySelector('.mpp-book-standalone'),
-  docScrollHeight:(document.scrollingElement||document.documentElement).scrollHeight,
-  viewport:innerHeight,
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8||typeBook.gridColumns!==1)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
-if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.bodyTouchAction==='none'||typeBook.rootDisplay==='none'||!typeBook.standalone||typeBook.docScrollHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+if(!typeBook.standalone||typeBook.htmlOverflow!=='hidden'||typeBook.bodyOverflow!=='hidden'||typeBook.rootOverflow!=='hidden'||typeBook.surfaceOverflowY==='hidden'||typeBook.surfaceScrollHeight<=typeBook.surfaceClientHeight+120)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
-const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
-const viewportNow=page.viewportSize();
-if(!viewportNow)throw new Error('MONEY_PUBLIC_TYPE_BOOK_NO_VIEWPORT');
-await page.mouse.move(viewportNow.width/2,viewportNow.height*.72);
-await page.mouse.wheel(0,760);
-await page.waitForTimeout(160);
-const scrollAfter=await page.evaluate(()=>window.scrollY);
-if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL_BY_INPUT:'+JSON.stringify({scrollBefore,scrollAfter}));
+const surface=page.locator('.mpp-job-book-standalone-surface');
+const surfaceBox=await surface.boundingBox();
+if(!surfaceBox)throw new Error('MONEY_PUBLIC_TYPE_BOOK_NO_SURFACE_BOX');
+const scrollBefore=await surface.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight,touchAction:getComputedStyle(el).touchAction}));
 
-await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
+const x=Math.round(surfaceBox.x+surfaceBox.width*.5);
+const yStart=Math.round(surfaceBox.y+surfaceBox.height*.80);
+await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y:yStart,id:1,radiusX:8,radiusY:8,force:1}]});
+for(const y of [yStart-90,yStart-180,yStart-270,yStart-360,yStart-450]){
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y,id:1,radiusX:8,radiusY:8,force:1}]});
+  await page.waitForTimeout(25);
+}
+await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+await page.waitForTimeout(120);
+const scrollAfter=await surface.evaluate(el=>el.scrollTop);
+if(scrollAfter<120)throw new Error('MONEY_PUBLIC_TYPE_BOOK_TOUCH_SCROLL_FAILED:'+JSON.stringify({scrollBefore,scrollAfter}));
+
+await surface.evaluate(el=>{el.scrollTop=0});
 await page.waitForTimeout(80);
 
 const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
