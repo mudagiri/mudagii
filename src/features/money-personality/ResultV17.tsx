@@ -12,7 +12,7 @@ import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-v17-editorial.css';
 
-type ShareTarget='x'|'instagram'|'threads'|'line';
+type ShareTarget='native'|'x'|'line';
 type AxisRow={title:string;left:string;right:string;lean:string;pos:number};
 type Props={
   content:V9TypeResult;
@@ -22,6 +22,7 @@ type Props={
   secondaryStyle:StyleId;
   axes:AxisRow[];
   onShare:(target:ShareTarget)=>void;
+  shareStatus:string;
   onOpenBook:()=>void;
   onHousehold:()=>void;
   onRestart:()=>void;
@@ -40,7 +41,7 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
   return <div className="mpp17-mudagiri-beat"><MoneyPersonalityMudagiri visual={visual} alt="ムダギリくん"/><div className="mpp17-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div></div>;
 }
 
-export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,onOpenBook,onHousehold,onRestart}:Props){
+export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,shareStatus,onOpenBook,onHousehold,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
@@ -108,14 +109,15 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-share-copy">
           <small>08 / SHARE</small>
           <h2>これ、友だちに見せたくない？</h2>
-          <p>収入や金額は出ません。タイプとキャラだけ、そのままシェアできます。</p>
+          <p>タイプとキャラだけが入った画像をシェアできるよ。収入や金額は出ません。</p>
         </div>
         <div className="mpp17-share-buttons">
-          <button onClick={()=>onShare('x')}>𝕏</button>
-          <button onClick={()=>onShare('instagram')}>Instagram</button>
-          <button onClick={()=>onShare('threads')}>Threads</button>
-          <button onClick={()=>onShare('line')}>LINE</button>
+          <button className="mpp17-share-button--primary" onClick={()=>onShare('native')}>画像カードをシェアする</button>
+          <button onClick={()=>onShare('x')}>𝕏 に文章で投稿</button>
+          <button onClick={()=>onShare('line')}>LINEでリンクを送る</button>
         </div>
+        <p className="mpp17-share-fallback-note">画像を送れない端末では、カードを保存できるよ。</p>
+        {shareStatus&&<p className="mpp17-share-status" role="status" aria-live="polite">{shareStatus}</p>}
       </section>
 
       <details className="mpp17-style-detail">
