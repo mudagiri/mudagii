@@ -150,8 +150,9 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    const result=await shareJobTypeImage({jobCode:job,primaryStyle:style,target});
    if(result==='shared')recordMoneyTypeFunnel('share_native_sheet_resolved',sessionId,target);
    if(result==='downloaded')recordMoneyTypeFunnel('share_image_downloaded',sessionId,target);
+   if(result==='cancelled')recordMoneyTypeFunnel('share_cancelled',sessionId,target);
    if(target!=='native'&&result==='text')recordMoneyTypeFunnel('share_text_handoff',sessionId,target);
-   if(target==='native')setShareStatus(result==='downloaded'?'画像カードを保存しました。SNSから画像を添付してね。':result==='shared'?'共有画面に画像カードを渡しました。':'画像を共有できませんでした。');
+   if(target==='native')setShareStatus(result==='downloaded'?'画像カードを保存しました。SNSから画像を添付してね。':result==='shared'?'共有画面に画像カードを渡しました。':result==='cancelled'?'共有をキャンセルしました。':'画像を共有できませんでした。');
   }catch{setShareStatus('共有に失敗しました。もう一度試してね。')}
  };
  const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
