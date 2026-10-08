@@ -195,9 +195,9 @@ if(!text.includes('これ、やりがちじゃない？'))throw new Error('MONEY
 if(!text.includes('ほかのあるあるも見る'))throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
 if(!text.includes('つまり、あなたは'))throw new Error('MONEY_PUBLIC_RESULT_V9_TRUTH_MISSING');
 if(!text.includes('外から見ると、こう見える。')||!text.includes('このタイプの強み'))throw new Error('MONEY_PUBLIC_RESULT_V17_INSIGHT_MISSING');
-if(!text.includes('同じ場面でも、タイプで違う'))throw new Error('MONEY_PUBLIC_RESULT_V17_COMPARE_MISSING');
+if(!text.includes('同じ場面でも、考えることが違う'))throw new Error('MONEY_PUBLIC_RESULT_V17_COMPARE_MISSING');
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
-if(!text.includes('診断の内訳を見る'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
+if(!text.includes('なんでこのタイプになった？'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV17=await page.evaluate(()=>({
   axisCount:document.querySelectorAll('.mpp17-axis-list article').length,
   compareCards:document.querySelectorAll('.mpp17-compare-row article').length,
@@ -216,7 +216,7 @@ const typography=await page.evaluate(()=>({
 if(typography.hero<30||typography.heroLine<16||typography.voice<18||typography.scene<12||typography.truth<22)throw new Error('MONEY_PUBLIC_V17_TYPOGRAPHY_TOO_SMALL:'+JSON.stringify(typography));
 if(text.includes('同じTYPEの中の「あなたらしさ」も見る'))throw new Error('MONEY_PUBLIC_SECONDARY_STILL_ON_MAIN_RESULT');
 if(!text.includes('家計クエストへ進む'))throw new Error('MONEY_PUBLIC_NEXT_QUEST_CTA_MISSING');
-if(!text.includes('このカードを、そのままシェア。')||!text.includes('お金の感覚で見る'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
+if(!text.includes('これ、友だちに見せたくない？')||!text.includes('友だちと比べるなら'))throw new Error('MONEY_PUBLIC_SOCIAL_RESULT_SECTIONS_MISSING');
 if(answered<30)throw new Error('MONEY_PUBLIC_COMPLETED_BEFORE_CORE30:'+answered);
 if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
