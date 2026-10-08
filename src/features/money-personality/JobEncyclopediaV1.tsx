@@ -1,4 +1,4 @@
-import React,{useMemo,useRef,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import type {JobCode,StyleId} from './classifierV1';
 import {JOB_CHARACTER_ASSETS} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
@@ -18,6 +18,44 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
   const [selected,setSelected]=useState<SelectedType|null>(null);
   const [activeStyle,setActiveStyle]=useState<StyleId>(primaryStyle);
   const topRef=useRef<HTMLElement|null>(null);
+  const surfaceRef=useRef<HTMLDivElement|null>(null);
+  const touchYRef=useRef<number|null>(null);
+
+  useEffect(()=>{
+    const el=surfaceRef.current;
+    if(!el)return;
+
+    const onTouchStart=(event:TouchEvent)=>{
+      if(event.touches.length!==1)return;
+      touchYRef.current=event.touches[0].clientY;
+    };
+    const onTouchMove=(event:TouchEvent)=>{
+      if(event.touches.length!==1||touchYRef.current===null)return;
+      const y=event.touches[0].clientY;
+      const delta=touchYRef.current-y;
+      if(Math.abs(delta)<1)return;
+      const max=Math.max(0,el.scrollHeight-el.clientHeight);
+      const next=Math.max(0,Math.min(max,el.scrollTop+delta));
+      if(next!==el.scrollTop){
+        el.scrollTop=next;
+        event.preventDefault();
+      }
+      touchYRef.current=y;
+    };
+    const onTouchEnd=()=>{touchYRef.current=null};
+
+    el.addEventListener('touchstart',onTouchStart,{passive:true});
+    el.addEventListener('touchmove',onTouchMove,{passive:false});
+    el.addEventListener('touchend',onTouchEnd,{passive:true});
+    el.addEventListener('touchcancel',onTouchEnd,{passive:true});
+
+    return ()=>{
+      el.removeEventListener('touchstart',onTouchStart);
+      el.removeEventListener('touchmove',onTouchMove);
+      el.removeEventListener('touchend',onTouchEnd);
+      el.removeEventListener('touchcancel',onTouchEnd);
+    };
+  },[]);
 
   const detail=useMemo(()=>{
     if(!selected)return null;
@@ -121,5 +159,5 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
     </div>}
   </section>;
 
-  return <div className="mpp-job-book-standalone-surface">{book}</div>;
+  return <div ref={surfaceRef} className="mpp-job-book-standalone-surface">{book}</div>;
 }
