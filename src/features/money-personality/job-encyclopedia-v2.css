@@ -64,3 +64,22 @@
 .mpp-job-book-detail-hero{margin:12px 0 0;color:#f1f2f4;font-size:15px;font-weight:850;line-height:1.55}.mpp-job-book-detail-scenes{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0 0}.mpp-job-book-detail-scenes span{padding:5px 8px;border:1px solid rgba(255,255,255,.09);border-radius:999px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.72);font-size:8px;font-weight:800}.mpp-job-book-detail-note{margin:14px 0 0;padding:12px;border:1px solid rgba(255,255,255,.075);border-radius:13px;background:rgba(255,255,255,.025)}.mpp-job-book-detail-note small{color:color-mix(in srgb,var(--job-accent) 68%,#ddd);font-size:8px;font-weight:900}.mpp-job-book-detail-note p{margin:4px 0 0;color:rgba(255,255,255,.66);font-size:10.5px;line-height:1.6}.mpp-job-book-detail footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.42);font-size:8px}
 @media(min-width:560px){.mpp-job-book-grid{grid-template-columns:1fr 1fr}.mpp-job-book-detail-backdrop{align-items:center}}
 @media(max-width:390px){.mpp-job-book{padding-inline:10px}.mpp-job-book-hero h2{font-size:31px}.mpp-job-book-mycard{align-items:flex-start;flex-direction:column;gap:5px}.mpp-job-book-mycard>span{text-align:left}}
+
+
+/* Portal owns scrolling. It is mounted directly under <body>, outside #root. */
+.mpp-job-book-portal{
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  width:100vw;
+  height:100dvh;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;
+  background:#07090c;
+}
+.mpp-job-book-portal>.mpp-job-book{
+  min-height:calc(100dvh + 1px);
+}
