@@ -8,6 +8,8 @@ import {moneyTypeNeighbors} from './money-type-neighbors-v1';
 import {jobCharacterAsset,JOB_CHARACTER_ASSETS} from './job-character-assets-v1';
 import JobCharacterCard from './JobCharacterCard';
 import ResultWorldBeatV1 from './ResultWorldBeatV1';
+import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
+import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-v17-editorial.css';
 
 type ShareTarget='x'|'instagram'|'threads'|'line';
@@ -34,6 +36,9 @@ const STYLE_HOLO:Record<StyleId,string>={
 };
 
 function cleanTag(value:string){return '#'+value.replace(/\p{Extended_Pictographic}/gu,'').replace(/[\s　]/g,'').replace(/[・/]/g,'').replace(/^[#]+/,'');}
+function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{line:string;visual?:typeof PERSONALITY_SCENE_VISUALS[keyof typeof PERSONALITY_SCENE_VISUALS]}){
+  return <div className="mpp17-mudagiri-beat"><MoneyPersonalityMudagiri visual={visual} alt="ムダギリくん"/><div className="mpp17-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div></div>;
+}
 
 export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,onShare,onOpenBook,onHousehold,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
@@ -68,6 +73,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
       </section>
 
+      <MudagiriBeat line="ちょっと待って。これ、やってない？w"/>
       <section className="mpp17-recognition">
         <header><span>01</span><div><small>まずは、あるある</small><h2>これ、やりがちじゃない？</h2></div></header>
         <div className="mpp17-scene-list">
@@ -83,6 +89,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         </details>
       </section>
 
+      <MudagiriBeat line="やっぱりな。たぶんここがお前のクセ。"/>
       <section className="mpp17-core">
         <span className="mpp17-index">02</span>
         <small>つまり、あなたは</small>
@@ -98,6 +105,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         </div>
       </section>
 
+      <MudagiriBeat line="これ、弱点っぽく見えるけど武器でもある。"/>
       <section className="mpp17-strength">
         <header><span>04</span><div><small>このタイプの強み</small><h2>{insight.weapon.name}</h2></div></header>
         <p className="mpp17-strength-main">{insight.weapon.works}</p>
@@ -128,6 +136,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         </div>
       </section>
 
+      <MudagiriBeat line="友だちのも見てみ。たぶん全然違うぞ。" visual={PERSONALITY_SCENE_VISUALS.share}/>
       <section className="mpp17-book-preview">
         <div className="mpp17-book-copy"><small>07 / 32タイプ図鑑</small><h2>友だちは、どのタイプ？</h2><p>3つのお金のクセで8つのJOBに分かれて、最後に4つのSTYLEがつきます。気になるタイプをのぞいてみよう。</p></div>
         <div className="mpp17-mini-jobs" aria-hidden="true">
@@ -175,6 +184,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <ResultWorldBeatV1 beat="next"/>
 
+      <MudagiriBeat line="性格は分かった。次は財布の中身見に行くぞ。" visual={PERSONALITY_SCENE_VISUALS.householdCta}/>
       <section className="mpp17-next">
         <small>次にやるなら、これ</small>
         <h2>{content.nextMove}</h2>
