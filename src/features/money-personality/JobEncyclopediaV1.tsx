@@ -5,7 +5,6 @@ import {moneyTypeCode} from './money-type-code-v1';
 import {moneyTypeIdentity,STYLE_IDENTITY} from './money-type-identity-v1';
 import {resultV9For} from './resultV9Content';
 import JobCharacterCard from './JobCharacterCard';
-import './job-encyclopedia-v1.css';
 import './job-encyclopedia-v2.css';
 
 const ORDER:JobCode[]=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
