@@ -1,7 +1,7 @@
 import type {JobCode,StyleId} from './classifierV1';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
-import {moneyTypeIdentity} from './money-type-identity-v1';
+import {moneyTypeIdentity,STYLE_IDENTITY} from './money-type-identity-v1';
 import {resultV9For} from './resultV9Content';
 
 type ShareResult='shared'|'downloaded'|'text';
@@ -292,7 +292,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   ctx.strokeStyle=accent+'88';
   ctx.stroke();
   text(ctx,identity.styleLabel,140,910,20,900,'center','#f8ead0');
-  text(ctx,'を大事にするタイプ',214,910,22,850,'left','#e7e3db');
+  text(ctx,STYLE_IDENTITY[primaryStyle].short,214,910,20,850,'left','#e7e3db');
 
   text(ctx,shorten(result.hero,31),84,975,28,850,'left','#f5f3ef');
 
