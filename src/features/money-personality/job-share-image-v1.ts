@@ -11,7 +11,7 @@ type FileShareNavigator=Navigator&{
   canShare?:(data?:SharePayload)=>boolean;
 };
 
-type ShareTarget='x'|'instagram'|'threads'|'line';
+type ShareTarget='native'|'x'|'line';
 type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel?:string;features?:readonly string[];target?:ShareTarget};
 
 const WIDTH=1080;
