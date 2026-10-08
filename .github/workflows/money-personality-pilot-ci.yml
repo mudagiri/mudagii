@@ -61,5 +61,9 @@ jobs:
         run: npm run qa:money-calibration
       - name: Synthetic boundary stress 10k
         run: npm run qa:money-boundary-10k
+      - name: Type 32 semantic guard QA
+        run: npm run qa:money-semantic
+      - name: Cognitive pilot instrument QA
+        run: npm run qa:money-cognitive
       - name: Pilot QA
         run: npm run qa:money-pilot
