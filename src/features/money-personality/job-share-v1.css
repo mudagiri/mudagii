@@ -165,3 +165,61 @@
   width:min(77vw,322px)!important;
   opacity:.72!important;
 }
+
+
+/* ---------- SHARE CARD V2.4 EIGHT JOB SYSTEM ---------- */
+.mpp-job-share{
+  --share-stock-top:#2f2418;
+  --share-stock-mid:#1c1815;
+  --share-stock-low:#0d0e10;
+  --share-metal:#d2aa5d;
+  --share-motif:#e1bd72;
+}
+.mpp-job-share[data-job="FDM"]{--share-stock-top:#3a2d12;--share-stock-mid:#1d2230;--share-stock-low:#0b0f18;--share-metal:#e2bd59;--share-motif:#f5cf68}
+.mpp-job-share[data-job="FDP"]{--share-stock-top:#25371d;--share-stock-mid:#16251b;--share-stock-low:#0b110d;--share-metal:#a8b969;--share-motif:#9fd580}
+.mpp-job-share[data-job="FNM"]{--share-stock-top:#172b46;--share-stock-mid:#111d31;--share-stock-low:#080c15;--share-metal:#9fbcd3;--share-motif:#91cfff}
+.mpp-job-share[data-job="FNP"]{--share-stock-top:#123c3a;--share-stock-mid:#102827;--share-stock-low:#081212;--share-metal:#9fb589;--share-motif:#64ddd1}
+.mpp-job-share[data-job="IDM"]{--share-stock-top:#48291f;--share-stock-mid:#2b1c18;--share-stock-low:#120d0c;--share-metal:#c78968;--share-motif:#efa37e}
+.mpp-job-share[data-job="IDP"]{--share-stock-top:#3b2a18;--share-stock-mid:#241a13;--share-stock-low:#0f0d0b;--share-metal:#d0a354;--share-motif:#d9b06a}
+.mpp-job-share[data-job="INM"]{--share-stock-top:#302044;--share-stock-mid:#1d152c;--share-stock-low:#0c0911;--share-metal:#a994c2;--share-motif:#bd8cff}
+.mpp-job-share[data-job="INP"]{--share-stock-top:#20364a;--share-stock-mid:#162330;--share-stock-low:#0a0f15;--share-metal:#9eb9cc;--share-motif:#9bd5f4}
+
+.mpp-job-share-card{
+  border-color:color-mix(in srgb,var(--share-metal) 80%,#c7a55e)!important;
+  background:
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--share-motif) 17%,transparent),transparent 44%),
+    linear-gradient(180deg,var(--share-stock-top) 0%,var(--share-stock-mid) 40%,var(--share-stock-low) 100%)!important;
+}
+.mpp-job-share-edge{
+  border-color:color-mix(in srgb,var(--share-metal) 86%,#f0d89e)!important;
+}
+.mpp-job-share[data-job="FDM"] .mpp-job-share-jobbg{
+  background:repeating-conic-gradient(from -10deg at 50% 35%,color-mix(in srgb,var(--share-motif) 25%,transparent) 0 1.1deg,transparent 1.1deg 18deg),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 11%,transparent),transparent 47%)!important
+}
+.mpp-job-share[data-job="FDP"] .mpp-job-share-jobbg{
+  background:
+    radial-gradient(circle at 23% 28%,color-mix(in srgb,var(--share-motif) 72%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 41% 43%,color-mix(in srgb,var(--share-motif) 64%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 63% 27%,color-mix(in srgb,var(--share-motif) 70%,white) 0 1.5px,transparent 2.5px),
+    linear-gradient(color-mix(in srgb,var(--share-motif) 11%,transparent) 1px,transparent 1px),
+    linear-gradient(90deg,color-mix(in srgb,var(--share-motif) 11%,transparent) 1px,transparent 1px)!important;
+  background-size:auto,auto,auto,32px 32px,32px 32px!important
+}
+.mpp-job-share[data-job="FNM"] .mpp-job-share-jobbg{
+  background:radial-gradient(circle at 16% 22%,rgba(225,244,255,.85) 0 1px,transparent 2px),radial-gradient(circle at 30% 39%,rgba(225,244,255,.68) 0 1.5px,transparent 2.5px),radial-gradient(circle at 44% 18%,rgba(225,244,255,.78) 0 1px,transparent 2px),radial-gradient(circle at 62% 36%,rgba(225,244,255,.84) 0 1.5px,transparent 2.5px),radial-gradient(circle at 77% 21%,rgba(225,244,255,.62) 0 1px,transparent 2px),radial-gradient(circle at 87% 43%,rgba(225,244,255,.76) 0 1.5px,transparent 2.5px)!important
+}
+.mpp-job-share[data-job="FNP"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(ellipse at 50% -6%,transparent 0 38px,color-mix(in srgb,var(--share-motif) 18%,transparent) 39px 41px,transparent 42px 65px),radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--share-motif) 13%,transparent),transparent 45%)!important
+}
+.mpp-job-share[data-job="IDM"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(circle at 50% 35%,transparent 0 34px,color-mix(in srgb,var(--share-motif) 17%,transparent) 35px 37px,transparent 38px 62px),repeating-conic-gradient(from 8deg at 50% 35%,transparent 0 17deg,color-mix(in srgb,var(--share-motif) 10%,transparent) 17.5deg 18.5deg)!important
+}
+.mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(circle at 50% 35%,transparent 0 30px,color-mix(in srgb,var(--share-motif) 30%,transparent) 31px 32.5px,transparent 33.5px 56px),repeating-conic-gradient(from 0deg at 50% 35%,color-mix(in srgb,var(--share-motif) 27%,transparent) 0 .75deg,transparent .75deg 22.5deg),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 15%,transparent) 0 18%,transparent 48%)!important
+}
+.mpp-job-share[data-job="INM"] .mpp-job-share-jobbg{
+  background:repeating-conic-gradient(from 9deg at 50% 35%,color-mix(in srgb,var(--share-motif) 18%,transparent) 0 1deg,transparent 1deg 15deg),repeating-radial-gradient(circle at 50% 35%,transparent 0 39px,color-mix(in srgb,var(--share-motif) 17%,transparent) 40px 42px,transparent 43px 68px),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 14%,transparent),transparent 46%)!important
+}
+.mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{
+  background:linear-gradient(163deg,transparent 0 22%,color-mix(in srgb,var(--share-motif) 16%,transparent) 22.5% 23.4%,transparent 23.9% 100%),linear-gradient(158deg,transparent 0 45%,color-mix(in srgb,var(--share-motif) 14%,transparent) 45.4% 46.2%,transparent 46.7% 100%),linear-gradient(168deg,transparent 0 66%,color-mix(in srgb,var(--share-motif) 12%,transparent) 66.4% 67.2%,transparent 67.7% 100%)!important
+}
