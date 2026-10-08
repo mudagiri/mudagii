@@ -243,11 +243,15 @@ if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.style
 if(typeBook.pageOverflowY==='hidden'||typeBook.pageScrollHeight<=typeBook.pageClientHeight+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
 const bookPage=page.locator('.mpp-book-page');
-const scrollBefore=await bookPage.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight}));
-await bookPage.evaluate(el=>{el.scrollTop=Math.min(900,el.scrollHeight-el.clientHeight)});
-await page.waitForTimeout(120);
+const scrollBefore=await bookPage.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight,touchAction:getComputedStyle(el).touchAction}));
+if(scrollBefore.touchAction==='none')throw new Error('MONEY_PUBLIC_TYPE_BOOK_TOUCH_ACTION_NONE:'+JSON.stringify(scrollBefore));
+const box=await bookPage.boundingBox();
+if(!box)throw new Error('MONEY_PUBLIC_TYPE_BOOK_NO_BOUNDING_BOX');
+await page.mouse.move(box.x+box.width/2,box.y+box.height*.72);
+await page.mouse.wheel(0,760);
+await page.waitForTimeout(160);
 const scrollAfter=await bookPage.evaluate(el=>el.scrollTop);
-if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL:'+JSON.stringify({scrollBefore,scrollAfter}));
+if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL_BY_INPUT:'+JSON.stringify({scrollBefore,scrollAfter}));
 
 await bookPage.evaluate(el=>{el.scrollTop=0});
 await page.waitForTimeout(80);
