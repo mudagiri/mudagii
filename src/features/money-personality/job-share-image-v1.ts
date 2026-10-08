@@ -12,7 +12,7 @@ type FileShareNavigator=Navigator&{
 };
 
 type ShareTarget='x'|'instagram'|'threads'|'line';
-type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:readonly string[];target?:ShareTarget};
+type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel?:string;features?:readonly string[];target?:ShareTarget};
 
 const WIDTH=1080;
 const HEIGHT=1350;
