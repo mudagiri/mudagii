@@ -39,6 +39,12 @@ assert(!publicUi.includes("import ResultJourneyV1 from './ResultJourneyV1'"),'PU
 assert(publicUi.includes("window.location.href=householdUrl()"),'PUBLIC_HOUSEHOLD_CTA_NOT_DIRECT');
 assert(shareImageUi.includes('function publicShareUrl()')&&shareImageUi.includes("url.searchParams.set('adaptive','money-type')"),'SHARE_PUBLIC_URL_NOT_CLEAN');
 assert(shareImageUi.indexOf("if(target==='x')")<shareImageUi.indexOf('const file=await createJobShareImage'),'TEXT_SHARING_NEEDLESS_CANVAS_RENDER');
+assert(publicUi.includes("import {shareJobTypeImage} from './job-share-image-v1'")&&!publicUi.includes("await import('./job-share-image-v1')"),'X_SHARE_BLOCKED_BY_DYNAMIC_IMPORT');
+assert(!resultUi.includes('1 / 32')&&!shareImageUi.includes("'1 / 32'"),'MISLEADING_TYPE_RANK_RETURNED');
+assert(resultUi.includes('<b>32 TYPES</b>')&&shareImageUi.includes("'32 TYPES'"),'32_TYPE_COLLECTION_MARKER_MISSING');
+assert(!resultUi.includes('LINE特典を受け取る')&&!resultUi.includes('LINE友だち追加'), 'UNCONFIGURED_LINE_BONUS_VISIBLE');
+assert(publicUi.includes("recordMoneyTypeFunnel('share_cancelled'")&&shareImageUi.includes("return 'cancelled'"),'SHARE_CANCELLED_TREATED_AS_SUCCESS');
+
 assert(!publicUi.includes('<ResultCompetitiveV6'),'PUBLIC_STILL_RENDERS_LEGACY_RESULT');
 assert(!publicUi.includes('resultVividScenario(job,style)'),'PUBLIC_STILL_RENDERS_LEGACY_VIVID');
 assert(resultUi.includes('content.scenes.slice(0,2)'),'V9_PRIMARY_SCENES_NOT_TWO');
