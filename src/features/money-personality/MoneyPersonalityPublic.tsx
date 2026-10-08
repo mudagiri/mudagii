@@ -57,6 +57,53 @@ function QuestionCompanion({visual,line}:{visual:MudagiriVisual;line?:string}){r
 
 export default function MoneyPersonalityPublic(){
  const params=useMemo(()=>new URLSearchParams(window.location.search),[]);const debug=params.get('debug')==='1';const requestedBookJob=params.get('job') as JobCode|null;const requestedBookStyle=params.get('style') as StyleId|null;const standaloneBook=params.get('book')==='1'&&!!requestedBookJob&&!!requestedBookStyle&&BOOK_JOBS.has(requestedBookJob)&&BOOK_STYLES.has(requestedBookStyle);
+ useEffect(()=>{
+   if(!standaloneBook)return;
+   const html=document.documentElement;
+   const body=document.body;
+   const root=document.getElementById('root');
+   const prevHtml=html.style.cssText;
+   const prevBody=body.style.cssText;
+   const prevRoot=root?.style.cssText||'';
+
+   for(const el of [html,body]){
+     el.style.setProperty('position','static','important');
+     el.style.setProperty('inset','auto','important');
+     el.style.setProperty('width','100%','important');
+     el.style.setProperty('height','auto','important');
+     el.style.setProperty('min-height','100%','important');
+     el.style.setProperty('max-height','none','important');
+     el.style.setProperty('overflow-x','hidden','important');
+     el.style.setProperty('overflow-y','auto','important');
+     el.style.setProperty('overscroll-behavior-y','auto','important');
+     el.style.setProperty('touch-action','auto','important');
+   }
+   if(root){
+     root.style.setProperty('position','static','important');
+     root.style.setProperty('inset','auto','important');
+     root.style.setProperty('display','block','important');
+     root.style.setProperty('width','100%','important');
+     root.style.setProperty('height','auto','important');
+     root.style.setProperty('min-height','100dvh','important');
+     root.style.setProperty('max-height','none','important');
+     root.style.setProperty('overflow','visible','important');
+     root.style.setProperty('touch-action','auto','important');
+   }
+   html.classList.add('mpp-book-native-scroll-active');
+   body.classList.add('mpp-book-native-scroll-active');
+   root?.classList.add('mpp-book-native-scroll-active');
+   window.scrollTo(0,0);
+
+   return ()=>{
+     html.classList.remove('mpp-book-native-scroll-active');
+     body.classList.remove('mpp-book-native-scroll-active');
+     root?.classList.remove('mpp-book-native-scroll-active');
+     html.style.cssText=prevHtml;
+     body.style.cssText=prevBody;
+     if(root)root.style.cssText=prevRoot;
+   };
+ },[standaloneBook]);
+
  const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);const coreOrder=useMemo(()=>buildPublicCoreOrder(participantId),[participantId]);const coreSideMap=useMemo(()=>buildCoreTraitSideMap(participantId,coreOrder),[participantId,coreOrder]);
  const [state,setState]=useState<StoredState>(()=>loadState());const [active,setActive]=useState(()=>params.get('resumeResult')==='1');const [selected,setSelected]=useState<Choice|null>(null);const [separatorSelected,setSeparatorSelected]=useState<string|null>(null);const [committing,setCommitting]=useState(false);const timerRef=useRef<number|null>(null);
  const evaluation=useMemo(()=>evaluateMoneyPersonality(state.answers,state.separators),[state.answers,state.separators]);
