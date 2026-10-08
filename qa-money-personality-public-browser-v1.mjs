@@ -349,7 +349,7 @@ await screenshot('07-type-book-32');
 await page.getByRole('button',{name:'獲得画面に戻る'}).click();
 await page.locator('.mpp17-page').waitFor({state:'visible',timeout:5000});
 const shareCardText=((await page.locator('.mpp17-share-preview').textContent())||'').replace(/\s+/g,' ');
-if(!shareCardText.includes('1 / 32')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
+if(!shareCardText.includes('32 TYPES')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
 if(!/DRIVE|ENJOY|SECURE|OPTIMIZE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_STYLE_ENGLISH_MISSING:'+shareCardText);
 await screenshot('08-early-share-identity-card');
 
