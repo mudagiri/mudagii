@@ -21,6 +21,8 @@ const resultUi=fs.readFileSync('./src/features/money-personality/ResultV17.tsx',
 const shareImageUi=fs.readFileSync('./src/features/money-personality/job-share-image-v1.ts','utf8');
 const bookUi=fs.readFileSync('./src/features/money-personality/JobEncyclopediaV1.tsx','utf8');
 assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V17_NOT_WIRED');
+assert(publicUi.includes("import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1'")&&publicUi.includes('<AdventurerClassUnlockV1'),'PUBLIC_SSR_UNLOCK_NOT_WIRED');
+assert(publicUi.includes('REVEAL_KEY')&&publicUi.includes('sessionId'), 'PUBLIC_SSR_UNLOCK_SESSION_MEMORY_MISSING');
 assert(resultUi.includes("ResultWorldBeatV1"),'V17_MUDAGIRI_WORLD_BEATS_NOT_WIRED');
 assert(resultUi.includes('beat="complete"')&&resultUi.includes('beat="compare"')&&resultUi.includes('beat="next"'),'V17_MUDAGIRI_WORLD_BEATS_INCOMPLETE');
 assert(publicUi.includes("resultV9For(job,style)"),'PUBLIC_RESULT_V9_CONTENT_NOT_WIRED');
