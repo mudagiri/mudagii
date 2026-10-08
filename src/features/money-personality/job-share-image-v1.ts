@@ -21,8 +21,16 @@ const SECONDARY:Record<JobCode,string>={
   IDM:'#ffd071',IDP:'#ff7858',INM:'#39e7ff',INP:'#ff5f72',
 };
 const DEEP:Record<JobCode,string>={
-  FDM:'#281409',FDP:'#0b2619',FNM:'#081a38',FNP:'#052a32',
-  IDM:'#32140f',IDP:'#261b11',INM:'#190b3c',INP:'#0b1e38',
+  FDM:'#3a2d12',FDP:'#25371d',FNM:'#172b46',FNP:'#123c3a',
+  IDM:'#48291f',IDP:'#3b2a18',INM:'#302044',INP:'#20364a',
+};
+const MID:Record<JobCode,string>={
+  FDM:'#1d2230',FDP:'#16251b',FNM:'#111d31',FNP:'#102827',
+  IDM:'#2b1c18',IDP:'#241a13',INM:'#1d152c',INP:'#162330',
+};
+const METAL:Record<JobCode,string>={
+  FDM:'#e2bd59',FDP:'#a8b969',FNM:'#9fbcd3',FNP:'#9fb589',
+  IDM:'#c78968',IDP:'#d0a354',INM:'#a994c2',INP:'#9eb9cc',
 };
 
 function roundedRect(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number){
@@ -167,6 +175,8 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   const tags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label));
   const accent=asset.accent;
   const deep=DEEP[jobCode];
+  const mid=MID[jobCode];
+  const metal=METAL[jobCode];
 
   const canvas=document.createElement('canvas');
   canvas.width=WIDTH;
@@ -185,8 +195,8 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   roundedRect(ctx,42,42,WIDTH-84,HEIGHT-84,48);
   const stock=ctx.createLinearGradient(0,42,0,HEIGHT-42);
   stock.addColorStop(0,deep);
-  stock.addColorStop(.34,'#211d19');
-  stock.addColorStop(.68,'#111216');
+  stock.addColorStop(.36,mid);
+  stock.addColorStop(.70,'#111216');
   stock.addColorStop(1,'#08090c');
   ctx.fillStyle=stock;
   ctx.fill();
@@ -221,7 +231,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
 
   roundedRect(ctx,42,42,WIDTH-84,HEIGHT-84,48);
   ctx.lineWidth=5;
-  ctx.strokeStyle='#d3aa5e';
+  ctx.strokeStyle=metal;
   ctx.shadowColor=accent;
   ctx.shadowBlur=14;
   ctx.stroke();
@@ -229,10 +239,10 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
 
   roundedRect(ctx,58,58,WIDTH-116,HEIGHT-116,38);
   ctx.lineWidth=1.6;
-  ctx.strokeStyle='rgba(244,216,157,.62)';
+  ctx.strokeStyle=metal+'99';
   ctx.stroke();
 
-  text(ctx,'MUDAGIRI / MONEY TYPE',84,102,21,900,'left','#d8c89e');
+  text(ctx,'MUDAGIRI / MONEY TYPE',84,102,21,900,'left',metal);
   text(ctx,'1 / 32',WIDTH-84,102,21,900,'right','#e4e0d7');
 
   text(ctx,typeCode,86,171,43,1000,'left','#ffffff');
