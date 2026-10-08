@@ -81,7 +81,7 @@ jobs:
 
   deploy:
     environment:
-      name: github-pages
+      name: pilot-hidden-preview
       url: ${{ steps.deployment.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
