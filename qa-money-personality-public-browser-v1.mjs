@@ -160,6 +160,8 @@ if(payoffOrder.some((p,i)=>i>0&&p.top<=payoffOrder[i-1].top))throw new Error('MO
 const moreScenes=page.locator('.mpp17-more');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(80);
+const openMore=await moreScenes.evaluate(el=>({open:el.open,opened:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display,closed:getComputedStyle(el.querySelector('.mpp-disclosure-closed')).display,summarySize:parseFloat(getComputedStyle(el.querySelector('summary')).fontSize),summaryHeight:el.querySelector('summary').getBoundingClientRect().height}));
+if(!openMore.open||openMore.opened==='none'||openMore.closed!=='none'||openMore.summarySize<15||openMore.summaryHeight<56)throw new Error('MONEY_PUBLIC_DISCLOSURE_AFFORDANCE_BAD:'+JSON.stringify(openMore));
 const visibleMore=await moreScenes.locator('div > article').evaluateAll(nodes=>nodes.filter(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return s.display!=='none'&&s.visibility!=='hidden'&&r.height>0}).length);
 if(visibleMore!==4)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_NOT_VISIBLE:'+visibleMore);
 await screenshot('05b-result-more-scenes');
@@ -186,7 +188,7 @@ const resultV17Geometry=await page.evaluate(()=>{
 if(!resultV17Geometry.hero||!resultV17Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V17_MISSING:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.primarySceneCount!==2||resultV17Geometry.extraSceneCount!==4)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
 if(!resultV17Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
-if(resultV17Geometry.socialButtons!==3)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.socialButtons!==5)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
 if(await page.locator('.mpp17-share-button--primary').count()!==1)throw new Error('MONEY_PUBLIC_NATIVE_IMAGE_SHARE_CTA_MISSING');
 if(resultV17Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.miniJobs!==8)throw new Error('MONEY_PUBLIC_RESULT_MINI_JOB_BOOK_BAD:'+JSON.stringify(resultV17Geometry));
@@ -214,6 +216,8 @@ if(!text.includes('外から見ると、こう見える。')||!text.includes('�
 if(!text.includes('同じ場面でも、考えることが違う'))throw new Error('MONEY_PUBLIC_RESULT_V17_COMPARE_MISSING');
 const resultStyleDetail=page.locator('.mpp17-style-detail');
 await resultStyleDetail.locator('summary').click();
+const detailCue=await resultStyleDetail.evaluate(el=>({summarySize:parseFloat(getComputedStyle(el.querySelector('summary')).fontSize),summaryHeight:el.querySelector('summary').getBoundingClientRect().height,closeVisible:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display!=='none'}));
+if(detailCue.summarySize<15||detailCue.summaryHeight<56||!detailCue.closeVisible)throw new Error('MONEY_PUBLIC_STYLE_DETAIL_DISCOVERABILITY_BAD:'+JSON.stringify(detailCue));
 const expandedStyleText=(await resultStyleDetail.textContent())||'';
 if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(できることを増やしたい|楽しいことに使いたい|あとで困りたくない|余計な出費はしたくない)/.test(expandedStyleText))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
 await page.waitForTimeout(100);
@@ -246,7 +250,7 @@ const humanDesign=await page.evaluate(()=>{
 const channels=value=>(value.match(/[0-9.]+/g)||[]).map(Number);
 const bg=channels(humanDesign.panelBackground),panel=channels(humanDesign.panelText),speech=channels(humanDesign.speechText);
 if(bg.length<3||bg.slice(0,3).some(v=>v<230)||(bg[3]!==undefined&&bg[3]<.95)||panel.slice(0,3).some(v=>v>120)||speech.slice(0,3).some(v=>v>120))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_CONTRAST_BAD:'+JSON.stringify(humanDesign));
-if(humanDesign.descriptionSize<13||humanDesign.speechSize<13||humanDesign.sceneSize<13||!humanDesign.family.includes('Noto Sans JP'))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_TYPO_BAD:'+JSON.stringify(humanDesign));
+if(humanDesign.descriptionSize<14||humanDesign.speechSize<13||humanDesign.sceneSize<14||!humanDesign.family.includes('Noto Sans JP'))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_TYPO_BAD:'+JSON.stringify(humanDesign));
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('なんでこのタイプになった？'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV17=await page.evaluate(()=>({
@@ -286,6 +290,9 @@ const shareProbe=await page.evaluate(()=>window.__mudagiriShareProbe);
 if(!shareProbe?.url?.startsWith('https://twitter.com/intent/tweet?text=')||shareProbe.target!=='_blank')throw new Error('MONEY_PUBLIC_X_SHARE_NOT_SYNCHRONOUS:'+JSON.stringify(shareProbe));
 const shareMessage=new URL(shareProbe.url).searchParams.get('text')||'';
 if(!shareMessage.includes('adaptive=money-type')||!shareMessage.includes('あなたは何タイプ？')||shareMessage.includes('resumeResult=')||shareMessage.includes('debug='))throw new Error('MONEY_PUBLIC_X_SHARE_URL_BAD:'+shareMessage);
+await page.getByRole('button',{name:'Threadsに文章で投稿'}).click();
+const threadsProbe=await page.evaluate(()=>window.__mudagiriShareProbe);
+if(!threadsProbe?.url?.startsWith('https://www.threads.com/intent/post?text='))throw new Error('MONEY_PUBLIC_THREADS_SHARE_INTENT_BAD:'+JSON.stringify(threadsProbe));
 await page.getByRole('button',{name:'32タイプ図鑑を見る'}).click();
 await page.waitForURL(url=>new URL(url).searchParams.get('book')==='1',{timeout:5000});
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
@@ -320,7 +327,7 @@ const bookReadability=await page.evaluate(()=>{
     job:size('.mpp-job-book-jobcopy b')
   };
 });
-if(bookReadability.lead<12||bookReadability.axis<11||bookReadability.style<11||bookReadability.chips<9||bookReadability.job<17)throw new Error('MONEY_PUBLIC_BOOK_TEXT_TOO_SMALL:'+JSON.stringify(bookReadability));
+if(bookReadability.lead<13.5||bookReadability.axis<12||bookReadability.style<11.5||bookReadability.chips<11.5||bookReadability.job<17)throw new Error('MONEY_PUBLIC_BOOK_TEXT_TOO_SMALL:'+JSON.stringify(bookReadability));
 
 const surface=page.locator('.mpp-job-book-standalone-surface');
 const surfaceBox=await surface.boundingBox();
@@ -372,7 +379,7 @@ const unfoldedResult=await page.evaluate(()=>{
   return {viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,wrap:wrap&&{left:wrap.left,right:wrap.right,width:wrap.width},share:share&&{left:share.left,right:share.right,width:share.width},buttons};
 });
 if(unfoldedResult.viewport!==690||unfoldedResult.documentWidth>692||!unfoldedResult.wrap||unfoldedResult.wrap.width>524||unfoldedResult.wrap.left<0||unfoldedResult.wrap.right>692)throw new Error('MONEY_PUBLIC_FOLD_UNFOLDED_RESULT_OVERFLOW:'+JSON.stringify(unfoldedResult));
-if(!unfoldedResult.share||unfoldedResult.share.left<-2||unfoldedResult.share.right>692||unfoldedResult.buttons.length!==3||unfoldedResult.buttons.some(b=>b.height<43||b.width<85))throw new Error('MONEY_PUBLIC_FOLD_SHARE_TARGET_TOO_SMALL:'+JSON.stringify(unfoldedResult));
+if(!unfoldedResult.share||unfoldedResult.share.left<-2||unfoldedResult.share.right>692||unfoldedResult.buttons.length!==5||unfoldedResult.buttons.some(b=>b.height<43||b.width<85))throw new Error('MONEY_PUBLIC_FOLD_SHARE_TARGET_TOO_SMALL:'+JSON.stringify(unfoldedResult));
 await screenshot('08b-fold-unfolded-result-690');
 
 
