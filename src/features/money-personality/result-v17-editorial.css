@@ -3223,3 +3223,152 @@ html body #root .mpp17-page{
   opacity:.90!important;
   mix-blend-mode:screen!important;
 }
+
+
+/* ---------- V17.21 JOB LIGHT MOTION SYSTEM ----------
+   Replace hologram-as-design with JOB-specific light motion.
+   Static state stays premium; motion adds rarity. */
+.mpp17-holo-texture,
+.mpp17-share-holo{
+  display:none!important;
+}
+.mpp17-holo-foil,
+.mpp17-share-glint{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  border-radius:inherit!important;
+  mix-blend-mode:screen!important;
+  -webkit-mask:none!important;
+  mask:none!important;
+}
+
+/* common: restrained metallic sweep */
+.mpp17-holo-foil{
+  z-index:2!important;
+  opacity:.26!important;
+  background:linear-gradient(108deg,transparent 0 42%,rgba(255,255,255,.12) 48%,transparent 55% 100%)!important;
+  background-size:190% 100%!important;
+}
+.mpp17-share-glint{
+  z-index:2!important;
+  opacity:.22!important;
+  background:linear-gradient(108deg,transparent 0 42%,rgba(255,255,255,.10) 48%,transparent 55% 100%)!important;
+  background-size:190% 100%!important;
+}
+
+/* shared motion canvases */
+.mpp17-job-bg,
+.mpp17-share-jobbg{
+  transform-origin:50% 36%;
+  will-change:transform,opacity,filter,background-position;
+}
+
+/* FDM / command pulse */
+.mpp17-profile[data-job="FDM"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="FDM"] .mpp17-share-jobbg{
+  filter:drop-shadow(0 0 7px color-mix(in srgb,var(--job-motif) 34%,transparent));
+}
+@keyframes mpp17-fdm-command{
+  0%,100%{opacity:.62;transform:scale(.985)}
+  48%{opacity:1;transform:scale(1.025)}
+  58%{opacity:.76;transform:scale(1.005)}
+}
+
+/* FDP / grid nodes */
+@keyframes mpp17-fdp-grid{
+  0%,100%{opacity:.62;filter:brightness(.92)}
+  45%{opacity:.92;filter:brightness(1.2)}
+  60%{opacity:.72;filter:brightness(1)}
+}
+
+/* FNM / constellation twinkle */
+@keyframes mpp17-fnm-stars{
+  0%,100%{opacity:.66;filter:brightness(.9)}
+  30%{opacity:.92;filter:brightness(1.28)}
+  52%{opacity:.72;filter:brightness(1.02)}
+  78%{opacity:1;filter:brightness(1.35)}
+}
+
+/* FNP / wave drift */
+@keyframes mpp17-fnp-wave{
+  0%{background-position:0 0;opacity:.62}
+  50%{background-position:0 16px;opacity:.92}
+  100%{background-position:0 0;opacity:.62}
+}
+
+/* IDM / breathing rings */
+@keyframes mpp17-idm-rings{
+  0%,100%{transform:scale(.97);opacity:.62}
+  50%{transform:scale(1.035);opacity:.94}
+}
+
+/* IDP / targeting lock */
+@keyframes mpp17-idp-lock{
+  0%,100%{transform:scale(1.025);opacity:.64;filter:brightness(.92)}
+  42%{transform:scale(.985);opacity:1;filter:brightness(1.26)}
+  52%{transform:scale(.99);opacity:.78;filter:brightness(1.05)}
+}
+
+/* INM / arcane rotation */
+@keyframes mpp17-inm-arcane{
+  0%{transform:rotate(0deg) scale(.99);opacity:.66}
+  50%{opacity:.96}
+  100%{transform:rotate(360deg) scale(1.01);opacity:.66}
+}
+
+/* INP / wind sweep */
+@keyframes mpp17-inp-wind{
+  0%{background-position:-26px 0;opacity:.58}
+  52%{background-position:18px 0;opacity:.95}
+  100%{background-position:48px 0;opacity:.62}
+}
+
+/* subtle universal glint */
+@keyframes mpp17-job-glint{
+  from{background-position:-90% 0}
+  to{background-position:120% 0}
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .mpp17-holo-foil,.mpp17-share-glint{animation:mpp17-job-glint 5.6s ease-in-out infinite alternate!important}
+  .mpp17-profile[data-job="FDM"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="FDM"] .mpp17-share-jobbg{animation:mpp17-fdm-command 3.4s ease-in-out infinite!important}
+  .mpp17-profile[data-job="FDP"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="FDP"] .mpp17-share-jobbg{animation:mpp17-fdp-grid 3.1s ease-in-out infinite!important}
+  .mpp17-profile[data-job="FNM"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="FNM"] .mpp17-share-jobbg{animation:mpp17-fnm-stars 4.2s ease-in-out infinite!important}
+  .mpp17-profile[data-job="FNP"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="FNP"] .mpp17-share-jobbg{animation:mpp17-fnp-wave 3.8s ease-in-out infinite!important}
+  .mpp17-profile[data-job="IDM"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="IDM"] .mpp17-share-jobbg{animation:mpp17-idm-rings 3.6s ease-in-out infinite!important}
+  .mpp17-profile[data-job="IDP"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="IDP"] .mpp17-share-jobbg{animation:mpp17-idp-lock 2.9s ease-in-out infinite!important}
+  .mpp17-profile[data-job="INM"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="INM"] .mpp17-share-jobbg{animation:mpp17-inm-arcane 12s linear infinite!important}
+  .mpp17-profile[data-job="INP"] .mpp17-job-bg,
+  .mpp17-share-preview[data-job="INP"] .mpp17-share-jobbg{animation:mpp17-inp-wind 3.2s ease-in-out infinite!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-holo-foil,.mpp17-share-glint,
+  .mpp17-job-bg,.mpp17-share-jobbg{animation:none!important}
+}
+
+/* JOB-specific static glow so PNG-like screenshots still feel rare */
+.mpp17-profile[data-job="FDM"] .mpp17-portrait,
+.mpp17-share-preview[data-job="FDM"] .mpp17-share-art{filter:drop-shadow(0 0 10px rgba(245,200,76,.18))}
+.mpp17-profile[data-job="FDP"] .mpp17-portrait,
+.mpp17-share-preview[data-job="FDP"] .mpp17-share-art{filter:drop-shadow(0 0 10px rgba(141,208,111,.17))}
+.mpp17-profile[data-job="FNM"] .mpp17-portrait,
+.mpp17-share-preview[data-job="FNM"] .mpp17-share-art{filter:drop-shadow(0 0 12px rgba(121,199,255,.20))}
+.mpp17-profile[data-job="FNP"] .mpp17-portrait,
+.mpp17-share-preview[data-job="FNP"] .mpp17-share-art{filter:drop-shadow(0 0 12px rgba(82,212,207,.18))}
+.mpp17-profile[data-job="IDM"] .mpp17-portrait,
+.mpp17-share-preview[data-job="IDM"] .mpp17-share-art{filter:drop-shadow(0 0 11px rgba(240,154,114,.18))}
+.mpp17-profile[data-job="IDP"] .mpp17-portrait,
+.mpp17-share-preview[data-job="IDP"] .mpp17-share-art{filter:drop-shadow(0 0 12px rgba(185,162,115,.20))}
+.mpp17-profile[data-job="INM"] .mpp17-portrait,
+.mpp17-share-preview[data-job="INM"] .mpp17-share-art{filter:drop-shadow(0 0 14px rgba(184,135,255,.22))}
+.mpp17-profile[data-job="INP"] .mpp17-portrait,
+.mpp17-share-preview[data-job="INP"] .mpp17-share-art{filter:drop-shadow(0 0 12px rgba(139,207,255,.20))}
