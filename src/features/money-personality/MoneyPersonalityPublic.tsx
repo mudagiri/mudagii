@@ -8,7 +8,6 @@ import {
   newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
   publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
 } from './publicFlowV1';
-import ResultJourneyV1 from './ResultJourneyV1';
 import ResultV17 from './ResultV17';
 import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
 import {resultV9For} from './resultV9Content';
@@ -131,7 +130,6 @@ function separatorSelectedClass(selected:string|null,value:string){return select
 
 function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;sessionId:string;onRestart:()=>void;debug:boolean}){
  const [revealSeen,setRevealSeen]=useState(()=>{try{return localStorage.getItem(REVEAL_KEY)===sessionId}catch{return false}});
- const [handoff,setHandoff]=useState<'result'|'journey'>('result');
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
@@ -139,10 +137,9 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
  const v9=resultV9For(job,style);
  const insight=resultV10InsightFor(job,style);
 
- useEffect(()=>{if(handoff==='journey')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[handoff]);
+ useEffect(()=>{const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[]);
 
  if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
- if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
 
  const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.scenes[0].voice,v9.scenes[1].voice],target})};
  const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
@@ -158,7 +155,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    axes={axes}
    onShare={share}
    onOpenBook={()=>{window.location.href=moneyTypeBookUrl(job,style)}}
-   onHousehold={()=>setHandoff('journey')}
+   onHousehold={()=>{try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
    onRestart={onRestart}
   />
   {debug&&<pre className="mpp-result-debug">{JSON.stringify({job:evaluation.jobCode,style:evaluation.style,axes:evaluation.axes,factors:evaluation.factors,resultExperienceVersion:'MUDAGIRI_RESULT_V17_EDITORIAL'},null,2)}</pre>}
