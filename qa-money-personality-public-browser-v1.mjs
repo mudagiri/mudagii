@@ -235,21 +235,21 @@ const typeBook=await page.evaluate(()=>({
   mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
   styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
   visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
-  pageOverflowY:getComputedStyle(document.querySelector('.mpp-book-page')).overflowY,
-  bookHeight:document.querySelector('.mpp-job-book')?.scrollHeight||0,
+  htmlOverflowY:getComputedStyle(document.documentElement).overflowY,
+  bodyOverflowY:getComputedStyle(document.body).overflowY,
+  docHeight:(document.scrollingElement||document.documentElement).scrollHeight,
   viewport:innerHeight,
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
-if(typeBook.pageOverflowY==='hidden'||typeBook.bookHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.docHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
-const bookPage=page.locator('.mpp-book-page');
-const scrollBefore=await bookPage.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight,overflowY:getComputedStyle(el).overflowY}));
-await bookPage.evaluate(el=>{el.scrollTop=Math.min(700,el.scrollHeight-el.clientHeight)});
+const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
+await page.evaluate(()=>window.scrollTo({top:Math.min(700,(document.scrollingElement||document.documentElement).scrollHeight-innerHeight),behavior:'auto'}));
 await page.waitForTimeout(100);
-const scrollAfter=await bookPage.evaluate(el=>el.scrollTop);
+const scrollAfter=await page.evaluate(()=>window.scrollY);
 if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL:'+JSON.stringify({scrollBefore,scrollAfter}));
 
-await bookPage.evaluate(el=>{el.scrollTop=0});
+await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 await page.waitForTimeout(80);
 
 const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
@@ -271,7 +271,7 @@ await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
 await page.locator('.mpp-social-action--share').click();
 await page.locator('.mpp-job-share').waitFor({state:'visible',timeout:3000});
 const shareCardText=((await page.locator('.mpp-job-share-card').textContent())||'').replace(/\s+/g,' ');
-if(!shareCardText.includes('32 TYPE')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
+if(!shareCardText.includes('1 / 32')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
 if(/DRIVE STYLE|ENJOY STYLE|SECURE STYLE|OPTIMIZE STYLE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_ENGLISH_STYLE_LEAK:'+shareCardText);
 await screenshot('08-share-identity-card');
 await page.getByRole('button',{name:'次のクエストを選ぶ'}).click();
