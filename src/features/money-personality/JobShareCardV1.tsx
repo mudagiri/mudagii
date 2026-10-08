@@ -2,7 +2,7 @@ import React from 'react';
 import type {JobCode,StyleId} from './classifierV1';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
-import {moneyTypeIdentity} from './money-type-identity-v1';
+import {moneyTypeIdentity,STYLE_IDENTITY} from './money-type-identity-v1';
 import {resultV9For} from './resultV9Content';
 import JobCharacterCard from './JobCharacterCard';
 import './job-share-v1.css';
@@ -24,7 +24,7 @@ export default function JobShareCardV1({jobCode,primaryStyle,onShare}:Props){
       <div className="mpp-job-share-code">{typeCode}</div>
       <div className="mpp-job-share-style">{identity.styleTypeLabel}</div>
       <div className="mpp-job-share-portrait"><div className="mpp-job-share-reticle" aria-hidden="true"/><JobCharacterCard jobCode={jobCode} variant="hero"/></div>
-      <div className="mpp-job-share-copy"><small>あなたのお金タイプ</small><h2>{identity.compact}</h2><p>{result.hero}</p></div>
+      <div className="mpp-job-share-copy"><small>あなたのお金タイプ</small><h2>{identity.jobName}</h2><div className="mpp-job-share-style-caption">{STYLE_IDENTITY[primaryStyle].short}</div><p>{result.hero}</p></div>
       <div className="mpp-job-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
       <footer><b>ムダギリ｜お金の性格診断</b><span>{asset.animal}</span></footer>
     </div>
