@@ -66,6 +66,7 @@ jobs:
           mkdir -p site/pilot/money-type
           cp -R pilot-site/dist/. site/pilot/money-type/
           git -C pilot-site rev-parse HEAD > site/pilot/money-type/REVISION_SHA.txt
+          node pilot-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/money-type/index.html
           test -f site/index.html
           test -f site/pilot/money-type/index.html
 
