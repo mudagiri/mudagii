@@ -66,20 +66,6 @@
 @media(max-width:390px){.mpp-job-book{padding-inline:10px}.mpp-job-book-hero h2{font-size:31px}.mpp-job-book-mycard{align-items:flex-start;flex-direction:column;gap:5px}.mpp-job-book-mycard>span{text-align:left}}
 
 
-/* Portal owns scrolling. It is mounted directly under <body>, outside #root. */
-.mpp-job-book-portal{
-  position:relative;
-  z-index:2147483000;
-  display:block;
-  width:100%;
-  min-height:100dvh;
-  overflow:visible;
-  touch-action:pan-y;
-  background:#07090c;
-}
-.mpp-job-book-portal>.mpp-job-book{
-  min-height:100dvh;
-}
 
 
 .mpp-job-book-motif{
@@ -111,9 +97,7 @@
 }
 
 
-/* ---------- ENCYCLOPEDIA V4 MOBILE SINGLE COLUMN ----------
-   Phones and foldables must show all 8 JOBs as one vertical list.
-   Do not let wide mobile viewports trigger tablet/desktop collection layout. */
+/* ---------- ENCYCLOPEDIA V4 MOBILE SINGLE COLUMN ---------- */
 @media(max-width:899px){
   .mpp-job-book{
     width:100%!important;
@@ -129,8 +113,50 @@
     width:100%!important;
     min-height:148px!important;
   }
-  .mpp-job-book-portal{
-    overflow:visible!important;
-    touch-action:pan-y!important;
-  }
+}
+
+
+/* Standalone encyclopedia route: native document scrolling only. */
+html:has(.mpp-book-standalone),
+body:has(.mpp-book-standalone){
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#root:has(.mpp-book-standalone){
+  position:static!important;
+  display:block!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+.mpp-book-standalone{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:#07090c!important;
+  touch-action:pan-y!important;
+}
+.mpp-job-book-standalone-surface{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
 }
