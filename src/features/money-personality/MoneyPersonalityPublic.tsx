@@ -129,6 +129,7 @@ function separatorSelectedClass(selected:string|null,value:string){return select
 
 function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;sessionId:string;onRestart:()=>void;debug:boolean}){
  const [revealSeen,setRevealSeen]=useState(()=>{try{return localStorage.getItem(REVEAL_KEY)===sessionId}catch{return false}});
+ const [shareStatus,setShareStatus]=useState('');
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
@@ -139,7 +140,14 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
 
  if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
 
- const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,target})};
+ const share=async(target:'native'|'x'|'line')=>{
+  setShareStatus('');
+  try{
+   const {shareJobTypeImage}=await import('./job-share-image-v1');
+   const result=await shareJobTypeImage({jobCode:job,primaryStyle:style,target});
+   if(target==='native')setShareStatus(result==='downloaded'?'画像カードを保存しました。SNSから画像を添付してね。':result==='shared'?'共有画面に画像カードを渡しました。':'画像を共有できませんでした。');
+  }catch{setShareStatus('共有に失敗しました。もう一度試してね。')}
+ };
  const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
  const axes=axisDefs.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return {title,left,right,lean,pos}});
 
@@ -152,6 +160,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    secondaryStyle={secondary}
    axes={axes}
    onShare={share}
+   shareStatus={shareStatus}
    onOpenBook={()=>{window.location.href=moneyTypeBookUrl(job,style)}}
    onHousehold={()=>{try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
    onRestart={onRestart}
