@@ -68,6 +68,40 @@ html body #root .mpp17-page .mpp17-share-buttons button:not(.mpp17-share-button-
   line-height:1.45!important;
 }
 
+/* Reward reveal: the next action must be as prominent as the collectible. */
+html body #root .mpp-class-unlock .mpp-ssr-continue{
+  display:block!important;
+  width:min(100%,288px)!important;
+  max-width:288px!important;
+  min-height:54px!important;
+  margin:18px auto 10px!important;
+  padding:13px 20px!important;
+  border-radius:13px!important;
+  background:#f4c95d!important;
+  color:#231c10!important;
+  border:1px solid #ffe8a4!important;
+  box-shadow:0 5px 18px rgba(244,201,93,.18)!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  line-height:1.45!important;
+  letter-spacing:0!important;
+  cursor:pointer;
+}
+html body #root .mpp-class-unlock .mpp-ssr-style{
+  font-size:13px!important;
+  line-height:1.5!important;
+  letter-spacing:.02em!important;
+}
+html body #root .mpp-class-unlock .mpp-transition-copy{
+  font-size:13px!important;
+  line-height:1.5!important;
+  letter-spacing:.03em!important;
+}
+html body #root .mpp-class-unlock.is-job-revealed p{
+  font-size:14px!important;
+  line-height:1.65!important;
+}
+
 /* Card metadata: improve informational labels without enlarging the JOB portrait. */
 html body #root .mpp17-page .mpp17-profile .mpp17-topline,
 html body #root .mpp17-page .mpp17-share-head{font-size:10.5px!important;letter-spacing:.045em!important}
