@@ -20,12 +20,12 @@ await page.getByRole('button',{name:'意味が取りづらい'}).click();
 let answered=0;
 for(let guard=0;guard<80;guard++){
   await page.waitForFunction(()=>Boolean(
-    document.querySelector('.mpp-result')||
+    document.querySelector('.mpp17-page')||
     document.querySelector('.mpp-separator-options button')||
     document.querySelector('.mpp-scale button')||
     document.querySelector('.mpp-answer-list button')
   ),{timeout:2500}).catch(()=>{});
-  const result=page.locator('.mpp-result');
+  const result=page.locator('.mpp17-page');
   if(await result.count()&&await result.isVisible())break;
   const separator=page.locator('.mpp-separator-options button');
   if(await separator.count()){
@@ -41,7 +41,7 @@ for(let guard=0;guard<80;guard++){
   }
   throw new Error('COGNITIVE_PUBLIC_NO_ANSWER_CONTROL');
 }
-await page.locator('.mpp-result').waitFor({state:'visible',timeout:15000});
+await page.locator('.mpp17-page').waitFor({state:'visible',timeout:15000});
 await page.waitForFunction(()=>Boolean(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')),{timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).waitFor({state:'visible',timeout:5000});
 await page.getByRole('button',{name:'テスト用フィードバック'}).click();
