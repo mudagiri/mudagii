@@ -199,8 +199,7 @@ html body #root .mpp17-page details[open] .mpp-disclosure-closed,
 html body #root .mpp-job-book details[open] .mpp-disclosure-closed{display:none}
 html body #root .mpp17-page details[open] .mpp-disclosure-open,
 html body #root .mpp-job-book details[open] .mpp-disclosure-open{display:inline}
-html body #root .mpp17-page .mpp17-style-detail[open] summary .mpp-disclosure-state,
-html body #root .mpp17-page .mpp17-style-detail[open] summary .mpp-disclosure-state span{
+html body #root .mpp17-page .mpp17-style-detail[open] summary span{
   transform:none!important;
 }
 html body #root .mpp17-page .mpp17-more>div,
