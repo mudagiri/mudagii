@@ -195,10 +195,10 @@ export const JOB_ONE_LINERS:Record<JobCode,string>={
 };
 
 export const STYLE_META:Record<StyleId,{label:string;icon:string;copy:string}>={
-  DRIVE:{label:'DRIVE',icon:'⚔',copy:'前進したり、できることが増える使い方に価値を感じやすい。'},
-  ENJOY:{label:'ENJOY',icon:'✦',copy:'楽しさや体験、気分が上がる使い方に価値を感じやすい。'},
-  SECURE:{label:'SECURE',icon:'🛡',copy:'安心できる余裕や、見通しを持てる使い方に価値を感じやすい。'},
-  OPTIMIZE:{label:'OPTIMIZE',icon:'⚙',copy:'必要なものに絞り、ムダを減らせる使い方に価値を感じやすい。'},
+  DRIVE:{label:'前進',icon:'⚔',copy:'せっかく使うなら、前に進みたい。'},
+  ENJOY:{label:'楽しさ',icon:'✦',copy:'今をちゃんと楽しみたい。'},
+  SECURE:{label:'安心',icon:'🛡',copy:'あとで困りたくない。'},
+  OPTIMIZE:{label:'納得',icon:'⚙',copy:'意味ない出費はしたくない。'},
 };
 
 export const FACTOR_PUBLIC_LABEL:Record<MainFactorId,string>={
