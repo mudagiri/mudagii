@@ -108,18 +108,18 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       </section>
 
       <section className="mpp17-compare">
-        <header><span>05</span><div><small>同じ場面でも、タイプで違う</small><h2>{insight.compare.scene}</h2></div></header>
+        <header><span>05</span><div><small>同じ場面でも、考えることが違う</small><h2>{insight.compare.scene}</h2></div></header>
         <div className="mpp17-compare-row">
           <article className="is-you"><small>あなた</small><b>{insight.compare.you}</b></article>
-          <article><small>近いタイプ</small><b>{insight.compare.other}</b></article>
+          <article><small>近いタイプ</small><b>{insight.compare.other.replaceAll('満足タイプ','楽しさタイプ').replaceAll('ムダなしタイプ','納得タイプ')}</b></article>
         </div>
       </section>
 
       <ResultWorldBeatV1 beat="compare"/>
 
       <section className="mpp17-match">
-        <header><span>06</span><div><small>お金の感覚で見る</small><h2>近いタイプ、真逆のタイプ。</h2></div></header>
-        <p className="mpp17-note">恋愛相性ではなく、診断上の「お金の考え方の近さ」です。</p>
+        <header><span>06</span><div><small>友だちと比べるなら</small><h2>似てる人と、真逆な人。</h2></div></header>
+        <p className="mpp17-note">恋愛の相性じゃなくて、お金の考え方が近いかどうかです。</p>
         <div className="mpp17-match-list">
           {matches.map(({label,data})=><article key={label}>
             <JobCharacterCard jobCode={data.jobCode} variant="compact"/>
@@ -155,8 +155,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         </div>
         <div className="mpp17-share-copy">
           <small>08 / SHARE</small>
-          <h2>このカードを、そのままシェア。</h2>
-          <p>TYPE・キャラ・一言・ハッシュタグを1枚に。金額や収入は載りません。</p>
+          <h2>これ、友だちに見せたくない？</h2>
+          <p>収入や金額は出ません。タイプとキャラだけ、そのままシェアできます。</p>
         </div>
         <div className="mpp17-share-buttons">
           <button onClick={()=>onShare('x')}>𝕏</button>
@@ -167,7 +167,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       </section>
 
       <details className="mpp17-details">
-        <summary>診断の内訳を見る <span>3つの傾向</span></summary>
+        <summary>なんでこのタイプになった？ <span>3つのクセを見る</span></summary>
         <div className="mpp17-axis-list">
           {axes.map(axis=><article key={axis.title}><header><b>{axis.title}</b><small>{axis.lean}</small></header><div className="mpp17-axis-labels"><span>{axis.left}</span><span>{axis.right}</span></div><div className="mpp17-axis-track"><i style={{left:axis.pos+'%'}}/></div></article>)}
         </div>
