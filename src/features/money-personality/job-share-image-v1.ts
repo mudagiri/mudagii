@@ -11,7 +11,7 @@ type FileShareNavigator=Navigator&{
   canShare?:(data?:SharePayload)=>boolean;
 };
 
-type ShareTarget='native'|'x'|'line';
+type ShareTarget='native'|'x'|'line'|'threads'|'instagram';
 type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel?:string;features?:readonly string[];target?:ShareTarget};
 
 const WIDTH=1080;
@@ -364,9 +364,18 @@ export async function shareJobTypeImage({jobCode,primaryStyle,target}:Args):Prom
     window.location.href='https://line.me/R/share?text='+encodeURIComponent(message+'\n'+url);
     return 'text';
   }
+  if(target==='threads'){
+    window.open('https://www.threads.com/intent/post?text='+encodeURIComponent(message+'\n'+url),'_blank','noopener,noreferrer');
+    return 'text';
+  }
   const nav=navigator as FileShareNavigator;
   try{
     const file=await createJobShareImage({jobCode,primaryStyle});
+    if(target==='instagram'){
+      downloadFile(file);
+      try{await navigator.clipboard?.writeText(message+'\n'+url)}catch{}
+      return 'downloaded';
+    }
     if(nav.share&&nav.canShare?.({files:[file]})){
       await nav.share({title:'ムダギリ｜お金の性格診断',text:message,files:[file]});
       return 'shared';
