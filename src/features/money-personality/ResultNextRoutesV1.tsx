@@ -3,6 +3,8 @@ import type {JobCode,StyleId} from './classifierV1';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
 import {moneyTypeIdentity} from './money-type-identity-v1';
+import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
+import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-next-routes-v1.css';
 
 type Props={jobCode:JobCode;primaryStyle:StyleId;onHousehold:()=>void;onLine:()=>void;onShare:()=>void;onOpenBook:()=>void};
@@ -15,6 +17,7 @@ export default function ResultNextRoutesV1({jobCode,primaryStyle,onHousehold,onL
     <div className="mpp-next-routes-kicker">YOUR MONEY TYPE / {typeCode}</div>
     <h2>{identity.compact}だった！<br/><span>次、どうする？</span></h2>
     <p className="mpp-next-routes-lead"><b>{identity.full}</b> まで出た。ここで終わってもいいし、友だちと比べてもいい。もう少し進めるなら、次は実際の家計を見にいこう。</p>
+    <div className="mpp-next-routes-mudagiri"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.nextMove} alt="ムダギリくん"/><div><small>ムダギリくん</small><p>ここから先は好きに選んでOK。俺なら、まず友だちのタイプ見るw</p></div></div>
 
     <div className="mpp-next-routes-social">
       <button className="mpp-social-action mpp-social-action--share" onClick={onShare}><small>MY TYPE</small><b>{typeCode}をシェア</b><span>友だちとタイプを比べる →</span></button>
