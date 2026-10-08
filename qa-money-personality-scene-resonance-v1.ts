@@ -28,6 +28,8 @@ assert(publicUi.includes("import ResultV17 from './ResultV17'"),'PUBLIC_RESULT_V
 assert(publicUi.includes("import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1'")&&publicUi.includes('<AdventurerClassUnlockV1'),'PUBLIC_SSR_UNLOCK_NOT_WIRED');
 assert(publicUi.includes('REVEAL_KEY')&&publicUi.includes('sessionId'), 'PUBLIC_SSR_UNLOCK_SESSION_MEMORY_MISSING');
 const opticalCss=fs.readFileSync('./src/features/money-personality/money-personality-optical-audit-v1.css','utf8');
+const publicCss=fs.readFileSync('./src/features/money-personality/publicMoney.css','utf8');
+assert(publicCss.includes('.mpp-back{width:44px;height:44px;')&&publicCss.includes('grid-template-columns:44px minmax(0,1fr) auto'), 'IPHONE_QUESTION_BACK_TAP_TARGET_BELOW_44');
 assert(publicUi.includes("import './money-personality-optical-audit-v1.css'"),'PUBLIC_OPTICAL_GEOMETRY_STYLES_NOT_WIRED');
 assert(!publicUi.includes("import './money-result-v4.css'")&&!publicUi.includes("import './result-vivid-scene-v1.css'"),'PUBLIC_LEGACY_RESULT_CSS_STILL_BUNDLED');
 assert(opticalCss.includes('data-pose=\'IDLE_01\'')&&opticalCss.includes('grid-template-columns:84px minmax(0,1fr)'),'OPTICAL_AUDIT_CRITICAL_RULES_MISSING');
