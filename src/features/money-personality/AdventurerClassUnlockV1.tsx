@@ -8,9 +8,9 @@ import {moneyTypeCode} from './money-type-code-v1';
 import {STYLE_IDENTITY} from './money-type-identity-v1';
 import './job-unlock-premium-v1.css';
 
-type Props={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;onComplete:()=>void};
+type Props={jobCode:JobCode;primaryStyle:StyleId;onComplete:()=>void};
 
-export default function AdventurerClassUnlockV1({jobCode,primaryStyle,styleLabel,onComplete}:Props){
+export default function AdventurerClassUnlockV1({jobCode,primaryStyle,onComplete}:Props){
   const [step,setStep]=useState(0);
   const current=CLASS_UNLOCK_SEQUENCE[Math.min(step,CLASS_UNLOCK_SEQUENCE.length-1)];
   const asset=jobCharacterAsset(jobCode);const typeCode=moneyTypeCode(jobCode,primaryStyle);
