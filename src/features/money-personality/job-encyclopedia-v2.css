@@ -525,3 +525,60 @@ html,body,#root{overscroll-behavior-y:auto}
 .mpp-job-book-detail-close{
   pointer-events:auto!important;
 }
+
+
+/* ---------- ENCYCLOPEDIA V3.2 SPECIFICITY OVERRIDE ----------
+   Must beat mudagiri-background-runtime.css:
+   html body #root .mpp-page.mpp-page--guild { height:100dvh; overflow:hidden!important; }
+*/
+html body #root .mpp-page.mpp-page--guild.mpp-book-page{
+  position:fixed!important;
+  inset:0!important;
+  z-index:99999!important;
+  display:block!important;
+  width:100%!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+  overflow-y:scroll!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+html body #root .mpp-page.mpp-page--guild.mpp-book-page > .mpp-job-book{
+  position:relative!important;
+  width:min(100%,560px)!important;
+  height:auto!important;
+  min-height:calc(100dvh + 1px)!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding-bottom:calc(44px + env(safe-area-inset-bottom))!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+}
+
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-style-key > button,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-jobhead,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-typechips > button,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-close,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-detail-close{
+  position:relative!important;
+  z-index:20!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  cursor:pointer!important;
+}
+
+/* Decorative children must never intercept taps. */
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-art,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-art *,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-jobcopy,
+html body #root .mpp-page.mpp-page--guild.mpp-book-page .mpp-job-book-jobcopy *{
+  pointer-events:none!important;
+}
