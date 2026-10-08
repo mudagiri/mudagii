@@ -21,12 +21,18 @@ let answered=0;
 for(let guard=0;guard<80;guard++){
   await page.waitForFunction(()=>Boolean(
     document.querySelector('.mpp17-page')||
+    document.querySelector('.mpp-class-unlock')||
     document.querySelector('.mpp-separator-options button')||
     document.querySelector('.mpp-scale button')||
     document.querySelector('.mpp-answer-list button')
   ),{timeout:2500}).catch(()=>{});
   const result=page.locator('.mpp17-page');
   if(await result.count()&&await result.isVisible())break;
+  if(await page.locator('.mpp-class-unlock').count()){
+    await page.getByRole('button',{name:'結果を見る'}).waitFor({state:'visible',timeout:10000});
+    await page.getByRole('button',{name:'結果を見る'}).click();
+    continue;
+  }
   const separator=page.locator('.mpp-separator-options button');
   if(await separator.count()){
     await separator.first().click();answered++;await page.waitForTimeout(170);continue;
