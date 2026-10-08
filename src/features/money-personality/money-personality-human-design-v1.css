@@ -460,3 +460,37 @@ html body #root .mpp17-page section>header>span{
 html body #root .mpp17-page section>header{
   gap:9px;
 }
+
+/* Sharing: one truthful image action, with optional text-link destinations. */
+html body #root .mpp17-page .mpp17-share-buttons .mpp17-share-button--primary{
+  grid-column:1/-1;
+  min-height:52px;
+  color:#fffdf8!important;
+  background:#20232a!important;
+  border-color:#20232a!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  letter-spacing:0!important;
+}
+html body #root .mpp17-page .mpp17-share-buttons button:not(.mpp17-share-button--primary){
+  min-height:44px;
+  font-size:12px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+}
+.mpp17-share-fallback-note{
+  margin:10px 0 0;
+  font-size:12px;
+  line-height:1.65;
+  color:#777168;
+}
+.mpp17-share-status{
+  margin:8px 0 0;
+  padding:9px 12px;
+  border-left:3px solid #ac8545;
+  border-radius:5px;
+  color:#3c352b;
+  background:#f4eddf;
+  font-size:13px;
+  line-height:1.6;
+}
