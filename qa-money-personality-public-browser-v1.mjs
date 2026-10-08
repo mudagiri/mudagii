@@ -200,6 +200,27 @@ const resultStyleDetail=page.locator('.mpp17-style-detail');
 await resultStyleDetail.locator('summary').click();
 const expandedStyleText=(await resultStyleDetail.textContent())||'';
 if(!(await resultStyleDetail.evaluate(el=>el.hasAttribute('open')))||!/(できることを増やしたい|楽しいことに使いたい|あとで困りたくない|余計な出費はしたくない)/.test(expandedStyleText))throw new Error('MONEY_PUBLIC_STYLE_RESULT_DETAIL_MISSING:'+expandedStyleText);
+const humanDesign=await page.evaluate(()=>{
+  const stylePanel=document.querySelector('.mpp17-style-detail');
+  const detail=document.querySelector('.mpp17-style-detail-body p');
+  const speech=document.querySelector('.mpp17-mudagiri-talk p');
+  const scene=document.querySelector('.mpp17-scene-list p');
+  const color=(el,kind='color')=>getComputedStyle(el)[kind];
+  return {
+    panelBackground:color(stylePanel,'backgroundColor'),
+    panelText:color(stylePanel),
+    descriptionText:color(detail),
+    speechText:color(speech),
+    descriptionSize:parseFloat(color(detail,'fontSize')),
+    speechSize:parseFloat(color(speech,'fontSize')),
+    sceneSize:parseFloat(color(scene,'fontSize')),
+    family:color(speech,'fontFamily')
+  };
+});
+const channels=value=>(value.match(/[\\d.]+/g)||[]).map(Number);
+const bg=channels(humanDesign.panelBackground),panel=channels(humanDesign.panelText),speech=channels(humanDesign.speechText);
+if(bg.length<3||bg.slice(0,3).some(v=>v<230)||(bg[3]!==undefined&&bg[3]<.95)||panel.slice(0,3).some(v=>v>120)||speech.slice(0,3).some(v=>v>120))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_CONTRAST_BAD:'+JSON.stringify(humanDesign));
+if(humanDesign.descriptionSize<13||humanDesign.speechSize<13||humanDesign.sceneSize<13||!humanDesign.family.includes('Noto Sans JP'))throw new Error('MONEY_PUBLIC_HUMAN_DESIGN_TYPO_BAD:'+JSON.stringify(humanDesign));
 if(!text.includes('次にやるなら、これ'))throw new Error('MONEY_PUBLIC_NEXT_MOVE_MISSING');
 if(!text.includes('なんでこのタイプになった？'))throw new Error('MONEY_PUBLIC_AXES_MISSING');
 const axisV17=await page.evaluate(()=>({
@@ -256,6 +277,17 @@ const typeBook=await page.evaluate(()=>({
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8||typeBook.gridColumns!==1)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
 if(!typeBook.standalone||typeBook.htmlOverflow!=='hidden'||typeBook.bodyOverflow!=='hidden'||typeBook.rootOverflow!=='hidden'||typeBook.surfaceOverflowY==='hidden'||typeBook.surfaceScrollHeight<=typeBook.surfaceClientHeight+120)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+const bookReadability=await page.evaluate(()=>{
+  const size=sel=>parseFloat(getComputedStyle(document.querySelector(sel)).fontSize);
+  return {
+    lead:size('.mpp-job-book-hero p'),
+    axis:size('.mpp-job-book-axes article>p'),
+    style:size('.mpp-job-book-style-key button span'),
+    chips:size('.mpp-job-book-typechips small'),
+    job:size('.mpp-job-book-jobcopy b')
+  };
+});
+if(bookReadability.lead<12||bookReadability.axis<11||bookReadability.style<11||bookReadability.chips<9||bookReadability.job<17)throw new Error('MONEY_PUBLIC_BOOK_TEXT_TOO_SMALL:'+JSON.stringify(bookReadability));
 
 const surface=page.locator('.mpp-job-book-standalone-surface');
 const surfaceBox=await surface.boundingBox();
