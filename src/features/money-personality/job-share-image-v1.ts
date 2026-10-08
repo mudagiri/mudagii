@@ -16,6 +16,7 @@ type Args={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;features?:read
 
 const WIDTH=1080;
 const HEIGHT=1350;
+const CARD_FONT='"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif';
 const SECONDARY:Record<JobCode,string>={
   FDM:'#ff6b4a',FDP:'#ffd166',FNM:'#a98cff',FNP:'#3c9fff',
   IDM:'#ffd071',IDP:'#ff7858',INM:'#39e7ff',INP:'#ff5f72',
@@ -49,7 +50,7 @@ function text(ctx:CanvasRenderingContext2D,value:string,x:number,y:number,size:n
   ctx.fillStyle=color;
   ctx.textAlign=align;
   ctx.textBaseline='middle';
-  ctx.font=`${weight} ${size}px system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif`;
+  ctx.font=`${weight} ${size}px ${CARD_FONT}`;
   ctx.fillText(value,x,y);
   ctx.restore();
 }
@@ -247,7 +248,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   text(ctx,'MUDAGIRI / MONEY TYPE',84,102,21,900,'left',metal);
   text(ctx,'1 / 32',WIDTH-84,102,21,900,'right','#e4e0d7');
 
-  text(ctx,typeCode,86,171,43,1000,'left','#ffffff');
+  text(ctx,typeCode,86,171,43,900,'left','#ffffff');
 
   roundedRect(ctx,270,142,238,50,25);
   ctx.fillStyle='rgba(30,22,24,.54)';
@@ -283,7 +284,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   ctx.restore();
 
   text(ctx,'あなたのお金タイプ',84,790,20,800,'left','#b8b2aa');
-  text(ctx,identity.jobName,84,848,60,1000,'left','#ffffff');
+  text(ctx,identity.jobName,84,848,60,900,'left','#ffffff');
 
   roundedRect(ctx,84,888,112,44,22);
   ctx.fillStyle='rgba(193,151,70,.22)';
@@ -299,7 +300,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   let chipX=84;
   for(const tag of tags){
     const label=shorten(tag,11);
-    ctx.font='850 19px system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif';
+    ctx.font=`800 19px ${CARD_FONT}`;
     const chipW=Math.min(244,ctx.measureText(label).width+34);
     roundedRect(ctx,chipX,1018,chipW,43,21);
     ctx.fillStyle='rgba(255,255,255,.055)';
