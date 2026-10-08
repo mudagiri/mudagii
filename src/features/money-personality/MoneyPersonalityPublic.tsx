@@ -128,7 +128,7 @@ function SeparatorScreen({id,participantId,evaluation,selected,onSelect,onBack,c
 function separatorSelectedClass(selected:string|null,value:string){return selected===value?'selected':''}
 
 function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;onRestart:()=>void;debug:boolean}){
- const [handoff,setHandoff]=useState<'result'|'journey'|'book'>('result');
+ const [handoff,setHandoff]=useState<'result'|'journey'>('result');
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
@@ -138,7 +138,6 @@ function Result({evaluation,onRestart,debug}:{evaluation:ReturnType<typeof evalu
 
  useEffect(()=>{if(handoff==='journey')return;const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[handoff]);
 
- if(handoff==='book')return <main className="mpp-book-page"><JobEncyclopediaV1 unlocked={job} primaryStyle={style} onClose={()=>setHandoff('result')}/></main>;
  if(handoff==='journey')return <ResultJourneyV1 jobCode={job} primaryStyle={style} styleLabel={meta.label} householdUrl={householdUrl()} onBack={()=>setHandoff('result')}/>;
 
  const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.scenes[0].voice,v9.scenes[1].voice],target})};
