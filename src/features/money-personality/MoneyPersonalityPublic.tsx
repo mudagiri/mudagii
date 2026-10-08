@@ -14,6 +14,8 @@ import {resultV9For} from './resultV9Content';
 import {resultV10InsightFor} from './resultV10Insight';
 import {recordMoneyTypeFunnel} from './money-type-funnel-v1';
 import {shareJobTypeImage} from './job-share-image-v1';
+import LineBonusPreviewV1 from './LineBonusPreviewV1';
+import {LINE_URL,openOfficialLine} from './line-conversion-v1';
 import JobEncyclopediaV1 from './JobEncyclopediaV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS,measurementVisual} from './mudagiri-personality-visual-v1';
@@ -133,6 +135,7 @@ function separatorSelectedClass(selected:string|null,value:string){return select
 function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<typeof evaluateMoneyPersonality>;sessionId:string;onRestart:()=>void;debug:boolean}){
  const [revealSeen,setRevealSeen]=useState(()=>{try{return localStorage.getItem(REVEAL_KEY)===sessionId}catch{return false}});
  const [shareStatus,setShareStatus]=useState('');
+ const [showLineBonus,setShowLineBonus]=useState(false);
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
@@ -142,6 +145,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
 
  useEffect(()=>{const html=document.documentElement;const body=document.body;const root=document.getElementById('root');const previous=[html,body,root].filter(Boolean).map(el=>({el:el as HTMLElement,cssText:(el as HTMLElement).style.cssText}));for(const el of [html,body]){el.style.setProperty('height','auto','important');el.style.setProperty('min-height','100%','important');el.style.setProperty('max-height','none','important');el.style.setProperty('overflow-x','hidden','important');el.style.setProperty('overflow-y','auto','important');el.style.setProperty('touch-action','pan-y','important')}if(root){root.style.setProperty('height','auto','important');root.style.setProperty('min-height','100%','important');root.style.setProperty('max-height','none','important');root.style.setProperty('overflow','visible','important');root.style.setProperty('touch-action','pan-y','important')}window.scrollTo({top:0,behavior:'auto'});return ()=>{previous.forEach(({el,cssText})=>{el.style.cssText=cssText})}},[]);
 
+ if(showLineBonus&&revealSeen)return <LineBonusPreviewV1 jobCode={job} ready={Boolean(LINE_URL)} onAddLine={()=>{if(LINE_URL)openOfficialLine(job)}} onSkip={()=>{setShowLineBonus(false);window.scrollTo({top:0,behavior:'auto'})}/>;
  if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{recordMoneyTypeFunnel('ssr_claimed',sessionId);try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
 
  const share=async(target:'native'|'x'|'line'|'threads'|'instagram')=>{
@@ -172,6 +176,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
    shareStatus={shareStatus}
    onExplore={kind=>recordMoneyTypeFunnel(kind==='scenes'?'scenes_expanded':'style_expanded',sessionId)}
    onOpenBook={()=>{recordMoneyTypeFunnel('type_book_opened',sessionId);window.location.href=moneyTypeBookUrl(job,style)}}
+   onLineBonus={()=>{recordMoneyTypeFunnel('line_bonus_preview_opened',sessionId);setShowLineBonus(true);window.scrollTo({top:0,behavior:'auto'})}}
    onHousehold={()=>{recordMoneyTypeFunnel('household_cta_clicked',sessionId);try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
    onRestart={onRestart}
   />
