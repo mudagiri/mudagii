@@ -339,25 +339,32 @@ function downloadFile(file:File){
   window.setTimeout(()=>URL.revokeObjectURL(href),1500);
 }
 
-export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,features=[],target}:Args):Promise<ShareResult>{
-  const asset=jobCharacterAsset(jobCode);
-  const typeCode=moneyTypeCode(jobCode,primaryStyle);
+/** Share a clean link to the public intro, not the sender's result/debug state. */
+function publicShareUrl(){
+  const url=new URL(window.location.href);
+  url.search='';
+  url.searchParams.set('adaptive','money-type');
+  url.hash='';
+  return url.toString();
+}
+
+export async function shareJobTypeImage({jobCode,primaryStyle,target}:Args):Promise<ShareResult>{
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
   const shareTags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label)).join(' ');
   const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\n${shareTags}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
+  const url=publicShareUrl();
+  if(target==='x'){
+    window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(message+'\n'+url),'_blank','noopener,noreferrer');
+    return 'text';
+  }
+  if(target==='line'){
+    window.location.href='https://line.me/R/share?text='+encodeURIComponent(message+'\n'+url);
+    return 'text';
+  }
   const nav=navigator as FileShareNavigator;
   try{
-    const file=await createJobShareImage({jobCode,primaryStyle,styleLabel,features});
-    const url=window.location.href;
-    if(target==='x'){
-      window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(message+'\n'+url),'_blank','noopener,noreferrer');
-      return 'text';
-    }
-    if(target==='line'){
-      window.location.href='https://line.me/R/share?text='+encodeURIComponent(message+'\n'+url);
-      return 'text';
-    }
+    const file=await createJobShareImage({jobCode,primaryStyle});
     if(nav.share&&nav.canShare?.({files:[file]})){
       await nav.share({title:'ムダギリ｜お金の性格診断',text:message,files:[file]});
       return 'shared';
@@ -367,8 +374,8 @@ export async function shareJobTypeImage({jobCode,primaryStyle,styleLabel,feature
     return 'downloaded';
   }catch{
     try{
-      if(nav.share){await nav.share({title:'ムダギリ｜お金の性格診断',text:message,url:window.location.href});return 'text'}
-      await navigator.clipboard?.writeText(`${message} ${window.location.href}`);
+      if(nav.share){await nav.share({title:'ムダギリ｜お金の性格診断',text:message,url});return 'text'}
+      await navigator.clipboard?.writeText(`${message} ${url}`);
     }catch{}
     return 'text';
   }
