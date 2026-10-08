@@ -70,12 +70,11 @@ export default function MoneyPersonalityPublic(){
      el.style.setProperty('position','static','important');
      el.style.setProperty('inset','auto','important');
      el.style.setProperty('width','100%','important');
-     el.style.setProperty('height','auto','important');
+     el.style.setProperty('height','100%','important');
      el.style.setProperty('min-height','100%','important');
-     el.style.setProperty('max-height','none','important');
-     el.style.setProperty('overflow-x','hidden','important');
-     el.style.setProperty('overflow-y','auto','important');
-     el.style.setProperty('overscroll-behavior-y','auto','important');
+     el.style.setProperty('max-height','100%','important');
+     el.style.setProperty('overflow','hidden','important');
+     el.style.setProperty('overscroll-behavior','none','important');
      el.style.setProperty('touch-action','auto','important');
    }
    if(root){
@@ -83,10 +82,10 @@ export default function MoneyPersonalityPublic(){
      root.style.setProperty('inset','auto','important');
      root.style.setProperty('display','block','important');
      root.style.setProperty('width','100%','important');
-     root.style.setProperty('height','auto','important');
+     root.style.setProperty('height','100dvh','important');
      root.style.setProperty('min-height','100dvh','important');
-     root.style.setProperty('max-height','none','important');
-     root.style.setProperty('overflow','visible','important');
+     root.style.setProperty('max-height','100dvh','important');
+     root.style.setProperty('overflow','hidden','important');
      root.style.setProperty('touch-action','auto','important');
    }
    html.classList.add('mpp-book-native-scroll-active');
