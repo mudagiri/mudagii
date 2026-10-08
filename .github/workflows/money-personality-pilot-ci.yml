@@ -5,6 +5,7 @@ on:
     branches:
       - feature/money-personality-pilot
       - fix/money-personality-result-calibration-20261009
+      - audit/money-personality-boundary-type32-20261009
   pull_request:
     branches:
       - main
@@ -58,5 +59,7 @@ jobs:
         run: npm run qa:money-scenes
       - name: Result calibration and 32 TYPE scene QA
         run: npm run qa:money-calibration
+      - name: Synthetic boundary stress 10k
+        run: npm run qa:money-boundary-10k
       - name: Pilot QA
         run: npm run qa:money-pilot
