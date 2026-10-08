@@ -231,11 +231,40 @@ await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
 const typeBook=await page.evaluate(()=>({
   jobs:document.querySelectorAll('.mpp-job-book-grid article').length,
-  typeChips:document.querySelectorAll('.mpp-job-book-typechips>div').length,
-  mine:document.querySelectorAll('.mpp-job-book-typechips>div.is-mine').length,
+  typeChips:document.querySelectorAll('.mpp-job-book-typechips>button').length,
+  mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
+  styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
   visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
+  pageOverflowY:getComputedStyle(document.querySelector('.mpp-book-page')).overflowY,
+  bookHeight:document.querySelector('.mpp-job-book')?.scrollHeight||0,
+  viewport:innerHeight,
 }));
-if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
+if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
+if(typeBook.pageOverflowY==='hidden'||typeBook.bookHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+
+const bookPage=page.locator('.mpp-book-page');
+const scrollBefore=await bookPage.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight,overflowY:getComputedStyle(el).overflowY}));
+await bookPage.evaluate(el=>{el.scrollTop=Math.min(700,el.scrollHeight-el.clientHeight)});
+await page.waitForTimeout(100);
+const scrollAfter=await bookPage.evaluate(el=>el.scrollTop);
+if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL:'+JSON.stringify({scrollBefore,scrollAfter}));
+
+await bookPage.evaluate(el=>{el.scrollTop=0});
+await page.waitForTimeout(80);
+
+const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
+await enjoyButton.click();
+const enjoyActive=await enjoyButton.evaluate(el=>el.classList.contains('is-active')&&el.getAttribute('aria-pressed')==='true');
+if(!enjoyActive)throw new Error('MONEY_PUBLIC_TYPE_BOOK_STYLE_NOT_INTERACTIVE');
+
+const idpEnjoy=page.locator('.mpp-job-book-typechips>button').filter({hasText:'IDP-E'});
+await idpEnjoy.click();
+await page.locator('.mpp-job-book-detail').waitFor({state:'visible',timeout:2000});
+const detailText=((await page.locator('.mpp-job-book-detail').textContent())||'').replace(/\s+/g,' ');
+if(!detailText.includes('戦術ハンター')||!detailText.includes('満足'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_DETAIL_BAD:'+detailText);
+await page.getByRole('button',{name:'詳細を閉じる'}).click();
+await page.locator('.mpp-job-book-detail').waitFor({state:'detached',timeout:2000}).catch(()=>{});
+
 await screenshot('07-type-book-32');
 await page.getByRole('button',{name:'獲得画面に戻る'}).click();
 await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
