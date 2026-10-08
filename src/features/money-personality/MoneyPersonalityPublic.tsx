@@ -6,7 +6,7 @@ import {AXIS_SEPARATOR_ITEMS,buildStyleSeparator,separatorPresentation,type Sepa
 import {
   buildCoreTraitSideMap,buildPublicCoreOrder,displayScore,FACTOR_PUBLIC_LABEL,getOrCreatePublicParticipantId,
   newPublicSessionId,normalizePublicBipolarResponse,orderAdaptiveItemIds,
-  publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,STYLE_META,
+  publicBipolarPresentation,publicPhaseLabel,publicProgress,PUBLIC_MONEY_TYPE_VERSION,
 } from './publicFlowV1';
 import ResultV17 from './ResultV17';
 import AdventurerClassUnlockV1 from './AdventurerClassUnlockV1';
@@ -133,7 +133,6 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
  const job=evaluation.jobCode!;
  const style=evaluation.style.primary!;
  const secondary=evaluation.style.secondary!;
- const meta=STYLE_META[style];
  const v9=resultV9For(job,style);
  const insight=resultV10InsightFor(job,style);
 
@@ -141,7 +140,7 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
 
  if(!revealSeen)return <AdventurerClassUnlockV1 jobCode={job} primaryStyle={style} onComplete={()=>{try{localStorage.setItem(REVEAL_KEY,sessionId)}catch{}setRevealSeen(true)}}/>;
 
- const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,styleLabel:meta.label,features:[v9.scenes[0].voice,v9.scenes[1].voice],target})};
+ const share=async(target:'x'|'instagram'|'threads'|'line')=>{const {shareJobTypeImage}=await import('./job-share-image-v1');await shareJobTypeImage({jobCode:job,primaryStyle:style,target})};
  const axisDefs=[['時間の向き','FUTURE','IMMEDIATE'],['決め方','DELIBERATION','INTUITION'],['確認のタイミング','MONITORING','PERIODIC']] as const;
  const axes=axisDefs.map(([title,a,b])=>{const av=displayScore(evaluation.factors[a].score),bv=displayScore(evaluation.factors[b].score);const total=av+bv;const pos=total>0?Math.round((bv/total)*100):50;const left=FACTOR_PUBLIC_LABEL[a],right=FACTOR_PUBLIC_LABEL[b];const lean=pos<=25?`${left}寄り`:pos<43?`やや${left}寄り`:pos<=57?'バランス':pos<75?`やや${right}寄り`:`${right}寄り`;return {title,left,right,lean,pos}});
 
