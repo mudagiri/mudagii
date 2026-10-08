@@ -72,6 +72,17 @@ try{
     await share.scrollIntoViewIfNeeded();
     const shareUi=await geometry(page,vp.name+'-share');
     assert(await page.getByRole('button',{name:'画像カードをシェアする'}).isVisible(),'IOS_WEBKIT_SHARE_CTA_MISSING');
+    assert(await page.getByRole('button',{name:'Threadsに文章で投稿'}).isVisible(),'IOS_WEBKIT_THREADS_CTA_MISSING');
+    assert(await page.getByRole('button',{name:'Instagram用に画像を保存'}).isVisible(),'IOS_WEBKIT_INSTAGRAM_SAVE_MISSING');
+    const readable=await page.evaluate(()=>{
+      const font=sel=>parseFloat(getComputedStyle(document.querySelector(sel)).fontSize);
+      const h=sel=>document.querySelector(sel).getBoundingClientRect().height;
+      return {more:font('.mpp17-more summary'),style:font('.mpp17-style-detail summary'),axis:font('.mpp17-details summary'),body:font('.mpp17-scene-list p'),moreTap:h('.mpp17-more summary'),styleTap:h('.mpp17-style-detail summary'),axisTap:h('.mpp17-details summary'),shareCount:document.querySelectorAll('.mpp17-share-buttons button').length};
+    });
+    assert(readable.more>=15&&readable.style>=15&&readable.axis>=15&&readable.body>=14&&readable.moreTap>=56&&readable.styleTap>=56&&readable.axisTap>=56&&readable.shareCount===5,'IOS_WEBKIT_DETAILS_OR_READABILITY_BAD:'+JSON.stringify(readable));
+    await page.locator('.mpp17-style-detail summary').tap();
+    const disclosure=await page.locator('.mpp17-style-detail').evaluate(el=>({open:el.open,closed:getComputedStyle(el.querySelector('.mpp-disclosure-closed')).display,opened:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display}));
+    assert(disclosure.open&&disclosure.closed==='none'&&disclosure.opened!=='none','IOS_WEBKIT_DISCLOSURE_NOT_OBVIOUS:'+JSON.stringify(disclosure));
     await page.screenshot({path:`${OUT}/05-${vp.name}-share.png`,fullPage:false});
     await page.reload({waitUntil:'networkidle'});
     await page.locator('.mpp17-page').waitFor({state:'visible',timeout:9000});
@@ -79,6 +90,11 @@ try{
     await page.getByRole('button',{name:'32タイプ図鑑を見る'}).tap();
     await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:8000});
     const book=await geometry(page,vp.name+'-book');
+    const bookFonts=await page.evaluate(()=>{
+      const font=sel=>parseFloat(getComputedStyle(document.querySelector(sel)).fontSize);
+      return {lead:font('.mpp-job-book-hero p'),axis:font('.mpp-job-book-axes article>p'),chip:font('.mpp-job-book-typechips small')};
+    });
+    assert(bookFonts.lead>=13.5&&bookFonts.axis>=12&&bookFonts.chip>=11.5,'IOS_WEBKIT_TYPE_BOOK_TINY_TEXT:'+JSON.stringify(bookFonts));
     await page.screenshot({path:`${OUT}/06-${vp.name}-book.png`,fullPage:false});
     await page.getByRole('button',{name:'獲得画面に戻る'}).tap();
     await page.locator('.mpp17-page').waitFor({state:'visible',timeout:8000});
