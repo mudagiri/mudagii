@@ -12,7 +12,7 @@ import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-v17-editorial.css';
 
-type ShareTarget='native'|'x'|'line';
+type ShareTarget='native'|'x'|'line'|'threads'|'instagram';
 type AxisRow={title:string;left:string;right:string;lean:string;pos:number};
 type Props={
   content:V9TypeResult;
@@ -118,6 +118,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <button className="mpp17-share-button--primary" onClick={()=>onShare('native')}>画像カードをシェアする</button>
           <button onClick={()=>onShare('x')}>𝕏 に文章で投稿</button>
           <button onClick={()=>onShare('line')}>LINEでリンクを送る</button>
+          <button onClick={()=>onShare('threads')}>Threadsに文章で投稿</button>
+          <button onClick={()=>onShare('instagram')}>Instagram用に画像を保存</button>
         </div>
         <p className="mpp17-share-fallback-note">画像を送れない端末では、カードを保存できるよ。</p>
         {shareStatus&&<p className="mpp17-share-status" role="status" aria-live="polite">{shareStatus}</p>}
