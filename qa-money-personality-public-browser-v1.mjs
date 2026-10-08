@@ -262,13 +262,7 @@ if(!resumeChecked)throw new Error('MONEY_PUBLIC_RESUME_NOT_EXERCISED');
 if(!sawAdaptive)throw new Error('MONEY_PUBLIC_ADAPTIVE_NOT_EXERCISED');
 if(!sawSeparator)throw new Error('MONEY_PUBLIC_SEPARATOR_NOT_EXERCISED');
 
-await page.getByRole('button',{name:'家計クエストへ進む'}).click();
-await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
-await screenshot('06-next-routes');
-const routesText=((await page.locator('.mpp-next-routes').textContent())||'').replace(/\s+/g,' ');
-if(!routesText.includes('YOUR MONEY TYPE')||!routesText.includes('家計クエスト'))throw new Error('MONEY_PUBLIC_NEXT_ROUTES_BAD:'+routesText);
-if(!routesText.includes('32TYPE図鑑'))throw new Error('MONEY_PUBLIC_TYPE_BOOK_CTA_MISSING:'+routesText);
-await page.getByRole('button',{name:'32TYPE図鑑を見る'}).click();
+await page.getByRole('button',{name:'32タイプ図鑑を見る'}).click();
 await page.waitForURL(url=>new URL(url).searchParams.get('book')==='1',{timeout:5000});
 await page.locator('.mpp-job-book').waitFor({state:'visible',timeout:3000});
 // fold-like encyclopedia viewport: wide mobile screens must still remain a one-column vertical collection.
@@ -342,17 +336,11 @@ await page.locator('.mpp-job-book-detail').waitFor({state:'detached',timeout:200
 
 await screenshot('07-type-book-32');
 await page.getByRole('button',{name:'獲得画面に戻る'}).click();
-await page.getByRole('button',{name:'家計クエストへ進む'}).waitFor({state:'visible',timeout:5000});
-await page.getByRole('button',{name:'家計クエストへ進む'}).click();
-await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
-await page.locator('.mpp-social-action--share').click();
-await page.locator('.mpp-job-share').waitFor({state:'visible',timeout:3000});
-const shareCardText=((await page.locator('.mpp-job-share-card').textContent())||'').replace(/\s+/g,' ');
+await page.locator('.mpp17-page').waitFor({state:'visible',timeout:5000});
+const shareCardText=((await page.locator('.mpp17-share-preview').textContent())||'').replace(/\\s+/g,' ');
 if(!shareCardText.includes('1 / 32')||!shareCardText.includes('タイプ'))throw new Error('MONEY_PUBLIC_SHARE_IDENTITY_BAD:'+shareCardText);
 if(!/DRIVE|ENJOY|SECURE|OPTIMIZE/.test(shareCardText))throw new Error('MONEY_PUBLIC_SHARE_STYLE_ENGLISH_MISSING:'+shareCardText);
-await screenshot('08-share-identity-card');
-await page.getByRole('button',{name:'次のクエストを選ぶ'}).click();
-await page.locator('.mpp-next-routes').waitFor({state:'visible',timeout:3000});
+await screenshot('08-early-share-identity-card');
 
 const telemetry=await page.evaluate(()=>{
   const payload=JSON.parse(localStorage.getItem('mudagiri_money_type_public_last_payload_v1')||'null');
@@ -368,7 +356,9 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
-const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedProfileResult:true,capturedNextRoutes:true,personalizedResult:true,resultV17:true,firstQuestionGeometry,resultV17Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
+await page.getByRole('button',{name:'家計クエストへ進む'}).click();
+await page.waitForURL(url=>!new URL(url).searchParams.has('adaptive'),{timeout:8000});
+const report={ok:true,answered,resumeChecked,sawAdaptive,sawSeparator,capturedProfileResult:true,directHousehold:true,earlyShare:true,personalizedResult:true,resultV17:true,firstQuestionGeometry,resultV17Geometry,resultScroll:{...resultScrollBefore,verifiedScrollY:resultScrollY},telemetry:{formId:telemetry.payload.formId,responseCount:telemetry.payload.responseCount,jobCode:telemetry.payload.quality.jobCode,primaryStyle:telemetry.payload.quality.primaryStyle,resultContentVersion:telemetry.payload.quality.resultContentVersion},handoff:{jobCode:telemetry.handoff.jobCode,primaryStyle:telemetry.handoff.primaryStyle,resultContentVersion:telemetry.handoff.resultContentVersion}};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
 await browser.close();
 console.log(JSON.stringify({ok:true,flow:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_BROWSER_V1',...report}));
