@@ -181,7 +181,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
         <h3>{detail.identity.jobName}</h3>
         <div className="mpp-job-book-detail-style"><b>{detail.identity.styleLabel}</b><span>{STYLE_IDENTITY[selected!.style].short}</span></div>
         <details className="mpp-job-book-detail-style-more">
-          <summary>このSTYLEの意味を見る</summary>
+          <summary><span>このSTYLEの意味をもっと見る</span><span className="mpp-disclosure-state" aria-hidden="true"><span className="mpp-disclosure-closed">開く <b>⌄</b></span><span className="mpp-disclosure-open">閉じる <b>⌃</b></span></span></summary>
           <p>{STYLE_IDENTITY[selected!.style].description}</p>
           <blockquote>「{STYLE_IDENTITY[selected!.style].example}」</blockquote>
         </details>
