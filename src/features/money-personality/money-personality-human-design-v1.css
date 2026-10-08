@@ -442,3 +442,21 @@ html body #root .mpp17-page .mpp17-share-value b{
   font-weight:650!important;
   line-height:1.6!important;
 }
+
+/* Chapter markers act as quiet editorial signposts, not repeated black badges. */
+html body #root .mpp17-page section>header>span{
+  display:block;
+  flex:0 0 22px;
+  width:22px;
+  height:auto;
+  margin-top:4px;
+  border-radius:0;
+  background:transparent!important;
+  color:#876a3c!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  letter-spacing:.01em;
+}
+html body #root .mpp17-page section>header{
+  gap:9px;
+}
