@@ -405,6 +405,16 @@ if(telemetry.handoff?.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')throw new Error
 if(telemetry.handoff?.jobCode!==telemetry.payload?.quality?.jobCode)throw new Error('MONEY_PUBLIC_HANDOFF_JOB_MISMATCH');
 if(telemetry.handoff?.resultContentVersion!==telemetry.payload?.quality?.resultContentVersion)throw new Error('MONEY_PUBLIC_RESULT_CONTENT_VERSION_MISMATCH');
 
+await page.getByRole('button',{name:/特典の中身を見る/}).click();
+await page.locator('.mpp-line-bonus').waitFor({state:'visible',timeout:5000});
+const rewardText=await page.locator('.mpp-line-bonus').innerText();
+if(!rewardText.includes('攻略ガイド')||!rewardText.includes('配布を準備中'))throw new Error('MONEY_PUBLIC_LINE_REWARD_PREVIEW_OR_HONEST_STATE_MISSING');
+if(await page.getByRole('button',{name:'公式LINEで攻略ガイドを受け取る'}).count())throw new Error('MONEY_PUBLIC_UNCONFIGURED_LINE_CTA_LEAK');
+await screenshot('08c-optional-line-guide-preview');
+await page.getByRole('button',{name:'診断結果に戻る'}).click();
+await page.locator('.mpp17-page').waitFor({state:'visible',timeout:5000});
+const lineFunnel=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_money_type_funnel_v1')||'[]'));
+if(!lineFunnel.some(x=>x.event==='line_bonus_preview_opened'))throw new Error('MONEY_PUBLIC_LINE_REWARD_PREVIEW_EVENT_MISSING');
 await page.getByRole('button',{name:'家計クエストへ進む'}).click();
 await page.waitForURL(url=>!new URL(url).searchParams.has('adaptive'),{timeout:8000});
 const finalFunnel=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_money_type_funnel_v1')||'[]'));
