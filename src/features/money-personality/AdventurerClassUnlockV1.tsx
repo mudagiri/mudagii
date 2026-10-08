@@ -5,6 +5,7 @@ import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import JobCharacterCard from './JobCharacterCard';
 import {jobCharacterAsset} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
+import {STYLE_IDENTITY} from './money-type-identity-v1';
 import './job-unlock-premium-v1.css';
 
 type Props={jobCode:JobCode;primaryStyle:StyleId;styleLabel:string;onComplete:()=>void};
@@ -26,14 +27,14 @@ export default function AdventurerClassUnlockV1({jobCode,primaryStyle,styleLabel
         <div className="mpp-ssr-rarity">SSR</div>
         <div className="mpp-ssr-type-code">{typeCode}</div>
         <JobCharacterCard jobCode={jobCode} variant="unlock" showName/>
-        <div className="mpp-ssr-style">{styleLabel} STYLE</div>
+        <div className="mpp-ssr-style">{STYLE_IDENTITY[primaryStyle].label} · {STYLE_IDENTITY[primaryStyle].short}</div>
       </>:<MoneyPersonalityMudagiri visual={current} alt="ムダギリくん"/>}
-      {!reveal&&<h2>{current.key==='think'?'あなたの冒険スタイルを解析中…':'あなた専用のCLASSを発見！'}</h2>}
+      {!reveal&&<h2>{current.key==='think'?'どんなお金タイプかな？':'あなたのJOBが見つかった！'}</h2>}
       <div className="mpp-transition-scan"/>
       {reveal?<>
         <p><b>{asset.tagline}</b><br/>32のお金タイプから、あなたのTYPEを獲得しました。</p>
-        <button className="mpp-primary mpp-ssr-continue" onClick={()=>{window.scrollTo({top:0,behavior:'auto'});onComplete()}}>SSRカードを受け取る</button>
-      </>:<p>あなたのお金タイプから、冒険者CLASSを生成しています。</p>}
+        <button className="mpp-primary mpp-ssr-continue" onClick={()=>{window.scrollTo({top:0,behavior:'auto'});onComplete()}}>結果を見る</button>
+      </>:<p>ムダギリくんが、あなたのJOBを探しているぞ。</p>}
     </section>
   </main>;
 }
