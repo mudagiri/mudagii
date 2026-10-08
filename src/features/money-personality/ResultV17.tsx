@@ -73,7 +73,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-card-foot"><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></div>
       </section>
       <details className="mpp17-style-detail">
-        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span>詳しく見る ＋</span></summary>
+        <summary>{STYLE_IDENTITY[primaryStyle].label}ってどういう意味？ <span aria-hidden="true">＋</span></summary>
         <div className="mpp17-style-detail-body">
           <b>{STYLE_IDENTITY[primaryStyle].short}</b>
           <p>{STYLE_IDENTITY[primaryStyle].description}</p>
@@ -196,7 +196,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       <section className="mpp17-next">
         <small>次にやるなら、これ</small>
         <h2>{content.nextMove}</h2>
-        <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>次は、実際に払ってるお金を見てみよう。全部を削るんじゃなく、変えやすそうな所だけ探します。</p></div>
+        <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>12カテゴリの支出から、見直せそうなところを一緒に探そう。全部を削る必要はないよ。</p></div>
         <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む</button>
         <button className="mpp17-restart" onClick={onRestart}>もう一度診断する</button>
       </section>
