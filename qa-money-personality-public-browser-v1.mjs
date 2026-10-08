@@ -250,7 +250,9 @@ if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.style
 if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.bodyTouchAction==='none'||typeBook.rootDisplay!=='none'||typeBook.docScrollHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
 const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
-await page.mouse.move(innerWidth/2,innerHeight*.72);
+const viewportNow=page.viewportSize();
+if(!viewportNow)throw new Error('MONEY_PUBLIC_TYPE_BOOK_NO_VIEWPORT');
+await page.mouse.move(viewportNow.width/2,viewportNow.height*.72);
 await page.mouse.wheel(0,760);
 await page.waitForTimeout(160);
 const scrollAfter=await page.evaluate(()=>window.scrollY);
