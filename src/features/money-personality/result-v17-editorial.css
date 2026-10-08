@@ -3006,3 +3006,220 @@ html body #root .mpp17-page{
   .mpp17-share-art{height:194px!important}
   .mpp17-share-art .mpp-job-character{width:min(57vw,205px)!important}
 }
+
+
+/* ---------- V17.20 EIGHT JOB CARD SYSTEM ----------
+   Eight JOBs now own their card stock, metallic frame, motif and atmosphere.
+   Shared: collectible composition + sparse prism foil. JOB identity dominates STYLE. */
+.mpp17-profile,
+.mpp17-share-preview{
+  --job-stock-top:#2f2418;
+  --job-stock-mid:#1c1815;
+  --job-stock-low:#0d0e10;
+  --job-metal:#d2aa5d;
+  --job-motif:#e1bd72;
+}
+
+/* 01 FDM / 先回り司令官 — antique command gold / navy */
+.mpp17-profile[data-job="FDM"],
+.mpp17-share-preview[data-job="FDM"]{
+  --job-stock-top:#3a2d12;
+  --job-stock-mid:#1d2230;
+  --job-stock-low:#0b0f18;
+  --job-metal:#e2bd59;
+  --job-motif:#f5cf68;
+}
+/* 02 FDP / 節目軍師 — moss green / brass */
+.mpp17-profile[data-job="FDP"],
+.mpp17-share-preview[data-job="FDP"]{
+  --job-stock-top:#25371d;
+  --job-stock-mid:#16251b;
+  --job-stock-low:#0b110d;
+  --job-metal:#a8b969;
+  --job-motif:#9fd580;
+}
+/* 03 FNM / 兆しの占星術師 — midnight blue / silver */
+.mpp17-profile[data-job="FNM"],
+.mpp17-share-preview[data-job="FNM"]{
+  --job-stock-top:#172b46;
+  --job-stock-mid:#111d31;
+  --job-stock-low:#080c15;
+  --job-metal:#9fbcd3;
+  --job-motif:#91cfff;
+}
+/* 04 FNP / ひらめき航海士 — deep teal / aged brass */
+.mpp17-profile[data-job="FNP"],
+.mpp17-share-preview[data-job="FNP"]{
+  --job-stock-top:#123c3a;
+  --job-stock-mid:#102827;
+  --job-stock-low:#081212;
+  --job-metal:#9fb589;
+  --job-motif:#64ddd1;
+}
+/* 05 IDM / メリハリ賢者 — terracotta / copper */
+.mpp17-profile[data-job="IDM"],
+.mpp17-share-preview[data-job="IDM"]{
+  --job-stock-top:#48291f;
+  --job-stock-mid:#2b1c18;
+  --job-stock-low:#120d0c;
+  --job-metal:#c78968;
+  --job-motif:#efa37e;
+}
+/* 06 IDP / 戦術ハンター — dark bronze / gunmetal brown */
+.mpp17-profile[data-job="IDP"],
+.mpp17-share-preview[data-job="IDP"]{
+  --job-stock-top:#3b2a18;
+  --job-stock-mid:#241a13;
+  --job-stock-low:#0f0d0b;
+  --job-metal:#d0a354;
+  --job-motif:#d9b06a;
+}
+/* 07 INM / 直感魔導士 — dark plum / blackened silver */
+.mpp17-profile[data-job="INM"],
+.mpp17-share-preview[data-job="INM"]{
+  --job-stock-top:#302044;
+  --job-stock-mid:#1d152c;
+  --job-stock-low:#0c0911;
+  --job-metal:#a994c2;
+  --job-motif:#bd8cff;
+}
+/* 08 INP / 風読み剣士 — blue steel / charcoal */
+.mpp17-profile[data-job="INP"],
+.mpp17-share-preview[data-job="INP"]{
+  --job-stock-top:#20364a;
+  --job-stock-mid:#162330;
+  --job-stock-low:#0a0f15;
+  --job-metal:#9eb9cc;
+  --job-motif:#9bd5f4;
+}
+
+/* Apply JOB stock to both main and SHARE cards. */
+.mpp17-profile{
+  background:
+    radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--job-motif) 18%,transparent) 0%,transparent 43%),
+    radial-gradient(circle at 84% 7%,rgba(255,255,255,.035),transparent 19%),
+    linear-gradient(180deg,var(--job-stock-top) 0%,var(--job-stock-mid) 39%,var(--job-stock-low) 100%)!important;
+  border-color:color-mix(in srgb,var(--job-metal) 78%,#c7a55e)!important;
+}
+.mpp17-share-preview{
+  background:
+    radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--job-motif) 16%,transparent) 0%,transparent 44%),
+    linear-gradient(180deg,var(--job-stock-top) 0%,var(--job-stock-mid) 40%,var(--job-stock-low) 100%)!important;
+  border-color:color-mix(in srgb,var(--job-metal) 78%,#c7a55e)!important;
+}
+.mpp17-card-edge{
+  border-color:color-mix(in srgb,var(--job-metal) 86%,#f0d89e)!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,245,213,.11),
+    inset 0 0 17px color-mix(in srgb,var(--job-metal) 9%,transparent),
+    0 0 8px color-mix(in srgb,var(--job-metal) 15%,transparent)!important;
+}
+.mpp17-card-edge::before,
+.mpp17-card-edge::after{
+  border-color:var(--job-metal)!important;
+}
+
+/* FDM — command rays + directive ticks */
+.mpp17-profile[data-job="FDM"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="FDM"] .mpp17-share-jobbg{
+  background:
+    repeating-conic-gradient(from -10deg at 50% 35%,
+      color-mix(in srgb,var(--job-motif) 25%,transparent) 0 1.1deg,
+      transparent 1.1deg 18deg),
+    radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--job-motif) 11%,transparent),transparent 47%)!important;
+}
+
+/* FDP — strategy grid + milestone nodes */
+.mpp17-profile[data-job="FDP"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="FDP"] .mpp17-share-jobbg{
+  background:
+    radial-gradient(circle at 23% 28%,color-mix(in srgb,var(--job-motif) 72%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 41% 43%,color-mix(in srgb,var(--job-motif) 64%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 63% 27%,color-mix(in srgb,var(--job-motif) 70%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 79% 45%,color-mix(in srgb,var(--job-motif) 58%,white) 0 1.5px,transparent 2.5px),
+    linear-gradient(color-mix(in srgb,var(--job-motif) 11%,transparent) 1px,transparent 1px),
+    linear-gradient(90deg,color-mix(in srgb,var(--job-motif) 11%,transparent) 1px,transparent 1px)!important;
+  background-size:auto,auto,auto,auto,32px 32px,32px 32px!important;
+}
+
+/* FNM — constellation field */
+.mpp17-profile[data-job="FNM"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="FNM"] .mpp17-share-jobbg{
+  background:
+    radial-gradient(circle at 16% 22%,rgba(225,244,255,.85) 0 1px,transparent 2px),
+    radial-gradient(circle at 30% 39%,rgba(225,244,255,.68) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 44% 18%,rgba(225,244,255,.78) 0 1px,transparent 2px),
+    radial-gradient(circle at 62% 36%,rgba(225,244,255,.84) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 77% 21%,rgba(225,244,255,.62) 0 1px,transparent 2px),
+    radial-gradient(circle at 87% 43%,rgba(225,244,255,.76) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--job-motif) 13%,transparent),transparent 45%)!important;
+}
+
+/* FNP — wave contours / current arcs */
+.mpp17-profile[data-job="FNP"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="FNP"] .mpp17-share-jobbg{
+  background:
+    repeating-radial-gradient(ellipse at 50% -6%,
+      transparent 0 38px,
+      color-mix(in srgb,var(--job-motif) 18%,transparent) 39px 41px,
+      transparent 42px 65px),
+    radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--job-motif) 13%,transparent),transparent 45%)!important;
+}
+
+/* IDM — measured concentric rings */
+.mpp17-profile[data-job="IDM"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="IDM"] .mpp17-share-jobbg{
+  background:
+    repeating-radial-gradient(circle at 50% 35%,
+      transparent 0 34px,
+      color-mix(in srgb,var(--job-motif) 17%,transparent) 35px 37px,
+      transparent 38px 62px),
+    repeating-conic-gradient(from 8deg at 50% 35%,
+      transparent 0 17deg,
+      color-mix(in srgb,var(--job-motif) 10%,transparent) 17.5deg 18.5deg)!important;
+}
+
+/* IDP — web + targeting reticle */
+.mpp17-profile[data-job="IDP"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="IDP"] .mpp17-share-jobbg{
+  background:
+    repeating-radial-gradient(circle at 50% 35%,
+      transparent 0 30px,
+      color-mix(in srgb,var(--job-motif) 30%,transparent) 31px 32.5px,
+      transparent 33.5px 56px),
+    repeating-conic-gradient(from 0deg at 50% 35%,
+      color-mix(in srgb,var(--job-motif) 27%,transparent) 0 .75deg,
+      transparent .75deg 22.5deg),
+    radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--job-motif) 15%,transparent) 0 18%,transparent 48%)!important;
+}
+
+/* INM — arcane seal / runic geometry */
+.mpp17-profile[data-job="INM"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="INM"] .mpp17-share-jobbg{
+  background:
+    repeating-conic-gradient(from 9deg at 50% 35%,
+      color-mix(in srgb,var(--job-motif) 18%,transparent) 0 1deg,
+      transparent 1deg 15deg),
+    repeating-radial-gradient(circle at 50% 35%,
+      transparent 0 39px,
+      color-mix(in srgb,var(--job-motif) 17%,transparent) 40px 42px,
+      transparent 43px 68px),
+    radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--job-motif) 14%,transparent),transparent 46%)!important;
+}
+
+/* INP — wind slashes / blade trails */
+.mpp17-profile[data-job="INP"] .mpp17-job-bg,
+.mpp17-share-preview[data-job="INP"] .mpp17-share-jobbg{
+  background:
+    linear-gradient(163deg,transparent 0 22%,color-mix(in srgb,var(--job-motif) 16%,transparent) 22.5% 23.4%,transparent 23.9% 100%),
+    linear-gradient(158deg,transparent 0 45%,color-mix(in srgb,var(--job-motif) 14%,transparent) 45.4% 46.2%,transparent 46.7% 100%),
+    linear-gradient(168deg,transparent 0 66%,color-mix(in srgb,var(--job-motif) 12%,transparent) 66.4% 67.2%,transparent 67.7% 100%),
+    radial-gradient(ellipse at 48% 30%,color-mix(in srgb,var(--job-motif) 13%,transparent),transparent 44%)!important;
+}
+
+/* Same rarity treatment for all eight, but JOB stock must remain visible. */
+.mpp17-holo-texture,
+.mpp17-share-holo{
+  opacity:.90!important;
+  mix-blend-mode:screen!important;
+}
