@@ -161,7 +161,7 @@ const moreScenes=page.locator('.mpp17-more');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(80);
 const visibleMore=await moreScenes.locator('div > article').evaluateAll(nodes=>nodes.filter(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return s.display!=='none'&&s.visibility!=='hidden'&&r.height>0}).length);
-if(visibleMore!==3)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_NOT_VISIBLE:'+visibleMore);
+if(visibleMore!==4)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_NOT_VISIBLE:'+visibleMore);
 await screenshot('05b-result-more-scenes');
 await moreScenes.locator('summary').click();
 await page.waitForTimeout(50);
@@ -184,7 +184,7 @@ const resultV17Geometry=await page.evaluate(()=>{
   };
 });
 if(!resultV17Geometry.hero||!resultV17Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V17_MISSING:'+JSON.stringify(resultV17Geometry));
-if(resultV17Geometry.primarySceneCount!==3||resultV17Geometry.extraSceneCount!==3)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
+if(resultV17Geometry.primarySceneCount!==2||resultV17Geometry.extraSceneCount!==4)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
 if(!resultV17Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
 if(resultV17Geometry.socialButtons!==3)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
 if(await page.locator('.mpp17-share-button--primary').count()!==1)throw new Error('MONEY_PUBLIC_NATIVE_IMAGE_SHARE_CTA_MISSING');
@@ -246,7 +246,7 @@ const axisV17=await page.evaluate(()=>({
 }));
 if(axisV17.axisCount!==3)throw new Error('MONEY_PUBLIC_AXIS_V17_BAD:'+JSON.stringify(axisV17));
 if(axisV17.compareCards!==2)throw new Error('MONEY_PUBLIC_COMPARE_V17_BAD:'+JSON.stringify(axisV17));
-if(axisV17.compactMore!==3)throw new Error('MONEY_PUBLIC_MORE_V17_BAD:'+JSON.stringify(axisV17));
+if(axisV17.compactMore!==4)throw new Error('MONEY_PUBLIC_MORE_V17_BAD:'+JSON.stringify(axisV17));
 const typography=await page.evaluate(()=>({
   hero:parseFloat(getComputedStyle(document.querySelector('.mpp17-profile h1')).fontSize),
   heroLine:parseFloat(getComputedStyle(document.querySelector('.mpp17-hero')).fontSize),
