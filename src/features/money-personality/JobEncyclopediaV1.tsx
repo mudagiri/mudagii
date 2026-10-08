@@ -1,5 +1,4 @@
-import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {createPortal} from 'react-dom';
+import React,{useMemo,useRef,useState} from 'react';
 import type {JobCode,StyleId} from './classifierV1';
 import {JOB_CHARACTER_ASSETS} from './job-character-assets-v1';
 import {moneyTypeCode} from './money-type-code-v1';
@@ -19,36 +18,6 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
   const [selected,setSelected]=useState<SelectedType|null>(null);
   const [activeStyle,setActiveStyle]=useState<StyleId>(primaryStyle);
   const topRef=useRef<HTMLElement|null>(null);
-
-  useEffect(()=>{
-    const html=document.documentElement;
-    const body=document.body;
-    const root=document.getElementById('root');
-    const previousHtml=html.style.cssText;
-    const previousBody=body.style.cssText;
-    const previousRoot=root?.style.cssText||'';
-
-    html.style.setProperty('height','auto','important');
-    html.style.setProperty('min-height','100%','important');
-    html.style.setProperty('overflow-x','hidden','important');
-    html.style.setProperty('overflow-y','auto','important');
-    html.style.setProperty('touch-action','pan-y','important');
-
-    body.style.setProperty('height','auto','important');
-    body.style.setProperty('min-height','100%','important');
-    body.style.setProperty('overflow-x','hidden','important');
-    body.style.setProperty('overflow-y','auto','important');
-    body.style.setProperty('touch-action','pan-y','important');
-
-    if(root)root.style.setProperty('display','none','important');
-    window.scrollTo({top:0,behavior:'auto'});
-
-    return ()=>{
-      html.style.cssText=previousHtml;
-      body.style.cssText=previousBody;
-      if(root)root.style.cssText=previousRoot;
-    };
-  },[]);
 
   const detail=useMemo(()=>{
     if(!selected)return null;
@@ -152,6 +121,5 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
     </div>}
   </section>;
 
-  if(typeof document==='undefined')return book;
-  return createPortal(<div className="mpp-job-book-portal">{book}</div>,document.body);
+  return <div className="mpp-job-book-standalone-surface">{book}</div>;
 }
