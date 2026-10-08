@@ -23,15 +23,30 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
   useEffect(()=>{
     const html=document.documentElement;
     const body=document.body;
+    const root=document.getElementById('root');
     const previousHtml=html.style.cssText;
     const previousBody=body.style.cssText;
-    html.style.setProperty('overflow','hidden','important');
-    body.style.setProperty('overflow','hidden','important');
+    const previousRoot=root?.style.cssText||'';
+
+    html.style.setProperty('height','auto','important');
+    html.style.setProperty('min-height','100%','important');
+    html.style.setProperty('overflow-x','hidden','important');
+    html.style.setProperty('overflow-y','auto','important');
     html.style.setProperty('touch-action','pan-y','important');
+
+    body.style.setProperty('height','auto','important');
+    body.style.setProperty('min-height','100%','important');
+    body.style.setProperty('overflow-x','hidden','important');
+    body.style.setProperty('overflow-y','auto','important');
     body.style.setProperty('touch-action','pan-y','important');
+
+    if(root)root.style.setProperty('display','none','important');
+    window.scrollTo({top:0,behavior:'auto'});
+
     return ()=>{
       html.style.cssText=previousHtml;
       body.style.cssText=previousBody;
+      if(root)root.style.cssText=previousRoot;
     };
   },[]);
 
