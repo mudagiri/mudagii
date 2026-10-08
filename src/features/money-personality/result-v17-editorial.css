@@ -3428,3 +3428,49 @@ html body #root .mpp17-page{
   .mpp17-mudagiri-talk{padding:9px 10px}
   .mpp17-mudagiri-talk p{font-size:11.5px}
 }
+
+/* English-first STYLE: short on-card, expanded meaning immediately below. */
+.mpp17-style-detail{
+  margin:10px 0 20px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  background:rgba(255,255,255,.035);
+  color:#f3f1ed;
+  overflow:hidden;
+}
+.mpp17-style-detail summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:13px 15px;
+  font-size:12px;
+  font-weight:850;
+  cursor:pointer;
+  touch-action:manipulation;
+  list-style:none;
+}
+.mpp17-style-detail summary::-webkit-details-marker{display:none}
+.mpp17-style-detail summary span{
+  color:rgba(255,255,255,.68);
+  font-size:10px;
+  white-space:nowrap;
+}
+.mpp17-style-detail[open] summary{border-bottom:1px solid rgba(255,255,255,.09)}
+.mpp17-style-detail-body{padding:13px 15px 15px}
+.mpp17-style-detail-body b{display:block;font-size:14px;color:#fff}
+.mpp17-style-detail-body p{margin:7px 0 10px;font-size:12px;line-height:1.8;color:rgba(255,255,255,.78)}
+.mpp17-style-detail-body blockquote{
+  margin:0;
+  padding:10px 12px;
+  border-left:2px solid var(--mpp17-style-accent,#e8c579);
+  border-radius:4px 9px 9px 4px;
+  background:rgba(255,255,255,.055);
+  font-size:12px;
+  line-height:1.6;
+}
+.mpp17-profile .mpp17-value b,.mpp17-share-value b{white-space:normal;line-height:1.45}
+@media(max-width:390px){
+  .mpp17-profile .mpp17-value{max-width:95%;flex-wrap:wrap}
+  .mpp17-share-value{flex-wrap:wrap}
+}
