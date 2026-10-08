@@ -235,23 +235,25 @@ const typeBook=await page.evaluate(()=>({
   mine:document.querySelectorAll('.mpp-job-book-typechips>button.is-mine').length,
   styleButtons:document.querySelectorAll('.mpp-job-book-style-key>button').length,
   visibleImages:[...document.querySelectorAll('.mpp-job-book .mpp-job-character img')].filter(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0).length,
-  htmlOverflowY:getComputedStyle(document.documentElement).overflowY,
-  bodyOverflowY:getComputedStyle(document.body).overflowY,
-  touchAction:getComputedStyle(document.body).touchAction,
-  scrollHeight:(document.scrollingElement||document.documentElement).scrollHeight,
-  viewport:innerHeight,
+  portalOverflowY:getComputedStyle(document.querySelector('.mpp-job-book-portal')).overflowY,
+  portalTouchAction:getComputedStyle(document.querySelector('.mpp-job-book-portal')).touchAction,
+  portalScrollHeight:document.querySelector('.mpp-job-book-portal')?.scrollHeight||0,
+  portalClientHeight:document.querySelector('.mpp-job-book-portal')?.clientHeight||0,
 }));
 if(typeBook.jobs!==8||typeBook.typeChips!==32||typeBook.mine!==1||typeBook.styleButtons!==4||typeBook.visibleImages!==8)throw new Error('MONEY_PUBLIC_TYPE_BOOK_BAD:'+JSON.stringify(typeBook));
-if(typeBook.htmlOverflowY==='hidden'||typeBook.bodyOverflowY==='hidden'||typeBook.touchAction==='none'||typeBook.scrollHeight<=typeBook.viewport+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
+if(typeBook.portalOverflowY==='hidden'||typeBook.portalTouchAction==='none'||typeBook.portalScrollHeight<=typeBook.portalClientHeight+80)throw new Error('MONEY_PUBLIC_TYPE_BOOK_SCROLL_SETUP_BAD:'+JSON.stringify(typeBook));
 
-const scrollBefore=await page.evaluate(()=>({top:window.scrollY,height:(document.scrollingElement||document.documentElement).scrollHeight,client:innerHeight}));
-await page.mouse.move(innerWidth/2,innerHeight*.72);
+const portal=page.locator('.mpp-job-book-portal');
+const scrollBefore=await portal.evaluate(el=>({top:el.scrollTop,height:el.scrollHeight,client:el.clientHeight,touchAction:getComputedStyle(el).touchAction}));
+const portalBox=await portal.boundingBox();
+if(!portalBox)throw new Error('MONEY_PUBLIC_TYPE_BOOK_NO_PORTAL_BOX');
+await page.mouse.move(portalBox.x+portalBox.width/2,portalBox.y+portalBox.height*.72);
 await page.mouse.wheel(0,760);
 await page.waitForTimeout(160);
-const scrollAfter=await page.evaluate(()=>window.scrollY);
+const scrollAfter=await portal.evaluate(el=>el.scrollTop);
 if(scrollAfter<40)throw new Error('MONEY_PUBLIC_TYPE_BOOK_CANNOT_SCROLL_BY_INPUT:'+JSON.stringify({scrollBefore,scrollAfter}));
 
-await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
+await portal.evaluate(el=>{el.scrollTop=0});
 await page.waitForTimeout(80);
 
 const enjoyButton=page.locator('.mpp-job-book-style-key>button').filter({hasText:'満足'});
