@@ -16,6 +16,7 @@ type SelectedType={jobCode:JobCode;style:StyleId};
 export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unlocked:JobCode;primaryStyle:StyleId;onClose?:()=>void}){
   const mine=moneyTypeIdentity(unlocked,primaryStyle);
   const [selected,setSelected]=useState<SelectedType|null>(null);
+  const [activeStyle,setActiveStyle]=useState<StyleId>(primaryStyle);
   const topRef=useRef<HTMLElement|null>(null);
 
   useEffect(()=>{
@@ -69,15 +70,18 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
     </div>
 
     <div className="mpp-job-book-style-key" aria-label="価値観コード">
-      {STYLES.map(style=><span key={style} className={style===primaryStyle?'is-mine':''}><b>{STYLE_IDENTITY[style].code}</b>{STYLE_IDENTITY[style].label}</span>)}
+      {STYLES.map(style=><button key={style} type="button" className={style===activeStyle?'is-active':''} onClick={()=>setActiveStyle(style)} aria-pressed={style===activeStyle}>
+        <b>{STYLE_IDENTITY[style].code}</b>{STYLE_IDENTITY[style].label}
+      </button>)}
     </div>
+    <p className="mpp-job-book-style-hint"><b>{STYLE_IDENTITY[activeStyle].label}</b> の32TYPEを見ています。JOBカードをタップすると詳細が開きます。</p>
 
     <div className="mpp-job-book-grid">
       {ORDER.map(code=>{
         const asset=JOB_CHARACTER_ASSETS[code];
         const isMyJob=code===unlocked;
         return <article key={code} className={isMyJob?'is-unlocked':'is-visible'} style={{'--job-accent':asset.accent} as React.CSSProperties}>
-          <button className="mpp-job-book-jobhead" type="button" onClick={()=>openType(code,isMyJob?primaryStyle:'DRIVE')} aria-label={asset.name+'のタイプを見る'}>
+          <button className="mpp-job-book-jobhead" type="button" onClick={()=>openType(code,activeStyle)} aria-label={asset.name+'のタイプを見る'}>
             <div className="mpp-job-book-art"><JobCharacterCard jobCode={code} variant="compact"/></div>
             <div className="mpp-job-book-jobcopy">
               <small>JOB {String(asset.jobNumber).padStart(2,'0')} · {code}</small>
@@ -93,7 +97,7 @@ export default function JobEncyclopediaV1({unlocked,primaryStyle,onClose}:{unloc
             {STYLES.map(style=>{
               const codeValue=moneyTypeCode(code,style);
               const isMine=code===unlocked&&style===primaryStyle;
-              return <button key={style} type="button" className={isMine?'is-mine':''} onClick={()=>openType(code,style)} aria-label={codeValue+' '+STYLE_IDENTITY[style].label+'の詳細を見る'}>
+              return <button key={style} type="button" className={[isMine?'is-mine':'',style===activeStyle?'is-active':''].filter(Boolean).join(' ')} onClick={()=>{setActiveStyle(style);openType(code,style)}} aria-label={codeValue+' '+STYLE_IDENTITY[style].label+'の詳細を見る'}>
                 <strong>{codeValue}</strong>
                 <small>{STYLE_IDENTITY[style].label}</small>
               </button>;
