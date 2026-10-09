@@ -34,10 +34,11 @@ export type CompletedV3={
 
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
  // V1 remains the default; V2 is enabled explicitly for previews or release builds.
- const chapter2V2=chapter2V2Enabled(typeof window==='undefined'?'':window.location.search,(import.meta as any).env?.VITE_CHAPTER2_V2);
+ const requestedChapter2V2=chapter2V2Enabled(typeof window==='undefined'?'':window.location.search,(import.meta as any).env?.VITE_CHAPTER2_V2);
  const [toneMode,setToneMode]=useState<ToneMode>('serious');
  const [restored,setRestored]=useState(()=>typeof window==='undefined'?null:readActiveResultV1());
  const [draft,setDraft]=useState(()=>typeof window==='undefined'?null:readJourneyDraftV1());
+ const chapter2V2=requestedChapter2V2||restored?.methodology.type==='CHAPTER2_V2_NO_PERSONALITY'||draft?.chapter2V2===true;
  const [resumeChoice,setResumeChoice]=useState(()=>!restored&&!!draft);
  const [resumeOffered]=useState(()=>!restored&&!!draft);
  const [result,setResult]=useState<any>(null);
