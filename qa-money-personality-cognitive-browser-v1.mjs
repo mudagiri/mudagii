@@ -84,6 +84,14 @@ if(!data.payload?.quality?.parentSessionId)throw new Error('COGNITIVE_PARENT_SES
 if(data.payload?.quality?.parentSessionId!==data.parent?.sessionId)throw new Error('COGNITIVE_PARENT_LINK_MISMATCH');
 if((data.payload?.quality?.flaggedItemCount||0)<1)throw new Error('COGNITIVE_FLAG_MISSING');
 if(!data.local?.submittedAt)throw new Error('COGNITIVE_LOCAL_SUBMITTED_MISSING');
+const afterSave=await page.locator('.mpp-cog-thanks').textContent();
+if(!afterSave?.includes('端末内に保存'))throw new Error('COGNITIVE_MUST_NOT_CLAIM_SERVER_SAVED');
+const isolated=await page.evaluate(()=>({
+  publicHealth:localStorage.getItem('mudagiri_money_type_submission_health_v1'),
+  cognitiveHealth:localStorage.getItem('mudagiri_money_type_cognitive_delivery_v1')
+}));
+if(!isolated.cognitiveHealth||!isolated.publicHealth)
+  throw new Error('COGNITIVE_DELIVERY_SHOULD_NOT_EVICT_PUBLIC_DELIVERY');
 if(answered<30)throw new Error('COGNITIVE_COMPLETED_BEFORE_CORE30:'+answered);
 const report={ok:true,flow:'MUDAGIRI_MONEY_COGNITIVE_BROWSER_V1',answered,ratingCount,flaggedItemCount:data.payload.quality.flaggedItemCount,jobCode:data.payload.quality.jobCode,primaryStyle:data.payload.quality.primaryStyle,parentVariant:data.parent.quality.variant};
 await fs.writeFile(`${OUT}/report.json`,JSON.stringify(report,null,2));
