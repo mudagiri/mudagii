@@ -148,4 +148,8 @@ console.log(JSON.stringify({
 
 assert(resultUi.includes('mpp17-tags'),'V17_PROFILE_HASHTAGS_MISSING');
 assert(resultUi.includes('mpp17-share-tags'),'V17_SHARE_PREVIEW_HASHTAGS_MISSING');
+assert(resultUi.includes('mpp17-share-scene')&&resultUi.includes('shareScene.voice'),'V17_SHARE_RESONANCE_SCENE_MISSING');
+assert(resultUi.includes('代表的な「あるある」'),'V17_SHARE_COPY_DOES_NOT_EXPLAIN_RESONANCE');
+assert(shareImageUi.includes("const shareScene=result.scenes[0]")&&shareImageUi.includes('shareScene.voice'),'SHARE_IMAGE_RESONANCE_SCENE_MISSING');
+assert(shareImageUi.includes("result.scenes[0].voice"),'TEXT_SHARE_RESONANCE_SCENE_MISSING');
 assert(shareImageUi.includes("result.scenes.slice(0,3).map(scene=>tagLabel(scene.label))"),'V17_SHARE_HASHTAGS_MISSING');
