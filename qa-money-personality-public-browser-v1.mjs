@@ -194,8 +194,9 @@ const resultV17Geometry=await page.evaluate(()=>{
 if(!resultV17Geometry.hero||!resultV17Geometry.body)throw new Error('MONEY_PUBLIC_RESULT_V17_MISSING:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.primarySceneCount!==2||resultV17Geometry.extraSceneCount!==4)throw new Error('MONEY_PUBLIC_RESULT_V17_SCENE_COUNT_BAD:'+JSON.stringify(resultV17Geometry));
 if(!resultV17Geometry.hasMore)throw new Error('MONEY_PUBLIC_RESULT_V17_MORE_MISSING');
-if(resultV17Geometry.socialButtons!==5)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
-if(await page.locator('.mpp17-share-button--primary').count()!==1)throw new Error('MONEY_PUBLIC_NATIVE_IMAGE_SHARE_CTA_MISSING');
+if(resultV17Geometry.socialButtons!==4)throw new Error('MONEY_PUBLIC_RESULT_SOCIAL_BUTTONS_BAD:'+JSON.stringify(resultV17Geometry));
+if(await page.locator('.mpp18-share-primary').count()!==1)throw new Error('MONEY_PUBLIC_NATIVE_IMAGE_SHARE_CTA_MISSING');
+if(await page.locator('.mpp18-share-options').evaluate(el=>el.hasAttribute('open')))throw new Error('MONEY_PUBLIC_CHANNELS_SHOULD_START_COLLAPSED');
 if(resultV17Geometry.matchCards!==3)throw new Error('MONEY_PUBLIC_RESULT_MATCH_CARDS_BAD:'+JSON.stringify(resultV17Geometry));
 if(resultV17Geometry.miniJobs!==8)throw new Error('MONEY_PUBLIC_RESULT_MINI_JOB_BOOK_BAD:'+JSON.stringify(resultV17Geometry));
 
@@ -294,6 +295,7 @@ await page.evaluate(()=>{
     return null;
   };
 });
+await page.locator('.mpp18-share-options summary').click();
 await page.getByRole('button',{name:'𝕏 に文章で投稿'}).click();
 const shareProbe=await page.evaluate(()=>window.__mudagiriShareProbe);
 if(!shareProbe?.url?.startsWith('https://twitter.com/intent/tweet?text=')||shareProbe.target!=='_blank')throw new Error('MONEY_PUBLIC_X_SHARE_NOT_SYNCHRONOUS:'+JSON.stringify(shareProbe));
