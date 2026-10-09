@@ -2,9 +2,9 @@ name: V5 Visual Smoke
 
 on:
   push:
-    branches: ["main", "feature/money-personality-pilot", "fix/money-personality-cohort-prevalence-20261009"]
+    branches: ["main", "feature/money-personality-pilot", "fix/money-personality-cohort-prevalence-20261009", "feature/money-personality-conversion-ux-v18"]
   pull_request:
-    branches: ["main", "audit/money-personality-real-prevalence-pipeline-20261009"]
+    branches: ["main", "audit/money-personality-real-prevalence-pipeline-20261009", "fix/money-personality-cohort-prevalence-20261009"]
   workflow_dispatch:
 
 concurrency:

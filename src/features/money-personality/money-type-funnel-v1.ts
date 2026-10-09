@@ -19,7 +19,7 @@ export type MoneyTypeFunnelEvent=
   |'share_cancelled'
   |'line_bonus_preview_opened'
   |'type_book_opened'
-  |'household_cta_clicked';
+  |'household_cta_clicked'|'household_sticky_clicked'|'household_sticky_shown'|'result_mid_reached'|'result_deep_reached'|'share_channels_expanded';
 
 export type MoneyTypeFunnelEntry={
   version:typeof MONEY_TYPE_FUNNEL_VERSION;
@@ -34,11 +34,12 @@ const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
   'scenes_expanded','style_expanded','share_attempt',
   'share_native_sheet_resolved','share_image_downloaded','share_text_handoff','share_cancelled',
   'line_bonus_preview_opened','type_book_opened','household_cta_clicked',
+  'household_sticky_clicked','household_sticky_shown','result_mid_reached','result_deep_reached','share_channels_expanded',
 ];
 
 // Count milestones only once per session; keep share attempts as repeatable actions.
 const SINGLE_SESSION_MILESTONES=new Set<MoneyTypeFunnelEvent>([
-  'intro_started','ssr_claimed','result_seen',
+  'intro_started','ssr_claimed','result_seen','household_sticky_shown','result_mid_reached','result_deep_reached','share_channels_expanded',
 ]);
 
 export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:string,target?:'native'|'x'|'line'|'threads'|'instagram'){

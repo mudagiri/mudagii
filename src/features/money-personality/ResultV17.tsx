@@ -11,6 +11,7 @@ import ResultWorldBeatV1 from './ResultWorldBeatV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-v17-editorial.css';
+import ResultConversionDockV18 from './ResultConversionDockV18';
 
 type ShareTarget='native'|'x'|'line'|'threads'|'instagram';
 type AxisRow={title:string;left:string;right:string;lean:string;pos:number};
@@ -24,7 +25,8 @@ type Props={
   balanceNote:string|null;
   onShare:(target:ShareTarget)=>void;
   shareStatus:string;
-  onExplore:(kind:'scenes'|'style')=>void;
+  onExplore:(kind:'scenes'|'style'|'share')=>void;
+  onMilestone:(event:'result_mid_reached'|'result_deep_reached'|'household_sticky_shown'|'household_sticky_clicked')=>void;
   onOpenBook:()=>void;
   onHousehold:()=>void;
   onLineBonus:()=>void;
@@ -46,7 +48,7 @@ function MudagiriBeat({line,visual=PERSONALITY_SCENE_VISUALS.resultDialogue}:{li
 
 function DisclosureCue(){return <span className="mpp-disclosure-state" aria-hidden="true"><span className="mpp-disclosure-closed">開く <b>⌄</b></span><span className="mpp-disclosure-open">閉じる <b>⌃</b></span></span>}
 
-export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,balanceNote,onShare,shareStatus,onExplore,onOpenBook,onHousehold,onLineBonus,onRestart}:Props){
+export default function ResultV17({content,insight,jobCode,primaryStyle,secondaryStyle,axes,balanceNote,onShare,shareStatus,onExplore,onMilestone,onOpenBook,onHousehold,onLineBonus,onRestart}:Props){
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
@@ -59,7 +61,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
   ] as const;
 
   return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
-    <div className="mpp17-wrap">
+    <ResultConversionDockV18 onHousehold={()=>{onMilestone('household_sticky_clicked');onHousehold()}} onMilestone={onMilestone}/>
+  <div className="mpp17-wrap">
 
       <section className="mpp17-profile" data-job={jobCode} aria-label="あなたのお金タイプ">
         <div className="mpp17-job-bg" aria-hidden="true"/>
@@ -118,13 +121,16 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <h2>これ、友だちに見せたくない？</h2>
           <p>タイプとキャラだけが入った画像をシェアできるよ。収入や金額は出ません。</p>
         </div>
-        <div className="mpp17-share-buttons">
-          <button className="mpp17-share-button--primary" onClick={()=>onShare('native')}>画像カードをシェアする</button>
-          <button onClick={()=>onShare('x')}>𝕏 に文章で投稿</button>
-          <button onClick={()=>onShare('line')}>LINEでリンクを送る</button>
-          <button onClick={()=>onShare('threads')}>Threadsに文章で投稿</button>
-          <button onClick={()=>onShare('instagram')}>Instagram用に画像を保存</button>
-        </div>
+        <button className="mpp18-share-primary" type="button" onClick={()=>onShare('native')}>画像付きでシェアする <span aria-hidden="true">↗</span><small>スマホの共有メニューを開く</small></button>
+        <details className="mpp18-share-options" onToggle={event=>{if(event.currentTarget.open)onExplore('share')}}>
+          <summary><span>SNSを指定してシェア</span><DisclosureCue/></summary>
+          <div className="mpp17-share-buttons">
+            <button onClick={()=>onShare('x')}>𝕏 に文章で投稿</button>
+            <button onClick={()=>onShare('line')}>LINEでリンクを送る</button>
+            <button onClick={()=>onShare('threads')}>Threadsに文章で投稿</button>
+            <button onClick={()=>onShare('instagram')}>Instagram用に画像を保存</button>
+          </div>
+        </details>
         <p className="mpp17-share-fallback-note">画像を送れない端末では、カードを保存できるよ。</p>
         {shareStatus&&<p className="mpp17-share-status" role="status" aria-live="polite">{shareStatus}</p>}
       </section>
@@ -159,8 +165,8 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <header><span>04</span><div><small>このタイプの強み</small><h2>{insight.weapon.name}</h2></div></header>
         <p className="mpp17-strength-main">{insight.weapon.works}</p>
         <div className="mpp17-strength-grid">
-          <article><small>行きすぎると</small><p>{insight.weapon.overdrive}</p></article>
-          <article><small>こうすると整いやすい</small><p>{insight.weapon.control}</p></article>
+          <article className="mpp18-risk"><small><span aria-hidden="true" className="mpp18-strength-icon">!</span> 行きすぎると</small><p>{insight.weapon.overdrive}</p></article>
+          <article className="mpp18-repair"><small><span aria-hidden="true" className="mpp18-strength-icon">✓</span> こうすると整いやすい</small><p>{insight.weapon.control}</p></article>
         </div>
       </section>
 
@@ -206,12 +212,12 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
       <ResultWorldBeatV1 beat="next"/>
 
       <MudagiriBeat line="性格は分かった。次は財布の中身見に行くぞ。" visual={PERSONALITY_SCENE_VISUALS.householdCta}/>
-      <section className="mpp17-next">
+      <section className="mpp17-next" id="mpp17-next">
         <small>次にやるなら、これ</small>
         <h2>{content.nextMove}</h2>
         <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>12カテゴリの支出から、見直せそうなところを一緒に探そう。全部を削る必要はないよ。</p></div>
-        <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む</button>
-        <div className="mpp17-line-bonus-entry"><span>LINE特典</span><h3>あなたのJOB専用・お金の攻略ガイド</h3><p>自分の強みや、ハマりやすい出費のクセを深掘りできる特典を準備中。</p><button type="button" onClick={onLineBonus}>特典の中身を見る <span aria-hidden="true">›</span></button><small>家計診断はLINE登録なしで進められます。</small></div>
+        <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む <span aria-hidden="true">→</span></button>
+        <div className="mpp17-line-bonus-entry"><span>LINE特典</span><h3>あなたのJOB専用・お金の攻略ガイド</h3><p>自分の強みや、ハマりやすい出費のクセを深掘りできる特典を準備中。</p><button type="button" onClick={onLineBonus}>特典の中身を見る <span aria-hidden="true">›</span></button><small>配布準備中の特典だよ。登録は任意です。</small></div>
         <button className="mpp17-restart" onClick={onRestart}>もう一度診断する</button>
       </section>
 

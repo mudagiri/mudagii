@@ -58,7 +58,7 @@ assert(resultUi.includes('ほかのあるあるも見る')&&resultUi.includes('�
 assert(resultUi.includes('このタイプの強み'),'V12_STRENGTH_SECTION_MISSING');
 assert(resultUi.includes('同じ場面でも、考えることが違う'),'V17_COMPARE_MISSING');
 assert(resultUi.includes("onShare('native')")&&resultUi.includes("onShare('x')")&&resultUi.includes("onShare('line')")&&resultUi.includes("onShare('threads')")&&resultUi.includes("onShare('instagram')"),'V17_FIVE_SHARE_ROUTES_MISSING');
-assert(resultUi.includes('画像カードをシェアする')&&resultUi.includes('𝕏 に文章で投稿')&&resultUi.includes('LINEでリンクを送る')&&resultUi.includes('Threadsに文章で投稿')&&resultUi.includes('Instagram用に画像を保存'),'V17_SHARE_LABELS_NOT_HONEST');
+assert(resultUi.includes('画像付きでシェアする')&&resultUi.includes('SNSを指定してシェア')&&resultUi.includes('𝕏 に文章で投稿')&&resultUi.includes('LINEでリンクを送る')&&resultUi.includes('Threadsに文章で投稿')&&resultUi.includes('Instagram用に画像を保存'),'V17_SHARE_LABELS_NOT_HONEST');
 assert(resultUi.includes('function DisclosureCue()')&&resultUi.includes('mpp-disclosure-state')&&bookUi.includes('mpp-disclosure-state'),'RESULT_AND_BOOK_DETAILS_AFFORDANCE_MISSING');
 assert(shareImageUi.includes("if(target==='threads')")&&shareImageUi.includes("if(target==='instagram')"),'THREADS_INSTAGRAM_SHARE_BEHAVIOR_MISSING');
 assert(resultUi.includes('insight.compare.scene'),'V10_CONCRETE_COMPARE_NOT_WIRED');

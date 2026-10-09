@@ -1,0 +1,131 @@
+/* RESULT V18 / conversion hierarchy. Scoped strictly to chapter-one result. */
+html body #root .mpp17-page .mpp17-next .mpp17-button--accent{
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;
+  min-height:58px!important;border:1px solid #e8a934!important;border-radius:14px!important;
+  color:#251c0c!important;background:linear-gradient(135deg,#ffe49a,#f5c04e)!important;
+  box-shadow:0 8px 24px rgba(160,105,22,.21),inset 0 1px 0 rgba(255,255,255,.58)!important;
+  font-size:16px!important;font-weight:900!important;letter-spacing:0!important;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+html body #root .mpp17-page .mpp17-next .mpp17-button--accent span{
+  font-size:22px;line-height:1;transition:transform .18s ease;
+}
+@media(hover:hover){
+  html body #root .mpp17-page .mpp17-next .mpp17-button--accent:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(160,105,22,.29)!important;
+  }
+  .mpp17-next .mpp17-button--accent:hover span{transform:translateX(3px)}
+}
+html body #root .mpp17-page .mpp17-next .mpp17-button--accent:focus-visible,
+html body #root .mpp17-page .mpp18-share-primary:focus-visible,
+html body #root .mpp17-page .mpp18-dock button:focus-visible{
+  outline:3px solid #92742a!important;outline-offset:3px!important;
+}
+/* Card chips are informational: do not disguise low contrast as rare foil. */
+html body #root .mpp17-page .mpp17-profile .mpp17-tags span{
+  background:rgba(255,255,255,.18)!important;border:1px solid rgba(255,255,255,.43)!important;
+  color:#fffdf4!important;font-size:11.5px!important;line-height:1.45!important;
+  font-weight:800!important;padding:6px 10px!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.50);
+}
+html body #root .mpp17-page .mpp17-share-tags span{
+  border-color:rgba(255,255,255,.33)!important;
+  color:#fffdf2!important;
+}
+/* Keep a single clearly preferred share action; channels are a second layer. */
+html body #root .mpp17-page .mpp18-share-primary{
+  width:100%;min-height:62px;padding:12px 14px;margin:12px 0 0;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:10px;
+  border:1px solid #272b30;border-radius:14px;background:#20252d;color:#fff;
+  font-size:16px;font-weight:850;cursor:pointer;line-height:1.4;
+}
+html body #root .mpp17-page .mpp18-share-primary>span{font-size:20px}
+html body #root .mpp17-page .mpp18-share-primary small{
+  flex-basis:100%;margin-top:2px;color:#e4e7ea;font-size:12px;font-weight:500;
+}
+html body #root .mpp17-page .mpp18-share-options{margin:10px 0 3px;}
+html body #root .mpp17-page .mpp18-share-options>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:48px;padding:10px 13px;border:1px solid #cfc9bb;border-radius:12px;
+  background:#fffdf7;color:#352f24;font-size:14px;font-weight:800;cursor:pointer;list-style:none;
+}
+html body #root .mpp17-page .mpp18-share-options>summary::-webkit-details-marker{display:none}
+html body #root .mpp17-page .mpp18-share-options .mpp17-share-buttons{
+  margin:10px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+html body #root .mpp17-page .mpp18-share-options .mpp17-share-buttons button{
+  min-height:50px;padding:8px;font-size:13px!important;line-height:1.4!important;
+  font-weight:750;white-space:normal;
+}
+html body #root .mpp17-page .mpp18-share-options .mpp17-share-buttons button:first-child{
+  font-size:13px!important;
+}
+/* Disclosure controls are aligned with their card, never floating off to the right. */
+html body #root .mpp17-page :is(.mpp17-more,.mpp17-style-detail,.mpp17-details,.mpp18-share-options)>summary{
+  gap:10px!important;align-items:center!important;justify-content:space-between!important;
+}
+html body #root .mpp17-page :is(.mpp17-more,.mpp17-style-detail,.mpp17-details,.mpp18-share-options) .mpp-disclosure-state{
+  flex:0 0 64px!important;min-width:64px!important;min-height:32px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  padding:5px 7px!important;line-height:1.3!important;
+  border-radius:8px!important;transform:none!important;
+}
+html body #root .mpp17-page .mpp17-style-detail summary span,
+html body #root .mpp17-page .mpp17-style-detail[open] summary span{
+  transform:none!important;white-space:normal!important;
+}
+html body #root .mpp17-page .mpp-disclosure-state span{
+  font-size:12.5px!important;color:#fffaf0!important;white-space:nowrap!important;
+}
+html body #root .mpp17-page .mpp-disclosure-state b{font-size:17px!important}
+/* Distinguish a potential pitfall from a practical correction. */
+html body #root .mpp17-page .mpp17-strength-grid article.mpp18-risk{
+  background:#fff6eb!important;border:1px solid #dcc5a8!important;
+}
+html body #root .mpp17-page .mpp17-strength-grid article.mpp18-repair{
+  background:#f1f8f3!important;border:1px solid #a9cfb6!important;
+}
+html body #root .mpp17-page .mpp17-strength-grid article.mpp18-risk>small{color:#835221!important}
+html body #root .mpp17-page .mpp17-strength-grid article.mpp18-repair>small{color:#285a3d!important}
+html body #root .mpp17-page .mpp18-strength-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:23px;height:23px;margin-right:5px;border-radius:50%;
+  border:1px solid currentColor;font-size:15px;font-weight:900;vertical-align:middle;
+}
+html body #root .mpp17-page .mpp17-strength-grid article p{
+  color:#343a39!important;
+}
+/* Progressive mobile footer appears only after the share section is passed. */
+.mpp18-dock{display:none}
+@media(max-width:768px){
+  html body #root .mpp17-page{padding-bottom:calc(95px + env(safe-area-inset-bottom))!important}
+  html body #root .mpp17-page .mpp18-dock{
+    position:fixed;z-index:101;left:50%;bottom:0;
+    display:flex;flex-direction:column;gap:5px;
+    width:min(100%,520px);box-sizing:border-box;padding:9px 16px calc(10px + env(safe-area-inset-bottom));
+    border:1px solid rgba(205,183,137,.5);border-bottom:0;
+    border-radius:18px 18px 0 0;
+    background:rgba(255,252,244,.98);box-shadow:0 -8px 26px rgba(33,25,9,.16);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transform:translate(-50%,105%);transition:transform .2s ease,opacity .2s ease,visibility .2s;
+  }
+  html body #root .mpp17-page .mpp18-dock.is-visible{
+    opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);
+  }
+  .mpp18-dock-copy{font-size:12px;font-weight:700;color:#514c3f;text-align:center}
+  html body #root .mpp17-page .mpp18-dock button{
+    width:100%;min-height:48px;border:1px solid #d59c35;border-radius:11px;
+    background:#f8cb66;color:#251c0c;font-size:15px;font-weight:900;
+    cursor:pointer;touch-action:manipulation;
+  }
+  .mpp18-dock button span{margin-left:8px;font-size:19px}
+}
+@media(max-width:355px){
+  html body #root .mpp17-page .mpp18-share-options .mpp17-share-buttons{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  html body #root .mpp17-page .mpp18-dock,
+  html body #root .mpp17-page .mpp17-next .mpp17-button--accent,
+  html body #root .mpp17-page .mpp17-next .mpp17-button--accent span{transition:none!important}
+}
