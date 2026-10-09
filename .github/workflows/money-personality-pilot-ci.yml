@@ -6,6 +6,7 @@ on:
       - feature/money-personality-pilot
       - fix/money-personality-result-calibration-20261009
       - audit/money-personality-boundary-type32-20261009
+      - audit/money-personality-real-prevalence-pipeline-20261009
   pull_request:
     branches:
       - main
