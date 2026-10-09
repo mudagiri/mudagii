@@ -30,6 +30,7 @@ jobs:
 
       - name: Check unchanged frozen diagnosis core
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch --no-tags origin ee53d4882c1e391d8639521e0c749f784c6ac256 --depth=1
           forbidden="$(git diff --name-only ee53d4882c1e391d8639521e0c749f784c6ac256 HEAD -- \
             mudagiri-diagnosis-v2.ts comparable-resolver-v1.ts comparable-resolver-v2.ts \
