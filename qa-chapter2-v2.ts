@@ -61,7 +61,7 @@ const mock:any={
 const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V2,{vm:mock}));
 assert.match(html,/家計クエスト/);
 assert.match(html,/ライフプラン相談/);
-assert.match(html,/画像カードをシェア/);
+assert.match(html,/画像カードを準備中|画像カードをシェア/,'SSR shows preloading until image is ready');
 assert.doesNotMatch(html,/8タイプ図鑑|TYPE UNLOCKED|称号を獲得|お金タイプの3つの傾向/);
 const withChapter1=renderToStaticMarkup(React.createElement(ResultScreenChapter2V2,{
  vm:mock,chapter1:parseChapter1HandoffV1(raw,'anon-1')
