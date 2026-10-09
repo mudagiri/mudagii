@@ -15,6 +15,10 @@ on:
     paths:
       - 'src/features/money-personality/**'
       - 'scripts/money-personality-backend-probe.mjs'
+      - 'scripts/check-money-personality-gas-health.mjs'
+      - 'scripts/verify-money-personality-build.mjs'
+      - '.github/workflows/deploy-money-personality-hidden-preview.yml'
+      - '.github/workflows/attach-money-personality-preview.yml'
       - 'qa-money-personality-*.ts'
       - 'qa-money-personality-*.mjs'
       - 'MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs'
@@ -80,5 +84,7 @@ jobs:
         run: node qa-money-personality-backend-separation-v1.mjs
       - name: Guard hidden preview against missing GAS URL
         run: node qa-money-personality-release-gate-v1.mjs
+      - name: Reject wrong backend, missing transport, or missing deploy revision proof
+        run: node qa-money-personality-backend-contract-v1.mjs
       - name: Pilot QA
         run: npm run qa:money-pilot
