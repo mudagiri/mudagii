@@ -26,9 +26,9 @@ type Props={
   onShare:(target:ShareTarget)=>void;
   shareStatus:string;
   onExplore:(kind:'scenes'|'style'|'share')=>void;
-  onMilestone:(event:'result_mid_reached'|'result_deep_reached'|'household_sticky_shown')=>void;
+  onMilestone:(event:'result_mid_reached'|'result_deep_reached'|'household_sticky_shown'|'household_sticky_clicked')=>void;
   onOpenBook:()=>void;
-  onHousehold:(origin:'main'|'sticky')=>void;
+  onHousehold:()=>void;
   onLineBonus:()=>void;
   onRestart:()=>void;
 };
@@ -61,7 +61,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
   ] as const;
 
   return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
-    <ResultConversionDockV18 onHousehold={()=>onHousehold('sticky')} onMilestone={onMilestone}/>
+    <ResultConversionDockV18 onHousehold={()=>{onMilestone('household_sticky_clicked');onHousehold()}} onMilestone={onMilestone}/>
   <div className="mpp17-wrap">
 
       <section className="mpp17-profile" data-job={jobCode} aria-label="あなたのお金タイプ">
@@ -216,7 +216,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <small>次にやるなら、これ</small>
         <h2>{content.nextMove}</h2>
         <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>12カテゴリの支出から、見直せそうなところを一緒に探そう。全部を削る必要はないよ。</p></div>
-        <button className="mpp17-button mpp17-button--accent" onClick={()=>onHousehold('main')}>家計クエストへ進む <span aria-hidden="true">→</span></button>
+        <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む <span aria-hidden="true">→</span></button>
         <div className="mpp17-line-bonus-entry"><span>LINE特典</span><h3>あなたのJOB専用・お金の攻略ガイド</h3><p>自分の強みや、ハマりやすい出費のクセを深掘りできる特典を準備中。</p><button type="button" onClick={onLineBonus}>特典の中身を見る <span aria-hidden="true">›</span></button><small>配布準備中の特典だよ。登録は任意です。</small></div>
         <button className="mpp17-restart" onClick={onRestart}>もう一度診断する</button>
       </section>
