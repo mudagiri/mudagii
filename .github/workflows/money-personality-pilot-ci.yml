@@ -70,5 +70,11 @@ jobs:
         run: npm run qa:money-semantic
       - name: Cognitive pilot instrument QA
         run: npm run qa:money-cognitive
+      - name: GAS transport retry guard
+        run: npm run qa:money-delivery
+      - name: Real prevalence aggregation and exclusions QA
+        run: npm run qa:money-real-prevalence
+      - name: GAS backend separation guard
+        run: node qa-money-personality-backend-separation-v1.mjs
       - name: Pilot QA
         run: npm run qa:money-pilot
