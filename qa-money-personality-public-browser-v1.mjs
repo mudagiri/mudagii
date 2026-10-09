@@ -211,6 +211,55 @@ await page.evaluate(()=>window.scrollTo({top:Math.min(700,(document.scrollingEle
 await page.waitForTimeout(80);
 const resultScrollY=await page.evaluate(()=>window.scrollY);
 if(resultScrollY<40)throw new Error('MONEY_PUBLIC_RESULT_CANNOT_SCROLL:'+JSON.stringify({resultScrollBefore,resultScrollY}));
+
+const conversionVisual=await page.evaluate(()=>{
+  const primary=document.querySelector('.mpp17-next .mpp17-button--accent');
+  const share=document.querySelector('.mpp18-share-primary');
+  const tag=document.querySelector('.mpp17-profile .mpp17-tags span');
+  const risk=document.querySelector('.mpp17-strength-grid .mpp18-risk');
+  const repair=document.querySelector('.mpp17-strength-grid .mpp18-repair');
+  const cue=document.querySelector('.mpp17-style-detail .mpp-disclosure-state');
+  const summary=document.querySelector('.mpp17-style-detail summary');
+  if(!primary||!share||!tag||!risk||!repair||!cue||!summary)return null;
+  const r=cue.getBoundingClientRect(),s=summary.getBoundingClientRect();
+  return {
+    primaryColor:getComputedStyle(primary).color,
+    primaryGradient:getComputedStyle(primary).backgroundImage,
+    shareBackground:getComputedStyle(share).backgroundColor,
+    tagSize:parseFloat(getComputedStyle(tag).fontSize),
+    riskBg:getComputedStyle(risk).backgroundColor,
+    repairBg:getComputedStyle(repair).backgroundColor,
+    cueDistanceToRight:s.right-r.right,
+    primaryHeight:primary.getBoundingClientRect().height
+  };
+});
+if(!conversionVisual||!conversionVisual.primaryGradient.includes('gradient')||
+ !conversionVisual.primaryColor.includes('37, 28, 12')||conversionVisual.primaryHeight<55)
+ throw new Error('MONEY_CONVERSION_PRIMARY_CTA_NOT_VISUALLY_DISTINCT:'+JSON.stringify(conversionVisual));
+if(conversionVisual.riskBg===conversionVisual.repairBg||conversionVisual.tagSize<11)
+ throw new Error('MONEY_CONVERSION_SEMANTIC_CARDS_OR_TAGS_BAD:'+JSON.stringify(conversionVisual));
+if(conversionVisual.cueDistanceToRight<0||conversionVisual.cueDistanceToRight>26)
+ throw new Error('MONEY_CONVERSION_DISCLOSURE_CUE_FLOATING:'+JSON.stringify(conversionVisual));
+// Scroll past the share section; the shortcut must show only on mobile
+// and must vanish before it covers the final household button.
+await page.evaluate(()=>{
+  const share=document.getElementById('mpp17-share');
+  if(share)window.scrollTo({top:Math.max(0,window.scrollY+share.getBoundingClientRect().bottom+innerHeight*.4),behavior:'instant'});
+});
+await page.waitForTimeout(260);
+const dockAfterShare=await page.locator('.mpp18-dock').evaluate(el=>({
+  visible:el.classList.contains('is-visible'),
+  rect:{...(()=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right}})()},
+  buttonHeight:el.querySelector('button')?.getBoundingClientRect().height||0
+}));
+if(!dockAfterShare.visible||dockAfterShare.buttonHeight<48||
+ dockAfterShare.rect.left<-2||dockAfterShare.rect.right>innerWidth+2)
+ throw new Error('MONEY_CONVERSION_STICKY_CTA_MISSING_OR_OVERFLOW:'+JSON.stringify(dockAfterShare));
+await page.locator('.mpp17-next').scrollIntoViewIfNeeded();
+await page.waitForTimeout(220);
+if(await page.locator('.mpp18-dock').evaluate(el=>el.classList.contains('is-visible')))
+ throw new Error('MONEY_CONVERSION_STICKY_OVERLAPS_PRIMARY_CTA');
+
 await page.evaluate(()=>window.scrollTo({top:0,behavior:'auto'}));
 
 const text=((await page.locator('.mpp17-page').textContent())||'').replace(/\s+/g,' ');
