@@ -337,7 +337,7 @@ function computeMoneyPersonalityPrevalenceV1_(sessionValues,resultValues){
     orphanResult:0,notAdaptive:0,testOrDebug:0,preview:0,
     missingIdentity:0,invalidResult:0,mismatchedIdentity:0,
     invalidDate:0,duplicateAnonymous:0,duplicateSession:0,
-    missingAuditFlags:0
+    missingAuditFlags:0,missingOrInvalidCohort:0
   };
   const sessionById=new Map();
   sessions.forEach(row=>{
@@ -376,9 +376,16 @@ function computeMoneyPersonalityPrevalenceV1_(sessionValues,resultValues){
       excluded.testOrDebug++;return;
     }
     const source=String(sess.source_url||'');
-    // Exclude preview builds, localhost and local test hosts from real-population reports.
-    if(/\/pilot\/money-type\/?|localhost|127\.0\.0\.1|example\.test/i.test(source)){
+    // Public Chapter 1 is legitimately hosted at /pilot/money-type/.
+    // Do not mark that route as a QA URL. Exclude only local/test hosts.
+    if(/localhost|127\.0\.0\.1|example\.test/i.test(source)){
       excluded.preview++;return;
+    }
+    // Release cohorts MUST be declared in the completed payload at build time.
+    // Untagged records are not silently accepted as either live or pilot.
+    const cohort=String(q.collectionCohort||'');
+    if(cohort!=='PILOT'&&cohort!=='PUBLIC'){
+      excluded.missingOrInvalidCohort++;return;
     }
     const anon=String(sess.anonymous_user_id||'');
     const resultAnon=String(result.anonymous_user_id||'');
@@ -392,45 +399,59 @@ function computeMoneyPersonalityPrevalenceV1_(sessionValues,resultValues){
     if(!Number.isFinite(at)){
       excluded.invalidDate++;return;
     }
-    candidates.push({anon,sessionId:id,job,style,at,source:prevalenceSourceCategoryV1_(source)});
+    candidates.push({anon,sessionId:id,job,style,at,cohort,source:prevalenceSourceCategoryV1_(source)});
   });
   candidates.sort((a,b)=>a.at-b.at||a.sessionId.localeCompare(b.sessionId));
-  const byJob={},byStyle={},byType={},bySource={};
-  jobs.forEach(j=>{byJob[j]=0;styles.forEach(s=>byType[j+'-'+s]=0)});
-  styles.forEach(s=>byStyle[s]=0);
-  ['x','instagram','threads','line','other_social','other','unspecified'].forEach(k=>bySource[k]=0);
-  const counted=new Set();
-  candidates.forEach(c=>{
-    if(counted.has(c.anon)){excluded.duplicateAnonymous++;return;}
-    counted.add(c.anon);
-    byJob[c.job]++;byStyle[c.style]++;byType[c.job+'-'+c.style]++;bySource[c.source]++;
-  });
-  const n=counted.size;
-  const summarize=(counts)=>Object.keys(counts).sort().map(code=>{
-    const count=counts[code];
-    const pct=n?Math.round(count*10000/n)/100:null;
-    const ci=n?prevalenceWilsonIntervalV1_(count,n):null;
-    return {code,count,percent:pct,ci95:ci};
-  });
-  const jobRows=summarize(byJob),styleRows=summarize(byStyle),typeRows=summarize(byType),sourceRows=summarize(bySource);
+  function oneCohort_(name){
+    const byJob={},byStyle={},byType={},bySource={};
+    jobs.forEach(j=>{byJob[j]=0;styles.forEach(s=>byType[j+'-'+s]=0)});
+    styles.forEach(s=>byStyle[s]=0);
+    ['x','instagram','threads','line','other_social','other','unspecified'].forEach(k=>bySource[k]=0);
+    const counted=new Set();
+    let duplicateAnonymous=0,eligibleBeforeAnonymousDedupe=0;
+    candidates.forEach(c=>{
+      if(c.cohort!==name)return;
+      eligibleBeforeAnonymousDedupe++;
+      if(counted.has(c.anon)){duplicateAnonymous++;return;}
+      counted.add(c.anon);
+      byJob[c.job]++;byStyle[c.style]++;byType[c.job+'-'+c.style]++;bySource[c.source]++;
+    });
+    const n=counted.size;
+    const summarize=(counts)=>Object.keys(counts).sort().map(code=>{
+      const count=counts[code];
+      const pct=n?Math.round(count*10000/n)/100:null;
+      const ci=n?prevalenceWilsonIntervalV1_(count,n):null;
+      return {code,count,percent:pct,ci95:ci};
+    });
+    return {
+      cohort:name,eligibleBeforeAnonymousDedupe,
+      uniqueCompletedBrowserIds:n,duplicateAnonymous,
+      byJob:summarize(byJob),byStyle:summarize(byStyle),
+      byType:summarize(byType),bySource:summarize(bySource)
+    };
+  }
+  const publicCohort=oneCohort_('PUBLIC');
+  const pilotCohort=oneCohort_('PILOT');
+  excluded.duplicateAnonymous=publicCohort.duplicateAnonymous+pilotCohort.duplicateAnonymous;
   return {
-    version:'MUDAGIRI_REAL_PREVALENCE_AUDIT_V1',
+    version:'MUDAGIRI_REAL_PREVALENCE_AUDIT_V2_COHORT',
     kind:'ADMIN_AGGREGATE_NOT_POPULATION_ESTIMATE',
     source:'dedicated_money_personality_sheet_v1',
     rawSessionRows:sessions.length,rawResultRows:results.length,
-    eligibleBeforeAnonymousDedupe:candidates.length,
-    uniqueCompletedBrowserIds:n,
+    // Top-level distribution MUST be public-only, never mixed with research pilot.
+    ...publicCohort,
     exclusionCounts:excluded,
-    byJob:jobRows,byStyle:styleRows,byType:typeRows,bySource:sourceRows,
+    pilotSample:{
+      ...pilotCohort,
+      interpretation:'Field/cognitive recruiting sample. Not public prevalence.'
+    },
     publication:{
       ready:false,
-      // Even if enough responses are present, an owner must inspect sample
-      // composition, consent/data retention and CI coverage before publication.
-      preliminaryMinimumReached:n>=5000,
+      preliminaryMinimumReached:publicCohort.uniqueCompletedBrowserIds>=5000,
       minUniqueResponses:5000,
       minimumCellCount:30,
-      scope:'診断を完了した匿名ブラウザID（日本人全体ではない）',
-      notes:'Never publish until owner review; unsupported UTM is unspecified, not direct',
+      scope:'公開導線で診断を完了した匿名ブラウザID（日本人全体ではない）',
+      notes:'Manual approval required. Never pool PILOT and PUBLIC; unknown cohort excluded.'
     }
   };
 }
