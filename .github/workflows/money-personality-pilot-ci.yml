@@ -93,3 +93,22 @@ jobs:
         run: node qa-money-personality-backend-contract-v1.mjs
       - name: Pilot QA
         run: npm run qa:money-pilot
+
+  dedicated-gas-readonly:
+    # Only the trusted, same-repository PR branch may inspect environment-scoped
+    # endpoint health; no POSTs and no values are written to the logs.
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/money-personality-cohort-prevalence-20261009' }}
+    environment: pilot-hidden-preview
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify dedicated GAS GET health without sending a session
+        env:
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: node scripts/check-money-personality-gas-health.mjs
