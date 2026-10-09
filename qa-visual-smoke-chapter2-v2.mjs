@@ -213,7 +213,7 @@ for(const [name,sel] of sectionShots){
 const atlasOpen=page.getByRole('button',{name:/鑑定理由を見る/}).first();
 await atlasOpen.click();
 const detail=page.locator('.c2v2-detail').first();await detail.waitFor({state:'visible'});
-if(!(await detail.innerText()).includes('ムダ額'))throw new Error('V2_COMPARISON_WARNING_MISSING');
+if(!(await detail.innerText()).includes('次の確認'))throw new Error('V2_NEXT_CHECK_DETAIL_MISSING');
 await shot('19-v2-detail-expanded',{allowVertical:true});
 await page.getByRole('button',{name:/画像カードをシェア／保存する/}).click();
 await page.waitForTimeout(300);
