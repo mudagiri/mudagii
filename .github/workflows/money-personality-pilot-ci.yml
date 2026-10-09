@@ -14,6 +14,7 @@ on:
       - audit/money-personality-prevalence-sensitivity-20261009
     paths:
       - 'src/features/money-personality/**'
+      - 'src/main.tsx'
       - 'scripts/money-personality-backend-probe.mjs'
       - 'scripts/check-money-personality-gas-health.mjs'
       - 'scripts/verify-money-personality-build.mjs'
