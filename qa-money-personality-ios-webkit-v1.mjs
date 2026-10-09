@@ -79,7 +79,8 @@ try{
     const share=page.locator('.mpp17-share');
     await share.scrollIntoViewIfNeeded();
     const shareUi=await geometry(page,vp.name+'-share');
-    assert(await page.getByRole('button',{name:'画像カードをシェアする'}).isVisible(),'IOS_WEBKIT_SHARE_CTA_MISSING');
+    assert(await page.locator('.mpp18-share-primary').isVisible(),'IOS_WEBKIT_SHARE_CTA_MISSING');
+    await page.locator('.mpp18-share-options summary').tap();
     assert(await page.getByRole('button',{name:'Threadsに文章で投稿'}).isVisible(),'IOS_WEBKIT_THREADS_CTA_MISSING');
     assert(await page.getByRole('button',{name:'Instagram用に画像を保存'}).isVisible(),'IOS_WEBKIT_INSTAGRAM_SAVE_MISSING');
     const readable=await page.evaluate(()=>{
@@ -87,7 +88,7 @@ try{
       const h=sel=>document.querySelector(sel).getBoundingClientRect().height;
       return {more:font('.mpp17-more summary'),style:font('.mpp17-style-detail summary'),axis:font('.mpp17-details summary'),body:font('.mpp17-scene-list p'),moreTap:h('.mpp17-more summary'),styleTap:h('.mpp17-style-detail summary'),axisTap:h('.mpp17-details summary'),shareCount:document.querySelectorAll('.mpp17-share-buttons button').length};
     });
-    assert(readable.more>=15&&readable.style>=15&&readable.axis>=15&&readable.body>=14&&readable.moreTap>=56&&readable.styleTap>=56&&readable.axisTap>=56&&readable.shareCount===5,'IOS_WEBKIT_DETAILS_OR_READABILITY_BAD:'+JSON.stringify(readable));
+    assert(readable.more>=15&&readable.style>=15&&readable.axis>=15&&readable.body>=14&&readable.moreTap>=56&&readable.styleTap>=56&&readable.axisTap>=56&&readable.shareCount===4,'IOS_WEBKIT_DETAILS_OR_READABILITY_BAD:'+JSON.stringify(readable));
     await page.locator('.mpp17-style-detail summary').tap();
     const disclosure=await page.locator('.mpp17-style-detail').evaluate(el=>({open:el.open,closed:getComputedStyle(el.querySelector('.mpp-disclosure-closed')).display,opened:getComputedStyle(el.querySelector('.mpp-disclosure-open')).display,textColor:getComputedStyle(el.querySelector('.mpp-disclosure-open')).color,background:getComputedStyle(el.querySelector('.mpp-disclosure-state')).backgroundColor}));
     assert(disclosure.open&&disclosure.closed==='none'&&disclosure.opened!=='none'&&disclosure.textColor==='rgb(255, 250, 240)','IOS_WEBKIT_DISCLOSURE_NOT_OBVIOUS:'+JSON.stringify(disclosure));
