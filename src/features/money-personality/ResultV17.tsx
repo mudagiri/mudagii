@@ -50,6 +50,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
   const asset=jobCharacterAsset(jobCode);
   const neighbors=moneyTypeNeighbors(jobCode,primaryStyle,secondaryStyle);
   const tags=content.scenes.slice(0,3).map(s=>cleanTag(s.label));
+  const shareScene=content.scenes[0];
   const more=content.scenes.slice(2);
   const matches=[
     {label:'かなり近い',data:neighbors.close},
@@ -106,6 +107,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
             <h2>{identity.jobName}</h2>
             <div className="mpp17-share-value"><span>{STYLE_IDENTITY[primaryStyle].label}</span><b>{STYLE_IDENTITY[primaryStyle].short}</b></div>
             <p>{content.hero}</p>
+            <blockquote className="mpp17-share-scene"><small>これある？</small><b>「{shareScene.voice}」</b></blockquote>
             <div className="mpp17-share-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</div>
           </div>
           <footer><span>ムダギリ｜お金の性格診断</span><b>{asset.animal}</b></footer>
@@ -113,7 +115,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
         <div className="mpp17-share-copy">
           <small>SHARE / シェアカード</small>
           <h2>これ、友だちに見せたくない？</h2>
-          <p>タイプとキャラだけが入った画像をシェアできるよ。収入や金額は出ません。</p>
+          <p>タイプ・キャラ・代表的な「あるある」が入った画像をシェアできるよ。収入や金額は出ません。</p>
         </div>
         <div className="mpp17-share-buttons">
           <button className="mpp17-share-button--primary" onClick={()=>onShare('native')}>画像カードをシェアする</button>
