@@ -477,7 +477,7 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
     if(scene==='opening'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers:chapter2V2?{}:typeAnswers,chapter2V2});
   },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
