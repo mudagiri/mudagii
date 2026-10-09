@@ -56,6 +56,7 @@ jobs:
             echo "::error::Unexpected GAS URL inside offline V3"
             exit 1
           fi
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git rev-parse HEAD > site/pilot/chapter2-v2/V3_SHA.txt
 
       - name: Start local static website (no deployment)
