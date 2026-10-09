@@ -1,10 +1,11 @@
-import { chromium } from 'playwright';
+import { chromium,webkit } from 'playwright';
 import fs from 'node:fs/promises';
 
-const OUT='visual-smoke-chapter2-v2';
+const engine=process.env.CHAPTER2_BROWSER==='webkit'?'webkit':'chromium';
+const OUT='visual-smoke-chapter2-v2-'+engine;
 await fs.mkdir(OUT,{recursive:true});
 
-const browser=await chromium.launch({headless:true});
+const browser=await (engine==='webkit'?webkit:chromium).launch({headless:true});
 const context=await browser.newContext({
   viewport:{width:390,height:844},
   deviceScaleFactor:1,
@@ -278,4 +279,4 @@ if(await page.locator('.v51-type').count())throw new Error('V2_RETURNED_AS_LEGAC
 await shot('22-v2-resume-without-query',{allowVertical:true});
 await fs.writeFile(OUT+'/report.json',JSON.stringify(report,null,2));
 await browser.close();
-console.log('CHAPTER2_V2_BROWSER_SMOKE_PASS',report.length);
+console.log('CHAPTER2_V2_BROWSER_SMOKE_PASS',engine,report.length);
