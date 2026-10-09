@@ -250,10 +250,11 @@ await page.waitForTimeout(260);
 const dockAfterShare=await page.locator('.mpp18-dock').evaluate(el=>({
   visible:el.classList.contains('is-visible'),
   rect:{...(()=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right}})()},
+  viewport:innerWidth,
   buttonHeight:el.querySelector('button')?.getBoundingClientRect().height||0
 }));
 if(!dockAfterShare.visible||dockAfterShare.buttonHeight<48||
- dockAfterShare.rect.left<-2||dockAfterShare.rect.right>innerWidth+2)
+ dockAfterShare.rect.left<-2||dockAfterShare.rect.right>dockAfterShare.viewport+2)
  throw new Error('MONEY_CONVERSION_STICKY_CTA_MISSING_OR_OVERFLOW:'+JSON.stringify(dockAfterShare));
 await page.locator('.mpp17-next').scrollIntoViewIfNeeded();
 await page.waitForTimeout(220);
