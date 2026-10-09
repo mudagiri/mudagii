@@ -155,7 +155,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
    <span className="c2v2-eyebrow">第2章 ／ QUEST COMPLETE</span>
    <img src={ART.hero} alt="ムダギリくん" className="c2v2-hero-art"/>
    <h1>家計クエスト<br/><em>完全クリア！</em></h1>
-   <p>ムダギリくん「よくやった！<br/>さあ、戦果を見ていこう。」</p>
+   <p aria-label="ムダギリくんのひとこと">「おつかれ！<br/>戦果を見よう。」</p>
    <span className="c2v2-scroll-cue">今回の戦果を見る ↓</span>
   </section>
   {chapter1&&<aside className="c2v2-handoff" aria-label="第1章からの引継ぎ">
