@@ -173,6 +173,7 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
   const typeCode=moneyTypeCode(jobCode,primaryStyle);
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
+  const shareScene=result.scenes[0];
   const tags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label));
   const accent=asset.accent;
   const deep=DEEP[jobCode];
@@ -312,6 +313,9 @@ export async function createJobShareImage({jobCode,primaryStyle}:Args){
     chipX+=chipW+12;
   }
 
+  text(ctx,'これある？',84,1100,17,900,'left','#a9a39a');
+  text(ctx,'「'+shorten(shareScene.voice,39)+'」',84,1138,21,850,'left','#ffffff');
+
   const divider=ctx.createLinearGradient(80,0,WIDTH-80,0);
   divider.addColorStop(0,'rgba(220,190,120,0)');
   divider.addColorStop(.16,'rgba(220,190,120,.38)');
@@ -354,7 +358,7 @@ export async function shareJobTypeImage({jobCode,primaryStyle,target}:Args):Prom
   const identity=moneyTypeIdentity(jobCode,primaryStyle);
   const result=resultV9For(jobCode,primaryStyle);
   const shareTags=result.scenes.slice(0,3).map(scene=>tagLabel(scene.label)).join(' ');
-  const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\n${shareTags}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
+  const message=`お金の性格診断、私は「${identity.full}」だった。\n${shorten(result.hero,40)}\n「${shorten(result.scenes[0].voice,44)}」\n${shareTags}\nあなたは何タイプ？ #ムダギリ診断 #お金の性格診断`;
   const url=publicShareUrl();
   if(target==='x'){
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(message+'\n'+url),'_blank','noopener,noreferrer');
