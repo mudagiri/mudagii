@@ -71,3 +71,30 @@ Google Drive連携から実在する専用Sheetを発見。
 
 `npm run qa:money-delivery`／`npm run qa:money-real-prevalence`／`node qa-money-personality-backend-separation-v1.mjs`。
 実GASへの受信成功・本番での遅延や再試行は**この単体QAでは検証できない**。
+
+## 2026-10-09 接続実験の確定結果
+
+専用GAS検証を独立した GitHub Actions ワークフローに実装し、固定の QA セッションで `doGet` と同一セッションの `doPost` 2回を行う設計とした。実行条件：健全な専用GAS接続先が GitHub Actions から利用できる場合に限る。実データと秘密のURLはログへ出さない。
+
+- [疎通実験（接続前段階で停止）](https://github.com/mudagiri/mudagii/actions/runs/37867689064)
+- 検証済みログ結果：`endpointConfigured:false`、`blocker:SECRET_NOT_CONFIGURED`。
+- この記録は**当該PRワークフロー環境の変数が空**であることを示す。リポジトリや環境シークレットに登録自体がないことまでは証明しない。
+- 接続URLが空のため GET/POST は**実行していない**。実Google Sheetに新たなテストデータは保存していない。
+- [第1章／通信リトライ／実分布集計／Release Gate のオフラインQA（PASS）](https://github.com/mudagiri/mudagii/actions/runs/37867947401)
+
+### 無接続のままHidden Previewを公開させない保護
+
+2つのGitHub Pages公開ワークフローに、専用GAS URLの有無と `script.google.com/macros/s/.../exec` 形式の確認を追加。URLが利用できない場合、**ビルド／プレビュー公開を停止**する。URL本文・シークレット値はログに出さない。現時点で保護はPRのコード上だけであり、本番ワークフローへの反映は未実施。
+
+### 実行可能な復旧チェック
+
+1. **GAS Webアプリ**：専用Google Sheetに紐づく Apps Script を開き、`MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs` の `doGet` / `doPost` を確認。Webアプリで最新の版が公開されているか管理者が検査する。
+2. **GitHub secret scope**：GitHubリポジトリ `Settings → Secrets and variables → Actions` で `VITE_MONEY_PERSONALITY_GAS_URL` の登録先を確認。Environment専用シークレットの場合、**ビルドジョブでそのEnvironmentが選ばれているか**も合わせて確認する。
+3. 接続先に本物の家計診断GASを設定しないこと。健康確認は `backend:money_personality` と `gas_version:MUDAGIRI_MONEY_PERSONALITY_GAS_V1_0` を要求。
+4. 修復後、疎通実験を再実行し、返却の `health:true, post1:true, post2:true` を確認。
+5. Google Sheetの `①セッション` と `④結果` に、固定QAセッションが**各1行だけ**存在することを確認する。受信後の集計では `debugMode:true` により除外。
+6. 実GASの内容更新・Webアプリ再デプロイ、接続先の再設定はこのPRでは実施していない。
+
+### スケール上の残課題
+
+専用GASの既存 `savePayload_` は各回答を単位行で `upsertByKey_` し、毎回 `TextFinder` で既存行を検索する。数千人から1万人規模の診断では、記録行数に比例して遅延やGAS実行制限の問題が起きうる。**まず1件の実到達確認が必要**。その後、回答のバッチ書き込み・上限・タイムアウト監査を独立した非破壊的QAとして実施する。
