@@ -55,6 +55,12 @@ export function chapter2V2ReferralUrl(currentUrl:string,platform:string){
  url.searchParams.set('utm_campaign','household_quest_clear');
  return url.toString();
 }
+/** A comparison difference has a direction. Never present a negative as positive. */
+export function chapter2V2SignedComparisonYen(raw:number){
+ if(!Number.isFinite(raw))return '—';
+ const amount='¥'+new Intl.NumberFormat('ja-JP').format(Math.round(Math.abs(raw)));
+ return (raw>0?'+':raw<0?'−':'±')+amount;
+}
 export function chapter2V2ShareText(url:string){
  return '家計クエスト、12カテゴリの鑑定完了！\n好きなものは守って、ムダだけ斬る。\nまずはお金の性格診断から、冒険してみる？\n'+url+'\n#ムダギリ診断';
 }
