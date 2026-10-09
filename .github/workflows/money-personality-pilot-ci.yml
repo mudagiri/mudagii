@@ -110,5 +110,5 @@ jobs:
           node-version: 22
       - name: Verify dedicated GAS GET health without sending a session
         env:
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
         run: node scripts/check-money-personality-gas-health.mjs
