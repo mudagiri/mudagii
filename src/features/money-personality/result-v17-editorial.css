@@ -726,6 +726,29 @@ html body #root .mpp17-wrap{
   border-top-color:rgba(255,255,255,.08)!important;
   color:rgba(255,255,255,.5)!important;
 }
+.mpp17-share-scene{
+  margin:9px 0 0;
+  padding:8px 9px;
+  border-left:2px solid color-mix(in srgb,var(--mpp17-accent) 68%,#fff);
+  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.045);
+}
+.mpp17-share-scene small{
+  display:block;
+  margin-bottom:3px;
+  color:rgba(255,255,255,.50);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.mpp17-share-scene b{
+  display:block;
+  color:#fff;
+  font-size:10px;
+  font-weight:850;
+  line-height:1.5;
+}
+
 .mpp17-share-tags{
   display:flex;
   flex-wrap:wrap;
