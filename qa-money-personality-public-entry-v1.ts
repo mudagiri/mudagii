@@ -4,6 +4,8 @@ import {resolveMoneyPersonalityEntryRoute} from './src/features/money-personalit
 const cases=[
   ['/', '', 'household'],
   ['/mudagii/', '', 'household'],
+  ['/mudagii/', '?cognitive=1', 'household'],
+  ['/mudagii/', '?utm_source=x', 'household'],
   ['/mudagii/', '?adaptive=money-type', 'adaptive'],
   ['/mudagii/', '?mode=adaptive', 'adaptive'],
   ['/mudagii/', '?pilot=money-type', 'legacy-pilot'],
