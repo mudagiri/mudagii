@@ -98,3 +98,33 @@ Google Drive連携から実在する専用Sheetを発見。
 ### スケール上の残課題
 
 専用GASの既存 `savePayload_` は各回答を単位行で `upsertByKey_` し、毎回 `TextFinder` で既存行を検索する。数千人から1万人規模の診断では、記録行数に比例して遅延やGAS実行制限の問題が起きうる。**まず1件の実到達確認が必要**。その後、回答のバッチ書き込み・上限・タイムアウト監査を独立した非破壊的QAとして実施する。
+
+## 2026-10-09 公開サイトを対象にした追加監査（読み取りのみ）
+
+実際のGitHub Pagesの初期画面と公開JavaScriptを取得して検証した。**公開サイトで回答を送信していない。機密URLは公開ログ・レポートに転載していない。**
+
+| 直接検証した対象 | 確認結果 |
+|---|---|
+| `/mudagii/pilot/money-type/`（クエリなし） | **旧54画面・結果なしの研究Pilotが既定表示** |
+| `/mudagii/pilot/money-type/?adaptive=money-type` | 新しい **30問CORE＋必要な追加設問** の第1章が表示 |
+| 公開JavaScriptの専用収集処理 | 旧`mudagiri_money_type_public_submitted_v1`あり、新`mudagiri_money_type_submission_health_v1`なし。**Adaptiveの送信処理が空関数に縮退** |
+| 公開JavaScript中のGAS URL（値は非掲載） | 参照されるGASのGET応答は `{"ok":true,"version":"MUDAGIRI_SHEET_V3"}`。これは専用性格GASの`backend:money_personality`とは一致しない |
+| `/mudagii/pilot/money-type/REVISION_SHA.txt` | **HTTP 404**。公開コードがどのGit SHAに一致するか、この方法では検証できない |
+
+**重要な区別:** バンドル内に見つかったGAS URLは家計診断側のもの。適応診断の専用送信が空関数になっているため、単に「URLが1本ある」だけでは第1章への保存経路があることにはならない。旧54画面の研究Pilotだけは`VITE_MUDAGIRI_GAS_URL`を使おうとする経路が存在し、バックエンド分離原則に反する（家計側が受け付けて保存したという意味ではない）。
+
+### 公開候補コードに追加した対応
+
+1. **既定リンクの修正**：`/pilot/money-type/`を30問Adaptiveで開く。旧54画面研究版は`?mode=legacy-pilot`等、明示ルートだけにする。家計診断ルート`/`は変更しない。
+2. **旧Pilotの保存先分離**：旧54画面も専用の`VITE_MONEY_PERSONALITY_GAS_URL`へ変更し、同じ`anonymousUserId`を付与。専用GAS側のみ`ALL_54`を許可（結果タブへは登録しない）。家計GASへの性格Payload送信経路を撤去。
+3. **公開前にサーバー種別検証**：`scripts/check-money-personality-gas-health.mjs`でGETし、`backend:money_personality`かつ期待する専用GASバージョンかつ家計DB分離フラグがある場合のみ次へ。
+4. **ビルド後の実物検証**：`scripts/verify-money-personality-build.mjs`で専用URLがビルド済みJSに実際に含まれるか、送信処理が縮退していないか、家計GASとURLが同一でないかを確認。これらの値はログへ非出力。
+5. **公開後の版一致検証**：2つのPages公開ワークフローでGitから実際にcheckoutしたSHAを捕捉し、公開後の`REVISION_SHA.txt`と一致しない場合はActionsを失敗させる。
+6. **疎通テストの副作用制限**：デフォルトは管理者手動実行の**GETだけ**。Google Sheetへ固定QA行を試験送信するには`debug_upsert`を明示選択し、専用GAS健康確認を通過する必要がある。
+
+### 残る外部依存と運用上の注意
+
+- 上記改善はPR #33の**Draftコードのみ**。現在のGitHub Pages、Apps Script本番、GitHub Secretsの設定を変更したという意味ではない。
+- 実行時に環境変数がない問題は依然として外部設定ブロッカーで、設定場所（repository secret / environment secret / 権限制限）は未判別。
+- `VITE_*`環境変数に埋めたURLは最終的にブラウザへ公開される。**URLを秘密の認証トークンとして扱ってはいけない**。公開GASへの回答偽装・自動送信・スパム対策は実測の採用判定時に追加監査する。
+- `REVISION_SHA.txt`の404は新しいデプロイで再確認すべき。ブラウザ表示があるだけでは、修正を公開できた証明にならない。
