@@ -14,6 +14,8 @@ on:
     paths:
       - 'src/features/money-personality/**'
       - 'qa-money-personality-*.ts'
+      - 'qa-money-personality-*.mjs'
+      - 'MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs'
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.json'
