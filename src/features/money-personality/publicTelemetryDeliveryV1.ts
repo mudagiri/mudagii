@@ -20,17 +20,17 @@ const retryDelay=(x:DeliveryRecord)=>{
   if(x.state==='IN_FLIGHT')return 60*1000;
   return 0;
 };
-export function readPublicDeliveryRecord(store:Store,sessionId:string):DeliveryRecord|null{
+export function readPublicDeliveryRecord(store:Store,sessionId:string,storageKey=PUBLIC_MONEY_DELIVERY_KEY):DeliveryRecord|null{
   try{
-    const x=JSON.parse(store.getItem(PUBLIC_MONEY_DELIVERY_KEY)||'null') as DeliveryRecord|null;
+    const x=JSON.parse(store.getItem(storageKey)||'null') as DeliveryRecord|null;
     if(!x||x.sessionId!==sessionId||!Number.isInteger(x.attempts)||
       x.attempts<0||x.attempts>MAX_PUBLIC_ATTEMPTS||
       !Number.isFinite(x.lastAttemptMs))return null;
     return x;
   }catch{return null;}
 }
-function writeRecord(store:Store,record:DeliveryRecord){
-  try{store.setItem(PUBLIC_MONEY_DELIVERY_KEY,JSON.stringify(record))}catch{
+function writeRecord(store:Store,record:DeliveryRecord,storageKey=PUBLIC_MONEY_DELIVERY_KEY){
+  try{store.setItem(storageKey,JSON.stringify(record))}catch{
     // Private mode may forbid storage; never disrupt assessment UX.
   }
 }
@@ -42,18 +42,20 @@ export function publicDeliveryEligible(record:DeliveryRecord|null,now:number):bo
 export async function attemptPublicMoneyDelivery(args:{
   sessionId:string;payload:unknown;url:string|undefined;store:Store;
   now?:number;fetcher?:(input:string,init:RequestInit)=>Promise<unknown>;
+  storageKey?:string;
 }):Promise<DeliveryState>{
   const {sessionId,payload,url,store}=args;
+  const storageKey=args.storageKey||PUBLIC_MONEY_DELIVERY_KEY;
   const now=args.now??Date.now();
-  const previous=readPublicDeliveryRecord(store,sessionId);
+  const previous=readPublicDeliveryRecord(store,sessionId,storageKey);
   if(!url||!/^https:\/\//.test(url)){
     if(!previous||previous.attempts===0)
-      writeRecord(store,{sessionId,attempts:0,state:'UNCONFIGURED',lastAttemptMs:now});
+      writeRecord(store,{sessionId,attempts:0,state:'UNCONFIGURED',lastAttemptMs:now},storageKey);
     return 'UNCONFIGURED';
   }
   if(!publicDeliveryEligible(previous,now))return previous?.state||'IN_FLIGHT';
   const attempts=(previous?.attempts??0)+1;
-  writeRecord(store,{sessionId,attempts,state:'IN_FLIGHT',lastAttemptMs:now});
+  writeRecord(store,{sessionId,attempts,state:'IN_FLIGHT',lastAttemptMs:now},storageKey);
   try{
     await (args.fetcher??fetch)(url,{
       method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -61,11 +63,11 @@ export async function attemptPublicMoneyDelivery(args:{
     });
     // A no-cors Response is opaque. It is NOT an authoritative GAS receipt.
     const next={sessionId,attempts,state:'OPAQUE_UNVERIFIED' as const,lastAttemptMs:now};
-    writeRecord(store,next);
+    writeRecord(store,next,storageKey);
     return next.state;
   }catch{
     const next={sessionId,attempts,state:'NETWORK_ERROR' as const,lastAttemptMs:now};
-    writeRecord(store,next);
+    writeRecord(store,next,storageKey);
     return next.state;
   }
 }
