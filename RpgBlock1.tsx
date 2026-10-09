@@ -10,6 +10,7 @@ import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-dia
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
 import type { EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
+import {chapter2V2ResumeScene} from './chapter2-v2-contract';
 import ProfileV4Scene from './ProfileV4Scene';
 import HouseholdTotalV4Scene from './HouseholdTotalV4Scene';
 import {emptyExpenseRecordsV4,type ExpenseRecordsV4} from './expense-record-v4';
@@ -28,6 +29,7 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
   onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string;scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null}}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
+  chapter2V2?:boolean;
   resumeDraft?: JourneyDraftV1|null;
   diagnosisId?: string;
   anonymousUserId?: string;
@@ -253,11 +255,12 @@ export default function RpgBlock1({
   onFamilySelect,
   onCompleteV3,
   onEvent,
+  chapter2V2=false,
   resumeDraft,
   diagnosisId,
   anonymousUserId,
 }: Props) {
-  const [scene, setScene] = useState<Scene>(() => (resumeDraft?.scene as Scene) || (step === 'profile' ? 'profile' : 'opening'));
+  const [scene, setScene] = useState<Scene>(() => chapter2V2ResumeScene((resumeDraft?.scene as Scene) || (step === 'profile' ? 'profile' : 'opening'),chapter2V2) as Scene);
   const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>((resumeDraft?.toneMode as ToneMode)||toneMode);
   const [questionIndex, setQuestionIndex] = useState(resumeDraft?.questionIndex??0);
   const [flow, setFlow] = useState<ProfileFlow>(()=>resumeDraft?.flow??INITIAL_FLOW);
@@ -271,7 +274,7 @@ export default function RpgBlock1({
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
   const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>(resumeDraft?.annualIncomeBand??'unknown');
   const [typeIndex, setTypeIndex] = useState(resumeDraft?.typeIndex??0);
-  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(resumeDraft?.typeAnswers??{});
+  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(chapter2V2?{}:(resumeDraft?.typeAnswers??{}));
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>(resumeDraft?.appraisalAnswers??{});
   const [appraisalIndex, setAppraisalIndex] = useState(resumeDraft?.appraisalIndex??0);
   const [appraisalHistory,setAppraisalHistory]=useState<{index:number;answers:AppraisalMap}[]>([]);
@@ -474,7 +477,7 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
     if(scene==='opening'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers:chapter2V2?{}:typeAnswers,chapter2V2});
   },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
@@ -625,7 +628,7 @@ export default function RpgBlock1({
     onEvent?.('battle_completed',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
-      annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
+      annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers:chapter2V2?{}:typeAnswers,appraisal:appraisalAnswers,finalJudgements,
       methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
       scopeV4:profileV4&&comparisonsV4&&finalV4?{profile:profileV4,expenseRecords:resolvedExpenseRecordsV4,comparisons:comparisonsV4,finalJudgements:finalV4.categories,confirmedMonthly:finalV4.confirmedMonthly,diagnosisMethodology:diagnosisV4?.diagnosis?.methodologyVersion??null}:undefined
     });
@@ -746,12 +749,18 @@ export default function RpgBlock1({
             />
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               judgements={finalV4?.categories??finalJudgements}
               onContinue={() => {
-                setTypeIndex(0);
-                setTypeAnswers({});
-                setScene('typeQuiz');
+                if(chapter2V2){
+                  onEvent?.('chapter2_v2_personality_skipped',{reason:'chapter1_personality_is_separate'});
+                  setScene('battleIntro');
+                }else{
+                  setTypeIndex(0);
+                  setTypeAnswers({});
+                  setScene('typeQuiz');
+                }
               }}
             />
           ) : scene === 'typeQuiz' && currentTypeQuestion ? (
@@ -795,6 +804,7 @@ export default function RpgBlock1({
             />
           ) : (
             <BattleCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               battleCount={visibleBattleTargets.length}
               reviewCount={visibleReviewCount}
@@ -1715,9 +1725,9 @@ function AdditionalAppraisalScene({
 }
 
 function AppraisalCompleteScene({
-  toneMode,judgements,onContinue,
+  toneMode,judgements,onContinue,chapter2V2=false,
 }:{
-  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;chapter2V2?:boolean;
 }) {
   const counts = {
     battle:judgements.filter(x=>x.status==='battle'||x.status==='cut').length,
@@ -1734,7 +1744,7 @@ function AppraisalCompleteScene({
       <section className="appraisal-card">
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
         <h2>{toneLine(toneMode,'仕分けできたよ。','鑑定完了。','仕分け終了。逃げ道は消えた。')}</h2>
-        <p className="appraisal-reason">{toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
+        <p className="appraisal-reason">{chapter2V2?toneLine(toneMode,'大切な支出は守ったまま、家計の戦果を確認しよう。','高いだけで斬らない。守る支出と見直す候補を分けた。次は戦果の確認だ。','必要な支出は守った。残る敵との決着をつけよう。'):toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
@@ -1743,7 +1753,7 @@ function AppraisalCompleteScene({
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          お金タイプを解析する ▶
+          {chapter2V2?'最後のクエストへ ▶':'お金タイプを解析する ▶'}
         </button>
       </section>
     </div>
@@ -1858,7 +1868,7 @@ function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targe
   );
 }
 
-function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void}) {
+function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult,chapter2V2=false}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void;chapter2V2?:boolean}) {
   return (
     <div className="scan-scene battle-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
@@ -1871,7 +1881,7 @@ function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMo
           {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>{toneLine(toneMode,'おつかれさま！ 守る支出も含めて、あなたの家計を整理できたよ。','判定完了。比較差と、本当に確認できた改善余地は分けて見るぞ。','判決の時間だ。平均との差と、本物の改善余地を混同するなよ。')}</strong>
         </p>
-        <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
+        <div className="result-next-lock">{chapter2V2?'NEXT：RESULT / 戦果・改善候補・守る支出':'NEXT：RESULT / 称号・改善余地・守る支出'}</div>
         <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
       </section>
     </div>
