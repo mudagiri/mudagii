@@ -43,7 +43,8 @@
     "qa:money-delivery": "npx --yes tsx@4.20.6 qa-money-personality-delivery-v1.ts",
     "qa:money-real-prevalence": "node qa-money-personality-real-prevalence-v1.mjs",
     "qa:money-entry": "npx --yes tsx@4.20.6 qa-money-personality-public-entry-v1.ts",
-    "qa:chapter2-v2": "npx --yes tsx@4.20.6 qa-chapter2-v2.ts"
+    "qa:chapter2-v2": "npx --yes tsx@4.20.6 qa-chapter2-v2.ts",
+    "qa:chapter2-v3": "npx --yes tsx@4.20.6 qa-chapter2-v3.ts"
   },
   "dependencies": {
     "react": "19.1.1",
