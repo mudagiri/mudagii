@@ -41,6 +41,9 @@ for(const f of ['deploy-money-personality-hidden-preview.yml','attach-money-pers
  assert.ok(yaml.includes('check-money-personality-gas-health.mjs'),f+' backend check missing');
  assert.ok(yaml.includes('verify-money-personality-build.mjs'),f+' bundle check missing');
  assert.ok(yaml.indexOf('check-money-personality-gas-health.mjs')<yaml.indexOf('Build pilot candidate'),f+' release guard must run before build');
+ assert.ok(yaml.includes('steps.capture_pilot_sha.outputs.sha'),f+' captured SHA output missing');
+ assert.ok(yaml.includes('REVISION_SHA.txt'),f+' published marker probe missing');
+ assert.ok(yaml.includes('EXPECTED_PILOT_SHA'),f+' exact revision comparison missing');
 }
 console.log(JSON.stringify({suite:'MUDAGIRI_DEDICATED_GAS_RELEASE_CONTRACT_V1',ok:true,
   frontendCannotUseHouseholdGAS:true, wrongBackendRejected:true,
