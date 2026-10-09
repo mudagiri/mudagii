@@ -37,6 +37,7 @@
     "qa:money-scenes": "npx --yes tsx@4.20.6 qa-money-personality-scene-resonance-v1.ts",
     "qa:money-calibration": "npx --yes tsx@4.20.6 qa-money-personality-result-calibration-v1.ts",
     "qa:money-boundary-10k": "npx --yes tsx@4.20.6 qa-money-personality-boundary-stress-10000-v1.ts",
+    "qa:money-prevalence": "npx --yes tsx@4.20.6 qa-money-personality-prevalence-sensitivity-v1.ts",
     "qa:money-semantic": "npx --yes tsx@4.20.6 qa-money-personality-result-semantic-guard-v1.ts",
     "qa:money-cognitive": "npx --yes tsx@4.20.6 qa-money-personality-cognitive-v1.ts"
   },
