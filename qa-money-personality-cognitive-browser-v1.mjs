@@ -76,6 +76,7 @@ const data=await page.evaluate(()=>{
 });
 if(data.parent?.quality?.cognitiveMode!==true)throw new Error('COGNITIVE_PARENT_MODE_MISSING');
 if(data.parent?.quality?.variant!=='PUBLIC_ADAPTIVE_COGNITIVE')throw new Error('COGNITIVE_PARENT_VARIANT_BAD');
+if(data.parent?.quality?.collectionCohort!=='PILOT')throw new Error('COGNITIVE_PARENT_COHORT_BAD');
 if(data.payload?.kind!=='money_personality_pilot_v1')throw new Error('COGNITIVE_PAYLOAD_KIND_BAD');
 if(data.payload?.formId!=='PUBLIC_COGNITIVE_DEBRIEF')throw new Error('COGNITIVE_FORM_BAD');
 if(data.payload?.quality?.cognitiveMode!==true)throw new Error('COGNITIVE_MODE_MISSING');
