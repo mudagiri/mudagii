@@ -152,27 +152,20 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
 
  return <main className="c2v2-root"><style>{CSS}</style><div className="c2v2-page">
   <section className="c2v2-hero" data-section="CHAPTER2_QUEST_COMPLETE">
-   <span className="c2v2-eyebrow">CHAPTER 2 / QUEST COMPLETE</span>
+   <span className="c2v2-eyebrow">第2章 ／ QUEST COMPLETE</span>
    <img src={ART.hero} alt="ムダギリくん" className="c2v2-hero-art"/>
    <h1>家計クエスト<br/><em>完全クリア！</em></h1>
-   <p>12カテゴリの鑑定、おつかれ！<br/>ここから、家計の戦果を見ていこう。</p>
-   {chapter1&&<div className="c2v2-handoff">
+   <p>ムダギリくん「よくやった！<br/>さあ、戦果を見ていこう。」</p>
+   <span className="c2v2-scroll-cue">今回の戦果を見る ↓</span>
+  </section>
+  {chapter1&&<aside className="c2v2-handoff" aria-label="第1章からの引継ぎ">
     <span>第1章から引き継いだ職業</span>
     <b>{chapter1.jobName}</b>
     <small>{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}を大切にする冒険者</small>
-   </div>}
-  </section>
-
-  <section className="c2v2-card c2v2-decision" data-section="CONSULTATION_CTA_TOP">
-   <span className="c2v2-kicker">NEXT ACTION</span>
-   <h2>この家計で、<br/>やりたい未来に届く？</h2>
-   <p>支出を減らすだけじゃなく、貯蓄・保障・資産形成まで含めて、一緒に整理できるよ。</p>
-   <button className="c2v2-primary" onClick={consultation}>ライフプラン相談の案内を見る →</button>
-   <small>LINEで案内を確認できます。追加だけで面談予約にはなりません。</small>
-  </section>
+   </aside>}
 
   <section className="c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
-   <span className="c2v2-kicker">BATTLE REPORT</span><h2>今回の戦果</h2>
+   <span className="c2v2-kicker">BATTLE REPORT ／ 戦果報告</span><h2>今回の戦果</h2>
    <p className="c2v2-talk">ムダギリくん「高いから斬るわけじゃない。大事なものは、ちゃんと守ろう。」</p>
    <div className="c2v2-counts">
     {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
@@ -181,17 +174,25 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
    </div>
    <div className="c2v2-totals">
     <div><span>回答から確認できた改善額</span><strong>{money(confirmed)}<small> / 月</small></strong></div>
-    <div><span>追加で見直せる可能性</span><strong>{reviewUpper>0?'最大 '+money(reviewUpper):'今は未確認'}<small>{reviewUpper>0?' / 月':''}</small></strong></div>
+    <div className="c2v2-unconfirmed"><span>追加で調べる見直し余地 <i>未確定</i></span><strong>{reviewUpper>0?'最大 '+money(reviewUpper):'今は未確認'}<small>{reviewUpper>0?' / 月':''}</small></strong><small>ここから減らせると決まった金額ではありません。</small></div>
    </div>
-   <p className="c2v2-note">比較基準との差額はムダ額ではありません。追加の見直し余地も、削減確定額として足しません。</p>
+   <p className="c2v2-note">平均・基準との差＝ムダ額ではありません。確定改善額と、未確定の見直し余地は足しません。</p>
    {confirmed>0&&<details className="c2v2-accumulation"><summary>確認できた改善額を積み重ねると？ ↓</summary>
     <p>1年：{money(confirmed*12)}　／　5年：{money(confirmed*60)}　／　10年：{money(confirmed*120)}</p>
     <small>単純累計であり、将来も同額を改善できる保証や運用益は含みません。</small>
    </details>}
   </section>
 
+  <section className="c2v2-card c2v2-decision" data-section="CONSULTATION_CTA_TOP">
+   <span className="c2v2-kicker">NEXT ACTION ／ 次に進むなら</span>
+   <h2>この家計で、<br/>やりたい未来に届く？</h2>
+   <p>今回の鑑定では分からない、貯蓄・保障・資産形成まで。これからの計画を、一緒に整理しよう。</p>
+   <button className="c2v2-primary" onClick={consultation}>無料のライフプラン相談を確認する →</button>
+   <small>まずはLINEで案内を確認。追加だけで面談予約にはなりません。</small>
+  </section>
+
   <section className="c2v2-card" data-section="NEXT_QUEST">
-   <span className="c2v2-kicker">ONE SMALL STEP</span>
+   <span className="c2v2-kicker">NEXT QUEST ／ 次の一手</span>
    <h2>まずは、これだけ。</h2>
    {next?<div className="c2v2-quest">
     <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
@@ -202,7 +203,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   </section>
 
   <section className="c2v2-card" data-section="CATEGORY_ENCYCLOPEDIA">
-   <span className="c2v2-kicker">12 CATEGORY ATLAS</span><h2>気になる敵を、もっと詳しく。</h2>
+   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span><h2>気になる敵を、もっと詳しく。</h2>
    <p>項目をタップすると、比較条件と判定理由が見られるよ。</p>
    {shown.length?shown.map(categoryDetail):<p className="c2v2-note">優先して見直す敵は見つからなかったよ。必要な支出は守っていい。</p>}
    {filtered.length>shown.length&&<button className="c2v2-subtle" onClick={()=>setShowAll(true)}>残りの鑑定結果も見る（{filtered.length-shown.length}件） ↓</button>}
@@ -211,15 +212,15 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   </section>
 
   <section className="c2v2-card" data-section="GOAL_QUEST">
-   <span className="c2v2-kicker">YOUR DESTINATION</span>
+   <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>
    <h2>整えたお金、どんな未来に使いたい？</h2>
    <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
    {selectedGoal&&<p className="c2v2-talk">次の目的地は「{selectedGoal}」。そのためのお金の配分を考えよう。</p>}
-   <button className="c2v2-primary" onClick={consultation}>ライフプラン相談の案内を見る →</button>
+   <button className="c2v2-primary" onClick={consultation}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
   </section>
 
   <section className="c2v2-card c2v2-sharing" data-section="HOUSEHOLD_SHARE">
-   <span className="c2v2-kicker">SHARE YOUR QUEST</span><h2>この冒険、友達にも教える？</h2>
+   <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>ここで共有するのは「12カテゴリ鑑定完了」のカードだけ。金額や性格称号は載せないよ。</p>
    <button className="c2v2-share-primary" onClick={()=>void shareImage()} disabled={shareBusy}>{shareBusy?'画像を準備しています…':'画像カードをシェア／保存する'}</button>
    <div className="c2v2-text-shares">
