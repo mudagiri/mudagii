@@ -68,7 +68,7 @@ const mk=(sessionId,anon,cohort='PUBLIC',debug=false)=>({
   kind:'money_personality_pilot_v1',
   schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PUBLIC_V1',
   pilotVersion:'PUBLIC_ADAPTIVE_V1',
-  sessionId,anonymousUserId:anon,participantId:'test_participant_'+sessionId,
+  sessionId,anonymousUserId:anon,participantId:'mpp_participant_'+sessionId,
   formId:'PUBLIC_ADAPTIVE',startedAt:'2026-10-09T00:00:00.000Z',
   completedAt:'2026-10-09T00:05:00.000Z',
   durationMs:300000,responseCount:1,answerCount:1,
