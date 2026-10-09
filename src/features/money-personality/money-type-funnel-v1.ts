@@ -39,7 +39,7 @@ const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
 
 // Count milestones only once per session; keep share attempts as repeatable actions.
 const SINGLE_SESSION_MILESTONES=new Set<MoneyTypeFunnelEvent>([
-  'intro_started','ssr_claimed','result_seen',
+  'intro_started','ssr_claimed','result_seen','household_sticky_shown','result_mid_reached','result_deep_reached','share_channels_expanded',
 ]);
 
 export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:string,target?:'native'|'x'|'line'|'threads'|'instagram'){
