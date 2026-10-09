@@ -28,7 +28,8 @@ function add(id,anon,job,style,options={}){
   const startedAt=options.completedAt||'2026-10-10T01:00:00Z';
   const raw=options.omitFlags?'{}':JSON.stringify({
     quality:{cognitiveMode:!!options.cognitive,debugMode:!!options.debug,
-      variant:options.cognitive?'PUBLIC_ADAPTIVE_COGNITIVE':'PUBLIC_ADAPTIVE'},
+      variant:options.cognitive?'PUBLIC_ADAPTIVE_COGNITIVE':'PUBLIC_ADAPTIVE',
+      ...(options.omitCohort?{}:{collectionCohort:options.cohort||'PUBLIC'})},
   });
   put(sess,sessionHeaders,{
     session_id:id,anonymous_user_id:anon,
@@ -52,7 +53,7 @@ add('session-6','anon-6','FDM','DRIVE',{url:'https://mudagiri.github.io/?utm_sou
 add('session-7','anon-1','INP','OPTIMIZE',{completedAt:'2026-10-11T01:00:00Z'});
 add('session-debug','anon-debug','FDM','DRIVE',{debug:true});
 add('session-cognitive','anon-cog','FDM','DRIVE',{cognitive:true});
-add('session-preview','anon-prev','INP','ENJOY',{url:'https://mudagiri.github.io/mudagii/pilot/money-type/?utm_source=x'});
+add('session-preview','anon-prev','INP','ENJOY',{cohort:'PILOT',url:'https://mudagiri.github.io/mudagii/pilot/money-type/?utm_source=x'});
 add('session-test','anon-test','INP','ENJOY',{participantId:'qa_test_persona_0'});
 add('session-no-flags','anon-no-flags','INP','ENJOY',{omitFlags:true});
 add('session-bad-style','anon-bad','INP','ALIEN');
@@ -67,7 +68,10 @@ assert.equal(out.exclusionCounts.duplicateAnonymous,1);
 assert.equal(out.exclusionCounts.duplicateSession,1);
 assert.equal(out.exclusionCounts.orphanResult,1);
 assert.equal(out.exclusionCounts.testOrDebug,3);
-assert.equal(out.exclusionCounts.preview,1);
+assert.equal(out.exclusionCounts.preview,0);
+assert.equal(out.pilotSample.uniqueCompletedBrowserIds,1);
+assert.equal(out.cohort,'PUBLIC');
+assert.equal(out.pilotSample.cohort,'PILOT');
 assert.equal(out.exclusionCounts.missingAuditFlags,1);
 assert.equal(out.exclusionCounts.invalidResult,1);
 assert.equal(out.exclusionCounts.mismatchedIdentity,1);
