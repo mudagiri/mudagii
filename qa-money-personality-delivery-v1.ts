@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PUBLIC_MONEY_DELIVERY_KEY,MAX_PUBLIC_ATTEMPTS,
   attemptPublicMoneyDelivery,readPublicDeliveryRecord,publicDeliveryEligible,
+  stablePublicMoneyCompletedAt,sanitizedPublicMoneySourceUrl,
 } from './src/features/money-personality/publicTelemetryDeliveryV1';
 
 const map=new Map<string,string>();
@@ -56,6 +57,11 @@ assert.equal(failures,2);
 assert.equal(readPublicDeliveryRecord(store,'bar')?.attempts,2);
 assert.ok(JSON.stringify([...map]).includes(PUBLIC_MONEY_DELIVERY_KEY));
 assert.ok(!JSON.stringify([...map]).includes('anonymousUserId'), 'health store must not contain person identifiers');
+const firstCompletion='2026-10-09T02:14:23.000Z';
+assert.equal(stablePublicMoneyCompletedAt({sessionId:'foo',completedAt:firstCompletion},'foo','2026-10-10T00:00:00Z'),firstCompletion);
+assert.equal(stablePublicMoneyCompletedAt({sessionId:'bar',completedAt:firstCompletion},'foo','2026-10-10T00:00:00Z'),'2026-10-10T00:00:00Z');
+assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/?utm_source=Instagram&access_token=privateSecret#share'), 'https://mudagiri.github.io/mudagii/?utm_source=instagram');
+assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/pilot/money-type/?cognitive=1&debug=1'), 'https://mudagiri.github.io/mudagii/pilot/money-type/');
 console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_PUBLIC_GAS_DELIVERY_V1',
   noEndpointDoesNotMarkSent:true,opaqueNeverClaimsConfirmed:true,
   retriesCapped:MAX_PUBLIC_ATTEMPTS,failedTransportRetryMinutes:5,
