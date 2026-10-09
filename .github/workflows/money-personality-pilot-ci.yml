@@ -8,12 +8,14 @@ on:
       - audit/money-personality-boundary-type32-20261009
       - audit/money-personality-real-prevalence-pipeline-20261009
       - fix/money-personality-cohort-prevalence-20261009
+      - feature/money-personality-conversion-ux-v18
   pull_request:
     branches:
       - main
       - feature/money-personality-pilot
       - audit/money-personality-prevalence-sensitivity-20261009
       - audit/money-personality-real-prevalence-pipeline-20261009
+      - fix/money-personality-cohort-prevalence-20261009
     paths:
       - 'src/features/money-personality/**'
       - 'src/main.tsx'
