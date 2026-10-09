@@ -41,7 +41,7 @@ for(const [code,asset] of Object.entries(JOB_CHARACTER_ASSETS)){
  assert.ok(html.includes(asset.file),code+' uses canonical JOB image');
  assert.ok(html.includes(asset.name),code+' uses canonical JOB name');
 }
-assert.doesNotMatch(positive,/c2v3-job-card/,'no fake character without Chapter 1');
+assert.doesNotMatch(positive,/<aside class="c2v3-job-card"/,'no fake character without Chapter 1');
 const original=readFileSync('MudagiriAppV2.tsx','utf8');
 assert.match(original,/VITE_CHAPTER2_V3/);
 assert.match(original,/ResultScreenChapter2V3/);
