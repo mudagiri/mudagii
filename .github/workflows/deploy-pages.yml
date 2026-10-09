@@ -68,6 +68,7 @@ jobs:
       - name: Build
         env:
           VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
         run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

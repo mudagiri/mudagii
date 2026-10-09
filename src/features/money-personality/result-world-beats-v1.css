@@ -1,0 +1,98 @@
+/* Result world beats: restore Mudagiri's adventure at key moments without turning the report into a full RPG UI. */
+
+.mpp17-world-beat{
+  position:relative;
+  margin:0 0 12px;
+  overflow:hidden;
+  border-radius:18px;
+  color:#fff;
+  box-shadow:0 14px 30px rgba(20,24,28,.12);
+}
+.mpp17-world-beat.is-complete{
+  background:
+    linear-gradient(90deg,rgba(8,11,18,.92),rgba(8,11,18,.48)),
+    var(--mpp-bg-class-unlock) center 58%/cover no-repeat;
+}
+.mpp17-world-beat.is-compare{
+  margin-top:8px;
+  background:
+    linear-gradient(90deg,rgba(19,21,27,.94),rgba(19,21,27,.62)),
+    var(--mpp-bg-guild) center 48%/cover no-repeat;
+}
+.mpp17-world-beat.is-next{
+  margin-top:6px;
+  background:
+    linear-gradient(90deg,rgba(8,13,20,.90),rgba(8,13,20,.45)),
+    var(--mpp-bg-next-quest) center/cover no-repeat;
+}
+.mpp17-world-kicker{
+  position:absolute;
+  left:14px;
+  top:11px;
+  z-index:2;
+  color:#e9cf7f;
+  font-size:8.5px;
+  font-weight:950;
+  letter-spacing:.12em;
+}
+.mpp17-world-row{
+  display:grid;
+  grid-template-columns:92px 1fr;
+  gap:10px;
+  align-items:end;
+  min-height:108px;
+  padding:24px 14px 12px 8px;
+}
+.mpp17-world-row .mpp-mudagiri{
+  align-self:end;
+  width:88px!important;
+  min-width:88px!important;
+  max-width:88px!important;
+  margin:0!important;
+}
+.mpp17-world-row .mpp-mudagiri img{
+  width:88px!important;
+  height:88px!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.30));
+}
+.mpp17-world-copy{
+  align-self:center;
+  padding-top:6px;
+}
+.mpp17-world-copy small{
+  display:block;
+  margin-bottom:4px;
+  color:rgba(255,255,255,.57);
+  font-size:8.5px;
+  font-weight:800;
+}
+.mpp17-world-copy b{
+  display:block;
+  color:#fff;
+  font-size:13.5px;
+  font-weight:900;
+  line-height:1.5;
+  letter-spacing:-.02em;
+  text-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+.mpp17-world-copy span{
+  display:block;
+  margin-top:4px;
+  color:rgba(255,255,255,.67);
+  font-size:9.5px;
+  line-height:1.5;
+}
+.mpp17-world-beat.is-compare{
+  color:#222;
+  box-shadow:none;
+}
+.mpp17-world-beat.is-compare .mpp17-world-copy b{font-size:12.5px}
+.mpp17-world-beat.is-complete + .mpp17-profile{margin-top:10px!important}
+
+@media(max-width:390px){
+  .mpp17-world-row{grid-template-columns:82px 1fr;min-height:100px}
+  .mpp17-world-row .mpp-mudagiri,
+  .mpp17-world-row .mpp-mudagiri img{width:78px!important;min-width:78px!important;max-width:78px!important;height:78px!important}
+  .mpp17-world-copy b{font-size:12.5px}
+}

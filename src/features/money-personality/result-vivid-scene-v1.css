@@ -1,0 +1,16 @@
+.mpp-vivid-scene{position:relative;width:min(100%,430px);margin:8px auto 18px;padding:17px 15px 15px;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:linear-gradient(145deg,rgba(8,19,34,.97),rgba(3,34,42,.96));box-shadow:0 18px 44px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);text-align:left}.mpp-vivid-scene:before{content:"";position:absolute;inset:-35% 45% 35% -25%;background:radial-gradient(circle,color-mix(in srgb,var(--job-accent,#ffd75a) 28%,transparent),transparent 68%);pointer-events:none}.mpp-vivid-scene>*{position:relative;z-index:1}.mpp-vivid-kicker{margin-bottom:7px;color:#ffd75a;font-size:9px;font-weight:950;letter-spacing:.14em}.mpp-vivid-scene h2{margin:0;color:#fff;font-size:18px;line-height:1.45;letter-spacing:-.02em}.mpp-vivid-scene>p{margin:10px 0 0;color:#e8f0f2;font-size:13px;font-weight:680;line-height:1.8}.mpp-vivid-scene blockquote{margin:13px 0 0;padding:11px 12px;border-left:3px solid #ffd75a;border-radius:0 12px 12px 0;background:linear-gradient(90deg,rgba(255,215,90,.12),rgba(255,255,255,.035))}.mpp-vivid-scene blockquote span{display:block;margin-bottom:3px;color:#cbd5dc;font-size:9px;font-weight:900;letter-spacing:.08em}.mpp-vivid-scene blockquote b{display:block;color:#fff3bf;font-size:14px;line-height:1.55}.mpp-vivid-mirror{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mpp-vivid-mirror>div{padding:10px 10px 11px;border:1px solid rgba(255,255,255,.085);border-radius:12px;background:rgba(0,0,0,.16)}.mpp-vivid-mirror small{display:block;margin-bottom:5px;color:#aebdc5;font-size:8.5px;font-weight:900;letter-spacing:.05em}.mpp-vivid-mirror>div:last-child small{color:#ffd75a}.mpp-vivid-mirror p{margin:0;color:#f4f7f8;font-size:11.5px;font-weight:720;line-height:1.55}
+
+/* Final Result cleanup: these legacy blocks are intentionally removed from the visible flow.
+   This file is imported after money-result-v4.css, so the override wins the cascade. */
+.mpp-page--result .mpp-vivid-scene,
+.mpp-page--result .mpp-result-v4-hit,
+.mpp-page--result .mpp-result-v4-section-title,
+.mpp-page--result .mpp-result-v4-identity,
+.mpp-page--result .mpp-result-companion--tight,
+.mpp-page--result .mpp-dialogue,
+.mpp-page--result .mpp-style-synthesis,
+.mpp-page--result .mpp-result-profile,
+.mpp-page--result .mpp-v6-more-scenes,
+.mpp-page--result .mpp-v7-type-core{display:none!important}
+
+@media(max-width:390px){.mpp-vivid-scene{padding:15px 12px 13px}.mpp-vivid-scene h2{font-size:16px}.mpp-vivid-scene>p{font-size:12px;line-height:1.72}.mpp-vivid-mirror{grid-template-columns:1fr}.mpp-vivid-mirror p{font-size:11.5px}}

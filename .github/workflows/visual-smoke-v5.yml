@@ -2,10 +2,14 @@ name: V5 Visual Smoke
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feature/money-personality-pilot"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+
+concurrency:
+  group: visual-smoke-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -36,6 +40,22 @@ jobs:
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
         run: node qa-visual-smoke-v5.mjs
+      - name: Run adaptive JOB public browser smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-money-personality-public-browser-v1.mjs
+      - name: Audit Mudagiri optical bounds
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-mudagiri-optical-bounds-v1.mjs
+      - name: Run cognitive pilot browser smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-money-personality-cognitive-browser-v1.mjs
+      - name: Run iPhone WebKit Safari-engine responsive smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/
+        run: node qa-money-personality-ios-webkit-v1.mjs
       - name: Upload screenshots and geometry report
         if: always()
         uses: actions/upload-artifact@v4
