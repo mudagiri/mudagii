@@ -1,19 +1,16 @@
-name: Probe Money Personality GAS (synthetic)
+name: Probe Money Personality GAS (manual)
 
 on:
-  push:
-    branches:
-      - audit/money-personality-real-prevalence-pipeline-20261009
-    paths:
-      - 'scripts/money-personality-backend-probe.mjs'
-      - '.github/workflows/money-personality-backend-probe.yml'
-  pull_request:
-    branches:
-      - audit/money-personality-prevalence-sensitivity-20261009
-    paths:
-      - 'scripts/money-personality-backend-probe.mjs'
-      - '.github/workflows/money-personality-backend-probe.yml'
   workflow_dispatch:
+    inputs:
+      probe_mode:
+        description: 'Only health GET, or two synthetic QA POSTs (writes to dedicated Sheet)'
+        required: true
+        type: choice
+        default: health_only
+        options:
+          - health_only
+          - debug_upsert
 
 permissions:
   contents: read
@@ -24,8 +21,7 @@ concurrency:
 
 jobs:
   probe:
-    # Never run privileged probe code from fork PRs or unrelated branches.
-    if: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == 'mudagiri/mudagii' && github.event.pull_request.head.ref == 'audit/money-personality-real-prevalence-pipeline-20261009') }}
+    environment: pilot-hidden-preview
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -33,7 +29,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Dedicated backend GET + debug-only POST twice
+      - name: Verify dedicated GAS and optionally test upsert
         env:
           VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          PROBE_MODE: ${{ inputs.probe_mode }}
         run: node scripts/money-personality-backend-probe.mjs
