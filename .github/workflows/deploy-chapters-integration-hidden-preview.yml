@@ -1,0 +1,192 @@
+name: Deploy Chapters Integration Hidden Preview
+
+on:
+  push:
+    branches:
+      - integration/chapter1-chapter2-v2-20261009
+    paths:
+      - ".github/workflows/deploy-chapters-integration-hidden-preview.yml"
+      - "MudagiriAppV2.tsx"
+      - "RpgBlock1.tsx"
+      - "chapter2-v2-contract.ts"
+      - "ResultScreenChapter2V2.tsx"
+      - "src/features/money-personality/**"
+      - "src/main.tsx"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-integrated-chapters-v2-preview
+  cancel-in-progress: false
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: pilot-hidden-preview
+    outputs:
+      integration_sha: ${{ steps.capture.outputs.integration_sha }}
+      pilot_sha: ${{ steps.capture.outputs.pilot_sha }}
+      production_sha: ${{ steps.capture.outputs.production_sha }}
+      root_index_sha: ${{ steps.assemble.outputs.root_index_sha }}
+    steps:
+      - name: Checkout unchanged production main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: production-site
+
+      - name: Checkout existing Chapter 1 hidden preview
+        uses: actions/checkout@v4
+        with:
+          ref: feature/money-personality-pilot
+          path: pilot-site
+
+      - name: Checkout integrated Chapter 2 V2 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: integration/chapter1-chapter2-v2-20261009
+          path: integrated-site
+
+      - name: Capture source revisions
+        id: capture
+        run: |
+          echo "production_sha=$(git -C production-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "pilot_sha=$(git -C pilot-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "integration_sha=$(git -C integrated-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            production-site/package-lock.json
+            pilot-site/package-lock.json
+            integrated-site/package-lock.json
+
+      - name: Build unchanged public root
+        working-directory: production-site
+        env:
+          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify dedicated Chapter 1 GAS identity (GET only)
+        working-directory: integrated-site
+        env:
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: node scripts/check-money-personality-gas-health.mjs
+
+      - name: Rebuild existing Chapter 1 hidden preview
+        working-directory: pilot-site
+        env:
+          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+        run: |
+          npm ci
+          npm run build
+          npm run qa:money-pilot
+
+      - name: Build integrated hidden preview with GAS saving disabled
+        working-directory: integrated-site
+        env:
+          VITE_CHAPTER2_V2: "1"
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MUDAGIRI_GAS_URL: ""
+        run: |
+          npm ci
+          npm run build
+          npm run qa:chapter2-v2
+          npm run qa:money-entry
+          npm run qa:money-public-flow
+          npm run qa:money-engine
+          npm run qa:resume
+          npm run qa:result-v5
+
+      - name: Preserve current site paths and add integrated preview subtree
+        id: assemble
+        run: |
+          set -euo pipefail
+          mkdir -p site
+          cp -R production-site/dist/. site/
+          mkdir -p site/pilot/money-type
+          cp -R pilot-site/dist/. site/pilot/money-type/
+          git -C pilot-site rev-parse HEAD > site/pilot/money-type/REVISION_SHA.txt
+          node pilot-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/money-type/index.html
+
+          mkdir -p site/pilot/chapter2-v2/pilot/money-type
+          cp -R integrated-site/dist/. site/pilot/chapter2-v2/
+          cp -R integrated-site/dist/. site/pilot/chapter2-v2/pilot/money-type/
+          git -C integrated-site rev-parse HEAD > site/pilot/chapter2-v2/REVISION_SHA.txt
+          git -C integrated-site rev-parse HEAD > site/pilot/chapter2-v2/pilot/money-type/REVISION_SHA.txt
+          node integrated-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/chapter2-v2/pilot/money-type/index.html
+
+          cmp production-site/dist/index.html site/index.html
+          test -f site/pilot/money-type/index.html
+          test -f site/pilot/chapter2-v2/index.html
+          test -f site/pilot/chapter2-v2/pilot/money-type/index.html
+          test "$(cat site/pilot/money-type/REVISION_SHA.txt)" = "$(git -C pilot-site rev-parse HEAD)"
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v2/assets/*.js
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v2/pilot/money-type/assets/*.js
+          echo "root_index_sha=$(sha256sum site/index.html | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "ASSEMBLY_PRESERVES_PRODUCTION_ROOT_AND_EXISTING_PILOT"
+          du -sh site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          name: pages-chapters-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ./site
+
+  deploy:
+    needs: assemble
+    runs-on: ubuntu-latest
+    environment:
+      name: pilot-hidden-preview
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - name: Deploy unchanged root plus hidden integration subtree
+        id: pages
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pages-chapters-integration-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Verify published versions and original site
+        shell: bash
+        env:
+          PAGE_URL: ${{ steps.pages.outputs.page_url }}
+          EXPECTED_INTEGRATION: ${{ needs.assemble.outputs.integration_sha }}
+          EXPECTED_PILOT: ${{ needs.assemble.outputs.pilot_sha }}
+          EXPECTED_ROOT_SHA: ${{ needs.assemble.outputs.root_index_sha }}
+        run: |
+          set -euo pipefail
+          test -n "$PAGE_URL"
+          base="$(printf '%s' "$PAGE_URL" | sed 's#/$##')"
+          for i in $(seq 1 15); do
+            integrated="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
+            existing="$(curl -fsSL --max-time 12 "$base/pilot/money-type/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
+            if [ "$integrated" = "$EXPECTED_INTEGRATION" ] && [ "$existing" = "$EXPECTED_PILOT" ]; then
+              curl -fsSL --max-time 12 "$base/" -o /tmp/production-root.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/" -o /tmp/chapter2-v2.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/pilot/money-type/" -o /tmp/chapter1.html
+              test "$(sha256sum /tmp/production-root.html | cut -d ' ' -f1)" = "$EXPECTED_ROOT_SHA"
+              grep -q 'id="root"' /tmp/chapter1.html
+              grep -q 'id="root"' /tmp/chapter2-v2.html
+              echo "DEPLOY_CHAPTERS_HIDDEN_PREVIEW_PASS"
+              echo "Live production index unchanged vs production build; existing pilot and integrated revisions confirmed."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Live GitHub Pages revisions did not match expected versions"
+          exit 1

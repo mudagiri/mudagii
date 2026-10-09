@@ -1,0 +1,108 @@
+name: Integration Preview - Chapters 1 and 2 V2
+
+on:
+  push:
+    branches:
+      - integration/chapter1-chapter2-v2-20261009
+  pull_request:
+    branches:
+      - fix/money-personality-cohort-prevalence-20261009
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chapters-integration-preview-20261009
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install both chapters
+        run: npm ci
+
+      - name: Check unchanged frozen diagnosis core
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags origin ee53d4882c1e391d8639521e0c749f784c6ac256 --depth=1
+          forbidden="$(git diff --name-only ee53d4882c1e391d8639521e0c749f784c6ac256 HEAD -- \
+            mudagiri-diagnosis-v2.ts comparable-resolver-v1.ts comparable-resolver-v2.ts \
+            MUDAGIRI_GAS_CODE_V4.gs MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs \
+            src/features/money-personality/classifierV1.ts || true)"
+          if [ -n "$forbidden" ]; then
+            echo "::error::Frozen diagnosis files were changed: $forbidden"
+            exit 1
+          fi
+
+      - name: Validate V1 default and Chapter 2 V2 contracts
+        run: |
+          npm run build
+          npm run qa:chapter2-v2
+          npm run qa:money-entry
+          npm run qa:money-public-flow
+          npm run qa:money-engine
+          npm run qa:resume
+          npm run qa:result-v5
+
+      - name: Install matching Playwright package
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+
+      - name: Build two-chapter hidden preview (never sends to GAS)
+        env:
+          VITE_CHAPTER2_V2: "1"
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+        run: |
+          npm run build
+          mkdir -p site/pilot/chapter2-v2/pilot/money-type
+          cp -R dist/. site/pilot/chapter2-v2/
+          cp -R dist/. site/pilot/chapter2-v2/pilot/money-type/
+          git rev-parse HEAD > site/pilot/chapter2-v2/REVISION_SHA.txt
+          test -f site/pilot/chapter2-v2/index.html
+          test -f site/pilot/chapter2-v2/pilot/money-type/index.html
+          if grep -R -n -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v2/assets/*.js; then
+            echo "::error::A live GAS endpoint leaked into the offline integration preview"
+            exit 1
+          fi
+
+      - name: Start same-origin hidden preview server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory site > /tmp/chapters-integration-server.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v2/ >/dev/null &&
+               curl -fsS http://127.0.0.1:4173/pilot/chapter2-v2/pilot/money-type/ >/dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          cat /tmp/chapters-integration-server.log
+          exit 1
+
+      - name: Chromium Chapter 1 to Chapter 2 journey
+        env:
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/chapter2-v2/
+          BROWSER_ENGINE: chromium
+        run: node qa-chapters-integration-browser-v1.mjs
+
+      - name: WebKit Chapter 1 to Chapter 2 journey
+        env:
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/chapter2-v2/
+          BROWSER_ENGINE: webkit
+        run: node qa-chapters-integration-browser-v1.mjs
+
+      - name: Upload nonpublic hidden preview build and QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapters-v2-integration-preview-and-qa
+          path: |
+            site/
+            integration-mobile-qa/
+          if-no-files-found: warn
+          retention-days: 7
