@@ -19,7 +19,7 @@ export type MoneyTypeFunnelEvent=
   |'share_cancelled'
   |'line_bonus_preview_opened'
   |'type_book_opened'
-  |'household_cta_clicked';
+  |'household_cta_clicked'|'household_sticky_clicked'|'household_sticky_shown'|'result_mid_reached'|'result_deep_reached'|'share_channels_expanded';
 
 export type MoneyTypeFunnelEntry={
   version:typeof MONEY_TYPE_FUNNEL_VERSION;
