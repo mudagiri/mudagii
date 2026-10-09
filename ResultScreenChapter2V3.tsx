@@ -14,6 +14,7 @@ type Props={
 
 const ART={
  hero:'./assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png',
+ rewardHall:'./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp',
  result:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp',
  guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
  quest:'./assets/battle1/MUDAGIRI_BATTLE_SWING.png'
@@ -47,12 +48,24 @@ async function createQuestShareCard():Promise<File|null>{
  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
  const ctx=canvas.getContext('2d');if(!ctx)return null;
  ctx.fillStyle='#0e2434';ctx.fillRect(0,0,1080,1350);
+ const world=await loadImage(ART.rewardHall);
+ if(world?.naturalWidth&&world?.naturalHeight){
+  const scale=Math.max(1080/world.naturalWidth,1350/world.naturalHeight);
+  const cw=1080/scale,ch=1350/scale;
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(world,(world.naturalWidth-cw)/2,(world.naturalHeight-ch)/2,cw,ch,0,0,1080,1350);
+  const shade=ctx.createLinearGradient(0,0,0,1350);
+  shade.addColorStop(0,'rgba(0,21,28,.80)');
+  shade.addColorStop(.45,'rgba(0,26,31,.52)');
+  shade.addColorStop(1,'rgba(0,18,25,.92)');
+  ctx.fillStyle=shade;ctx.fillRect(0,0,1080,1350);
+ }
  ctx.fillStyle='#f3cd65';ctx.fillRect(42,42,996,7);ctx.fillRect(42,1301,996,7);
  ctx.textAlign='center';
  ctx.fillStyle='#ffe9aa';ctx.font='bold 40px sans-serif';ctx.fillText('ムダギリ診断',540,134);
  ctx.fillStyle='#ffffff';ctx.font='bold 75px sans-serif';ctx.fillText('家計クエスト',540,250);
  ctx.fillText('完全クリア！',540,340);
- const img=await loadImage(ART.hero);
+ const img=await loadImage(ART.result);
  if(img&&img.naturalWidth&&img.naturalHeight){
   const sc=Math.min(540/img.naturalWidth,530/img.naturalHeight);
   ctx.imageSmoothingEnabled=false;
