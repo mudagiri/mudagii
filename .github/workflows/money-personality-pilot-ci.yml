@@ -85,6 +85,8 @@ jobs:
         run: npm run qa:money-delivery
       - name: Real prevalence aggregation and exclusions QA
         run: npm run qa:money-real-prevalence
+      - name: Dedicated GAS real doPost upsert + cohort offline integration QA
+        run: node qa-money-personality-gas-upsert-v1.mjs
       - name: GAS backend separation guard
         run: node qa-money-personality-backend-separation-v1.mjs
       - name: Guard hidden preview against missing GAS URL
