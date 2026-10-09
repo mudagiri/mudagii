@@ -229,7 +229,7 @@ function validatePayload_(b){
   if(!String(b.participantId||''))throw new Error('participantId required');
   if(!String(b.anonymousUserId||''))throw new Error('anonymousUserId required');
   const formId=String(b.formId||'');
-  if(['PUBLIC_ADAPTIVE','PUBLIC_COGNITIVE_DEBRIEF'].indexOf(formId)<0)throw new Error('unsupported formId');
+  if(['PUBLIC_ADAPTIVE','PUBLIC_COGNITIVE_DEBRIEF','ALL_54'].indexOf(formId)<0)throw new Error('unsupported formId');
   const responses=Array.isArray(b.item_responses)?b.item_responses:[];
   if(responses.length>250)throw new Error('too many responses');
   const raw=safeJson_(b);
