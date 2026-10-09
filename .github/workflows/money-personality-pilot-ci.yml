@@ -80,8 +80,3 @@ jobs:
         run: node qa-money-personality-backend-separation-v1.mjs
       - name: Pilot QA
         run: npm run qa:money-pilot
-      - name: Trusted PR live GAS diagnostic (test-only, idempotent)
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'audit/money-personality-real-prevalence-pipeline-20261009' }}
-        env:
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
-        run: node scripts/money-personality-backend-probe.mjs
