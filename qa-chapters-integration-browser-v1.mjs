@@ -62,6 +62,15 @@ try{
  assert.equal(before.handoff.version,'MUDAGIRI_MONEY_TYPE_HANDOFF_V1');
  assert.equal(before.handoff.anonymousUserId,before.anonymousUserId);
  assert.ok(before.handoff.jobName&&before.handoff.jobCode,'Chapter 1 handoff must have JOB');
+ // Chrome and iPhone WebKit both use a 720ms collectible-card entrance.
+ // Do not mistake a frame from the opacity=0 transition for a broken result.
+ await page.waitForFunction(()=>{
+  const el=document.querySelector('.mpp17-profile');
+  if(!el)return false;
+  const img=el.querySelector('.mpp17-portrait img');
+  return getComputedStyle(el).opacity==='1'&&
+   (!img||(img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0));
+ },null,{timeout:6500});
  await screenshot('02-chapter1-result');
  await clickButton('家計クエストへ進む');
  await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v2/'),{timeout:13000});
