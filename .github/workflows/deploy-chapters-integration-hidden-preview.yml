@@ -93,7 +93,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node scripts/verify-money-personality-build.mjs
+          npm run qa:money-pilot
 
       - name: Build integrated hidden preview with GAS saving disabled
         working-directory: integrated-site
