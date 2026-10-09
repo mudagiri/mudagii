@@ -1,6 +1,8 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {BIPOLAR_SCALE_LABELS,LIKERT_SCALE_LABELS,PILOT_VERSION} from './pilotData';
 import {behaviorOptions,bipolarPresentation,buildPilotOrder,getOrCreatePilotParticipantId,newPilotSessionId,normalizeTraitScore,type PilotItem} from './pilotLogic';
+import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
+import {sanitizedPublicMoneySourceUrl} from './publicTelemetryDeliveryV1';
 import './pilot.css';
 
 type AnswerChoice={value:number;label:string};
@@ -44,6 +46,7 @@ type PilotPayload={
   schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V3';
   pilotVersion:string;
   sessionId:string;
+  anonymousUserId:string;
   participantId:string;
   formId:'ALL_54';
   startedAt:string;
@@ -68,7 +71,7 @@ function saveLocal(payload:PilotPayload){
 }
 
 async function saveRemote(payload:PilotPayload){
-  const url=(import.meta as any).env?.VITE_MUDAGIRI_GAS_URL as string|undefined;
+  const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
   if(!url)return;
   try{await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),keepalive:true,mode:'no-cors'})}catch{}
 }
@@ -153,7 +156,7 @@ export default function MoneyPersonalityPilot(){
     const nextResponses=[...responses,record];
     if(index<questions.length-1){setResponses(nextResponses);setIndex(i=>i+1);window.scrollTo({top:0,behavior:'auto'});return}
     const completedAt=nowIso();
-    const payload:PilotPayload={kind:'money_personality_pilot_v1',schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V3',pilotVersion:PILOT_VERSION,sessionId,participantId,formId:'ALL_54',startedAt:startedAt||completedAt,completedAt,durationMs:Math.max(0,Date.parse(completedAt)-Date.parse(startedAt||completedAt)),responseCount:nextResponses.length,answerCount:nextResponses.length+nextResponses.filter(x=>x.behavior_followup_final_response!=null).length,item_responses:nextResponses,quality:{cognitiveMode,debugMode,userAgent:navigator.userAgent,sourceUrl:window.location.href}};
+    const payload:PilotPayload={kind:'money_personality_pilot_v1',schemaVersion:'MUDAGIRI_MONEY_PERSONALITY_PILOT_V3',pilotVersion:PILOT_VERSION,sessionId,anonymousUserId:getOrCreateAnonymousUserId(),participantId,formId:'ALL_54',startedAt:startedAt||completedAt,completedAt,durationMs:Math.max(0,Date.parse(completedAt)-Date.parse(startedAt||completedAt)),responseCount:nextResponses.length,answerCount:nextResponses.length+nextResponses.filter(x=>x.behavior_followup_final_response!=null).length,item_responses:nextResponses,quality:{cognitiveMode,debugMode,userAgent:navigator.userAgent,sourceUrl:sanitizedPublicMoneySourceUrl(window.location.href)}};
     setResponses(nextResponses);setCompletedPayload(payload);saveLocal(payload);void saveRemote(payload);setStage('done');window.scrollTo({top:0,behavior:'auto'});
   };
 
