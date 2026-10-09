@@ -9,6 +9,8 @@ const cases=[
   ['/mudagii/', '?pilot=money-type', 'legacy-pilot'],
   ['/mudagii/pilot/money-type/', '', 'adaptive'],
   ['/mudagii/pilot/money-type/', '?utm_source=instagram', 'adaptive'],
+  ['/mudagii/pilot/money-type/', '?cognitive=1', 'adaptive'],
+  ['/mudagii/pilot/money-type/', '?utm_source=line&cognitive=1', 'adaptive'],
   ['/mudagii/pilot/money-type/', '?adaptive=money-type', 'adaptive'],
   ['/mudagii/pilot/money-type/adaptive', '', 'adaptive'],
   ['/mudagii/pilot/money-type/', '?mode=legacy-pilot', 'legacy-pilot'],
