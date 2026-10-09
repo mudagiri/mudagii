@@ -173,7 +173,7 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
    <span className="c2v2-eyebrow">第2章 ／ QUEST COMPLETE</span>
    <div className="c2v3-title-wrap">
     <h1>家計クエスト<br/><em>完全クリア！</em></h1>
-    <div className="c2v3-hero-dialogue">ムダギリくん「おつかれ！戦果を見てみよう。」</div>
+    <div className="c2v3-hero-dialogue"><span>ムダギリくん</span><b>「おつかれ！<br/>戦果を見よう。」</b></div>
    </div>
    <img src={ART.result} alt="家計クエストのクリアを祝うムダギリくん" className="c2v3-hero-mascot"/>
    <span className="c2v2-scroll-cue">▼ ギルドに届いた戦果報告</span>
@@ -348,10 +348,12 @@ const V3CSS=[
   '.c2v3-world .c2v3-hero{min-height:340px;margin:0!important;padding:24px 20px 56px!important;background-image:linear-gradient(180deg,rgba(1,23,33,.12) 0%,rgba(1,23,33,.35) 30%,rgba(0,22,31,.78) 82%,rgba(0,24,29,.94)),url("./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp");background-color:#07323b;background-position:center 34%;background-size:cover;isolation:isolate;border-bottom:2px solid rgba(255,219,122,.54)}',
   '.c2v3-world .c2v3-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 75% 63%,rgba(255,221,122,.17),transparent 46%);z-index:0}',
   '.c2v3-world .c2v3-hero>.c2v2-eyebrow{position:relative;z-index:3;display:inline-block;padding:6px 10px;background:rgba(0,29,37,.78);border:1px solid rgba(249,209,104,.55);border-radius:8px;color:#ffdc7a;font-size:13px;text-shadow:0 1px #001}',
-  '.c2v3-world .c2v3-title-wrap{position:relative;z-index:3;margin-top:18px;width:65%;text-shadow:0 3px 9px #012}',
-  '.c2v3-world .c2v3-title-wrap h1{font-size:clamp(30px,8vw,40px);max-width:100%;margin:0;line-height:1.25;color:white}',
+  '.c2v3-world .c2v3-title-wrap{position:relative;z-index:3;margin-top:18px;width:100%;text-shadow:0 3px 9px #012}',
+  '.c2v3-world .c2v3-title-wrap h1{font-size:clamp(26px,8vw,40px);max-width:70%;margin:0;line-height:1.25;color:white}',
   '.c2v3-world .c2v3-title-wrap em{color:#ffe48f}',
-  '.c2v3-world .c2v3-hero-dialogue{margin-top:18px;padding:10px;border-radius:10px;border:1px solid rgba(255,216,120,.47);background:rgba(0,29,35,.90);font-size:15px;line-height:1.65;font-weight:800}',
+  '.c2v3-world .c2v3-hero-dialogue{margin-top:18px;width:59%;padding:10px;border-radius:10px;border:1px solid rgba(255,216,120,.47);background:rgba(0,29,35,.90);font-size:15px;line-height:1.65;font-weight:800}',
+  '.c2v3-world .c2v3-hero-dialogue span{display:block;color:#ffe19b;font-size:13px;line-height:1.5;font-weight:850}',
+  '.c2v3-world .c2v3-hero-dialogue b{display:block;font-size:15px;line-height:1.5;font-weight:850;white-space:nowrap}',
   '.c2v3-world .c2v3-hero-mascot{position:absolute;right:0;bottom:56px;width:40%;max-width:164px;height:auto;aspect-ratio:1;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 10px rgba(0,0,0,.8));z-index:2}',
   '.c2v3-world .c2v2-scroll-cue{font-size:14px;left:20px;bottom:16px;color:#fff1b3}',
   '.c2v3-world .c2v3-job-card{display:flex;gap:14px;align-items:center;margin:14px 12px 6px;padding:11px 13px;border:2px solid rgba(242,208,105,.7);border-radius:15px;background:linear-gradient(135deg,rgba(0,54,56,.96),rgba(2,28,36,.97));box-shadow:0 9px 22px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,246,198,.15);position:relative;overflow:hidden}',
@@ -374,7 +376,7 @@ const V3CSS=[
   '.c2v3-world .c2v3-reward-mini strong{display:block;font-size:clamp(18px,5.3vw,26px);font-variant-numeric:tabular-nums;letter-spacing:-.035em;margin-top:6px;overflow-wrap:anywhere}',
   '.c2v3-world .c2v3-reward-ten{position:relative;text-align:center;overflow:hidden;margin-top:12px;padding:23px 9px 19px;border:2px solid rgba(255,224,117,.85);border-radius:14px;background:radial-gradient(circle at 50% 10%,rgba(255,233,146,.98),rgba(240,189,64,.96) 69%,#c78c2f 100%);color:#3b2808;box-shadow:0 8px 0 rgba(62,43,4,.25),0 12px 25px rgba(0,0,0,.26),inset 0 0 0 2px rgba(255,253,214,.35)}',
   '.c2v3-world .c2v3-reward-ten>span{display:block;font-size:15px;font-weight:1000;letter-spacing:.015em}',
-  '.c2v3-world .c2v3-reward-ten strong{display:block;margin:11px auto 5px;font-variant-numeric:tabular-nums;font-size:clamp(29px,8.3vw,47px);line-height:1.18;letter-spacing:-.055em;overflow-wrap:anywhere;text-shadow:0 1px 0 rgba(255,254,216,.5)}',
+  '.c2v3-world .c2v3-reward-ten strong{display:block;margin:11px auto 5px;font-variant-numeric:tabular-nums;font-size:clamp(35px,9.5vw,48px);line-height:1.18;letter-spacing:-.055em;overflow-wrap:anywhere;text-shadow:0 1px 0 rgba(255,254,216,.5)}',
   '.c2v3-world .c2v3-reward-ten p{font-size:14px;line-height:1.5;color:#523708;margin:6px 0 0;font-weight:800}',
   '.c2v3-world .c2v3-future-footnote{font-size:14px;line-height:1.7;color:#e1f0eb;margin:19px 0 0}',
   '.c2v3-world .c2v3-future-empty{border:1px solid rgba(225,195,113,.5);border-radius:12px;padding:17px;background:rgba(1,29,37,.8)}',
@@ -383,6 +385,6 @@ const V3CSS=[
   '.c2v3-world .c2v3-decision{background-image:linear-gradient(160deg,rgba(0,27,31,.91),rgba(1,34,38,.86)),url("./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp");background-size:cover;background-position:center 40%;border-color:rgba(246,214,110,.78)}',
   '.c2v3-world .c2v3-decision h2{color:#ffe7a2;text-shadow:0 2px 6px #112}',
   '.c2v3-world .c2v3-decision .c2v2-primary{background:#f2d47e}',
-  '@media(max-width:350px){.c2v3-world .c2v3-job-portrait{width:93px;height:100px;flex-basis:93px}.c2v3-world .c2v3-job-portrait img{width:93px;height:93px}.c2v3-world .c2v3-job-meta strong{font-size:18px}.c2v3-world .c2v3-hero-mascot{width:39%;right:-2px;bottom:58px}.c2v3-world .c2v3-hero-dialogue{font-size:14px}}',
+  '@media(max-width:350px){.c2v3-world .c2v3-job-portrait{width:93px;height:100px;flex-basis:93px}.c2v3-world .c2v3-job-portrait img{width:93px;height:93px}.c2v3-world .c2v3-job-meta strong{font-size:18px}.c2v3-world .c2v3-hero-mascot{width:39%;right:-2px;bottom:58px}.c2v3-world .c2v3-hero-dialogue b{font-size:14px}}',
   '@media(prefers-reduced-motion:reduce){.c2v3-world *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}',
 ].join('');
