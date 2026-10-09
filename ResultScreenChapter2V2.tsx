@@ -77,7 +77,6 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
  const next=vm.firstQuest??null;
  const filtered=rows.filter((x:any)=>x&&x.category&&x.v5Status!=='na');
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
- const more=filtered.filter((x:any)=>!highlighted.some((y:any)=>y.category===x.category));
  const shown=showAll?filtered:highlighted.slice(0,3);
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
 
