@@ -5,7 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V2 from './ResultScreenChapter2V2';
 import {
  chapter2V2Enabled,chapter2V2ResumeScene,parseChapter1HandoffV1,
- readChapter1HandoffV1,chapter2V2ShareText,chapter2V2ReferralUrl,CHAPTER1_HANDOFF_STORAGE_KEY,
+ readChapter1HandoffV1,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,CHAPTER1_HANDOFF_STORAGE_KEY,
 } from './chapter2-v2-contract';
 
 assert.equal(chapter2V2Enabled('',undefined),false,'V1 must stay the default');
@@ -31,6 +31,10 @@ assert.equal(parseChapter1HandoffV1(raw.replace('DRIVE','INVALID'),'anon-1'),nul
 const fakeStorage={getItem:(key:string)=>key===CHAPTER1_HANDOFF_STORAGE_KEY?raw:null};
 assert.equal(readChapter1HandoffV1('anon-1',fakeStorage)?.jobName,'冒険者');
 const text=chapter2V2ShareText('https://example.test/mudagii/?ref=share');
+assert.equal(chapter2V2SignedComparisonYen(-1800),'−¥1,800');
+assert.equal(chapter2V2SignedComparisonYen(1800),'+¥1,800');
+assert.equal(chapter2V2SignedComparisonYen(0),'±¥0');
+assert.equal(chapter2V2SignedComparisonYen(Number.NaN),'—');
 assert.match(text,/家計クエスト/);
 assert.equal(chapter2V2ReferralUrl('https://mudagiri.github.io/mudagii/?chapter2v2=1','x'),'https://mudagiri.github.io/mudagii/pilot/money-type/?utm_source=x&utm_campaign=household_quest_clear');
 assert.doesNotMatch(text,/TYPE MODEL|称号|\d+円|¥/);
