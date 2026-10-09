@@ -7,6 +7,12 @@ on:
     paths:
       - 'scripts/money-personality-backend-probe.mjs'
       - '.github/workflows/money-personality-backend-probe.yml'
+  pull_request:
+    branches:
+      - audit/money-personality-prevalence-sensitivity-20261009
+    paths:
+      - 'scripts/money-personality-backend-probe.mjs'
+      - '.github/workflows/money-personality-backend-probe.yml'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +24,8 @@ concurrency:
 
 jobs:
   probe:
+    # Never run privileged probe code from fork PRs or unrelated branches.
+    if: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == 'mudagiri/mudagii' && github.event.pull_request.head.ref == 'audit/money-personality-real-prevalence-pipeline-20261009') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
