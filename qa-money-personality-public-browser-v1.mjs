@@ -440,7 +440,7 @@ const unfoldedResult=await page.evaluate(()=>{
   return {viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,wrap:wrap&&{left:wrap.left,right:wrap.right,width:wrap.width},share:share&&{left:share.left,right:share.right,width:share.width},buttons};
 });
 if(unfoldedResult.viewport!==690||unfoldedResult.documentWidth>692||!unfoldedResult.wrap||unfoldedResult.wrap.width>524||unfoldedResult.wrap.left<0||unfoldedResult.wrap.right>692)throw new Error('MONEY_PUBLIC_FOLD_UNFOLDED_RESULT_OVERFLOW:'+JSON.stringify(unfoldedResult));
-if(!unfoldedResult.share||unfoldedResult.share.left<-2||unfoldedResult.share.right>692||unfoldedResult.buttons.length!==5||unfoldedResult.buttons.some(b=>b.height<43||b.width<85))throw new Error('MONEY_PUBLIC_FOLD_SHARE_TARGET_TOO_SMALL:'+JSON.stringify(unfoldedResult));
+if(!unfoldedResult.share||unfoldedResult.share.left<-2||unfoldedResult.share.right>692||unfoldedResult.buttons.length!==4||unfoldedResult.buttons.some(b=>b.height<43||b.width<85))throw new Error('MONEY_PUBLIC_FOLD_SHARE_TARGET_TOO_SMALL:'+JSON.stringify(unfoldedResult));
 await screenshot('08b-fold-unfolded-result-690');
 
 
