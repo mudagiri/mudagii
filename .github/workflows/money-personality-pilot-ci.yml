@@ -11,8 +11,10 @@ on:
     branches:
       - main
       - feature/money-personality-pilot
+      - audit/money-personality-prevalence-sensitivity-20261009
     paths:
       - 'src/features/money-personality/**'
+      - 'scripts/money-personality-backend-probe.mjs'
       - 'qa-money-personality-*.ts'
       - 'qa-money-personality-*.mjs'
       - 'MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs'
