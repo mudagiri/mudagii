@@ -85,6 +85,24 @@ export default function MoneyPersonalityCognitivePilot(){
 
   useEffect(()=>{if(local.sessionId)persistLocal(local)},[local]);
 
+  // Resume a queued Cognitive submission whenever a participant revisits a
+  // completed result. Bounded retries are independent of public result data.
+  useEffect(()=>{
+    const tryAgain=()=>{
+      try{
+        const payload=JSON.parse(localStorage.getItem(MONEY_COGNITIVE_LAST_PAYLOAD_KEY)||'null');
+        if(!payload||typeof payload.sessionId!=='string'||
+          payload.formId!=='PUBLIC_COGNITIVE_DEBRIEF'||
+          payload.quality?.parentSessionId!==publicState?.sessionId)return;
+        void postPayload(payload);
+      }catch{}
+    };
+    tryAgain();
+    const timer=window.setInterval(tryAgain,60000);
+    return ()=>window.clearInterval(timer);
+  },[publicState?.sessionId]);
+
+
   const derived=useMemo(()=>publicState?deriveCurrentTarget(publicState,participantId):null,[publicState,participantId]);
   const target=derived?.target??null;
   const done=Boolean(derived?.done&&publicState?.startedAt);
@@ -144,7 +162,7 @@ export default function MoneyPersonalityCognitivePilot(){
     const payload=buildCognitiveDebriefPayload({
       parentSessionId:publicState.sessionId,anonymousUserId,participantId,startedAt:publicState.startedAt,completedAt,itemNotes:local.notes,debrief:local.debrief,
       jobCode:evaluation.jobCode!,jobName:evaluation.jobName||'',primaryStyle:evaluation.style.primary!,secondaryStyle:evaluation.style.secondary!,
-      separatorCount,resultContentVersion:MONEY_RESULT_CONTENT_VERSION,userAgent:navigator.userAgent,sourceUrl:window.location.href,
+      separatorCount,resultContentVersion:MONEY_RESULT_CONTENT_VERSION,userAgent:navigator.userAgent,sourceUrl:sanitizedPublicMoneySourceUrl(window.location.href),
     });
     try{localStorage.setItem(MONEY_COGNITIVE_LAST_PAYLOAD_KEY,JSON.stringify(payload))}catch{}
     setLocal(s=>({...s,submittedAt:completedAt}));
@@ -156,7 +174,7 @@ export default function MoneyPersonalityCognitivePilot(){
     {open&&<div className="mpp-cog-backdrop" role="dialog" aria-modal="true" aria-label="Cognitive Pilot feedback">
       <section className="mpp-cog-panel">
         <header><div><b>Cognitive Pilot</b><span>診断そのものではなく、テスト用の感想です</span></div><button type="button" onClick={()=>setOpen(false)}>×</button></header>
-        {submitted?<div className="mpp-cog-thanks"><b>回答を保存しました</b><p>ありがとう。このデータは質問文・Result・導線の改善にだけ使います。</p></div>:<>
+        {submitted?<div className="mpp-cog-thanks"><b>回答を端末内に保存しました</b><p>ありがとう。専用サーバーにも送信を試みますが、受信確認は管理側で行います。質問文・Result・導線の改善以外には使用しません。</p></div>:<>
           <Rating title="JOB名は自分っぽい？" value={local.debrief.jobFit} onChange={v=>setDebrief('jobFit',v)} left="全く違う" right="かなり自分っぽい"/>
           <Rating title="Result全体は当たってる？" value={local.debrief.resultFit} onChange={v=>setDebrief('resultFit',v)} left="違う" right="かなり当たる"/>
           <Rating title="質問は理解しやすかった？" value={local.debrief.questionClarity} onChange={v=>setDebrief('questionClarity',v)} left="分かりづらい" right="分かりやすい"/>
