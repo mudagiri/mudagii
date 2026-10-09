@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useEffect,useRef,useState} from 'react';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 
@@ -70,6 +70,19 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
  const [showLine,setShowLine]=useState(false);
  const [shareStatus,setShareStatus]=useState('');
  const [shareBusy,setShareBusy]=useState(false);
+ const [shareReady,setShareReady]=useState(false);
+ const shareFile=useRef<File|null>(null);
+ // Prepare the image before the user's tap: iOS/Web Share may reject a share
+ // triggered only after an asynchronous image load loses transient activation.
+ useEffect(()=>{
+  let mounted=true;
+  void createQuestShareCard().then(file=>{
+   if(!mounted)return;
+   shareFile.current=file;
+   setShareReady(Boolean(file));
+  }).catch(()=>{if(mounted)setShareReady(false)});
+  return ()=>{mounted=false};
+ },[]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
@@ -100,7 +113,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   if(shareBusy)return;setShareBusy(true);setShareStatus('');
   onEvent?.('chapter2_v2_share_clicked',{format:'image'});
   try{
-   const file=await createQuestShareCard();
+   const file=shareFile.current;
    if(!file){setShareStatus('画像カードを作れませんでした。');return;}
    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
     try{
@@ -222,7 +235,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   <section className="c2v2-card c2v2-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>ここで共有するのは「12カテゴリ鑑定完了」のカードだけ。金額や性格称号は載せないよ。</p>
-   <button className="c2v2-share-primary" onClick={()=>void shareImage()} disabled={shareBusy}>{shareBusy?'画像を準備しています…':'画像カードをシェア／保存する'}</button>
+   <button className="c2v2-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像カードをシェア／保存する':'画像カードを準備中…'}</button>
    <div className="c2v2-text-shares">
     <button onClick={()=>shareText('x')} type="button">Xで文章を共有</button>
     <button onClick={()=>shareText('line')} type="button">LINEで文章を共有</button>
