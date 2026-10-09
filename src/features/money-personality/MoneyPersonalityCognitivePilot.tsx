@@ -4,6 +4,7 @@ import {MONEY_TYPE_STATE_KEY} from './MoneyPersonalityTelemetry';
 import {buildPublicCoreOrder,getOrCreatePublicParticipantId,orderAdaptiveItemIds} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
 import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
+import {attemptPublicMoneyDelivery,sanitizedPublicMoneySourceUrl} from './publicTelemetryDeliveryV1';
 import {
   buildCognitiveDebriefPayload,COGNITIVE_FLAG_LABEL,emptyCognitiveDebrief,isCognitiveDebriefComplete,
   MONEY_COGNITIVE_LAST_PAYLOAD_KEY,MONEY_COGNITIVE_PILOT_VERSION,MONEY_COGNITIVE_STORAGE_KEY,
@@ -46,12 +47,16 @@ function deriveCurrentTarget(state:PublicState,participantId:string):{target:Cur
   return {target:null,done:evaluation.complete,evaluation};
 }
 
-async function postPayload(payload:unknown){
+export const MONEY_COGNITIVE_DELIVERY_KEY='mudagiri_money_type_cognitive_delivery_v1';
+async function postPayload(payload:{sessionId:string}){
   const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
-  if(!url)return;
-  try{await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),keepalive:true,mode:'no-cors'})}catch{}
+  // Separate retry record from the public assessment to prevent mutual eviction.
+  // no-cors transport completion NEVER confirms that GAS saved the feedback.
+  return attemptPublicMoneyDelivery({
+    sessionId:payload.sessionId,payload,url,store:localStorage,
+    storageKey:MONEY_COGNITIVE_DELIVERY_KEY,
+  });
 }
-
 export default function MoneyPersonalityCognitivePilot(){
   const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);
   const anonymousUserId=useMemo(()=>getOrCreateAnonymousUserId(),[]);
