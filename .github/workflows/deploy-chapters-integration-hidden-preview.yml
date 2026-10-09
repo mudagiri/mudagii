@@ -34,7 +34,7 @@ jobs:
       integration_sha: ${{ steps.capture.outputs.integration_sha }}
       pilot_sha: ${{ steps.capture.outputs.pilot_sha }}
       production_sha: ${{ steps.capture.outputs.production_sha }}
-      root_index_sha: ${{ steps.capture.outputs.root_index_sha }}
+      root_index_sha: ${{ steps.assemble.outputs.root_index_sha }}
     steps:
       - name: Checkout unchanged production main
         uses: actions/checkout@v4
