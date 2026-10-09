@@ -36,11 +36,17 @@ jobs:
         env:
           VISUAL_BASE_URL: http://127.0.0.1:4173/
         run: node qa-visual-smoke-v5.mjs
+      - name: Run Chapter 2 V2 browser smoke
+        env:
+          VISUAL_BASE_URL: http://127.0.0.1:4173/?chapter2v2=1
+        run: node qa-visual-smoke-chapter2-v2.mjs
       - name: Upload screenshots and geometry report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v5-visual-smoke
-          path: visual-smoke-v5/
+          path: |
+            visual-smoke-v5/
+            visual-smoke-chapter2-v2/
           if-no-files-found: warn
           retention-days: 7
