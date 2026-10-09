@@ -4,7 +4,7 @@ import {itemById} from './pilotLogic';
 import {getOrCreatePublicParticipantId,PUBLIC_MONEY_TYPE_VERSION} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
 import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
-import {attemptPublicMoneyDelivery} from './publicTelemetryDeliveryV1';
+import {attemptPublicMoneyDelivery,sanitizedPublicMoneySourceUrl,stablePublicMoneyCompletedAt} from './publicTelemetryDeliveryV1';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -62,7 +62,9 @@ function captureCompletedSession(){
 
   const participantId=getOrCreatePublicParticipantId();
   const anonymousUserId=getOrCreateAnonymousUserId();
-  const completedAt=new Date().toISOString();
+  let previouslySaved:unknown=null;
+  try{previouslySaved=JSON.parse(localStorage.getItem(MONEY_TYPE_LAST_PAYLOAD_KEY)||'null')}catch{}
+  const completedAt=stablePublicMoneyCompletedAt(previouslySaved,state.sessionId,new Date().toISOString());
   const separatorCount=Object.keys(state.separators).length;
   const params=new URLSearchParams(window.location.search);
   const cognitiveMode=params.get('cognitive')==='1';
@@ -87,7 +89,7 @@ function captureCompletedSession(){
       variant:cognitiveMode?'PUBLIC_ADAPTIVE_COGNITIVE':'PUBLIC_ADAPTIVE',
       resultContentVersion:MONEY_RESULT_CONTENT_VERSION,
       userAgent:navigator.userAgent,
-      sourceUrl:window.location.href,
+      sourceUrl:sanitizedPublicMoneySourceUrl(window.location.href),
       coreCount:30,
       adaptiveAnswerCount:Math.max(0,traitCount-30),
       separatorCount,
