@@ -37,7 +37,7 @@ try{
   assert.equal(inspectMoneyPersonalityBuild({distDir:folder,moneyUrl:URL}).code,'RETRY_TELEMETRY_NOT_IN_BUNDLE');
 }finally{fs.rmSync(folder,{recursive:true,force:true})}
 for(const f of ['deploy-money-personality-hidden-preview.yml','attach-money-personality-preview.yml']){
- const yaml=fs.readFileSync(new URL('./.github/workflows/'+f,import.meta.url),'utf8');
+ const yaml=fs.readFileSync(new globalThis.URL('./.github/workflows/'+f,import.meta.url),'utf8');
  assert.ok(yaml.includes('check-money-personality-gas-health.mjs'),f+' backend check missing');
  assert.ok(yaml.includes('verify-money-personality-build.mjs'),f+' bundle check missing');
  assert.ok(yaml.indexOf('check-money-personality-gas-health.mjs')<yaml.indexOf('Build pilot candidate'),f+' release guard must run before build');
