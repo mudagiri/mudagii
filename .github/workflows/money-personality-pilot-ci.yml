@@ -59,6 +59,8 @@ jobs:
           grep -q 'twitter:description' /tmp/money-personality-og.html
       - name: Public flow QA
         run: npm run qa:money-public-flow
+      - name: Public Chapter 1 routing, legacy isolation QA
+        run: npm run qa:money-entry
       - name: Engine QA
         run: npm run qa:money-engine
       - name: Result content QA
