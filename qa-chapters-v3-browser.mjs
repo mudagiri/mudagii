@@ -221,6 +221,28 @@ await clickButton(/診断結果を見る/);
  assert.ok(visuals.impactSize>=28,'10-year future reward should be visually prominent');
  assert.ok(!visuals.overflow,'Result must not overflow mobile viewport');
  await screenshot('04-chapter2-result-with-job');
+ for(const width of [320,375,430]){
+  await page.setViewportSize({width,height:844});
+  const layout=await page.evaluate(()=>{
+   const doc=document.documentElement;
+   const dialogue=document.querySelector('.c2v3-hero-dialogue');
+   const mascot=document.querySelector('.c2v3-hero-mascot');
+   const say=dialogue?.getBoundingClientRect();
+   const img=mascot?.getBoundingClientRect();
+   const intersection= say&&img
+    ?Math.max(0,Math.min(say.right,img.right)-Math.max(say.left,img.left))*Math.max(0,Math.min(say.bottom,img.bottom)-Math.max(say.top,img.top)):0;
+   const ten=document.querySelector('.c2v3-reward-ten strong');
+   const tenRect=ten?.getBoundingClientRect();
+   return {width:window.innerWidth,scrollWidth:doc.scrollWidth,overlap:intersection,
+    tenWidth:tenRect?.width||0,tenScrollWidth:ten?.scrollWidth||0,
+    tenFont:ten?parseFloat(getComputedStyle(ten).fontSize):0};
+  });
+  if(layout.scrollWidth>layout.width+2)throw new Error('V3_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
+  if(layout.overlap>1)throw new Error('V3_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
+  if(layout.tenFont<28||layout.tenScrollWidth>layout.tenWidth+2)throw new Error('V3_TEN_YEAR_REWARD_CLIP:'+JSON.stringify(layout));
+  await screenshot('04-v3-responsive-'+width);
+ }
+ await page.setViewportSize({width:390,height:844});
  const result=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_active_result_v1')||'null'));
  assert.equal(result?.methodology?.type,'CHAPTER2_V2_NO_PERSONALITY');
  assert.equal(Object.keys(result?.completed?.typeAnswers||{}).length,0);
