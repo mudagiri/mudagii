@@ -69,3 +69,24 @@ export async function attemptPublicMoneyDelivery(args:{
     return next.state;
   }
 }
+
+/** Re-renders and transport retries must not invent new completion timestamps. */
+export function stablePublicMoneyCompletedAt(previous:unknown,sessionId:string,fallback:string):string{
+  if(!previous||typeof previous!=='object')return fallback;
+  const p=previous as {sessionId?:unknown;completedAt?:unknown};
+  if(p.sessionId!==sessionId||typeof p.completedAt!=='string'||!Number.isFinite(Date.parse(p.completedAt)))return fallback;
+  return p.completedAt;
+}
+/** Strip unneeded URL query parameters/tokens before sending analytics. */
+export function sanitizedPublicMoneySourceUrl(href:string):string{
+  try{
+    const url=new URL(href);
+    const label=url.searchParams.get('utm_source')||url.searchParams.get('source')||'';
+    url.search='';url.hash='';
+    if(label){
+      const clean=label.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,30);
+      if(clean)url.searchParams.set('utm_source',clean);
+    }
+    return url.toString();
+  }catch{return '';}
+}
