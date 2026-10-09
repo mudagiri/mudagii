@@ -749,6 +749,7 @@ export default function RpgBlock1({
             />
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               judgements={finalV4?.categories??finalJudgements}
               onContinue={() => {
@@ -803,6 +804,7 @@ export default function RpgBlock1({
             />
           ) : (
             <BattleCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               battleCount={visibleBattleTargets.length}
               reviewCount={visibleReviewCount}
@@ -1723,9 +1725,9 @@ function AdditionalAppraisalScene({
 }
 
 function AppraisalCompleteScene({
-  toneMode,judgements,onContinue,
+  toneMode,judgements,onContinue,chapter2V2=false,
 }:{
-  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;chapter2V2?:boolean;
 }) {
   const counts = {
     battle:judgements.filter(x=>x.status==='battle'||x.status==='cut').length,
@@ -1742,7 +1744,7 @@ function AppraisalCompleteScene({
       <section className="appraisal-card">
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
         <h2>{toneLine(toneMode,'仕分けできたよ。','鑑定完了。','仕分け終了。逃げ道は消えた。')}</h2>
-        <p className="appraisal-reason">{toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
+        <p className="appraisal-reason">{chapter2V2?toneLine(toneMode,'大切な支出は守ったまま、家計の戦果を確認しよう。','高いだけで斬らない。守る支出と見直す候補を分けた。次は戦果の確認だ。','必要な支出は守った。残る敵との決着をつけよう。'):toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
@@ -1751,7 +1753,7 @@ function AppraisalCompleteScene({
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          お金タイプを解析する ▶
+          {chapter2V2?'最後のクエストへ ▶':'お金タイプを解析する ▶'}
         </button>
       </section>
     </div>
@@ -1866,7 +1868,7 @@ function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targe
   );
 }
 
-function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void}) {
+function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult,chapter2V2=false}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void;chapter2V2?:boolean}) {
   return (
     <div className="scan-scene battle-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
@@ -1879,7 +1881,7 @@ function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMo
           {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>{toneLine(toneMode,'おつかれさま！ 守る支出も含めて、あなたの家計を整理できたよ。','判定完了。比較差と、本当に確認できた改善余地は分けて見るぞ。','判決の時間だ。平均との差と、本物の改善余地を混同するなよ。')}</strong>
         </p>
-        <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
+        <div className="result-next-lock">{chapter2V2?'NEXT：RESULT / 戦果・改善候補・守る支出':'NEXT：RESULT / 称号・改善余地・守る支出'}</div>
         <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
       </section>
     </div>
