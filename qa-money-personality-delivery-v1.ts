@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PUBLIC_MONEY_DELIVERY_KEY,MAX_PUBLIC_ATTEMPTS,
   attemptPublicMoneyDelivery,readPublicDeliveryRecord,publicDeliveryEligible,
-  stablePublicMoneyCompletedAt,sanitizedPublicMoneySourceUrl,
+  stablePublicMoneyCompletedAt,sanitizedPublicMoneySourceUrl,stableMoneyCollectionCohort,
 } from './src/features/money-personality/publicTelemetryDeliveryV1';
 
 const map=new Map<string,string>();
@@ -62,6 +62,11 @@ assert.equal(stablePublicMoneyCompletedAt({sessionId:'foo',completedAt:firstComp
 assert.equal(stablePublicMoneyCompletedAt({sessionId:'bar',completedAt:firstCompletion},'foo','2026-10-10T00:00:00Z'),'2026-10-10T00:00:00Z');
 assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/?utm_source=Instagram&access_token=privateSecret#share'), 'https://mudagiri.github.io/mudagii/?utm_source=instagram');
 assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/pilot/money-type/?cognitive=1&debug=1'), 'https://mudagiri.github.io/mudagii/pilot/money-type/');
+assert.equal(stableMoneyCollectionCohort(null,'session-1',undefined),'PILOT');
+assert.equal(stableMoneyCollectionCohort(null,'session-1','PUBLIC'),'PUBLIC');
+assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PILOT'}},'session-1','PUBLIC'),'PILOT');
+assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PUBLIC'}},'session-1','PILOT'),'PUBLIC');
+assert.equal(stableMoneyCollectionCohort({sessionId:'other',quality:{collectionCohort:'PUBLIC'}},'session-1',undefined),'PILOT');
 console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_PUBLIC_GAS_DELIVERY_V1',
   noEndpointDoesNotMarkSent:true,opaqueNeverClaimsConfirmed:true,
   retriesCapped:MAX_PUBLIC_ATTEMPTS,failedTransportRetryMinutes:5,
