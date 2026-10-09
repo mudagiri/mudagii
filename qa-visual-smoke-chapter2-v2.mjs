@@ -18,7 +18,16 @@ await page.addInitScript(()=>{
   window.__mudagiriShareCalls=[];
   window.open=(url)=>{window.__mudagiriShareCalls.push({kind:'open',url:String(url)});return null};
   try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true})}catch{}
-  try{Object.defineProperty(navigator,'share',{configurable:true,value:async(data)=>{window.__mudagiriShareCalls.push({kind:'share',title:data?.title??'',text:data?.text??'',files:(data?.files??[]).map(f=>f.name)})}})}catch{}
+  try{Object.defineProperty(navigator,'share',{configurable:true,value:async(data)=>{
+    window.__mudagiriShareCalls.push({kind:'share',title:data?.title??'',text:data?.text??'',files:(data?.files??[]).map(f=>f.name)});
+    if(data?.files?.length){
+      const reader=new FileReader();
+      window.__mudagiriShareCardDataUrl=await new Promise((resolve,reject)=>{
+        reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error);
+        reader.readAsDataURL(data.files[0]);
+      });
+    }
+  }})}catch{}
 });
 page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
@@ -249,6 +258,9 @@ if(!String(native.text||'').includes('/pilot/money-type/'))throw new Error('CHAP
 if(/350000|70000|1800|未来直感ゾンビ|TYPE/.test(JSON.stringify(native))){
  throw new Error('V2_SHARE_PRIVACY:'+JSON.stringify(native));
 }
+const cardData=await page.evaluate(()=>window.__mudagiriShareCardDataUrl||'');
+if(!cardData.startsWith('data:image/png;base64,'))throw new Error('V2_SHARE_CARD_NOT_PNG');
+await fs.writeFile(OUT+'/23-v2-share-image-card.png',Buffer.from(cardData.split(',')[1],'base64'));
 await page.getByRole('button',{name:/無料のライフプラン相談を確認する/}).first().click();
 await page.getByRole('dialog',{name:'ライフプラン相談の案内へ'}).waitFor();
 await shot('20-v2-consultation-dialog',{allowVertical:true});
