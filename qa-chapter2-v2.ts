@@ -32,15 +32,15 @@ const fakeStorage={getItem:(key:string)=>key===CHAPTER1_HANDOFF_STORAGE_KEY?raw:
 assert.equal(readChapter1HandoffV1('anon-1',fakeStorage)?.jobName,'冒険者');
 const text=chapter2V2ShareText('https://example.test/mudagii/?ref=share');
 assert.match(text,/家計クエスト/);
-assert.doesNotMatch(text,/TYPE MODEL|称号|\\d+円|¥/);
-assert.match(text,/\\n/,'share should have actual line breaks');
+assert.doesNotMatch(text,/TYPE MODEL|称号|\d+円|¥/);
+assert.match(text,/\n/,'share should have actual line breaks');
 
 const quiz=readFileSync('RpgBlock1.tsx','utf8');
-assert.match(quiz,/if\\(chapter2V2\\)\\{/);
-assert.match(quiz,/setScene\\('battleIntro'\\)/);
-assert.match(quiz,/typeAnswers:chapter2V2\\?\\{\\}:typeAnswers/);
+assert.match(quiz,/if\(chapter2V2\)\{/);
+assert.match(quiz,/setScene\('battleIntro'\)/);
+assert.match(quiz,/typeAnswers:chapter2V2\?\{\}:typeAnswers/);
 const app=readFileSync('MudagiriAppV2.tsx','utf8');
-assert.match(app,/chapter2V2\\?null:scoreTypeAnswersV31/);
+assert.match(app,/chapter2V2\?null:scoreTypeAnswersV31/);
 assert.match(app,/ResultScreenChapter2V2/);
 assert.match(app,/chapter2Version:'V2_NO_DUPLICATE_PERSONALITY'/);
 
