@@ -1,0 +1,31 @@
+name: Probe Money Personality GAS (synthetic)
+
+on:
+  push:
+    branches:
+      - audit/money-personality-real-prevalence-pipeline-20261009
+    paths:
+      - 'scripts/money-personality-backend-probe.mjs'
+      - '.github/workflows/money-personality-backend-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: money-personality-backend-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dedicated backend GET + debug-only POST twice
+        env:
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: node scripts/money-personality-backend-probe.mjs
