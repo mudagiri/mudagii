@@ -67,6 +67,27 @@ assert.equal(stableMoneyCollectionCohort(null,'session-1','PUBLIC'),'PUBLIC');
 assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PILOT'}},'session-1','PUBLIC'),'PILOT');
 assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PUBLIC'}},'session-1','PILOT'),'PUBLIC');
 assert.equal(stableMoneyCollectionCohort({sessionId:'other',quality:{collectionCohort:'PUBLIC'}},'session-1',undefined),'PILOT');
+
+const cognitiveKey='mudagiri_money_type_cognitive_delivery_v1';
+let cognitiveTries=0;
+const cognitiveFetcher=async (_url:string,_init:RequestInit)=>{
+  cognitiveTries++;
+  return {type:'opaque'};
+};
+const cog1=await attemptPublicMoneyDelivery({
+  sessionId:'foo__cognitive',payload:{sessionId:'foo__cognitive'},
+  url:URL,store,storageKey:cognitiveKey,fetcher:cognitiveFetcher,now:15000,
+});
+assert.equal(cog1,'OPAQUE_UNVERIFIED');
+assert.equal(cognitiveTries,1);
+assert.equal(readPublicDeliveryRecord(store,'foo__cognitive',cognitiveKey)?.attempts,1);
+assert.equal(readPublicDeliveryRecord(store,'foo')?.attempts,MAX_PUBLIC_ATTEMPTS,
+  'independent cognitive submission must not evict completed assessment health');
+await attemptPublicMoneyDelivery({
+  sessionId:'foo__cognitive',payload:{sessionId:'foo__cognitive'},
+  url:URL,store,storageKey:cognitiveKey,fetcher:cognitiveFetcher,now:15001,
+});
+assert.equal(cognitiveTries,1,'observer and retry should not flood cognitive GAS');
 console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_PUBLIC_GAS_DELIVERY_V1',
   noEndpointDoesNotMarkSent:true,opaqueNeverClaimsConfirmed:true,
   retriesCapped:MAX_PUBLIC_ATTEMPTS,failedTransportRetryMinutes:5,
