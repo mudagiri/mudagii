@@ -51,3 +51,13 @@
 | 出現率表示 | PUBLIC実測＋必要な品質・倫理・標本監査 | 保留 |
 
 本ランブックは運営者のGoogle/GitHub設定操作が必要な箇所を整理したもの。外部設定が完了するまでは修正候補PRをマージせず、診断コア・第2章 V1 FROZEN・希少性の判定閾値を触らない。
+
+## Cognitive Pilot フィードバック送信
+
+PR #34で`PUBLIC_COGNITIVE_DEBRIEF`のデータ取扱いも監査した。従来は`no-cors`で送信が失敗しても画面が「回答を保存しました」と表示し、次回にGASへ送る機会がなかった。
+
+- フィードバックのローカル保存は明示して`回答を端末内に保存しました`と表示する。**GAS保存を確認したという意味ではない**。
+- 結果Payloadの送信管理キー`mudagiri_money_type_submission_health_v1`と、Cognitive専用`mudagiri_money_type_cognitive_delivery_v1`を分ける。互いのretry情報を上書きしない。
+- 参加者が結果に戻ってきた場合、専用GAS URLが有効ならCognitiveフィードバックも再送を試みる（最大4回）。URL未設定やCORS opaqueでは確認成功を主張しない。
+- Cognitive本番受信の合格には`③Cognitiveフラグ`・`⑤Debrief`の保存と`parent_session_id`の一致が必要。再送で重複せず、家計診断用GASに送らないこと。
+- 保存の通信結果はデータ完全性の確認ではない。検証参加者のアンケート実施前に、**管理者が実際のSheet受信で確認**する。
