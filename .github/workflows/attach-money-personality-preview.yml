@@ -61,6 +61,11 @@ jobs:
             echo "::error::Dedicated Money Personality GAS URL has an unexpected format; hidden preview deployment blocked."
             exit 1
           fi
+      - name: Verify this is the dedicated Money Personality GAS (read only)
+        env:
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: node pilot-site/scripts/check-money-personality-gas-health.mjs
+
       - name: Build pilot candidate
         working-directory: pilot-site
         env:
@@ -69,6 +74,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          node scripts/verify-money-personality-build.mjs
           npm run qa:money-pilot
 
       - name: Assemble production root + hidden pilot preview
