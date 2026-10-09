@@ -1,6 +1,6 @@
 import React,{useState} from 'react';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
-import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,type Chapter1HandoffV1} from './chapter2-v2-contract';
 
 type Props={
  vm:any;
@@ -94,8 +94,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   if(!onLine)window.location.href='https://lin.ee/ol9c2rJ';
  }
  function shareUrl(platform:string){
-  const u=new URL(window.location.origin+window.location.pathname);
-  u.searchParams.set('ref','share');u.searchParams.set('src',platform);return u.toString();
+  return chapter2V2ReferralUrl(window.location.href,platform);
  }
  async function shareImage(){
   if(shareBusy)return;setShareBusy(true);setShareStatus('');
