@@ -81,8 +81,10 @@ const cog1=await attemptPublicMoneyDelivery({
 assert.equal(cog1,'OPAQUE_UNVERIFIED');
 assert.equal(cognitiveTries,1);
 assert.equal(readPublicDeliveryRecord(store,'foo__cognitive',cognitiveKey)?.attempts,1);
-assert.equal(readPublicDeliveryRecord(store,'foo')?.attempts,MAX_PUBLIC_ATTEMPTS,
-  'independent cognitive submission must not evict completed assessment health');
+assert.equal(readPublicDeliveryRecord(store,'bar')?.attempts,2,
+  'independent cognitive submission must preserve current assessment delivery health');
+assert.equal(readPublicDeliveryRecord(store,'foo'),null,
+  'the public key intentionally tracks the latest assessment session only');
 await attemptPublicMoneyDelivery({
   sessionId:'foo__cognitive',payload:{sessionId:'foo__cognitive'},
   url:URL,store,storageKey:cognitiveKey,fetcher:cognitiveFetcher,now:15001,
