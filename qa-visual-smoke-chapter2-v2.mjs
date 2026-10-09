@@ -222,6 +222,7 @@ const native=shareCalls.find(x=>x.kind==='share');
 if(!native||!native.files.includes('mudagiri-household-quest.png')){
  throw new Error('V2_IMAGE_SHARE_FILE_MISSING:'+JSON.stringify(shareCalls));
 }
+if(!String(native.text||'').includes('/pilot/money-type/'))throw new Error('CHAPTER2_SHARE_NOT_ROUTE_TO_CHAPTER1');
 if(/350000|70000|1800|未来直感ゾンビ|TYPE/.test(JSON.stringify(native))){
  throw new Error('V2_SHARE_PRIVACY:'+JSON.stringify(native));
 }
