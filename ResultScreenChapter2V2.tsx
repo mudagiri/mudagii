@@ -1,6 +1,6 @@
 import React,{useState} from 'react';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
-import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 
 type Props={
  vm:any;
@@ -91,7 +91,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
   onLine?.({diagnosisId:vm.diagnosisId,firstQuest:next?.category??null,placement:'consult_route',
     handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',
     insuranceReview:!!vm.consultRoute?.insuranceReview});
-  if(!onLine)window.location.href='https://lin.ee/ol9c2rJ';
+  if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
  }
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
@@ -115,7 +115,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
    const anchor=document.createElement('a');anchor.href=blobUrl;anchor.download=file.name;
    document.body.appendChild(anchor);anchor.click();anchor.remove();
    window.setTimeout(()=>URL.revokeObjectURL(blobUrl),1000);
-   setShareStatus('画像を保存しました。InstagramやThreadsには保存した画像を添付してね。');
+   setShareStatus('画像の保存を開始したよ。InstagramやThreadsには保存した画像を添付してね。');
    onEvent?.('chapter2_v2_share_completed',{format:'download'});
   }catch{setShareStatus('画像を保存できませんでした。');}
   finally{setShareBusy(false);}
@@ -142,7 +142,7 @@ export default function ResultScreenChapter2V2({vm,chapter1,onLine,onEvent,onRes
     <p>{x.reason||'回答内容をもとに確認しています。'}</p>
     {x.known&&Number.isFinite(Number(x.amount))&&<p>あなたの支出：<b>{money(Number(x.amount))}/月</b></p>}
     {x.comparable!==null&&x.comparable!==undefined&&Number.isFinite(Number(x.comparable))&&<p>比較の目安：{money(Number(x.comparable))}/月</p>}
-    {x.comparisonDifference!==null&&x.comparisonDifference!==undefined&&<p>比較差：{Number(x.comparisonDifference)>0?'+':''}{money(Math.abs(Number(x.comparisonDifference)))}/月 <small>※この差はムダ額・改善額ではありません</small></p>}
+    {x.comparisonDifference!==null&&x.comparisonDifference!==undefined&&<p>比較差：{chapter2V2SignedComparisonYen(Number(x.comparisonDifference))}/月 <small>※この差はムダ額・改善額ではありません</small></p>}
     {x.aAmount>0&&<p>回答から確認できた改善額：<b>{money(Number(x.aAmount))}/月</b></p>}
     {x.cUpper>0&&<p>追加の確認余地：最大 {money(Number(x.cUpper))}/月 <small>※削減できると確定した金額ではありません</small></p>}
     <p className="c2v2-next-check"><b>次の確認：</b>{x.nextAction||x.nextCheck||'支出の内容を確認'}</p>
