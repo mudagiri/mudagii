@@ -28,6 +28,7 @@ import './money-personality-device-final-v6.css';
 import './money-personality-optical-audit-v1.css';
 import './money-personality-human-design-v1.css';
 import './money-personality-legibility-v1.css';
+import './result-v18-conversion.css';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={version:string;sessionId:string;startedAt:string;answers:TraitAnswers;separators:SeparatorAnswers;history:HistoryEntry[];screenCount:number};
