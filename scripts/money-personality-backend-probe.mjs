@@ -22,6 +22,12 @@ if(!endpoint){
     }
     result.health=true;
     result.serverReportedBackend='money_personality';
+    const mode=process.env.PROBE_MODE||'health_only';
+    if(mode!=='health_only'&&mode!=='debug_upsert')throw new Error('INVALID_PROBE_MODE');
+    if(mode==='health_only'){
+      console.log(JSON.stringify({...result,mode:'health_only'}));
+      process.exit(0);
+    }
     const completedAt='2026-10-09T00:00:00.000Z';
     const payload={
       kind:'money_personality_pilot_v1',
@@ -57,7 +63,7 @@ if(!endpoint){
     if(!result.post2)throw new Error('SECOND_POST_NO_SERVER_ACK');
     console.log(JSON.stringify(result));
   }catch(e){
-    console.log(JSON.stringify({...result,errorCode:e?.message==='ENDPOINT_SHAPE_UNEXPECTED'||e?.message==='DEDICATED_BACKEND_HEALTH_MISMATCH'||e?.message==='FIRST_POST_NO_SERVER_ACK'||e?.message==='SECOND_POST_NO_SERVER_ACK'?e.message:'NETWORK_OR_TRANSPORT_ERROR'}));
+    console.log(JSON.stringify({...result,errorCode:e?.message==='ENDPOINT_SHAPE_UNEXPECTED'||e?.message==='DEDICATED_BACKEND_HEALTH_MISMATCH'||e?.message==='FIRST_POST_NO_SERVER_ACK'||e?.message==='SECOND_POST_NO_SERVER_ACK'||e?.message==='INVALID_PROBE_MODE'?e.message:'NETWORK_OR_TRANSPORT_ERROR'}));
     process.exitCode=1;
   }
 }
