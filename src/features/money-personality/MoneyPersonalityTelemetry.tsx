@@ -4,6 +4,7 @@ import {itemById} from './pilotLogic';
 import {getOrCreatePublicParticipantId,PUBLIC_MONEY_TYPE_VERSION} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
 import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
+import {attemptPublicMoneyDelivery} from './publicTelemetryDeliveryV1';
 
 type HistoryEntry={kind:'trait'|'separator';id:string};
 type StoredState={
@@ -19,7 +20,6 @@ type StoredState={
 export const MONEY_TYPE_STATE_KEY='mudagiri_money_type_public_state_v1';
 export const MONEY_TYPE_LAST_PAYLOAD_KEY='mudagiri_money_type_public_last_payload_v1';
 export const MONEY_TYPE_HANDOFF_KEY='mudagiri_money_type_handoff_v1';
-const SUBMITTED_KEY='mudagiri_money_type_public_submitted_v1';
 
 function readState():StoredState|null{
   try{
@@ -51,20 +51,6 @@ function buildResponses(state:StoredState){
       normalized_trait_score:state.answers[entry.id]??null,
     };
   });
-}
-
-async function postPayload(payload:unknown){
-  const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
-  if(!url)return;
-  try{
-    await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload),
-      keepalive:true,
-      mode:'no-cors',
-    });
-  }catch{}
 }
 
 function captureCompletedSession(){
@@ -137,9 +123,13 @@ function captureCompletedSession(){
     localStorage.setItem(MONEY_TYPE_HANDOFF_KEY,JSON.stringify(handoff));
   }catch{}
 
-  if(localStorage.getItem(SUBMITTED_KEY)===state.sessionId)return;
-  try{localStorage.setItem(SUBMITTED_KEY,state.sessionId)}catch{}
-  void postPayload(payload);
+  // GAS uses idempotent upsert by session_id. Network delivery is never
+  // asserted as successful: no-cors cannot expose the server receipt.
+  // If the endpoint is absent, do not mark the event as submitted.
+  const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
+  void attemptPublicMoneyDelivery({
+    sessionId:state.sessionId,payload,url,store:localStorage,
+  });
 }
 
 /**
