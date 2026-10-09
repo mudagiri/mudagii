@@ -58,6 +58,7 @@ async function createQuestShareCard():Promise<File|null>{
  }
  ctx.fillStyle='#ffe9aa';ctx.font='bold 52px sans-serif';ctx.fillText('12カテゴリ鑑定完了',540,1050);
  ctx.fillStyle='#d7e3eb';ctx.font='bold 28px sans-serif';ctx.fillText('好きなものは守って、ムダだけ斬る。',540,1130);
+ ctx.fillStyle='#f4d76b';ctx.font='bold 29px sans-serif';ctx.fillText('あなたの家計にも、隠れた敵がいるかも。',540,1198);
  ctx.fillStyle='#9eb4c1';ctx.font='24px sans-serif';ctx.fillText('金額・収入・地域・個別結果は含まれません',540,1240);
  const blob=await new Promise<Blob|null>(r=>canvas.toBlob(r,'image/png'));
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
