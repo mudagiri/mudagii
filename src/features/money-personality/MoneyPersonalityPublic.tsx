@@ -177,7 +177,8 @@ function Result({evaluation,sessionId,onRestart,debug}:{evaluation:ReturnType<ty
     balanceNote={balanceNote}
    onShare={share}
    shareStatus={shareStatus}
-   onExplore={kind=>recordMoneyTypeFunnel(kind==='scenes'?'scenes_expanded':'style_expanded',sessionId)}
+   onExplore={kind=>recordMoneyTypeFunnel(kind==='scenes'?'scenes_expanded':kind==='style'?'style_expanded':'share_channels_expanded',sessionId)}
+   onMilestone={event=>recordMoneyTypeFunnel(event,sessionId)}
    onOpenBook={()=>{recordMoneyTypeFunnel('type_book_opened',sessionId);window.location.href=moneyTypeBookUrl(job,style)}}
    onLineBonus={()=>{recordMoneyTypeFunnel('line_bonus_preview_opened',sessionId);setShowLineBonus(true);window.scrollTo({top:0,behavior:'auto'})}}
    onHousehold={()=>{recordMoneyTypeFunnel('household_cta_clicked',sessionId);try{localStorage.setItem('mudagiri_adventurer_class_v1',job)}catch{}window.location.href=householdUrl()}}
