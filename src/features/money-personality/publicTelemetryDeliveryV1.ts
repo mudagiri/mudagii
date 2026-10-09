@@ -90,3 +90,22 @@ export function sanitizedPublicMoneySourceUrl(href:string):string{
     return url.toString();
   }catch{return '';}
 }
+
+/**
+ * Pilot and public submissions must never be pooled. A completed session keeps
+ * its original cohort across subsequent deployments and retry attempts.
+ */
+export type MoneyPersonalityCollectionCohort='PILOT'|'PUBLIC';
+export function stableMoneyCollectionCohort(
+  previous:unknown,sessionId:string,configured:unknown
+):MoneyPersonalityCollectionCohort{
+  if(previous&&typeof previous==='object'){
+    const p=previous as {sessionId?:unknown;quality?:{collectionCohort?:unknown}};
+    if(p.sessionId===sessionId&&
+      (p.quality?.collectionCohort==='PUBLIC'||p.quality?.collectionCohort==='PILOT')){
+      return p.quality.collectionCohort;
+    }
+  }
+  // Public requires explicit build-time opt-in after reviewed release.
+  return configured==='PUBLIC'?'PUBLIC':'PILOT';
+}
