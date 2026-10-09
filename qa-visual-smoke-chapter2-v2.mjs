@@ -189,6 +189,29 @@ await page.getByText(/NEXT：RESULT \/ 戦果・改善候補・守る支出/).wa
 await shot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 await page.locator('.c2v2-root').waitFor({state:'visible',timeout:15000});
+// Inspect actual post-quiz UI: battle report precedes the consultation pitch.
+const uiAudit=await page.evaluate(()=>{
+ const hero=document.querySelector('[data-section="CHAPTER2_QUEST_COMPLETE"]');
+ const report=document.querySelector('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
+ const cta=document.querySelector('[data-section="CONSULTATION_CTA_TOP"]');
+ const h=hero.getBoundingClientRect(),p=hero.querySelector('p').getBoundingClientRect();
+ const img=hero.querySelector('img').getBoundingClientRect();
+ const overlap=Math.max(0,Math.min(p.right,img.right)-Math.max(p.left,img.left))*
+  Math.max(0,Math.min(p.bottom,img.bottom)-Math.max(p.top,img.top));
+ const titleSize=parseFloat(getComputedStyle(hero.querySelector('h1')).fontSize);
+ const smallestCaption=Math.min(...[...document.querySelectorAll('.c2v2-card small')]
+  .map(el=>parseFloat(getComputedStyle(el).fontSize)).filter(Number.isFinite));
+ const confirmed=document.querySelector('.c2v2-totals>div:not(.c2v2-unconfirmed)');
+ const unconfirmed=document.querySelector('.c2v2-totals>.c2v2-unconfirmed');
+ return {height:h.height,overlap,reportBeforeCta:report.compareDocumentPosition(cta)&Node.DOCUMENT_POSITION_FOLLOWING,
+  titleSize,smallestCaption,confirmedBg:getComputedStyle(confirmed).backgroundColor,
+  unconfirmedBg:getComputedStyle(unconfirmed).backgroundColor};
+});
+if(uiAudit.height>356)throw new Error('V2_HERO_WASTED_VERTICAL_SPACE:'+JSON.stringify(uiAudit));
+if(uiAudit.overlap>1)throw new Error('V2_HERO_TEXT_MASCOT_OVERLAP:'+JSON.stringify(uiAudit));
+if(!uiAudit.reportBeforeCta)throw new Error('V2_CONSULT_CTA_BEFORE_RESULTS');
+if(uiAudit.confirmedBg===uiAudit.unconfirmedBg)throw new Error('V2_SAVING_CERTAINTY_HIERARCHY_MISSING');
+if(uiAudit.titleSize<32||uiAudit.smallestCaption<13.5)throw new Error('V2_FONT_TOO_SMALL:'+JSON.stringify(uiAudit));
 await shot('13-v2-result-first-view',{allowVertical:true});
 const rendered=await page.locator('.c2v2-root').innerText();
 if(/TYPE UNLOCKED|称号を獲得|8タイプ図鑑|鉄壁マネー要塞|未来直感ゾンビ/.test(rendered)){
@@ -226,7 +249,7 @@ if(!String(native.text||'').includes('/pilot/money-type/'))throw new Error('CHAP
 if(/350000|70000|1800|未来直感ゾンビ|TYPE/.test(JSON.stringify(native))){
  throw new Error('V2_SHARE_PRIVACY:'+JSON.stringify(native));
 }
-await page.getByRole('button',{name:/ライフプラン相談の案内を見る/}).first().click();
+await page.getByRole('button',{name:/無料のライフプラン相談を確認する/}).first().click();
 await page.getByRole('dialog',{name:'ライフプラン相談の案内へ'}).waitFor();
 await shot('20-v2-consultation-dialog',{allowVertical:true});
 await page.getByRole('button',{name:'今は結果を見る'}).click();
