@@ -47,6 +47,14 @@ export function readChapter1HandoffV1(anonymousUserId:string,storage?:Pick<Stora
  }catch{return null;}
 }
 /** Chapter 2 share carries no amounts, identifiers, household attributes, or Chapter 1 type claims. */
+/** Route all Chapter 2 quest shares to the Chapter 1 entry. The Chapter 1 release is a dependency. */
+export function chapter2V2ReferralUrl(currentUrl:string,platform:string){
+ const root=new URL('./',currentUrl);
+ const url=new URL('pilot/money-type/',root);
+ url.searchParams.set('utm_source',platform);
+ url.searchParams.set('utm_campaign','household_quest_clear');
+ return url.toString();
+}
 export function chapter2V2ShareText(url:string){
- return '家計クエスト、12カテゴリの鑑定完了！\n好きなものは守って、ムダだけ斬る。\nあなたも家計を冒険してみる？\n'+url+'\n#ムダギリ診断';
+ return '家計クエスト、12カテゴリの鑑定完了！\n好きなものは守って、ムダだけ斬る。\nまずはお金の性格診断から、冒険してみる？\n'+url+'\n#ムダギリ診断';
 }
