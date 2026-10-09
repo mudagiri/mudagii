@@ -18,7 +18,16 @@ await page.addInitScript(()=>{
  window.__integrationShare=[];
  window.open=(url)=>{window.__integrationShare.push({kind:'open',url:String(url)});return null};
  try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true})}catch{}
- try{Object.defineProperty(navigator,'share',{configurable:true,value:async(info)=>window.__integrationShare.push({kind:'share',text:info.text,files:(info.files||[]).map(x=>x.name)})})}catch{}
+ try{Object.defineProperty(navigator,'share',{configurable:true,value:async(info)=>{
+  window.__integrationShare.push({kind:'share',text:info.text,files:(info.files||[]).map(x=>x.name)});
+  if(info?.files?.length){
+   const reader=new FileReader();
+   window.__v3SharePng=await new Promise((resolve,reject)=>{
+    reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error);
+    reader.readAsDataURL(info.files[0]);
+   });
+  }
+ }})}catch{}
 });
 async function screenshot(name){await page.screenshot({path:out+'/'+name+'.png',fullPage:true});}
 async function clickButton(pattern){const button=page.getByRole('button',{name:pattern}).first();await button.waitFor({state:'visible',timeout:12000});await button.click();}
@@ -253,6 +262,14 @@ await clickButton(/診断結果を見る/);
  assert.ok(x,'X share intent missing');
  const decoded=decodeURIComponent(new URL(x.url).searchParams.get('text')||'');
  assert.ok(decoded.includes(firstUrl),'Chapter 2 referral must lead to the integrated Chapter 1 entry');
+ await page.getByRole('button',{name:/画像カードをシェア／保存する/}).waitFor({state:'visible'});
+ await clickButton(/画像カードをシェア／保存する/);
+ await page.waitForFunction(()=>String(window.__v3SharePng||'').startsWith('data:image/png;base64,'),null,{timeout:12000});
+ const png=await page.evaluate(()=>window.__v3SharePng);
+ await fs.writeFile(out+'/06-v3-guild-social-card.png',Buffer.from(png.split(',')[1],'base64'));
+ const lastShare=await page.evaluate(()=>window.__integrationShare.find(x=>x.kind==='share'));
+ assert.ok(lastShare.files.includes('mudagiri-household-quest.png'),'native share should attach PNG');
+ assert.ok(!/1800|350000|70000|¥/.test(JSON.stringify(lastShare)),'share must not include sensitive financial amounts');
  await page.reload({waitUntil:'networkidle'});
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:14000});
  assert.ok((await page.locator('.c2v3-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
