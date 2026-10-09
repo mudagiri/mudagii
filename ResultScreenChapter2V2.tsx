@@ -291,7 +291,7 @@ const CSS=[
  '.c2v2-share-primary:disabled{opacity:.55}.c2v2-text-shares{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}',
  '.c2v2-text-shares button{min-height:48px;border:1px solid #58798a;background:#12293d;border-radius:11px;color:#eef6fc;font-size:14px;font-weight:850}',
  '.c2v2-root .c2v2-share-status{color:#ffe19a;font-weight:800}',
- '.c2v2-restart{display:block;margin:28px auto 0;padding:12px 16px;background:transparent;border:0;color:#c2d4e0;font-size:14px;text-decoration:underline;cursor:pointer;min-height:44px}',
+ '.c2v2-restart{display:block;margin:28px auto 0;padding:12px 16px;background:transparent;border:0;color:#c2d4e0;font-size:14px;text-decoration:underline;cursor:pointer;min-height:48px}',
  '.c2v2-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:grid;place-items:center;padding:16px}',
  '.c2v2-modal{width:min(100%,440px);background:#153047;border:1px solid #8fa8b8;border-radius:17px;padding:24px;color:#fff}',
  '.c2v2-modal h2{font-size:26px;line-height:1.3;margin:10px 0}.c2v2-modal p{font-size:15px;line-height:1.7}',
