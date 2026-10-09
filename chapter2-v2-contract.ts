@@ -48,5 +48,5 @@ export function readChapter1HandoffV1(anonymousUserId:string,storage?:Pick<Stora
 }
 /** Chapter 2 share carries no amounts, identifiers, household attributes, or Chapter 1 type claims. */
 export function chapter2V2ShareText(url:string){
- return '家計クエスト、12カテゴリの鑑定完了！\\n好きなものは守って、ムダだけ斬る。\\nあなたも家計を冒険してみる？\\n'+url+'\\n#ムダギリ診断';
+ return '家計クエスト、12カテゴリの鑑定完了！\n好きなものは守って、ムダだけ斬る。\nあなたも家計を冒険してみる？\n'+url+'\n#ムダギリ診断';
 }
