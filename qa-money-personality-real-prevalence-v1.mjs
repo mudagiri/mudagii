@@ -57,6 +57,7 @@ add('session-preview','anon-prev','INP','ENJOY',{cohort:'PILOT',url:'https://mud
 add('session-public-path','anon-public-path','INP','OPTIMIZE',{url:'https://mudagiri.github.io/mudagii/pilot/money-type/?utm_source=threads'});
 add('session-localhost','anon-local','INP','DRIVE',{url:'http://127.0.0.1:4173/?utm_source=x'});
 add('session-untagged','anon-untagged','INP','DRIVE',{omitCohort:true});
+add('session-pilot-retake','anon-prev','FNM','DRIVE',{cohort:'PILOT',completedAt:'2026-10-11T04:00:00Z'});
 add('session-test','anon-test','INP','ENJOY',{participantId:'qa_test_persona_0'});
 add('session-no-flags','anon-no-flags','INP','ENJOY',{omitFlags:true});
 add('session-bad-style','anon-bad','INP','ALIEN');
@@ -67,13 +68,16 @@ put(results,resultHeaders,{session_id:'session-3',anonymous_user_id:'anon-3',job
 const out=audit(sess,results);
 assert.equal(out.uniqueCompletedBrowserIds,7,'must count six unique valid browser IDs');
 assert.equal(out.eligibleBeforeAnonymousDedupe,8,'must keep all seven valid sessions before anon dedupe');
-assert.equal(out.exclusionCounts.duplicateAnonymous,1);
+assert.equal(out.exclusionCounts.duplicateAnonymous,2);
+assert.equal(out.pilotSample.duplicateAnonymous,1);
 assert.equal(out.exclusionCounts.duplicateSession,1);
 assert.equal(out.exclusionCounts.orphanResult,1);
 assert.equal(out.exclusionCounts.testOrDebug,3);
 assert.equal(out.exclusionCounts.preview,1);
 assert.equal(out.exclusionCounts.missingOrInvalidCohort,1);
 assert.equal(out.pilotSample.uniqueCompletedBrowserIds,1);
+assert.equal(out.pilotSample.byType.find(x=>x.code==='INP-ENJOY').count,1);
+assert.equal(out.bySource.find(x=>x.code==='threads').count,2);
 assert.equal(out.cohort,'PUBLIC');
 assert.equal(out.pilotSample.cohort,'PILOT');
 assert.equal(out.exclusionCounts.missingAuditFlags,1);
