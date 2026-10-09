@@ -1,0 +1,36 @@
+name: Probe Money Personality GAS (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      probe_mode:
+        description: 'Only health GET, or two synthetic QA POSTs (writes to dedicated Sheet)'
+        required: true
+        type: choice
+        default: health_only
+        options:
+          - health_only
+          - debug_upsert
+
+permissions:
+  contents: read
+
+concurrency:
+  group: money-personality-backend-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    environment: pilot-hidden-preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify dedicated GAS and optionally test upsert
+        env:
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          PROBE_MODE: ${{ inputs.probe_mode }}
+        run: node scripts/money-personality-backend-probe.mjs

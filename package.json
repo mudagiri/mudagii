@@ -39,7 +39,10 @@
     "qa:money-boundary-10k": "npx --yes tsx@4.20.6 qa-money-personality-boundary-stress-10000-v1.ts",
     "qa:money-prevalence": "npx --yes tsx@4.20.6 qa-money-personality-prevalence-sensitivity-v1.ts",
     "qa:money-semantic": "npx --yes tsx@4.20.6 qa-money-personality-result-semantic-guard-v1.ts",
-    "qa:money-cognitive": "npx --yes tsx@4.20.6 qa-money-personality-cognitive-v1.ts"
+    "qa:money-cognitive": "npx --yes tsx@4.20.6 qa-money-personality-cognitive-v1.ts",
+    "qa:money-delivery": "npx --yes tsx@4.20.6 qa-money-personality-delivery-v1.ts",
+    "qa:money-real-prevalence": "node qa-money-personality-real-prevalence-v1.mjs",
+    "qa:money-entry": "npx --yes tsx@4.20.6 qa-money-personality-public-entry-v1.ts"
   },
   "dependencies": {
     "react": "19.1.1",

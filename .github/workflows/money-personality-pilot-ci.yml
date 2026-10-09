@@ -6,13 +6,23 @@ on:
       - feature/money-personality-pilot
       - fix/money-personality-result-calibration-20261009
       - audit/money-personality-boundary-type32-20261009
+      - audit/money-personality-real-prevalence-pipeline-20261009
   pull_request:
     branches:
       - main
       - feature/money-personality-pilot
+      - audit/money-personality-prevalence-sensitivity-20261009
     paths:
       - 'src/features/money-personality/**'
+      - 'src/main.tsx'
+      - 'scripts/money-personality-backend-probe.mjs'
+      - 'scripts/check-money-personality-gas-health.mjs'
+      - 'scripts/verify-money-personality-build.mjs'
+      - '.github/workflows/deploy-money-personality-hidden-preview.yml'
+      - '.github/workflows/attach-money-personality-preview.yml'
       - 'qa-money-personality-*.ts'
+      - 'qa-money-personality-*.mjs'
+      - 'MUDAGIRI_MONEY_PERSONALITY_GAS_V1.gs'
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.json'
@@ -49,6 +59,8 @@ jobs:
           grep -q 'twitter:description' /tmp/money-personality-og.html
       - name: Public flow QA
         run: npm run qa:money-public-flow
+      - name: Public Chapter 1 routing, legacy isolation QA
+        run: npm run qa:money-entry
       - name: Engine QA
         run: npm run qa:money-engine
       - name: Result content QA
@@ -67,5 +79,15 @@ jobs:
         run: npm run qa:money-semantic
       - name: Cognitive pilot instrument QA
         run: npm run qa:money-cognitive
+      - name: GAS transport retry guard
+        run: npm run qa:money-delivery
+      - name: Real prevalence aggregation and exclusions QA
+        run: npm run qa:money-real-prevalence
+      - name: GAS backend separation guard
+        run: node qa-money-personality-backend-separation-v1.mjs
+      - name: Guard hidden preview against missing GAS URL
+        run: node qa-money-personality-release-gate-v1.mjs
+      - name: Reject wrong backend, missing transport, or missing deploy revision proof
+        run: node qa-money-personality-backend-contract-v1.mjs
       - name: Pilot QA
         run: npm run qa:money-pilot

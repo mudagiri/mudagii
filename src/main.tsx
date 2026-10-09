@@ -5,19 +5,13 @@ import MoneyPersonalityPilot from './features/money-personality/MoneyPersonality
 import MoneyPersonalityPublic from './features/money-personality/MoneyPersonalityPublic';
 import MoneyPersonalityTelemetry from './features/money-personality/MoneyPersonalityTelemetry';
 import MoneyPersonalityCognitivePilot from './features/money-personality/MoneyPersonalityCognitivePilot';
+import {resolveMoneyPersonalityEntryRoute} from './features/money-personality/publicRouteV1';
 import './style.css';
 
 const params=new URLSearchParams(window.location.search);
-const cleanPath=window.location.pathname.replace(/\/+$/,'');
-const isMoneyPersonalityAdaptive=
-  cleanPath.endsWith('/pilot/money-type/adaptive')||
-  params.get('adaptive')==='money-type'||
-  params.get('mode')==='adaptive';
-const isMoneyPersonalityPilot=
-  !isMoneyPersonalityAdaptive&&(
-    cleanPath.endsWith('/pilot/money-type')||
-    params.get('pilot')==='money-type'
-  );
+const route=resolveMoneyPersonalityEntryRoute(window.location.pathname,window.location.search);
+const isMoneyPersonalityAdaptive=route==='adaptive';
+const isMoneyPersonalityPilot=route==='legacy-pilot';
 const isMoneyPersonalityCognitive=isMoneyPersonalityAdaptive&&params.get('cognitive')==='1';
 
 createRoot(document.getElementById('root')!).render(

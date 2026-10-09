@@ -229,7 +229,7 @@ function validatePayload_(b){
   if(!String(b.participantId||''))throw new Error('participantId required');
   if(!String(b.anonymousUserId||''))throw new Error('anonymousUserId required');
   const formId=String(b.formId||'');
-  if(['PUBLIC_ADAPTIVE','PUBLIC_COGNITIVE_DEBRIEF'].indexOf(formId)<0)throw new Error('unsupported formId');
+  if(['PUBLIC_ADAPTIVE','PUBLIC_COGNITIVE_DEBRIEF','ALL_54'].indexOf(formId)<0)throw new Error('unsupported formId');
   const responses=Array.isArray(b.item_responses)?b.item_responses:[];
   if(responses.length>250)throw new Error('too many responses');
   const raw=safeJson_(b);
@@ -284,4 +284,175 @@ function safeJson_(v){
 }
 function jsonOut_(v){
   return ContentService.createTextOutput(JSON.stringify(v)).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/**
+ * Private owner-run rarity audit (never callable from doGet / doPost).
+ * Reads only ①セッション and ④結果. No new Sheet, no data mutation.
+ * The GAS editor's Run menu is the intended entry point.
+ */
+function auditMoneyPersonalityPrevalenceV1(){
+  const ss=SpreadsheetApp.getActive();
+  const sessions=ss.getSheetByName(MP_CFG.SHEETS.SESSIONS);
+  const results=ss.getSheetByName(MP_CFG.SHEETS.RESULTS);
+  if(!sessions||!results)throw new Error('Dedicated Money Personality tabs missing');
+  const audit=computeMoneyPersonalityPrevalenceV1_(
+    sessions.getDataRange().getValues(),
+    results.getDataRange().getValues()
+  );
+  // Log only aggregate counts; never anonymous IDs, user agents, raw URLs or answers.
+  Logger.log('MONEY_PERSONALITY_PREVALENCE_AUDIT_V1 '+JSON.stringify(audit));
+  return audit;
+}
+
+/**
+ * Pure aggregation: works on original dedicated V1 sheet headers.
+ * Output has no session_id, participant_id, anonymous_user_id, raw_json or URL.
+ * Dedupe policy: earliest valid first assessment per anonymous browser ID.
+ */
+function computeMoneyPersonalityPrevalenceV1_(sessionValues,resultValues){
+  const jobs=['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP'];
+  const styles=['DRIVE','ENJOY','SECURE','OPTIMIZE'];
+  const validJob=new Set(jobs),validStyle=new Set(styles);
+  function rows_(matrix,required){
+    if(!Array.isArray(matrix)||matrix.length===0)throw new Error('No headers');
+    const headers=matrix[0].map(String);
+    required.forEach(col=>{if(headers.indexOf(col)<0)throw new Error('Missing column '+col)});
+    return matrix.slice(1).filter(row=>Array.isArray(row)&&row.some(v=>v!==''&&v!==null&&v!==undefined))
+      .map(values=>{
+        const out={};
+        headers.forEach((key,i)=>out[key]=values[i]===undefined?'':values[i]);
+        return out;
+      });
+  }
+  const sessions=rows_(sessionValues,[
+    'session_id','anonymous_user_id','form_id','cognitive_mode',
+    'source_url','raw_json'
+  ]);
+  const results=rows_(resultValues,[
+    'session_id','anonymous_user_id','job_code','primary_style','completed_at'
+  ]);
+  const excluded={
+    orphanResult:0,notAdaptive:0,testOrDebug:0,preview:0,
+    missingIdentity:0,invalidResult:0,mismatchedIdentity:0,
+    invalidDate:0,duplicateAnonymous:0,duplicateSession:0,
+    missingAuditFlags:0
+  };
+  const sessionById=new Map();
+  sessions.forEach(row=>{
+    const id=String(row.session_id||'');
+    if(!id)return;
+    if(sessionById.has(id))excluded.duplicateSession++;
+    sessionById.set(id,row);
+  });
+  const candidates=[];
+  const seenSessionResults=new Set();
+  results.forEach(result=>{
+    const id=String(result.session_id||'');
+    if(!id||seenSessionResults.has(id)){
+      excluded.duplicateSession++;
+      return;
+    }
+    seenSessionResults.add(id);
+    const sess=sessionById.get(id);
+    if(!sess){excluded.orphanResult++;return;}
+    if(String(sess.form_id)!=='PUBLIC_ADAPTIVE'){
+      excluded.notAdaptive++;return;
+    }
+    let raw=null;
+    if(String(sess.raw_json||'')){
+      try{raw=JSON.parse(String(sess.raw_json))}catch(_){}
+    }
+    if(!raw||!raw.quality||typeof raw.quality.debugMode!=='boolean'){
+      excluded.missingAuditFlags++;return;
+    }
+    const q=raw.quality;
+    const cognitiveFlag=String(sess.cognitive_mode||'').toUpperCase()==='TRUE';
+    const variant=String(q.variant||'');
+    const idText=[String(sess.participant_id||''),id].join(' ');
+    if(cognitiveFlag||q.cognitiveMode===true||q.debugMode===true||
+      /COGNITIVE|DEBUG/i.test(variant)||/(^|[\s_-])(qa|test|e2e)([\s_-]|$)/i.test(idText)){
+      excluded.testOrDebug++;return;
+    }
+    const source=String(sess.source_url||'');
+    // Exclude preview builds, localhost and local test hosts from real-population reports.
+    if(/\/pilot\/money-type\/?|localhost|127\.0\.0\.1|example\.test/i.test(source)){
+      excluded.preview++;return;
+    }
+    const anon=String(sess.anonymous_user_id||'');
+    const resultAnon=String(result.anonymous_user_id||'');
+    if(!anon){excluded.missingIdentity++;return;}
+    if(resultAnon!==anon){excluded.mismatchedIdentity++;return;}
+    const job=String(result.job_code||''),style=String(result.primary_style||'');
+    if(!validJob.has(job)||!validStyle.has(style)){
+      excluded.invalidResult++;return;
+    }
+    const at=Date.parse(String(result.completed_at||''));
+    if(!Number.isFinite(at)){
+      excluded.invalidDate++;return;
+    }
+    candidates.push({anon,sessionId:id,job,style,at,source:prevalenceSourceCategoryV1_(source)});
+  });
+  candidates.sort((a,b)=>a.at-b.at||a.sessionId.localeCompare(b.sessionId));
+  const byJob={},byStyle={},byType={},bySource={};
+  jobs.forEach(j=>{byJob[j]=0;styles.forEach(s=>byType[j+'-'+s]=0)});
+  styles.forEach(s=>byStyle[s]=0);
+  ['x','instagram','threads','line','other_social','other','unspecified'].forEach(k=>bySource[k]=0);
+  const counted=new Set();
+  candidates.forEach(c=>{
+    if(counted.has(c.anon)){excluded.duplicateAnonymous++;return;}
+    counted.add(c.anon);
+    byJob[c.job]++;byStyle[c.style]++;byType[c.job+'-'+c.style]++;bySource[c.source]++;
+  });
+  const n=counted.size;
+  const summarize=(counts)=>Object.keys(counts).sort().map(code=>{
+    const count=counts[code];
+    const pct=n?Math.round(count*10000/n)/100:null;
+    const ci=n?prevalenceWilsonIntervalV1_(count,n):null;
+    return {code,count,percent:pct,ci95:ci};
+  });
+  const jobRows=summarize(byJob),styleRows=summarize(byStyle),typeRows=summarize(byType),sourceRows=summarize(bySource);
+  return {
+    version:'MUDAGIRI_REAL_PREVALENCE_AUDIT_V1',
+    kind:'ADMIN_AGGREGATE_NOT_POPULATION_ESTIMATE',
+    source:'dedicated_money_personality_sheet_v1',
+    rawSessionRows:sessions.length,rawResultRows:results.length,
+    eligibleBeforeAnonymousDedupe:candidates.length,
+    uniqueCompletedBrowserIds:n,
+    exclusionCounts:excluded,
+    byJob:jobRows,byStyle:styleRows,byType:typeRows,bySource:sourceRows,
+    publication:{
+      ready:false,
+      // Even if enough responses are present, an owner must inspect sample
+      // composition, consent/data retention and CI coverage before publication.
+      preliminaryMinimumReached:n>=5000,
+      minUniqueResponses:5000,
+      minimumCellCount:30,
+      scope:'診断を完了した匿名ブラウザID（日本人全体ではない）',
+      notes:'Never publish until owner review; unsupported UTM is unspecified, not direct',
+    }
+  };
+}
+function prevalenceSourceCategoryV1_(rawUrl){
+  const s=String(rawUrl||'');
+  const match=s.match(/[?&](utm_source|source)=([^&#]+)/i);
+  if(!match)return 'unspecified';
+  let value=match[2];
+  try{value=decodeURIComponent(value.replace(/\+/g,' '))}catch(_){}
+  value=value.toLowerCase();
+  if(/^(x|twitter)$/.test(value))return 'x';
+  if(/^(instagram|ig|insta)$/.test(value))return 'instagram';
+  if(/^(threads|thread)$/.test(value))return 'threads';
+  if(/^(line|line_official|official_line)$/.test(value))return 'line';
+  if(/^(facebook|fb|tiktok|youtube|social)$/.test(value))return 'other_social';
+  return 'other';
+}
+function prevalenceWilsonIntervalV1_(count,n){
+  if(n<=0)return null;
+  const z=1.95996398454,p=count/n,z2=z*z;
+  const denominator=1+z2/n,center=(p+z2/(2*n))/denominator;
+  const half=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/denominator;
+  return [Math.round(Math.max(0,center-half)*10000)/100,
+          Math.round(Math.min(1,center+half)*10000)/100];
 }
