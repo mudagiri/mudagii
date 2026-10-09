@@ -1,0 +1,91 @@
+name: Chapter 2 V3 World Reward QA
+
+on:
+  push:
+    branches:
+      - feat/chapter2-result-v3-world-impact-20261009
+  pull_request:
+    branches:
+      - integration/chapter1-chapter2-v2-20261009
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chapter2-v3-world-reward
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate frozen engine boundaries and both result contracts
+        run: |
+          npm run build
+          npm run qa:chapter2-v2
+          npm run qa:chapter2-v3
+          npm run qa:money-entry
+          npm run qa:money-public-flow
+          npm run qa:money-engine
+          npm run qa:resume
+          npm run qa:result-v5
+
+      - name: Install browser runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+
+      - name: Build V3 test-only pages with no GAS destination
+        env:
+          VITE_CHAPTER2_V3: "1"
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MUDAGIRI_GAS_URL: ""
+        run: |
+          npm run build
+          mkdir -p site/pilot/chapter2-v2/pilot/money-type
+          cp -R dist/. site/pilot/chapter2-v2/
+          cp -R dist/. site/pilot/chapter2-v2/pilot/money-type/
+          if grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v2/assets/*.js; then
+            echo "::error::Unexpected GAS URL inside offline V3"
+            exit 1
+          fi
+          git rev-parse HEAD > site/pilot/chapter2-v2/V3_SHA.txt
+
+      - name: Start local static website (no deployment)
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory site > /tmp/v3-qa-server.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v2/ >/dev/null; then exit 0; fi
+            sleep 0.5
+          done
+          cat /tmp/v3-qa-server.log
+          exit 1
+
+      - name: Chapter 1 to V3 journey in Chrome
+        env:
+          BROWSER_ENGINE: chromium
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/chapter2-v2/
+        run: node qa-chapters-v3-browser.mjs
+
+      - name: Chapter 1 to V3 journey in iPhone WebKit
+        env:
+          BROWSER_ENGINE: webkit
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/chapter2-v2/
+        run: node qa-chapters-v3-browser.mjs
+
+      - name: Preserve full-width screenshots and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter2-v3-world-reward-qa-screenshots
+          path: |
+            integration-v3-mobile-qa/
+          if-no-files-found: warn
+          retention-days: 14
