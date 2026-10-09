@@ -4,6 +4,7 @@ import {MONEY_TYPE_STATE_KEY} from './MoneyPersonalityTelemetry';
 import {buildPublicCoreOrder,getOrCreatePublicParticipantId,orderAdaptiveItemIds} from './publicFlowV1';
 import {MONEY_RESULT_CONTENT_VERSION} from './resultContentV1';
 import {getOrCreateAnonymousUserId} from '../../../persistence-v1';
+import {attemptPublicMoneyDelivery,sanitizedPublicMoneySourceUrl} from './publicTelemetryDeliveryV1';
 import {
   buildCognitiveDebriefPayload,COGNITIVE_FLAG_LABEL,emptyCognitiveDebrief,isCognitiveDebriefComplete,
   MONEY_COGNITIVE_LAST_PAYLOAD_KEY,MONEY_COGNITIVE_PILOT_VERSION,MONEY_COGNITIVE_STORAGE_KEY,
@@ -46,12 +47,16 @@ function deriveCurrentTarget(state:PublicState,participantId:string):{target:Cur
   return {target:null,done:evaluation.complete,evaluation};
 }
 
-async function postPayload(payload:unknown){
+export const MONEY_COGNITIVE_DELIVERY_KEY='mudagiri_money_type_cognitive_delivery_v1';
+async function postPayload(payload:{sessionId:string}){
   const url=(import.meta as any).env?.VITE_MONEY_PERSONALITY_GAS_URL as string|undefined;
-  if(!url)return;
-  try{await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),keepalive:true,mode:'no-cors'})}catch{}
+  // Separate retry record from the public assessment to prevent mutual eviction.
+  // no-cors transport completion NEVER confirms that GAS saved the feedback.
+  return attemptPublicMoneyDelivery({
+    sessionId:payload.sessionId,payload,url,store:localStorage,
+    storageKey:MONEY_COGNITIVE_DELIVERY_KEY,
+  });
 }
-
 export default function MoneyPersonalityCognitivePilot(){
   const participantId=useMemo(()=>getOrCreatePublicParticipantId(),[]);
   const anonymousUserId=useMemo(()=>getOrCreateAnonymousUserId(),[]);
@@ -79,6 +84,24 @@ export default function MoneyPersonalityCognitivePilot(){
   },[publicState?.sessionId]);
 
   useEffect(()=>{if(local.sessionId)persistLocal(local)},[local]);
+
+  // Resume a queued Cognitive submission whenever a participant revisits a
+  // completed result. Bounded retries are independent of public result data.
+  useEffect(()=>{
+    const tryAgain=()=>{
+      try{
+        const payload=JSON.parse(localStorage.getItem(MONEY_COGNITIVE_LAST_PAYLOAD_KEY)||'null');
+        if(!payload||typeof payload.sessionId!=='string'||
+          payload.formId!=='PUBLIC_COGNITIVE_DEBRIEF'||
+          payload.quality?.parentSessionId!==publicState?.sessionId)return;
+        void postPayload(payload);
+      }catch{}
+    };
+    tryAgain();
+    const timer=window.setInterval(tryAgain,60000);
+    return ()=>window.clearInterval(timer);
+  },[publicState?.sessionId]);
+
 
   const derived=useMemo(()=>publicState?deriveCurrentTarget(publicState,participantId):null,[publicState,participantId]);
   const target=derived?.target??null;
@@ -139,7 +162,7 @@ export default function MoneyPersonalityCognitivePilot(){
     const payload=buildCognitiveDebriefPayload({
       parentSessionId:publicState.sessionId,anonymousUserId,participantId,startedAt:publicState.startedAt,completedAt,itemNotes:local.notes,debrief:local.debrief,
       jobCode:evaluation.jobCode!,jobName:evaluation.jobName||'',primaryStyle:evaluation.style.primary!,secondaryStyle:evaluation.style.secondary!,
-      separatorCount,resultContentVersion:MONEY_RESULT_CONTENT_VERSION,userAgent:navigator.userAgent,sourceUrl:window.location.href,
+      separatorCount,resultContentVersion:MONEY_RESULT_CONTENT_VERSION,userAgent:navigator.userAgent,sourceUrl:sanitizedPublicMoneySourceUrl(window.location.href),
     });
     try{localStorage.setItem(MONEY_COGNITIVE_LAST_PAYLOAD_KEY,JSON.stringify(payload))}catch{}
     setLocal(s=>({...s,submittedAt:completedAt}));
@@ -151,7 +174,7 @@ export default function MoneyPersonalityCognitivePilot(){
     {open&&<div className="mpp-cog-backdrop" role="dialog" aria-modal="true" aria-label="Cognitive Pilot feedback">
       <section className="mpp-cog-panel">
         <header><div><b>Cognitive Pilot</b><span>診断そのものではなく、テスト用の感想です</span></div><button type="button" onClick={()=>setOpen(false)}>×</button></header>
-        {submitted?<div className="mpp-cog-thanks"><b>回答を保存しました</b><p>ありがとう。このデータは質問文・Result・導線の改善にだけ使います。</p></div>:<>
+        {submitted?<div className="mpp-cog-thanks"><b>回答を端末内に保存しました</b><p>ありがとう。専用サーバーにも送信を試みますが、受信確認は管理側で行います。質問文・Result・導線の改善以外には使用しません。</p></div>:<>
           <Rating title="JOB名は自分っぽい？" value={local.debrief.jobFit} onChange={v=>setDebrief('jobFit',v)} left="全く違う" right="かなり自分っぽい"/>
           <Rating title="Result全体は当たってる？" value={local.debrief.resultFit} onChange={v=>setDebrief('resultFit',v)} left="違う" right="かなり当たる"/>
           <Rating title="質問は理解しやすかった？" value={local.debrief.questionClarity} onChange={v=>setDebrief('questionClarity',v)} left="分かりづらい" right="分かりやすい"/>

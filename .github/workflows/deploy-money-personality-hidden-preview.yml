@@ -25,6 +25,8 @@ concurrency:
 
 jobs:
   build:
+    # Environment-scoped secrets must be available to the BUILD job, not only deploy.
+    environment: pilot-hidden-preview
     outputs:
       pilot_sha: ${{ steps.capture_pilot_sha.outputs.sha }}
     runs-on: ubuntu-latest
@@ -63,7 +65,7 @@ jobs:
 
       - name: Require dedicated Money Personality GAS endpoint before preview publish
         env:
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
         run: |
           if [[ -z "$VITE_MONEY_PERSONALITY_GAS_URL" ]]; then
             echo "::error::Dedicated Money Personality GAS URL is unavailable; hidden preview deployment blocked."
@@ -75,14 +77,15 @@ jobs:
           fi
       - name: Verify this is the dedicated Money Personality GAS (read only)
         env:
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
         run: node pilot-site/scripts/check-money-personality-gas-health.mjs
 
       - name: Build pilot candidate
         working-directory: pilot-site
         env:
           VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
         run: |
           npm ci
           npm run build

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PUBLIC_MONEY_DELIVERY_KEY,MAX_PUBLIC_ATTEMPTS,
   attemptPublicMoneyDelivery,readPublicDeliveryRecord,publicDeliveryEligible,
-  stablePublicMoneyCompletedAt,sanitizedPublicMoneySourceUrl,
+  stablePublicMoneyCompletedAt,sanitizedPublicMoneySourceUrl,stableMoneyCollectionCohort,
 } from './src/features/money-personality/publicTelemetryDeliveryV1';
 
 const map=new Map<string,string>();
@@ -62,6 +62,34 @@ assert.equal(stablePublicMoneyCompletedAt({sessionId:'foo',completedAt:firstComp
 assert.equal(stablePublicMoneyCompletedAt({sessionId:'bar',completedAt:firstCompletion},'foo','2026-10-10T00:00:00Z'),'2026-10-10T00:00:00Z');
 assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/?utm_source=Instagram&access_token=privateSecret#share'), 'https://mudagiri.github.io/mudagii/?utm_source=instagram');
 assert.equal(sanitizedPublicMoneySourceUrl('https://mudagiri.github.io/mudagii/pilot/money-type/?cognitive=1&debug=1'), 'https://mudagiri.github.io/mudagii/pilot/money-type/');
+assert.equal(stableMoneyCollectionCohort(null,'session-1',undefined),'PILOT');
+assert.equal(stableMoneyCollectionCohort(null,'session-1','PUBLIC'),'PUBLIC');
+assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PILOT'}},'session-1','PUBLIC'),'PILOT');
+assert.equal(stableMoneyCollectionCohort({sessionId:'session-1',quality:{collectionCohort:'PUBLIC'}},'session-1','PILOT'),'PUBLIC');
+assert.equal(stableMoneyCollectionCohort({sessionId:'other',quality:{collectionCohort:'PUBLIC'}},'session-1',undefined),'PILOT');
+
+const cognitiveKey='mudagiri_money_type_cognitive_delivery_v1';
+let cognitiveTries=0;
+const cognitiveFetcher=async (_url:string,_init:RequestInit)=>{
+  cognitiveTries++;
+  return {type:'opaque'};
+};
+const cog1=await attemptPublicMoneyDelivery({
+  sessionId:'foo__cognitive',payload:{sessionId:'foo__cognitive'},
+  url:URL,store,storageKey:cognitiveKey,fetcher:cognitiveFetcher,now:15000,
+});
+assert.equal(cog1,'OPAQUE_UNVERIFIED');
+assert.equal(cognitiveTries,1);
+assert.equal(readPublicDeliveryRecord(store,'foo__cognitive',cognitiveKey)?.attempts,1);
+assert.equal(readPublicDeliveryRecord(store,'bar')?.attempts,2,
+  'independent cognitive submission must preserve current assessment delivery health');
+assert.equal(readPublicDeliveryRecord(store,'foo'),null,
+  'the public key intentionally tracks the latest assessment session only');
+await attemptPublicMoneyDelivery({
+  sessionId:'foo__cognitive',payload:{sessionId:'foo__cognitive'},
+  url:URL,store,storageKey:cognitiveKey,fetcher:cognitiveFetcher,now:15001,
+});
+assert.equal(cognitiveTries,1,'observer and retry should not flood cognitive GAS');
 console.log(JSON.stringify({ok:true,suite:'MUDAGIRI_PUBLIC_GAS_DELIVERY_V1',
   noEndpointDoesNotMarkSent:true,opaqueNeverClaimsConfirmed:true,
   retriesCapped:MAX_PUBLIC_ATTEMPTS,failedTransportRetryMinutes:5,

@@ -31,6 +31,6 @@ jobs:
           node-version: 22
       - name: Verify dedicated GAS and optionally test upsert
         env:
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
           PROBE_MODE: ${{ inputs.probe_mode }}
         run: node scripts/money-personality-backend-probe.mjs

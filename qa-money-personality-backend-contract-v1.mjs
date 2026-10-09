@@ -44,6 +44,8 @@ for(const f of ['deploy-money-personality-hidden-preview.yml','attach-money-pers
  assert.ok(yaml.includes('steps.capture_pilot_sha.outputs.sha'),f+' captured SHA output missing');
  assert.ok(yaml.includes('REVISION_SHA.txt'),f+' published marker probe missing');
  assert.ok(yaml.includes('EXPECTED_PILOT_SHA'),f+' exact revision comparison missing');
+ assert.ok(yaml.includes('VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT'),f+' unreviewed Preview may pollute PUBLIC cohort');
+ assert.ok(yaml.includes('environment: pilot-hidden-preview'),f+' build job cannot access environment-level secret');
 }
 console.log(JSON.stringify({suite:'MUDAGIRI_DEDICATED_GAS_RELEASE_CONTRACT_V1',ok:true,
   frontendCannotUseHouseholdGAS:true, wrongBackendRejected:true,
