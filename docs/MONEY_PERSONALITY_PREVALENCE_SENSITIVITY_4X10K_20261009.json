@@ -1,0 +1,1703 @@
+{
+  "version": "MUDAGIRI_PREVALENCE_SENSITIVITY_V1",
+  "caveat": "HYPOTHETICAL INPUT MODELS. NOT REAL PARTICIPANTS, JAPANESE PREVALENCE, OR RESEARCH-VALIDATED MBTI FREQUENCIES.",
+  "assumptions": {
+    "nPerModel": 10000,
+    "responseNoiseSd": 0.77,
+    "modelDescriptions": {
+      "SYMMETRIC_INDEPENDENT": "all three binary directions p=.5 independent; style preference 25% each",
+      "SKEWED_INDEPENDENT": "F=.68 D=.62 M=.72 independent; style preference [38%,30%,21%,11%]",
+      "CORRELATED_HYPOTHETICAL": "F=.62; D=.63 if F else .35; M=.80 if F else .28; style preference depends on F",
+      "SOCIAL_ENTRY_HYPOTHETICAL": "F=.28 D=.33 M=.34 independent; style preference [20%,58%,8%,14%]"
+    }
+  },
+  "reports": [
+    {
+      "model": "SYMMETRIC_INDEPENDENT",
+      "N": 10000,
+      "meanQuestions": 40.57,
+      "job": {
+        "count": 8,
+        "mostCommon": [
+          {
+            "code": "IDP",
+            "n": 1298,
+            "pct": 12.98
+          },
+          {
+            "code": "FDP",
+            "n": 1281,
+            "pct": 12.81
+          },
+          {
+            "code": "FNP",
+            "n": 1250,
+            "pct": 12.5
+          },
+          {
+            "code": "IDM",
+            "n": 1243,
+            "pct": 12.43
+          },
+          {
+            "code": "INP",
+            "n": 1237,
+            "pct": 12.37
+          },
+          {
+            "code": "INM",
+            "n": 1233,
+            "pct": 12.33
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "FNM",
+            "n": 1227,
+            "pct": 12.27
+          },
+          {
+            "code": "FDM",
+            "n": 1231,
+            "pct": 12.31
+          },
+          {
+            "code": "INM",
+            "n": 1233,
+            "pct": 12.33
+          },
+          {
+            "code": "INP",
+            "n": 1237,
+            "pct": 12.37
+          },
+          {
+            "code": "IDM",
+            "n": 1243,
+            "pct": 12.43
+          },
+          {
+            "code": "FNP",
+            "n": 1250,
+            "pct": 12.5
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 3,
+        "all": [
+          {
+            "code": "IDP",
+            "n": 1298,
+            "pct": 12.98
+          },
+          {
+            "code": "FDP",
+            "n": 1281,
+            "pct": 12.81
+          },
+          {
+            "code": "FNP",
+            "n": 1250,
+            "pct": 12.5
+          },
+          {
+            "code": "IDM",
+            "n": 1243,
+            "pct": 12.43
+          },
+          {
+            "code": "INP",
+            "n": 1237,
+            "pct": 12.37
+          },
+          {
+            "code": "INM",
+            "n": 1233,
+            "pct": 12.33
+          },
+          {
+            "code": "FDM",
+            "n": 1231,
+            "pct": 12.31
+          },
+          {
+            "code": "FNM",
+            "n": 1227,
+            "pct": 12.27
+          }
+        ]
+      },
+      "style": {
+        "count": 4,
+        "mostCommon": [
+          {
+            "code": "DRIVE",
+            "n": 2559,
+            "pct": 25.59
+          },
+          {
+            "code": "ENJOY",
+            "n": 2504,
+            "pct": 25.04
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 2474,
+            "pct": 24.74
+          },
+          {
+            "code": "SECURE",
+            "n": 2463,
+            "pct": 24.63
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "SECURE",
+            "n": 2463,
+            "pct": 24.63
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 2474,
+            "pct": 24.74
+          },
+          {
+            "code": "ENJOY",
+            "n": 2504,
+            "pct": 25.04
+          },
+          {
+            "code": "DRIVE",
+            "n": 2559,
+            "pct": 25.59
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 2,
+        "all": [
+          {
+            "code": "DRIVE",
+            "n": 2559,
+            "pct": 25.59
+          },
+          {
+            "code": "ENJOY",
+            "n": 2504,
+            "pct": 25.04
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 2474,
+            "pct": 24.74
+          },
+          {
+            "code": "SECURE",
+            "n": 2463,
+            "pct": 24.63
+          }
+        ]
+      },
+      "type": {
+        "count": 32,
+        "mostCommon": [
+          {
+            "code": "FDP-ENJOY",
+            "n": 342,
+            "pct": 3.42
+          },
+          {
+            "code": "FNP-SECURE",
+            "n": 339,
+            "pct": 3.39
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 339,
+            "pct": 3.39
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 336,
+            "pct": 3.36
+          },
+          {
+            "code": "IDP-DRIVE",
+            "n": 329,
+            "pct": 3.29
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 326,
+            "pct": 3.26
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "FNM-SECURE",
+            "n": 280,
+            "pct": 2.8
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 295,
+            "pct": 2.95
+          },
+          {
+            "code": "INM-SECURE",
+            "n": 296,
+            "pct": 2.96
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 297,
+            "pct": 2.97
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 298,
+            "pct": 2.98
+          },
+          {
+            "code": "FDM-SECURE",
+            "n": 298,
+            "pct": 2.98
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 4.999,
+        "all": [
+          {
+            "code": "FDP-ENJOY",
+            "n": 342,
+            "pct": 3.42
+          },
+          {
+            "code": "FNP-SECURE",
+            "n": 339,
+            "pct": 3.39
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 339,
+            "pct": 3.39
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 336,
+            "pct": 3.36
+          },
+          {
+            "code": "IDP-DRIVE",
+            "n": 329,
+            "pct": 3.29
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 326,
+            "pct": 3.26
+          },
+          {
+            "code": "FDM-DRIVE",
+            "n": 324,
+            "pct": 3.24
+          },
+          {
+            "code": "FDP-DRIVE",
+            "n": 317,
+            "pct": 3.17
+          },
+          {
+            "code": "IDM-DRIVE",
+            "n": 317,
+            "pct": 3.17
+          },
+          {
+            "code": "IDP-ENJOY",
+            "n": 317,
+            "pct": 3.17
+          },
+          {
+            "code": "FNM-OPTIMIZE",
+            "n": 316,
+            "pct": 3.16
+          },
+          {
+            "code": "INP-SECURE",
+            "n": 316,
+            "pct": 3.16
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 314,
+            "pct": 3.14
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 313,
+            "pct": 3.13
+          },
+          {
+            "code": "INP-ENJOY",
+            "n": 313,
+            "pct": 3.13
+          },
+          {
+            "code": "FDP-OPTIMIZE",
+            "n": 312,
+            "pct": 3.12
+          },
+          {
+            "code": "FNP-DRIVE",
+            "n": 312,
+            "pct": 3.12
+          },
+          {
+            "code": "IDM-SECURE",
+            "n": 311,
+            "pct": 3.11
+          },
+          {
+            "code": "FDP-SECURE",
+            "n": 310,
+            "pct": 3.1
+          },
+          {
+            "code": "INP-OPTIMIZE",
+            "n": 310,
+            "pct": 3.1
+          },
+          {
+            "code": "IDM-ENJOY",
+            "n": 309,
+            "pct": 3.09
+          },
+          {
+            "code": "IDM-OPTIMIZE",
+            "n": 306,
+            "pct": 3.06
+          },
+          {
+            "code": "FNM-ENJOY",
+            "n": 305,
+            "pct": 3.05
+          },
+          {
+            "code": "INM-ENJOY",
+            "n": 304,
+            "pct": 3.04
+          },
+          {
+            "code": "FNP-ENJOY",
+            "n": 300,
+            "pct": 3
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 299,
+            "pct": 2.99
+          },
+          {
+            "code": "FDM-SECURE",
+            "n": 298,
+            "pct": 2.98
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 298,
+            "pct": 2.98
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 297,
+            "pct": 2.97
+          },
+          {
+            "code": "INM-SECURE",
+            "n": 296,
+            "pct": 2.96
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 295,
+            "pct": 2.95
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 280,
+            "pct": 2.8
+          }
+        ]
+      }
+    },
+    {
+      "model": "SKEWED_INDEPENDENT",
+      "N": 10000,
+      "meanQuestions": 40.51,
+      "job": {
+        "count": 8,
+        "mostCommon": [
+          {
+            "code": "FDM",
+            "n": 2388,
+            "pct": 23.88
+          },
+          {
+            "code": "FNM",
+            "n": 1618,
+            "pct": 16.18
+          },
+          {
+            "code": "IDM",
+            "n": 1474,
+            "pct": 14.74
+          },
+          {
+            "code": "FDP",
+            "n": 1279,
+            "pct": 12.79
+          },
+          {
+            "code": "INM",
+            "n": 1014,
+            "pct": 10.14
+          },
+          {
+            "code": "FNP",
+            "n": 961,
+            "pct": 9.61
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "INP",
+            "n": 537,
+            "pct": 5.37
+          },
+          {
+            "code": "IDP",
+            "n": 729,
+            "pct": 7.29
+          },
+          {
+            "code": "FNP",
+            "n": 961,
+            "pct": 9.61
+          },
+          {
+            "code": "INM",
+            "n": 1014,
+            "pct": 10.14
+          },
+          {
+            "code": "FDP",
+            "n": 1279,
+            "pct": 12.79
+          },
+          {
+            "code": "IDM",
+            "n": 1474,
+            "pct": 14.74
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 2.867,
+        "all": [
+          {
+            "code": "FDM",
+            "n": 2388,
+            "pct": 23.88
+          },
+          {
+            "code": "FNM",
+            "n": 1618,
+            "pct": 16.18
+          },
+          {
+            "code": "IDM",
+            "n": 1474,
+            "pct": 14.74
+          },
+          {
+            "code": "FDP",
+            "n": 1279,
+            "pct": 12.79
+          },
+          {
+            "code": "INM",
+            "n": 1014,
+            "pct": 10.14
+          },
+          {
+            "code": "FNP",
+            "n": 961,
+            "pct": 9.61
+          },
+          {
+            "code": "IDP",
+            "n": 729,
+            "pct": 7.29
+          },
+          {
+            "code": "INP",
+            "n": 537,
+            "pct": 5.37
+          }
+        ]
+      },
+      "style": {
+        "count": 4,
+        "mostCommon": [
+          {
+            "code": "DRIVE",
+            "n": 3449,
+            "pct": 34.49
+          },
+          {
+            "code": "ENJOY",
+            "n": 2989,
+            "pct": 29.89
+          },
+          {
+            "code": "SECURE",
+            "n": 2197,
+            "pct": 21.97
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1365,
+            "pct": 13.65
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "OPTIMIZE",
+            "n": 1365,
+            "pct": 13.65
+          },
+          {
+            "code": "SECURE",
+            "n": 2197,
+            "pct": 21.97
+          },
+          {
+            "code": "ENJOY",
+            "n": 2989,
+            "pct": 29.89
+          },
+          {
+            "code": "DRIVE",
+            "n": 3449,
+            "pct": 34.49
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 1.923,
+        "all": [
+          {
+            "code": "DRIVE",
+            "n": 3449,
+            "pct": 34.49
+          },
+          {
+            "code": "ENJOY",
+            "n": 2989,
+            "pct": 29.89
+          },
+          {
+            "code": "SECURE",
+            "n": 2197,
+            "pct": 21.97
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1365,
+            "pct": 13.65
+          }
+        ]
+      },
+      "type": {
+        "count": 32,
+        "mostCommon": [
+          {
+            "code": "FDM-DRIVE",
+            "n": 817,
+            "pct": 8.17
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 704,
+            "pct": 7.04
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 568,
+            "pct": 5.68
+          },
+          {
+            "code": "FDM-SECURE",
+            "n": 540,
+            "pct": 5.4
+          },
+          {
+            "code": "IDM-DRIVE",
+            "n": 487,
+            "pct": 4.87
+          },
+          {
+            "code": "FNM-ENJOY",
+            "n": 472,
+            "pct": 4.72
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "INP-OPTIMIZE",
+            "n": 69,
+            "pct": 0.69
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 83,
+            "pct": 0.83
+          },
+          {
+            "code": "INP-SECURE",
+            "n": 111,
+            "pct": 1.11
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 132,
+            "pct": 1.32
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 136,
+            "pct": 1.36
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 170,
+            "pct": 1.7
+          }
+        ],
+        "rareUnder1Percent": [
+          "IDP-OPTIMIZE",
+          "INP-OPTIMIZE"
+        ],
+        "entropyBits": 4.789,
+        "all": [
+          {
+            "code": "FDM-DRIVE",
+            "n": 817,
+            "pct": 8.17
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 704,
+            "pct": 7.04
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 568,
+            "pct": 5.68
+          },
+          {
+            "code": "FDM-SECURE",
+            "n": 540,
+            "pct": 5.4
+          },
+          {
+            "code": "IDM-DRIVE",
+            "n": 487,
+            "pct": 4.87
+          },
+          {
+            "code": "FNM-ENJOY",
+            "n": 472,
+            "pct": 4.72
+          },
+          {
+            "code": "FDP-DRIVE",
+            "n": 463,
+            "pct": 4.63
+          },
+          {
+            "code": "IDM-ENJOY",
+            "n": 456,
+            "pct": 4.56
+          },
+          {
+            "code": "FDP-ENJOY",
+            "n": 386,
+            "pct": 3.86
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 348,
+            "pct": 3.48
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 344,
+            "pct": 3.44
+          },
+          {
+            "code": "FNP-DRIVE",
+            "n": 333,
+            "pct": 3.33
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 327,
+            "pct": 3.27
+          },
+          {
+            "code": "IDM-SECURE",
+            "n": 320,
+            "pct": 3.2
+          },
+          {
+            "code": "INM-ENJOY",
+            "n": 295,
+            "pct": 2.95
+          },
+          {
+            "code": "FNP-ENJOY",
+            "n": 276,
+            "pct": 2.76
+          },
+          {
+            "code": "FDP-SECURE",
+            "n": 257,
+            "pct": 2.57
+          },
+          {
+            "code": "IDP-DRIVE",
+            "n": 252,
+            "pct": 2.52
+          },
+          {
+            "code": "INM-SECURE",
+            "n": 239,
+            "pct": 2.39
+          },
+          {
+            "code": "FNM-OPTIMIZE",
+            "n": 234,
+            "pct": 2.34
+          },
+          {
+            "code": "IDP-ENJOY",
+            "n": 224,
+            "pct": 2.24
+          },
+          {
+            "code": "FNP-SECURE",
+            "n": 216,
+            "pct": 2.16
+          },
+          {
+            "code": "IDM-OPTIMIZE",
+            "n": 211,
+            "pct": 2.11
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 181,
+            "pct": 1.81
+          },
+          {
+            "code": "INP-ENJOY",
+            "n": 176,
+            "pct": 1.76
+          },
+          {
+            "code": "FDP-OPTIMIZE",
+            "n": 173,
+            "pct": 1.73
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 170,
+            "pct": 1.7
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 136,
+            "pct": 1.36
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 132,
+            "pct": 1.32
+          },
+          {
+            "code": "INP-SECURE",
+            "n": 111,
+            "pct": 1.11
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 83,
+            "pct": 0.83
+          },
+          {
+            "code": "INP-OPTIMIZE",
+            "n": 69,
+            "pct": 0.69
+          }
+        ]
+      }
+    },
+    {
+      "model": "CORRELATED_HYPOTHETICAL",
+      "N": 10000,
+      "meanQuestions": 40.46,
+      "job": {
+        "count": 8,
+        "mostCommon": [
+          {
+            "code": "FDM",
+            "n": 2322,
+            "pct": 23.22
+          },
+          {
+            "code": "FNM",
+            "n": 1664,
+            "pct": 16.64
+          },
+          {
+            "code": "INP",
+            "n": 1374,
+            "pct": 13.74
+          },
+          {
+            "code": "FDP",
+            "n": 1075,
+            "pct": 10.75
+          },
+          {
+            "code": "IDP",
+            "n": 951,
+            "pct": 9.51
+          },
+          {
+            "code": "INM",
+            "n": 923,
+            "pct": 9.23
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "IDM",
+            "n": 805,
+            "pct": 8.05
+          },
+          {
+            "code": "FNP",
+            "n": 886,
+            "pct": 8.86
+          },
+          {
+            "code": "INM",
+            "n": 923,
+            "pct": 9.23
+          },
+          {
+            "code": "IDP",
+            "n": 951,
+            "pct": 9.51
+          },
+          {
+            "code": "FDP",
+            "n": 1075,
+            "pct": 10.75
+          },
+          {
+            "code": "INP",
+            "n": 1374,
+            "pct": 13.74
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 2.902,
+        "all": [
+          {
+            "code": "FDM",
+            "n": 2322,
+            "pct": 23.22
+          },
+          {
+            "code": "FNM",
+            "n": 1664,
+            "pct": 16.64
+          },
+          {
+            "code": "INP",
+            "n": 1374,
+            "pct": 13.74
+          },
+          {
+            "code": "FDP",
+            "n": 1075,
+            "pct": 10.75
+          },
+          {
+            "code": "IDP",
+            "n": 951,
+            "pct": 9.51
+          },
+          {
+            "code": "INM",
+            "n": 923,
+            "pct": 9.23
+          },
+          {
+            "code": "FNP",
+            "n": 886,
+            "pct": 8.86
+          },
+          {
+            "code": "IDM",
+            "n": 805,
+            "pct": 8.05
+          }
+        ]
+      },
+      "style": {
+        "count": 4,
+        "mostCommon": [
+          {
+            "code": "ENJOY",
+            "n": 2828,
+            "pct": 28.28
+          },
+          {
+            "code": "SECURE",
+            "n": 2820,
+            "pct": 28.2
+          },
+          {
+            "code": "DRIVE",
+            "n": 2558,
+            "pct": 25.58
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1794,
+            "pct": 17.94
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "OPTIMIZE",
+            "n": 1794,
+            "pct": 17.94
+          },
+          {
+            "code": "DRIVE",
+            "n": 2558,
+            "pct": 25.58
+          },
+          {
+            "code": "SECURE",
+            "n": 2820,
+            "pct": 28.2
+          },
+          {
+            "code": "ENJOY",
+            "n": 2828,
+            "pct": 28.28
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 1.978,
+        "all": [
+          {
+            "code": "ENJOY",
+            "n": 2828,
+            "pct": 28.28
+          },
+          {
+            "code": "SECURE",
+            "n": 2820,
+            "pct": 28.2
+          },
+          {
+            "code": "DRIVE",
+            "n": 2558,
+            "pct": 25.58
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1794,
+            "pct": 17.94
+          }
+        ]
+      },
+      "type": {
+        "count": 32,
+        "mostCommon": [
+          {
+            "code": "FDM-SECURE",
+            "n": 767,
+            "pct": 7.67
+          },
+          {
+            "code": "FDM-DRIVE",
+            "n": 716,
+            "pct": 7.16
+          },
+          {
+            "code": "INP-ENJOY",
+            "n": 607,
+            "pct": 6.07
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 554,
+            "pct": 5.54
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 491,
+            "pct": 4.91
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 444,
+            "pct": 4.44
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "IDM-OPTIMIZE",
+            "n": 146,
+            "pct": 1.46
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 166,
+            "pct": 1.66
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 169,
+            "pct": 1.69
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 169,
+            "pct": 1.69
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 170,
+            "pct": 1.7
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 181,
+            "pct": 1.81
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 4.835,
+        "all": [
+          {
+            "code": "FDM-SECURE",
+            "n": 767,
+            "pct": 7.67
+          },
+          {
+            "code": "FDM-DRIVE",
+            "n": 716,
+            "pct": 7.16
+          },
+          {
+            "code": "INP-ENJOY",
+            "n": 607,
+            "pct": 6.07
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 554,
+            "pct": 5.54
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 491,
+            "pct": 4.91
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 444,
+            "pct": 4.44
+          },
+          {
+            "code": "IDP-ENJOY",
+            "n": 407,
+            "pct": 4.07
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 395,
+            "pct": 3.95
+          },
+          {
+            "code": "FDP-SECURE",
+            "n": 370,
+            "pct": 3.7
+          },
+          {
+            "code": "INM-ENJOY",
+            "n": 367,
+            "pct": 3.67
+          },
+          {
+            "code": "FNM-OPTIMIZE",
+            "n": 316,
+            "pct": 3.16
+          },
+          {
+            "code": "FNM-ENJOY",
+            "n": 303,
+            "pct": 3.03
+          },
+          {
+            "code": "FNP-SECURE",
+            "n": 296,
+            "pct": 2.96
+          },
+          {
+            "code": "FDP-DRIVE",
+            "n": 281,
+            "pct": 2.81
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 277,
+            "pct": 2.77
+          },
+          {
+            "code": "INP-SECURE",
+            "n": 257,
+            "pct": 2.57
+          },
+          {
+            "code": "IDM-ENJOY",
+            "n": 255,
+            "pct": 2.55
+          },
+          {
+            "code": "INP-OPTIMIZE",
+            "n": 233,
+            "pct": 2.33
+          },
+          {
+            "code": "FDP-ENJOY",
+            "n": 228,
+            "pct": 2.28
+          },
+          {
+            "code": "FNP-ENJOY",
+            "n": 217,
+            "pct": 2.17
+          },
+          {
+            "code": "IDP-DRIVE",
+            "n": 209,
+            "pct": 2.09
+          },
+          {
+            "code": "INM-SECURE",
+            "n": 206,
+            "pct": 2.06
+          },
+          {
+            "code": "IDM-SECURE",
+            "n": 204,
+            "pct": 2.04
+          },
+          {
+            "code": "FNP-DRIVE",
+            "n": 203,
+            "pct": 2.03
+          },
+          {
+            "code": "IDM-DRIVE",
+            "n": 200,
+            "pct": 2
+          },
+          {
+            "code": "FDP-OPTIMIZE",
+            "n": 196,
+            "pct": 1.96
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 181,
+            "pct": 1.81
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 170,
+            "pct": 1.7
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 169,
+            "pct": 1.69
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 169,
+            "pct": 1.69
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 166,
+            "pct": 1.66
+          },
+          {
+            "code": "IDM-OPTIMIZE",
+            "n": 146,
+            "pct": 1.46
+          }
+        ]
+      }
+    },
+    {
+      "model": "SOCIAL_ENTRY_HYPOTHETICAL",
+      "N": 10000,
+      "meanQuestions": 40.5,
+      "job": {
+        "count": 8,
+        "mostCommon": [
+          {
+            "code": "INP",
+            "n": 2391,
+            "pct": 23.91
+          },
+          {
+            "code": "INM",
+            "n": 1612,
+            "pct": 16.12
+          },
+          {
+            "code": "IDP",
+            "n": 1536,
+            "pct": 15.36
+          },
+          {
+            "code": "FNP",
+            "n": 1298,
+            "pct": 12.98
+          },
+          {
+            "code": "IDM",
+            "n": 1016,
+            "pct": 10.16
+          },
+          {
+            "code": "FDP",
+            "n": 839,
+            "pct": 8.39
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "FDM",
+            "n": 538,
+            "pct": 5.38
+          },
+          {
+            "code": "FNM",
+            "n": 770,
+            "pct": 7.7
+          },
+          {
+            "code": "FDP",
+            "n": 839,
+            "pct": 8.39
+          },
+          {
+            "code": "IDM",
+            "n": 1016,
+            "pct": 10.16
+          },
+          {
+            "code": "FNP",
+            "n": 1298,
+            "pct": 12.98
+          },
+          {
+            "code": "IDP",
+            "n": 1536,
+            "pct": 15.36
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 2.862,
+        "all": [
+          {
+            "code": "INP",
+            "n": 2391,
+            "pct": 23.91
+          },
+          {
+            "code": "INM",
+            "n": 1612,
+            "pct": 16.12
+          },
+          {
+            "code": "IDP",
+            "n": 1536,
+            "pct": 15.36
+          },
+          {
+            "code": "FNP",
+            "n": 1298,
+            "pct": 12.98
+          },
+          {
+            "code": "IDM",
+            "n": 1016,
+            "pct": 10.16
+          },
+          {
+            "code": "FDP",
+            "n": 839,
+            "pct": 8.39
+          },
+          {
+            "code": "FNM",
+            "n": 770,
+            "pct": 7.7
+          },
+          {
+            "code": "FDM",
+            "n": 538,
+            "pct": 5.38
+          }
+        ]
+      },
+      "style": {
+        "count": 4,
+        "mostCommon": [
+          {
+            "code": "ENJOY",
+            "n": 5027,
+            "pct": 50.27
+          },
+          {
+            "code": "DRIVE",
+            "n": 2236,
+            "pct": 22.36
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1516,
+            "pct": 15.16
+          },
+          {
+            "code": "SECURE",
+            "n": 1221,
+            "pct": 12.21
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "SECURE",
+            "n": 1221,
+            "pct": 12.21
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1516,
+            "pct": 15.16
+          },
+          {
+            "code": "DRIVE",
+            "n": 2236,
+            "pct": 22.36
+          },
+          {
+            "code": "ENJOY",
+            "n": 5027,
+            "pct": 50.27
+          }
+        ],
+        "rareUnder1Percent": [],
+        "entropyBits": 1.765,
+        "all": [
+          {
+            "code": "ENJOY",
+            "n": 5027,
+            "pct": 50.27
+          },
+          {
+            "code": "DRIVE",
+            "n": 2236,
+            "pct": 22.36
+          },
+          {
+            "code": "OPTIMIZE",
+            "n": 1516,
+            "pct": 15.16
+          },
+          {
+            "code": "SECURE",
+            "n": 1221,
+            "pct": 12.21
+          }
+        ]
+      },
+      "type": {
+        "count": 32,
+        "mostCommon": [
+          {
+            "code": "INP-ENJOY",
+            "n": 1185,
+            "pct": 11.85
+          },
+          {
+            "code": "INM-ENJOY",
+            "n": 820,
+            "pct": 8.2
+          },
+          {
+            "code": "IDP-ENJOY",
+            "n": 773,
+            "pct": 7.73
+          },
+          {
+            "code": "FNP-ENJOY",
+            "n": 641,
+            "pct": 6.41
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 561,
+            "pct": 5.61
+          },
+          {
+            "code": "IDM-ENJOY",
+            "n": 509,
+            "pct": 5.09
+          }
+        ],
+        "leastCommon": [
+          {
+            "code": "FDM-SECURE",
+            "n": 68,
+            "pct": 0.68
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 75,
+            "pct": 0.75
+          },
+          {
+            "code": "FDP-SECURE",
+            "n": 85,
+            "pct": 0.85
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 105,
+            "pct": 1.05
+          },
+          {
+            "code": "FNM-OPTIMIZE",
+            "n": 120,
+            "pct": 1.2
+          },
+          {
+            "code": "FDM-DRIVE",
+            "n": 120,
+            "pct": 1.2
+          }
+        ],
+        "rareUnder1Percent": [
+          "FDP-SECURE",
+          "FDM-OPTIMIZE",
+          "FDM-SECURE"
+        ],
+        "entropyBits": 4.626,
+        "all": [
+          {
+            "code": "INP-ENJOY",
+            "n": 1185,
+            "pct": 11.85
+          },
+          {
+            "code": "INM-ENJOY",
+            "n": 820,
+            "pct": 8.2
+          },
+          {
+            "code": "IDP-ENJOY",
+            "n": 773,
+            "pct": 7.73
+          },
+          {
+            "code": "FNP-ENJOY",
+            "n": 641,
+            "pct": 6.41
+          },
+          {
+            "code": "INP-DRIVE",
+            "n": 561,
+            "pct": 5.61
+          },
+          {
+            "code": "IDM-ENJOY",
+            "n": 509,
+            "pct": 5.09
+          },
+          {
+            "code": "FDP-ENJOY",
+            "n": 436,
+            "pct": 4.36
+          },
+          {
+            "code": "FNM-ENJOY",
+            "n": 388,
+            "pct": 3.88
+          },
+          {
+            "code": "INP-OPTIMIZE",
+            "n": 357,
+            "pct": 3.57
+          },
+          {
+            "code": "INM-DRIVE",
+            "n": 355,
+            "pct": 3.55
+          },
+          {
+            "code": "IDP-DRIVE",
+            "n": 342,
+            "pct": 3.42
+          },
+          {
+            "code": "FNP-DRIVE",
+            "n": 304,
+            "pct": 3.04
+          },
+          {
+            "code": "INP-SECURE",
+            "n": 288,
+            "pct": 2.88
+          },
+          {
+            "code": "FDM-ENJOY",
+            "n": 275,
+            "pct": 2.75
+          },
+          {
+            "code": "IDP-OPTIMIZE",
+            "n": 246,
+            "pct": 2.46
+          },
+          {
+            "code": "INM-OPTIMIZE",
+            "n": 228,
+            "pct": 2.28
+          },
+          {
+            "code": "INM-SECURE",
+            "n": 209,
+            "pct": 2.09
+          },
+          {
+            "code": "IDM-DRIVE",
+            "n": 206,
+            "pct": 2.06
+          },
+          {
+            "code": "FNP-OPTIMIZE",
+            "n": 204,
+            "pct": 2.04
+          },
+          {
+            "code": "FDP-DRIVE",
+            "n": 191,
+            "pct": 1.91
+          },
+          {
+            "code": "IDP-SECURE",
+            "n": 175,
+            "pct": 1.75
+          },
+          {
+            "code": "IDM-OPTIMIZE",
+            "n": 159,
+            "pct": 1.59
+          },
+          {
+            "code": "FNM-DRIVE",
+            "n": 157,
+            "pct": 1.57
+          },
+          {
+            "code": "FNP-SECURE",
+            "n": 149,
+            "pct": 1.49
+          },
+          {
+            "code": "IDM-SECURE",
+            "n": 142,
+            "pct": 1.42
+          },
+          {
+            "code": "FDP-OPTIMIZE",
+            "n": 127,
+            "pct": 1.27
+          },
+          {
+            "code": "FDM-DRIVE",
+            "n": 120,
+            "pct": 1.2
+          },
+          {
+            "code": "FNM-OPTIMIZE",
+            "n": 120,
+            "pct": 1.2
+          },
+          {
+            "code": "FNM-SECURE",
+            "n": 105,
+            "pct": 1.05
+          },
+          {
+            "code": "FDP-SECURE",
+            "n": 85,
+            "pct": 0.85
+          },
+          {
+            "code": "FDM-OPTIMIZE",
+            "n": 75,
+            "pct": 0.75
+          },
+          {
+            "code": "FDM-SECURE",
+            "n": 68,
+            "pct": 0.68
+          }
+        ]
+      }
+    }
+  ],
+  "evidence": {
+    "repo": "mudagiri/mudagii",
+    "ci_workflow": "Validate Money Personality Pilot",
+    "ci_run_id": 37865981632,
+    "ci_job_id": 113612697093,
+    "head_sha": "56ce13a19e0863c903bfbd2fe01b8ed819b32939",
+    "ci_status": "success"
+  }
+}
