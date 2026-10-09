@@ -5,6 +5,9 @@ on:
     branches: ["feature/money-personality-pilot"]
     paths:
       - "src/features/money-personality/**"
+      - "src/main.tsx"
+      - "scripts/check-money-personality-gas-health.mjs"
+      - "scripts/verify-money-personality-build.mjs"
       - "qa-money-personality-*.mjs"
       - "qa-money-personality-*.ts"
       - "scripts/prepare-money-personality-preview-og.mjs"
