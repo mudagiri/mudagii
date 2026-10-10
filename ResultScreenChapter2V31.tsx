@@ -184,24 +184,25 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
  }
 
  return <main className="c2v2-root c2v3-world c2v31-rpg"><style>{CSS+V3CSS+V31CSS}</style><div className="c2v2-page c2v31-page">
-  <section className="c2v2-hero c2v3-hero" data-section="CHAPTER2_QUEST_COMPLETE">
-   <span className="c2v2-eyebrow">第2章 ／ QUEST COMPLETE</span>
-   <div className="c2v3-title-wrap">
-    <h1>家計クエスト<br/><em>完全クリア！</em></h1>
-    <div className="c2v3-hero-dialogue"><span>ムダギリくん</span><b>「おつかれ！<br/>戦果を見よう。」</b></div>
+  <section className="c2v2-hero c2v3-hero c2v31-hero" data-section="CHAPTER2_QUEST_COMPLETE">
+   <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
+   <span className="c2v2-eyebrow c2v31-hero-kicker">QUEST CLEAR!</span>
+   <h1 className="c2v31-quest-title"><span>家計クエスト</span><em>完全クリア！</em></h1>
+   <div className="c2v31-hero-stage">
+    <div className="c2v31-dialogue"><strong>ムダギリくん</strong><p>「おつかれ！<br/>戦果を確認するぞ！」</p></div>
+    <img src={ART.result} alt="勝利を祝うムダギリくん" className="c2v31-hero-mascot"/>
    </div>
-   <img src={ART.result} alt="家計クエストのクリアを祝うムダギリくん" className="c2v3-hero-mascot"/>
-   <span className="c2v2-scroll-cue">▼ ギルドに届いた戦果報告</span>
+   <span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドに届いた戦果報告</span>
   </section>
-  {jobAsset&&chapter1&&<aside className="c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
+  {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
+   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章で獲得したJOB</small></div>
+   <div className="c2v31-job-inner">
     <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
-    <div className="c2v3-job-meta">
-      <span>第1章から引き継いだJOB</span>
-      <small>この冒険者と、家計クエストもクリア！</small>
-      <strong>{jobAsset.name}</strong>
-      <p>{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}を大切にする冒険者</p>
+    <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
+     <p>この冒険者と、家計クエストもクリア！</p>
     </div>
-   </aside>}
+   </div>
+  </aside>}
 
   <section className="c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
    <span className="c2v2-kicker">BATTLE REPORT ／ 戦果報告</span><h2>今回の戦果</h2>
