@@ -111,8 +111,8 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
 
- function consultation(){
-  onEvent?.('chapter2_v2_consultation_cta_clicked',{placement:'result',goal:goal??null});
+ function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
+  onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
   setShowLine(true);
  }
  function confirmConsultation(){
@@ -239,10 +239,10 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
 
   <section className="c2v2-card c2v2-decision c2v3-decision" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v2-kicker">NEXT ACTION ／ 次に進むなら</span>
-   <h2>この家計で、<br/>やりたい未来に届く？</h2>
-   <p>今回の鑑定では分からない、貯蓄・保障・資産形成まで。これからの計画を、一緒に整理しよう。</p>
-   <button className="c2v2-primary" onClick={consultation}>無料のライフプラン相談を確認する →</button>
-   <small>まずはLINEで案内を確認。追加だけで面談予約にはなりません。</small>
+   <h2>この戦果を、<br/>これからの計画に。</h2>
+   <p>{confirmed>0?'見つけた改善ポイントを、':'今回の鑑定結果を、'}貯蓄・保険・資産形成まで含めたライフプランにどう活かすか。次の作戦を考えよう。</p>
+   <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
+   <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
   <section className="c2v2-card" data-section="NEXT_QUEST">
@@ -270,7 +270,7 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
    <h2>整えたお金、どんな未来に使いたい？</h2>
    <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
    {selectedGoal&&<p className="c2v2-talk">次の目的地は「{selectedGoal}」。そのためのお金の配分を考えよう。</p>}
-   <button className="c2v2-primary" onClick={consultation}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
+   <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
   </section>
 
   <section className="c2v2-card c2v2-sharing" data-section="HOUSEHOLD_SHARE">
@@ -291,7 +291,7 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
    <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
    <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
-   <p>LINEで案内を確認できます。追加しただけでは面談予約にはなりません。</p>
+   <p>LINEで相談内容を確認できます。友だち追加だけでは予約は確定しません。</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
    <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで案内を確認する →</button>
    <button className="c2v2-subtle" onClick={()=>setShowLine(false)}>今は結果を見る</button>
