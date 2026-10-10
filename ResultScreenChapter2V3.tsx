@@ -411,6 +411,13 @@ const V3CSS=[
   ".c2v3-world .c2v2-totals>div.c2v2-unconfirmed span{font-size:14px;color:#d0dde4;font-weight:750}",
   ".c2v3-world .c2v2-totals>div.c2v2-unconfirmed strong{font-size:clamp(20px,5.8vw,24px);font-weight:750;color:#e3ebf1;line-height:1.3;margin-top:6px}",
   ".c2v3-world .c2v2-totals>div.c2v2-unconfirmed strong small{color:#bacbd5;font-size:13px}",
+    ".c2v3-world .c2v3-job-meta span{font-size:13px;color:#ffe49b}",
+  ".c2v3-world .c2v3-job-meta small{font-size:14px}",
+  ".c2v3-world .c2v2-card .c2v2-primary{font-size:16px;line-height:1.45;min-height:56px}",
+  ".c2v3-world .c2v3-decision{background-image:linear-gradient(160deg,rgba(0,27,31,.90),rgba(1,34,38,.84)),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp')}",
+  ".c2v3-world .c2v3-future-footnote{font-size:14px;line-height:1.7}",
+  ".c2v3-world .c2v3-reward-ten>span{font-size:16px}",
+  ".c2v3-world .c2v3-reward-ten p{font-size:14px}",
     '@media(max-width:350px){.c2v3-world .c2v3-job-portrait{width:93px;height:100px;flex-basis:93px}.c2v3-world .c2v3-job-portrait img{width:93px;height:93px}.c2v3-world .c2v3-job-meta strong{font-size:18px}.c2v3-world .c2v3-hero-mascot{width:39%;right:-2px;bottom:58px}.c2v3-world .c2v3-hero-dialogue b{font-size:14px}}',
   '@media(prefers-reduced-motion:reduce){.c2v3-world *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}',
 ].join('');
