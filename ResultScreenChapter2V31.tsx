@@ -204,20 +204,35 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    </div>
   </aside>}
 
-  <section className="c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
-   <span className="c2v2-kicker">BATTLE REPORT ／ 戦果報告</span><h2>今回の戦果</h2>
-   <p className="c2v2-talk"><strong>ムダギリくん</strong>「高い＝ムダじゃない。守るお金は、ちゃんと守ろう。」</p>
-   <div className="c2v2-counts">
+  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
+   <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
+   <h2>今回の戦果</h2>
+   <div className="c2v2-counts c2v31-counts">
     {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
-     <span>{STATUS[key].mark} {STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
+     <span>{STATUS[key].mark}<br/>{STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
     </div>)}
    </div>
-   <div className="c2v2-totals">
-    <div className="c2v3-confirmed"><span>今回、回答から確認できた改善額</span><strong>{money(confirmed)}<small> / 月</small></strong></div>
-    <div className="c2v2-unconfirmed"><span>参考｜まだ確認が必要な支出 <i>未確定</i></span><strong>{reviewUpper>0?'最大 '+money(reviewUpper):'今は未確認'}<small>{reviewUpper>0?' / 月':''}</small></strong><small>この金額が削減できると決まったわけではありません。</small></div>
-   </div>
-   <p className="c2v2-note">平均より高い＝ムダではありません。「確認済み」と「未確定」は別々に表示しています。</p>
-
+   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="確認できた改善額">
+    <div className="c2v31-confirmed-heading">今回確認できた改善額</div>
+    <div className="c2v31-confirmed-content">
+     <CoinPouch className="c2v31-coin-art"/>
+     <div className="c2v31-confirmed-amount"><span>毎月</span><strong>{money(confirmed)}</strong></div>
+    </div>
+    <span className="c2v31-confirmed-caption">{confirmed>0?'確認済みの戦利品':'確定した改善額はまだありません'}</span>
+   </section>
+   <section className="c2v31-treasure-unknown" data-section="UNAPPRAISED_TREASURE" aria-label="未確定の見直し可能性">
+    <div className="c2v31-unknown-heading"><span>未鑑定の宝箱</span><small>未確定</small></div>
+    <div className="c2v31-unknown-layout">
+     <TreasureChest className="c2v31-chest-art" locked/>
+     <div className="c2v31-unknown-details">
+      {reviewUpper>0?<><span>さらに見直せる可能性</span><strong>最大 {money(reviewUpper)}<small> / 月</small></strong></>:<>
+       <strong>今は未確認</strong><span>追加で見直せる可能性は、まだ特定されていません。</span>
+      </>}
+     </div>
+    </div>
+    <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
+   </section>
+   <p className="c2v2-note c2v31-accounting-note">ムダギリくん「高いからってムダじゃない。守るお金は守ろう！」<br/>※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
 
   <section className="c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
