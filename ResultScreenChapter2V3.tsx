@@ -203,17 +203,17 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
 
   <section className="c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
    <span className="c2v2-kicker">BATTLE REPORT ／ 戦果報告</span><h2>今回の戦果</h2>
-   <p className="c2v2-talk">ムダギリくん「高いから斬るわけじゃない。大事なものは、ちゃんと守ろう。」</p>
+   <p className="c2v2-talk"><strong>ムダギリくん</strong>「高い＝ムダじゃない。守るお金は、ちゃんと守ろう。」</p>
    <div className="c2v2-counts">
     {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
      <span>{STATUS[key].mark} {STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
     </div>)}
    </div>
    <div className="c2v2-totals">
-    <div><span>回答から確認できた改善額</span><strong>{money(confirmed)}<small> / 月</small></strong></div>
-    <div className="c2v2-unconfirmed"><span>追加で調べる見直し余地 <i>未確定</i></span><strong>{reviewUpper>0?'最大 '+money(reviewUpper):'今は未確認'}<small>{reviewUpper>0?' / 月':''}</small></strong><small>ここから減らせると決まった金額ではありません。</small></div>
+    <div className="c2v3-confirmed"><span>今回、回答から確認できた改善額</span><strong>{money(confirmed)}<small> / 月</small></strong></div>
+    <div className="c2v2-unconfirmed"><span>参考｜まだ確認が必要な支出 <i>未確定</i></span><strong>{reviewUpper>0?'最大 '+money(reviewUpper):'今は未確認'}<small>{reviewUpper>0?' / 月':''}</small></strong><small>この金額が削減できると決まったわけではありません。</small></div>
    </div>
-   <p className="c2v2-note">平均・基準との差＝ムダ額ではありません。確定改善額と、未確定の見直し余地は足しません。</p>
+   <p className="c2v2-note">平均より高い＝ムダではありません。「確認済み」と「未確定」は別々に表示しています。</p>
 
   </section>
 
