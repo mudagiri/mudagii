@@ -82,7 +82,7 @@ try{
  },null,{timeout:6500});
  await screenshot('02-chapter1-result');
  await clickButton('家計クエストへ進む');
- await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v2/'),{timeout:13000});
+ await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v31/'),{timeout:13000});
  assert.equal(new URL(page.url()).pathname,new URL(preview).pathname);
  const after=await page.evaluate(()=>({anonymousUserId:localStorage.getItem('mudagiri_anonymous_user_id_v1'),handoff:JSON.parse(localStorage.getItem('mudagiri_money_type_handoff_v1')||'null')}));
  assert.equal(after.anonymousUserId,before.anonymousUserId,'shared origin must retain anonymous join key');
