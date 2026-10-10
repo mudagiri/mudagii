@@ -200,6 +200,8 @@ await clickButton(/診断結果を見る/);
  assert.ok(resultText.includes('¥21,600'),'1-year confirmed saving must be prominent');
  assert.ok(resultText.includes('¥108,000'),'5-year confirmed saving must be prominent');
  assert.ok(resultText.includes('¥216,000'),'10-year confirmed saving must be prominent');
+ assert.ok(resultText.includes('未確定'),'unverified amount must be labeled');
+ assert.ok(resultText.includes('実際の将来額を保証するものではなく'),'hypothetical future disclaimer visible');
  const jobPortrait=page.locator('.c2v3-job-portrait img');
  await jobPortrait.waitFor({state:'visible',timeout:10000});
  const visuals=await page.evaluate(()=>{
@@ -221,6 +223,9 @@ await clickButton(/診断結果を見る/);
     reportFirst:!!(report.compareDocumentPosition(future)&Node.DOCUMENT_POSITION_FOLLOWING),
     beforeConsult:!!(future.compareDocumentPosition(cta)&Node.DOCUMENT_POSITION_FOLLOWING),
     overflow:document.documentElement.scrollWidth>window.innerWidth+2,
+    confirmedFont:parseFloat(getComputedStyle(document.querySelector('.c2v3-confirmed strong')).fontSize),
+    uncertainFont:parseFloat(getComputedStyle(document.querySelector('.c2v2-unconfirmed strong')).fontSize),
+    pageBackground:getComputedStyle(document.querySelector('.c2v2-page')).backgroundImage,
   };
  });
  assert.ok(visuals.jobReady,'Canonical inherited JOB artwork must load');
@@ -229,6 +234,8 @@ await clickButton(/診断結果を見る/);
  assert.ok(visuals.reportFirst&&visuals.beforeConsult,'Battle report then future rewards then consultation');
  assert.ok(visuals.impactSize>=28,'10-year future reward should be visually prominent');
  assert.ok(!visuals.overflow,'Result must not overflow mobile viewport');
+ assert.ok(visuals.confirmedFont>visuals.uncertainFont+3,'Unverified amount must be visually secondary');
+ assert.ok(visuals.pageBackground.includes('MP_BG_02_JOB_UNLOCK'),'Guild image must extend behind the report');
  await screenshot('04-chapter2-result-with-job');
  for(const width of [320,375,430]){
   await page.setViewportSize({width,height:844});
@@ -255,6 +262,13 @@ await clickButton(/診断結果を見る/);
  const result=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_active_result_v1')||'null'));
  assert.equal(result?.methodology?.type,'CHAPTER2_V2_NO_PERSONALITY');
  assert.equal(Object.keys(result?.completed?.typeAnswers||{}).length,0);
+ await page.getByRole('button',{name:/無料ライフプラン相談の案内を見る/}).click();
+ const modal=page.getByRole('dialog',{name:'ライフプラン相談の案内へ'});
+ await modal.waitFor({state:'visible'});
+ assert.ok((await modal.innerText()).includes('友だち追加だけでは予約は確定しません'));
+ await screenshot('05-v3-consultation-modal');
+ await page.getByRole('button',{name:'今は結果を見る'}).click();
+ await modal.waitFor({state:'hidden'});
  // Chapter 2 share URL must lead back to Chapter 1 of the same hidden preview.
  await clickButton(/Xで文章を共有/);
  const links=await page.evaluate(()=>window.__integrationShare);
