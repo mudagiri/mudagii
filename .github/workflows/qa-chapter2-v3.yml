@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: chapter2-v3-world-reward
-  cancel-in-progress: true
+  group: chapter2-v3-world-reward-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   qa:
