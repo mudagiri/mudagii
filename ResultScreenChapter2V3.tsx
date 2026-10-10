@@ -398,6 +398,11 @@ const V3CSS=[
   '.c2v3-world .c2v3-decision{background-image:linear-gradient(160deg,rgba(0,27,31,.91),rgba(1,34,38,.86)),url("./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp");background-size:cover;background-position:center 40%;border-color:rgba(246,214,110,.78)}',
   '.c2v3-world .c2v3-decision h2{color:#ffe7a2;text-shadow:0 2px 6px #112}',
   '.c2v3-world .c2v3-decision .c2v2-primary{background:#f2d47e}',
-  '@media(max-width:350px){.c2v3-world .c2v3-job-portrait{width:93px;height:100px;flex-basis:93px}.c2v3-world .c2v3-job-portrait img{width:93px;height:93px}.c2v3-world .c2v3-job-meta strong{font-size:18px}.c2v3-world .c2v3-hero-mascot{width:39%;right:-2px;bottom:58px}.c2v3-world .c2v3-hero-dialogue b{font-size:14px}}',
+  ".c2v3-world .c2v2-page{background-image:linear-gradient(180deg,rgba(5,45,45,.92),rgba(2,32,38,.97) 65%,#061d27),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp');background-position:center top;background-size:100% 100%,100% auto;background-repeat:no-repeat}",
+  ".c2v3-world .c2v2-card{background:linear-gradient(155deg,rgba(1,43,48,.92),rgba(2,26,37,.96));border-color:rgba(231,191,107,.63)}",
+  ".c2v3-world [data-section='HOUSEHOLD_BATTLE_RESULTS']{background-image:linear-gradient(150deg,rgba(0,33,41,.94),rgba(0,27,33,.97)),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp');background-position:center;background-size:cover}",
+  ".c2v3-world .c2v2-talk{font-size:16px;line-height:1.7;color:#f3f5f0;background:rgba(4,31,40,.83)}",
+  ".c2v3-world .c2v2-talk strong{display:block;font-size:14px;color:#ffe19b;margin-bottom:4px}",
+    '@media(max-width:350px){.c2v3-world .c2v3-job-portrait{width:93px;height:100px;flex-basis:93px}.c2v3-world .c2v3-job-portrait img{width:93px;height:93px}.c2v3-world .c2v3-job-meta strong{font-size:18px}.c2v3-world .c2v3-hero-mascot{width:39%;right:-2px;bottom:58px}.c2v3-world .c2v3-hero-dialogue b{font-size:14px}}',
   '@media(prefers-reduced-motion:reduce){.c2v3-world *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}',
 ].join('');
