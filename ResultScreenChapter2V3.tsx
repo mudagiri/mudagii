@@ -74,7 +74,7 @@ async function createQuestShareCard():Promise<File|null>{
  ctx.fillStyle='#ffe9aa';ctx.font='bold 52px sans-serif';ctx.fillText('12カテゴリ鑑定完了',540,1050);
  ctx.fillStyle='#d7e3eb';ctx.font='bold 28px sans-serif';ctx.fillText('好きなものは守って、ムダだけ斬る。',540,1130);
  ctx.fillStyle='#f4d76b';ctx.font='bold 29px sans-serif';ctx.fillText('あなたの家計にも、隠れた敵がいるかも。',540,1198);
- ctx.fillStyle='#9eb4c1';ctx.font='24px sans-serif';ctx.fillText('金額・収入・地域・個別結果は含まれません',540,1240);
+ ctx.fillStyle='#9eb4c1';ctx.font='24px sans-serif';ctx.fillText('#ムダギリ診断  ｜  あなたも冒険してみる？',540,1240);
  const blob=await new Promise<Blob|null>(r=>canvas.toBlob(r,'image/png'));
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
@@ -194,8 +194,8 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
   {jobAsset&&chapter1&&<aside className="c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
     <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
     <div className="c2v3-job-meta">
-      <span>CHAPTER 1 / JOB CONTINUES</span>
-      <small>あなたの冒険者を引き継いだよ</small>
+      <span>第1章から引き継いだJOB</span>
+      <small>この冒険者と、家計クエストもクリア！</small>
       <strong>{jobAsset.name}</strong>
       <p>{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}を大切にする冒険者</p>
     </div>
@@ -219,7 +219,7 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
 
   <section className="c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <span className="c2v2-kicker">TREASURE UNLOCKED ／ 未来の戦利品（参考）</span>
-   <h2>今月の改善が、<br/>未来まで続いたら？</h2>
+   <h2>{confirmed>0?<>今月の改善が、<br/>未来まで続いたら？</>:<>未来の計画は、<br/>ここから。</>}</h2>
    {confirmed>0?<div className="c2v3-rewards">
      <div className="c2v3-reward-mini">
       <div><small>1年続けた場合</small><strong>{money(confirmed*12)}</strong></div>
