@@ -218,19 +218,19 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
   </section>
 
   <section className="c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
-   <span className="c2v2-kicker">TREASURE UNLOCKED ／ 未来の戦利品</span>
-   <h2>この一歩が、<br/>未来につながる。</h2>
+   <span className="c2v2-kicker">TREASURE UNLOCKED ／ 未来の戦利品（参考）</span>
+   <h2>今月の改善が、<br/>未来まで続いたら？</h2>
    {confirmed>0?<div className="c2v3-rewards">
      <div className="c2v3-reward-mini">
-      <div><small>1年続けると</small><strong>{money(confirmed*12)}</strong></div>
-      <div><small>5年続けると</small><strong>{money(confirmed*60)}</strong></div>
+      <div><small>1年続けた場合</small><strong>{money(confirmed*12)}</strong></div>
+      <div><small>5年続けた場合</small><strong>{money(confirmed*60)}</strong></div>
      </div>
      <div className="c2v3-reward-ten">
-      <span>★ 10年後の積み重ね ★</span>
+      <span>✦ 10年続けた場合 ✦</span>
       <strong>{money(confirmed*120)}</strong>
-      <p>毎月確認できた改善額を続けた場合</p>
+      <p>月 {money(confirmed)} の改善が続くと仮定</p>
      </div>
-     <p className="c2v3-future-footnote">※確認できた改善額だけで計算した単純累計。今後も同額を改善できる保証や運用益は含みません。</p>
+     <p className="c2v3-future-footnote">※今回確認できた月額だけで算出した単純累計です。実際の将来額を保証するものではなく、運用益も含みません。</p>
     </div>:<div className="c2v3-future-empty">
      <strong>確定した改善額は、まだ見つかっていない。</strong>
      <p>大丈夫。ムリにムダを作らず、見直せるかどうかを一緒に確認していこう。</p>
