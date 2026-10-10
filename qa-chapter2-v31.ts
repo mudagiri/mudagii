@@ -11,8 +11,7 @@ const makeVm=(confirmedA:number,cUpper:number)=>({
  potential:{confirmedA,cUpper},rows:[],firstQuest:null,consultRoute:null
 });
 const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V31,{vm:makeVm(1800,17854)}));
-for(const required of ['QUEST CLEAR!','ADVENTURER RECORD','BATTLE REPORT','CONFIRMED_REWARD','UNAPPRAISED_TREASURE','未鑑定の宝箱','確認済みの戦利品','FUTURE REWARD','NEXT QUEST','第1章']) {
- if(required==='第1章')continue;
+for(const required of ['QUEST CLEAR!','BATTLE REPORT','CONFIRMED_REWARD','UNAPPRAISED_TREASURE','未鑑定の宝箱','確認済みの戦利品','FUTURE REWARD','NEXT QUEST','第1章']) {
  assert.ok(html.includes(required),required+' must be rendered');
 }
 assert.match(html,/毎月/);
@@ -45,6 +44,7 @@ for(const [code,asset] of Object.entries(JOB_CHARACTER_ASSETS)){
  assert.ok(result.includes(asset.file),'Official JOB image missing: '+code);
  assert.ok(result.includes(asset.name),'Official JOB name missing: '+code);
  assert.match(result,/第1章で獲得したJOB/);
+ assert.match(result,/ADVENTURER RECORD/);
  assert.match(result,/挑戦重視/);
 }
 assert.doesNotMatch(html,/<aside class="c2v31-job-card/,'no inherited-job claim when absent');
