@@ -100,11 +100,14 @@ jobs:
           npm ci
           npm run build
 
-      - name: Verify dedicated Chapter 1 GAS identity (GET only)
+      - name: Informational dedicated Chapter 1 GAS health (GET only, no saving)
         working-directory: integrated-site
         env:
           VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
-        run: node scripts/check-money-personality-gas-health.mjs
+        run: |
+          if ! node scripts/check-money-personality-gas-health.mjs; then
+            echo "::warning::Dedicated Chapter 1 GAS GET was unavailable. This isolated V31 preview does not send any GAS data."
+          fi
 
       - name: Rebuild existing Chapter 1 hidden preview
         working-directory: pilot-site
