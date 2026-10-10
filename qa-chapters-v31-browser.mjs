@@ -191,72 +191,59 @@ await screenshot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:16000});
- const inherited=await page.locator('.c2v3-job-card').innerText();
- assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job must appear in Chapter 2 without re-scoring');
- const resultText=await page.locator('.c2v2-root').innerText();
- assert.ok(resultText.includes('今回の戦果'),'Household battle report must appear');
+ const inherited=await page.locator('.c2v31-job-card').innerText();
+ assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job and official name persist');
+ const resultText=await page.locator('.c2v31-rpg').innerText();
+ for(const msg of ['QUEST CLEAR!','BATTLE REPORT','未鑑定の宝箱','¥1,800','¥21,600','¥108,000','¥216,000','未確定','将来の改善を保証するものではなく','無料ライフプラン相談の案内を見る']){
+  assert.ok(resultText.includes(msg),'Missing RPG reward content: '+msg);
+ }
  assert.ok(!resultText.includes('8タイプ図鑑'),'Legacy Chapter 2 type gallery must be absent');
- assert.ok(resultText.includes('¥1,800'),'Confirmed savings must retain the verified subscription amount');
- assert.ok(resultText.includes('¥21,600'),'1-year confirmed saving must be prominent');
- assert.ok(resultText.includes('¥108,000'),'5-year confirmed saving must be prominent');
- assert.ok(resultText.includes('¥216,000'),'10-year confirmed saving must be prominent');
- assert.ok(resultText.includes('未確定'),'unverified amount must be labeled');
- assert.ok(resultText.includes('実際の将来額を保証するものではなく'),'hypothetical future disclaimer visible');
- const jobPortrait=page.locator('.c2v3-job-portrait img');
+ const jobPortrait=page.locator('.c2v31-job-inner img');
  await jobPortrait.waitFor({state:'visible',timeout:10000});
  const visuals=await page.evaluate(()=>{
-  const job=document.querySelector('.c2v3-job-portrait img');
-  const guide=document.querySelector('.c2v3-hero-mascot');
-  const world=document.querySelector('.c2v3-hero');
+  const job=document.querySelector('.c2v31-job-inner img');
+  const mascot=document.querySelector('.c2v31-hero-mascot');
+  const hero=document.querySelector('.c2v31-hero');
   const report=document.querySelector('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
+  const confirmed=document.querySelector('[data-section="CONFIRMED_REWARD"]');
+  const unknown=document.querySelector('[data-section="UNAPPRAISED_TREASURE"]');
   const future=document.querySelector('[data-section="FUTURE_REWARDS"]');
   const cta=document.querySelector('[data-section="CONSULTATION_CTA_TOP"]');
-  const impact=future.querySelector('.c2v3-reward-ten strong');
-  const impactSize=parseFloat(getComputedStyle(impact).fontSize);
-  const first=getComputedStyle(world).backgroundImage;
-  return {
-    jobReady:job.complete&&job.naturalWidth>0,
-    mascotReady:guide.complete&&guide.naturalWidth>0,
-    background:first,
-    impactSize,
-    rewardVisible:future.querySelector('.c2v3-reward-ten')!==null,
-    reportFirst:!!(report.compareDocumentPosition(future)&Node.DOCUMENT_POSITION_FOLLOWING),
-    beforeConsult:!!(future.compareDocumentPosition(cta)&Node.DOCUMENT_POSITION_FOLLOWING),
-    overflow:document.documentElement.scrollWidth>window.innerWidth+2,
-    confirmedFont:parseFloat(getComputedStyle(document.querySelector('.c2v3-confirmed strong')).fontSize),
-    uncertainFont:parseFloat(getComputedStyle(document.querySelector('.c2v2-unconfirmed strong')).fontSize),
-    pageBackground:getComputedStyle(document.querySelector('.c2v2-page')).backgroundImage,
-  };
+  const font1=parseFloat(getComputedStyle(confirmed.querySelector('.c2v31-confirmed-amount strong')).fontSize);
+  const font2=parseFloat(getComputedStyle(unknown.querySelector('.c2v31-unknown-details strong')).fontSize);
+  return {jobReady:job.complete&&job.naturalWidth>0,mascotReady:mascot.complete&&mascot.naturalWidth>0,
+   heroBg:getComputedStyle(hero).backgroundImage,reportBg:getComputedStyle(report).backgroundImage,
+   ctaBg:getComputedStyle(cta).backgroundImage,confirmedFont:font1,uncertainFont:font2,
+   sequence:[report,confirmed,unknown,future,cta].every((x,index,a)=>index===0||Boolean(a[index-1].compareDocumentPosition(x)&Node.DOCUMENT_POSITION_FOLLOWING)),
+   confirmedIllustration:!!confirmed.querySelector('svg'),lockedChest:!!unknown.querySelector('svg'),
+   gold10:!!future.querySelector('.c2v31-reward-ten'),overflow:document.documentElement.scrollWidth>innerWidth+2};
  });
- assert.ok(visuals.jobReady,'Canonical inherited JOB artwork must load');
- assert.ok(visuals.mascotReady,'Official RESULT mascot artwork must load');
- assert.ok(visuals.background.includes('MP_BG_02_JOB_UNLOCK'),'Use existing guild victory background');
- assert.ok(visuals.reportFirst&&visuals.beforeConsult,'Battle report then future rewards then consultation');
- assert.ok(visuals.impactSize>=28,'10-year future reward should be visually prominent');
- assert.ok(!visuals.overflow,'Result must not overflow mobile viewport');
- assert.ok(visuals.confirmedFont>visuals.uncertainFont+3,'Unverified amount must be visually secondary');
- assert.ok(visuals.pageBackground.includes('MP_BG_02_JOB_UNLOCK'),'Guild image must extend behind the report');
- await screenshot('04-chapter2-result-with-job');
- for(const width of [320,375,430]){
+ assert.ok(visuals.jobReady&&visuals.mascotReady,'Official character artwork must load');
+ assert.ok(visuals.heroBg.includes('MP_BG_01_GUILD_HALL'),'Official guild-hall background must fill hero');
+ assert.ok(visuals.reportBg.includes('MP_BG_02_JOB_UNLOCK'),'Reward report must retain official JOB-unlock world');
+ assert.ok(visuals.ctaBg.includes('MP_BG_03_NEXT_QUEST'),'Next quest must use official gate');
+ assert.ok(visuals.sequence,'RPG report flow out of order');
+ assert.ok(visuals.confirmedIllustration&&visuals.lockedChest&&visuals.gold10,'Rewards must have live UI illustrations');
+ assert.ok(visuals.confirmedFont>visuals.uncertainFont+3,'Confirmed value must have stronger numeric hierarchy');
+ assert.ok(!visuals.overflow,'No horizontal scroll at 390px');
+ await screenshot('04-chapter2-v31-result');
+ for(const width of [320,375,390,430]){
   await page.setViewportSize({width,height:844});
   const layout=await page.evaluate(()=>{
    const doc=document.documentElement;
-   const dialogue=document.querySelector('.c2v3-hero-dialogue');
-   const mascot=document.querySelector('.c2v3-hero-mascot');
-   const say=dialogue?.getBoundingClientRect();
-   const img=mascot?.getBoundingClientRect();
-   const intersection= say&&img
-    ?Math.max(0,Math.min(say.right,img.right)-Math.max(say.left,img.left))*Math.max(0,Math.min(say.bottom,img.bottom)-Math.max(say.top,img.top)):0;
-   const ten=document.querySelector('.c2v3-reward-ten strong');
-   const tenRect=ten?.getBoundingClientRect();
-   return {width:window.innerWidth,scrollWidth:doc.scrollWidth,overlap:intersection,
-    tenWidth:tenRect?.width||0,tenScrollWidth:ten?.scrollWidth||0,
-    tenFont:ten?parseFloat(getComputedStyle(ten).fontSize):0};
+   const speech=document.querySelector('.c2v31-dialogue').getBoundingClientRect();
+   const mascot=document.querySelector('.c2v31-hero-mascot').getBoundingClientRect();
+   const intersect=Math.max(0,Math.min(speech.right,mascot.right)-Math.max(speech.left,mascot.left))
+    *Math.max(0,Math.min(speech.bottom,mascot.bottom)-Math.max(speech.top,mascot.top));
+   const reward=document.querySelector('.c2v31-ten-details strong');
+   return {width:innerWidth,scrollWidth:doc.scrollWidth,speechMascotOverlap:intersect,
+    rewardSize:parseFloat(getComputedStyle(reward).fontSize),
+    rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2};
   });
-  if(layout.scrollWidth>layout.width+2)throw new Error('V3_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
-  if(layout.overlap>1)throw new Error('V3_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
-  if(layout.tenFont<28||layout.tenScrollWidth>layout.tenWidth+2)throw new Error('V3_TEN_YEAR_REWARD_CLIP:'+JSON.stringify(layout));
-  await screenshot('04-v3-responsive-'+width);
+  if(layout.scrollWidth>layout.width+2)throw new Error('V31_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
+  if(layout.speechMascotOverlap>1)throw new Error('V31_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
+  if(layout.rewardSize<28||layout.rewardClipped)throw new Error('V31_TEN_YEAR_REWARD_CLIP:'+JSON.stringify(layout));
+  await screenshot('04-v31-mobile-'+width);
  }
  await page.setViewportSize({width:390,height:844});
  const result=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_active_result_v1')||'null'));
@@ -286,7 +273,7 @@ await clickButton(/診断結果を見る/);
  assert.ok(!/1800|350000|70000|¥/.test(JSON.stringify(lastShare)),'share must not include sensitive financial amounts');
  await page.reload({waitUntil:'networkidle'});
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:14000});
- assert.ok((await page.locator('.c2v3-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
+ assert.ok((await page.locator('.c2v31-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
  await screenshot('05-chapter2-resumed');
  if(errors.length)throw new Error('BROWSER_PAGE_ERRORS:'+JSON.stringify(errors));
  await fs.writeFile(out+'/report.json',JSON.stringify({
