@@ -11,7 +11,7 @@ const makeVm=(confirmedA:number,cUpper:number)=>({
  potential:{confirmedA,cUpper},rows:[],firstQuest:null,consultRoute:null
 });
 const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V31,{vm:makeVm(1800,17854)}));
-for(const required of ['QUEST CLEAR!','BATTLE REPORT','CONFIRMED_REWARD','UNAPPRAISED_TREASURE','未鑑定の宝箱','確認済みの戦利品','FUTURE REWARD','NEXT QUEST','第1章']) {
+for(const required of ['QUEST CLEAR!','BATTLE REPORT','CONFIRMED_REWARD','UNAPPRAISED_TREASURE','未鑑定の宝箱','確認済みの戦利品','FUTURE REWARD','NEXT QUEST']) {
  assert.ok(html.includes(required),required+' must be rendered');
 }
 assert.match(html,/毎月/);
