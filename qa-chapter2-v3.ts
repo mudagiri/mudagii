@@ -17,10 +17,15 @@ assert.match(positive,/未来の戦利品/);
 assert.match(positive,/¥21,600/,'confirmed improvement ×12');
 assert.match(positive,/¥108,000/,'confirmed improvement ×60');
 assert.match(positive,/¥216,000/,'confirmed improvement ×120');
-assert.match(positive,/10年後の積み重ね/);
+assert.match(positive,/10年続けた場合/);
 assert.match(positive,/最大 ¥25,000/,'unconfirmed opportunity separate');
+assert.match(positive,/未確定/);
+assert.match(positive,/今回、回答から確認できた改善額/);
+assert.match(positive,/未来の戦利品（参考）/);
+assert.match(positive,/無料ライフプラン相談の案内を見る/);
+
 assert.doesNotMatch(positive,/¥3,216,000/,'unconfirmed opportunity must not be accumulated');
-assert.match(positive,/確認できた改善額だけで計算した単純累計/);
+assert.match(positive,/今回確認できた月額だけで算出した単純累計/);
 assert.match(positive,/MP_BG_02_JOB_UNLOCK/);
 assert.match(positive,/MP_BG_03_NEXT_QUEST/);
 assert.match(positive,/MUDAGIRI_POSE_23_RESULT/);
@@ -28,9 +33,9 @@ assert.doesNotMatch(positive,/TYPE UNLOCKED|称号を獲得|8タイプ図鑑/);
 
 const zero=renderToStaticMarkup(React.createElement(ResultScreenChapter2V3,{vm:makeVm(0,100000)}));
 assert.match(zero,/確定した改善額は、まだ見つかっていない/);
-assert.doesNotMatch(zero,/10年後の積み重ね/);
+assert.doesNotMatch(zero,/10年続けた場合/);
 assert.doesNotMatch(zero,/¥12,000,000/,'unconfirmed estimate must not be multiplied by 120');
-assert.doesNotMatch(zero,/1年続けると/);
+assert.doesNotMatch(zero,/1年続けた場合/);
 
 for(const [code,asset] of Object.entries(JOB_CHARACTER_ASSETS)){
  const handoff:any={version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',
@@ -48,5 +53,8 @@ assert.match(original,/ResultScreenChapter2V3/);
 const resultSource=readFileSync('ResultScreenChapter2V3.tsx','utf8');
 assert.match(resultSource,/nonnegative\(vm\.potential\?\.confirmedA\)/);
 assert.match(resultSource,/confirmed\*120/);
+assert.match(resultSource,/#ムダギリ診断/,'share canvas keeps branded invitation');
+assert.match(resultSource,/placement:'after_rewards'/);
+assert.match(resultSource,/confirmedSavingAvailable:confirmed>0/);
 assert.doesNotMatch(resultSource,/reviewUpper\*120|cUpper\*120/);
 console.log('CHAPTER2_V3_WORLD_REWARD_QA PASS: guild world, canonical 8 JOB portraits, 1/5/10 confirmed-only, zero-saving state, V1/V2 isolation');
