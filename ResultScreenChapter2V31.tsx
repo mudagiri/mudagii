@@ -235,35 +235,35 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    <p className="c2v2-note c2v31-accounting-note">ムダギリくん「高いからってムダじゃない。守るお金は守ろう！」<br/>※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
 
-  <section className="c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
-   <span className="c2v2-kicker">TREASURE UNLOCKED ／ 未来の戦利品（参考）</span>
-   <h2>{confirmed>0?<>今月の改善が、<br/>未来まで続いたら？</>:<>未来の計画は、<br/>ここから。</>}</h2>
+  <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
+   <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
+   <h2>{confirmed>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
    {confirmed>0?<div className="c2v3-rewards">
-     <div className="c2v3-reward-mini">
-      <div><small>1年続けた場合</small><strong>{money(confirmed*12)}</strong></div>
-      <div><small>5年続けた場合</small><strong>{money(confirmed*60)}</strong></div>
-     </div>
-     <div className="c2v3-reward-ten">
-      <span>✦ 10年続けた場合 ✦</span>
-      <strong>{money(confirmed*120)}</strong>
-      <p>月 {money(confirmed)} の改善が続くと仮定</p>
-     </div>
-     <p className="c2v3-future-footnote">※今回確認できた月額だけで算出した単純累計です。実際の将来額を保証するものではなく、運用益も含みません。</p>
-    </div>:<div className="c2v3-future-empty">
-     <strong>確定した改善額は、まだ見つかっていない。</strong>
-     <p>大丈夫。ムリにムダを作らず、見直せるかどうかを一緒に確認していこう。</p>
-    </div>}
+    <div className="c2v3-reward-mini c2v31-reward-mini">
+     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(confirmed*12)}</strong></div>
+     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(confirmed*60)}</strong></div>
+    </div>
+    <div className="c2v3-reward-ten c2v31-reward-ten">
+     <div className="c2v31-ten-details"><span>✦ 10年間の積み重ね ✦</span><strong>{money(confirmed*120)}</strong></div>
+     <TreasureChest className="c2v31-ten-chest"/>
+    </div>
+    <p className="c2v3-future-footnote">※今回確認できた月額 {money(confirmed)} が継続した場合の単純累計。将来の改善を保証するものではなく、運用益も含みません。</p>
+   </div>:<div className="c2v3-future-empty">
+    <strong>確定した改善額は、まだ見つかっていない。</strong>
+    <p>無理にムダを決めず、確認できることから進めよう。</p>
+   </div>}
   </section>
 
-  <section className="c2v2-card c2v2-decision c2v3-decision" data-section="CONSULTATION_CTA_TOP">
-   <span className="c2v2-kicker">NEXT ACTION ／ 次に進むなら</span>
-   <h2>この戦果を、<br/>これからの計画に。</h2>
-   <p>{confirmed>0?'見つけた改善ポイントを、':'今回の鑑定結果を、'}貯蓄・保険・資産形成まで含めたライフプランにどう活かすか。次の作戦を考えよう。</p>
+  <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
+   <span className="c2v31-next-head">⚑ NEXT QUEST</span>
+   <h2>次の冒険は、<br/>未来の作戦会議。</h2>
+   <p>未鑑定の支出や将来のお金を、一緒に整理しよう。</p>
+   <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
    <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
-  <section className="c2v2-card" data-section="NEXT_QUEST">
+  <section className="c2v2-card c2v31-followup" data-section="NEXT_QUEST">
    <span className="c2v2-kicker">NEXT QUEST ／ 次の一手</span>
    <h2>まずは、これだけ。</h2>
    {next?<div className="c2v2-quest">
@@ -274,7 +274,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    <p className="c2v2-talk">ムダギリくん「全部まとめて変えなくていい。まず1つで十分だ。」</p>
   </section>
 
-  <section className="c2v2-card" data-section="CATEGORY_ENCYCLOPEDIA">
+  <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span><h2>気になる敵を、もっと詳しく。</h2>
    <p>項目をタップすると、比較条件と判定理由が見られるよ。</p>
    {shown.length?shown.map(categoryDetail):<p className="c2v2-note">優先して見直す敵は見つからなかったよ。必要な支出は守っていい。</p>}
@@ -283,7 +283,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
   </section>
 
-  <section className="c2v2-card" data-section="GOAL_QUEST">
+  <section className="c2v2-card c2v31-goals" data-section="GOAL_QUEST">
    <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>
    <h2>整えたお金、どんな未来に使いたい？</h2>
    <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
@@ -291,7 +291,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
   </section>
 
-  <section className="c2v2-card c2v2-sharing" data-section="HOUSEHOLD_SHARE">
+  <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>ここで共有するのは「12カテゴリ鑑定完了」のカードだけ。金額や性格称号は載せないよ。</p>
    <button className="c2v2-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像カードをシェア／保存する':'画像カードを準備中…'}</button>
