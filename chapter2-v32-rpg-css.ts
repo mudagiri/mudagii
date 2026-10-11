@@ -21,6 +21,17 @@ export const V32CSS = `
 .c2v32-rpg .c2v31-confirmed-amount span{font-size:13px}
 .c2v32-rpg .c2v31-confirmed-amount strong{font-size:clamp(22px,6vw,28px);color:#513b25;text-shadow:none}
 .c2v32-rpg .c2v31-confirmed-caption{font-size:12px;margin:0;background:none;color:#66583d;border:0;padding:0;text-align:left}
+/* The next check feels like an actionable quest reward, not an extra CTA. */
+.c2v32-rpg .c2v32-first-action{position:relative;margin:11px 0 0;padding:13px 14px;background:linear-gradient(130deg,rgba(11,45,53,.93),rgba(30,38,55,.96));border:1px solid #d4b878;border-left:5px solid #eac76d;border-radius:10px;color:#fff3d6}
+.c2v32-rpg .c2v32-first-action>span{display:block;font-size:14px;color:#f4db9c;font-weight:950;line-height:1.5}
+.c2v32-rpg .c2v32-first-action>strong{display:block;font-size:20px;line-height:1.4;margin:4px 0;color:#ffedb8;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-first-action>p{margin:4px 0 7px!important;color:#e9f3f0!important;font-size:15px!important;line-height:1.6!important}
+.c2v32-rpg .c2v32-first-action>small{display:block;color:#d9e6e3;font-size:13px;font-weight:700;line-height:1.5}
+.c2v32-rpg .c2v32-future-condition{margin:0 0 13px!important;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,226,151,.58);background:rgba(5,22,30,.86);font-size:16px!important;font-weight:900;color:#ffeac2!important;line-height:1.55!important}
+.c2v32-rpg .c2v32-future-condition span{color:#fff;background:rgba(154,54,36,.86);padding:2px 4px;border-radius:3px}
+.c2v32-rpg .c2v32-future-condition small{display:block;color:#e4e9e2!important;font-size:13px;font-weight:750;line-height:1.5}
+.c2v32-rpg .c2v31-chest-art{animation:c2v32-chest-breath 5s ease-in-out infinite;transform-origin:50% 70%}
+@keyframes c2v32-chest-breath{0%,100%{filter:drop-shadow(0 5px 10px rgba(0,0,0,.48))}50%{filter:drop-shadow(0 7px 18px rgba(245,212,119,.40))}}
 @media(max-width:375px){
  .c2v32-rpg .c2v31-hero{min-height:376px!important;padding-bottom:22px!important}
  .c2v32-rpg .c2v32-hero-teaser{margin-inline:3px;padding-inline:8px}
