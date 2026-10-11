@@ -69,6 +69,11 @@ assert.match(component,/chapter2_v31_share_intent/);
 assert.match(component,/chapter2_v31_share_export/);
 assert.match(component,/chapter2_v31_consultation_line_outbound/);
 assert.equal(LINE_URL,'https://lin.ee/ol9c2rJ','Chapter 1 and Chapter 2 official LINE destinations must match');
+for(const path of ['MudagiriAppV2.tsx','ResultScreenChapter2V2.tsx','ResultScreenChapter2V3.tsx','ResultScreenChapter2V31.tsx','src/features/money-personality/line-conversion-v1.ts']){
+ const source=readFileSync(path,'utf8');
+ assert.ok(source.includes(LINE_URL),path+' must use the latest user-designated official LINE URL');
+ assert.ok(!source.includes('https://lin.ee/ZeLu7i6'),path+' must not keep the outdated official LINE URL');
+}
 assert.deepEqual(buildSafeFunnelEvent('chapter1','result_seen'),{
  event:'mudagiri_chapter1_completed',properties:{chapter:'chapter1'},
 });
