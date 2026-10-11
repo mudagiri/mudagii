@@ -1,5 +1,4 @@
 import React,{useState} from 'react';
-import './product-analytics-consent-v1.css';
 
 /**
  * This optional, non-blocking privacy control is rendered only when analytics
