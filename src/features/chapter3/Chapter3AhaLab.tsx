@@ -100,6 +100,6 @@ export default function Chapter3AhaLab({kind,mockCandidateYen,protectedMeaning}:
      </>:null}
      <div className="c3a-personal"><label><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> この気づきは、自分にとって新しかった</label><p>{consent?'本人の感想（このデモでは送信・記録しません）':'すでに知っていたなら、無理に「ハッとした」を選ぶ必要はありません。'}</p></div>
    </div>}
-   {!ready&&<div className="c3a-pending" aria-live="polite">まだ計算していません。{result.status==='need_data'?result.ask:'入力条件を確認してください。'}<br/>**新しい発見ができたと決めつけない。**</div>}
+   {!ready&&<div className="c3a-pending" aria-live="polite">まだ計算していません。{result.status==='need_data'?result.ask:'入力条件を確認してください。'}<br/><strong>新しい発見ができたと決めつけない。</strong></div>}
   </section>;
 }
