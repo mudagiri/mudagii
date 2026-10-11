@@ -11,7 +11,7 @@
 ## 作業順（失敗したら次に進まない）
 1. **接続先スプレッドシートを特定**。名称だけで旧分析DBを流用しない。正本テンプレート `MUDAGIRI_DATA_ASSET_V1_FINAL_JP.xlsx` をGoogleスプレッドシートに変換済みか確認。なければ原本から専用Sheetを作る（別DBと混ぜない）。Drive側の正本URLを控える。
 2. そのSheetから［拡張機能 → Apps Script］を開き、Code.gsの全文をリポジトリ `MUDAGIRI_GAS_CODE_V4.gs` と一致させる。**旧V2コードとの同居不可**（`doGet`、`doPost`、`CFG` の二重定義回避）。
-3. エディタで `setupMudagiriDataAssetV1` を所有者として実行し権限承認。少なくとも日本語の6タブと `_診断_raw` `_支出_raw` `_イベント_raw` `_面談_raw` `_品質_raw` `_設定` を検証。`_設定` の`gas_version`は `MUDAGIRI_GAS_V4_0`。
+3. エディタで `setupMudagiriDataAssetV1` を所有者として実行し権限承認。続けて **`verifyMudagiriV4Install`** を実行し、`PASS: household GAS V4 schema and all expected sheets` を確認。これは**読み取り専用**で、全12シート・列見出し・`_設定` のスキーマ／バージョンまで自動監査する。`MUDAGIRI_DATA_ASSET_V1_FINAL_JP.xlsx` のテンプレートUIとの目視確認も実施。
 4. ［デプロイ → デプロイを管理］で既存の該当ウェブアプリを**新しいバージョン**に更新（正しいSheetに紐付く場合）。別の旧Sheetに紐付いたアプリならこのSheetから**新規ウェブアプリ**としてデプロイ。実行ユーザーは本人、アクセスはWebアプリに必要な範囲で設定。スプレッドシート自体は非公開。
 5. `/exec` URLをブラウザで開き、`{"ok":true,"schema_version":"MUDAGIRI_DATA_ASSET_V1","gas_version":"MUDAGIRI_GAS_V4_0"}` が返ることを確認。接続先変更時はGitHub Actionsの `VITE_MUDAGIRI_GAS_URL` Secretまたは対象環境の変数を正しいURLへ更新。**公開リポジトリのソースやログにURLを直書きしない**。
 6. Actions `Read-only GAS Launch Health` が**householdとpersonality両方 PASS**になるまで公開しない。これはGETのみで書き込み検証ではない。
