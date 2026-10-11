@@ -31,6 +31,37 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-future-condition span{color:#fff;background:rgba(154,54,36,.86);padding:2px 4px;border-radius:3px}
 .c2v32-rpg .c2v32-future-condition small{display:block;color:#e4e9e2!important;font-size:13px;font-weight:750;line-height:1.5}
 .c2v32-rpg .c2v31-chest-art{filter:drop-shadow(0 5px 11px rgba(214,164,72,.29))}
+/* Chapter 1 speech pattern, painted as parchment over Chapter 2's guild. */
+.c2v32-rpg .c2v32-mudagiri-beat{display:grid;grid-template-columns:68px minmax(0,1fr);align-items:end;gap:9px;margin:12px 14px 15px;padding:0;min-width:0}
+.c2v32-rpg .c2v32-mudagiri-beat>img{width:68px;height:76px;object-fit:contain;object-position:center bottom;image-rendering:pixelated;display:block;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35))}
+.c2v32-rpg .c2v32-mudagiri-talk{position:relative;min-width:0;padding:10px 12px;border:1.5px solid #e9d8ac;border-radius:13px 13px 13px 4px;background:linear-gradient(150deg,#fffdf6,#f6ead4);color:#2d2a22;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+.c2v32-rpg .c2v32-mudagiri-talk::before{content:"";position:absolute;left:-7px;bottom:12px;width:11px;height:11px;background:#fcf7e9;border-bottom:1.5px solid #e9d8ac;border-left:1.5px solid #e9d8ac;transform:rotate(45deg)}
+.c2v32-rpg .c2v32-mudagiri-talk>small{display:block;color:#846332;font-size:12px!important;line-height:1.4;font-weight:850}
+.c2v32-rpg .c2v32-mudagiri-talk>p{margin:3px 0 0!important;color:#2c291f!important;font-size:15px!important;line-height:1.55!important;font-weight:750;overflow-wrap:anywhere}
+.c2v32-rpg .c2v31-followup .c2v32-mudagiri-beat{margin:16px 0 0}
+.c2v32-rpg .c2v32-enemy-encounters{margin:15px 0 12px;padding:11px 10px;border:1px solid rgba(234,197,123,.66);border-radius:11px;background:rgba(7,27,36,.78)}
+.c2v32-rpg .c2v32-enemy-encounters>h3{font-size:16px;color:#ffe9b5;margin:0 0 10px;line-height:1.4}
+.c2v32-rpg .c2v32-enemy-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.c2v32-rpg .c2v32-enemy-preview{display:flex;flex-direction:column;align-items:center;min-width:0;padding:8px 5px 10px;border:1px solid rgba(237,202,128,.54);border-radius:9px;background:linear-gradient(180deg,rgba(21,54,67,.92),rgba(6,29,44,.94));text-align:center}
+.c2v32-rpg .c2v32-enemy-preview>img{width:100%;max-width:84px;height:82px;object-fit:contain;image-rendering:pixelated}
+.c2v32-rpg .c2v32-enemy-preview>strong{font-size:13px;color:#ffedc3;font-weight:950;line-height:1.45;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-enemy-preview>small{display:block;font-size:12px!important;line-height:1.4;color:#d7e4e4!important;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-enemy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 14px}
+.c2v32-rpg .c2v32-enemy-record{margin:0;border:1px solid #8c9d83;border-radius:12px;background:linear-gradient(145deg,rgba(9,42,50,.98),rgba(10,30,41,.95));min-width:0;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(243,209,137,.1)}
+.c2v32-rpg .c2v32-enemy-record.is-expanded{grid-column:1/-1;border-color:#e4bc67;box-shadow:inset 0 0 0 1px rgba(248,222,157,.24)}
+.c2v32-rpg .c2v32-enemy-tile{min-height:180px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;justify-content:flex-start;padding:11px 7px 10px;background:transparent}
+.c2v32-rpg .c2v32-enemy-tile>img,.c2v32-rpg .c2v32-enemy-tile>.c2v2-enemy-icon{width:100%;max-width:98px;height:98px;object-fit:contain;image-rendering:pixelated;flex:0 0 98px}
+.c2v32-rpg .c2v32-enemy-tile .c2v2-enemy-text{display:grid;justify-items:center;gap:4px}
+.c2v32-rpg .c2v32-enemy-tile .c2v2-enemy-text>b{color:#ffdfa0;font-size:16px;line-height:1.4;font-weight:950;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-enemy-tile .c2v2-enemy-text>small{color:#d5e7e9;font-size:13px!important;line-height:1.4}
+.c2v32-rpg .c2v32-enemy-tile .c2v2-enemy-text>span{color:#fee7a6;font-size:12px;line-height:1.5}
+.c2v32-rpg .c2v32-enemy-record.is-expanded .c2v32-enemy-tile{min-height:92px;display:flex;flex-direction:row;justify-content:flex-start;text-align:left;gap:12px}
+.c2v32-rpg .c2v32-enemy-record.is-expanded .c2v32-enemy-tile>img{flex:0 0 72px;width:72px;height:72px}
+.c2v32-rpg .c2v32-enemy-record.is-expanded .c2v32-enemy-tile .c2v2-enemy-text{justify-items:start}
+.c2v32-rpg .c2v32-enemy-record .c2v2-detail{padding:13px 12px}
+.c2v32-rpg .c2v32-enemy-record .c2v2-detail p{font-size:14px!important;line-height:1.65!important}
+@media(max-width:350px){.c2v32-rpg .c2v32-mudagiri-beat{grid-template-columns:57px minmax(0,1fr);gap:8px;margin-inline:10px}.c2v32-rpg .c2v32-mudagiri-beat>img{width:57px;height:69px}.c2v32-rpg .c2v32-mudagiri-talk{padding:9px 10px}.c2v32-rpg .c2v32-enemy-grid{gap:7px}.c2v32-rpg .c2v32-enemy-tile>img{height:78px;flex-basis:78px}.c2v32-rpg .c2v32-enemy-tile{min-height:171px;padding:9px 4px}}
+
 @media(max-width:375px){
  .c2v32-rpg .c2v31-hero{min-height:376px!important;padding-bottom:22px!important}
  .c2v32-rpg .c2v32-hero-teaser{margin-inline:3px;padding-inline:8px}
