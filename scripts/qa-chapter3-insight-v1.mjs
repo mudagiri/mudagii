@@ -15,6 +15,5 @@ r=evaluateChapter3({anonymousUserId:'u',chapter3:{goal:'travel',when:'来年',ex
 r=evaluateChapter3({anonymousUserId:'u',chapter1:{anonymousUserId:'u',sessionId:'s',jobCode:'INVALID',primaryStyle:'ENJOY'},chapter3:{goal:'invest'}});check(r.adventurer===null,'invalid job');
 r=evaluateChapter3({anonymousUserId:'u',chapter2:{anonymousUserId:'u',diagnosisId:'d',selectedGoal:'home',confirmedA:5000,cUpper:10000},chapter3:{goal:'retirement'}});check(r.goal==='retirement'&&r.financial.confirmedA===5000&&r.financial.cUpper===10000,'override and separate values');
 r=evaluateChapter3({anonymousUserId:'u',chapter3:{goal:'home',optionalMath:{requested:true,targetYen:250000,earmarkedYen:300000,monthsUntil:12}}});check(r.math.monthlyYen===0,'already earmarked');
-if(errors.length){console.error(JSON.stringify({status:'FAIL',tests,errors},null,2));process.exitCode=1}else console.log(JSON.stringify({status:'PASS',tests,scenarios:32,note:'isolated prototype only; no real-user validation'}));
-
 r=evaluateChapter3({anonymousUserId:'u',chapter3:{goal:'home',shareGoal:true}});check(r.shareSafe.goalIconCode==='home','opt-in abstract goal icon');
+if(errors.length){console.error(JSON.stringify({status:'FAIL',tests,errors},null,2));process.exitCode=1}else console.log(JSON.stringify({status:'PASS',tests,scenarios:32,note:'isolated prototype only; no real-user validation'}));
