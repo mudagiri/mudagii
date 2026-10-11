@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import {LINE_URL} from './src/features/money-personality/line-conversion-v1';
+import {readFileSync} from 'node:fs';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
  version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'v32-qa-synthetic',
@@ -92,4 +94,10 @@ assert.match(source,/reviewUpper\*120/);
 assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
 assert.match(source,/loadImage\(job\?\.file\|\|ART\.result\)/);
 assert.doesNotMatch(source,/confirmed\*120|confirmed\+reviewUpper|cUpper\+confirmedA/);
+assert.equal(LINE_URL,'https://lin.ee/ol9c2rJ','must use current official LINE URL');
+for(const path of ['MudagiriAppV2.tsx','ResultScreenChapter2V2.tsx','ResultScreenChapter2V3.tsx','ResultScreenChapter2V31.tsx','ResultScreenChapter2V32.tsx']){
+ const source=readFileSync(path,'utf8');
+ assert.ok(source.includes(LINE_URL),path+' must use current official LINE URL');
+ assert.ok(!source.includes('https://lin.ee/ZeLu7i6'),path+' must not retain obsolete LINE URL');
+}
 console.log('CHAPTER2_V32_POTENTIAL_FIRST_QA_PASS: zero confirmed, scenario, both, neither, honest labels, visual hierarchy');
