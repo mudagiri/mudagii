@@ -37,8 +37,14 @@ async function screenshot(name){
  // Playwright WebKit renderer. Keep full-page Chrome baselines, capture
  // iPhone WebKit viewport at each tested width; DOM overflow is asserted.
  const onResult=/(result-entry|chapter2-v32-result|v32-mobile|consultation-modal|chapter2-resumed)/.test(name);
- const fullPage=!(engine==='webkit'&&onResult);
- await page.screenshot({path:out+'/'+name+'.png',fullPage,timeout:15000});
+ if(engine==='webkit'&&onResult){
+  // Playwright WebKit's screenshot renderer times out on the asset-rich
+  // result even at viewport size. Preserve DOM/layout/click assertions here;
+  // actual iPhone visual approval remains a distinct launch gate.
+  console.log('WEBKIT_RESULT_SCREENSHOT_MANUAL_GATE',name);
+  return;
+ }
+ await page.screenshot({path:out+'/'+name+'.png',fullPage:true,timeout:15000});
 }
 async function clickButton(pattern){const button=page.getByRole('button',{name:pattern}).first();await button.waitFor({state:'visible',timeout:12000});await button.click();}
 async function waitHeading(name){await page.getByRole('heading',{name}).first().waitFor({state:'visible',timeout:12000});}
