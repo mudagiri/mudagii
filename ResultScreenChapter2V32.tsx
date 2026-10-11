@@ -305,7 +305,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
    </section>
    {primaryCandidate&&<div className="c2v32-first-action" data-section="FIRST_REVIEW_ACTION">
     <span>⚔ 最初に確かめるなら</span>
-    <strong>{primaryCandidate.label||primaryCandidate.category}</strong>
+    <div className="c2v32-primary-enemy">
+     {(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.normal&&<img src={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].normal} alt={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].name} loading="eager"/>}
+     <div><strong>{(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.name||primaryCandidate.label||primaryCandidate.category}</strong><small>{primaryCandidate.label||primaryCandidate.category}</small></div>
+    </div>
     <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
     <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
    </div>}
