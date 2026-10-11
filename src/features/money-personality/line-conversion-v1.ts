@@ -1,7 +1,7 @@
 import type {JobCode} from './classifierV1';
 import {JOB_FREE_GUIDES} from './job-free-guide-v1';
 
-export const LINE_URL=''; // Production official LINE URL is intentionally injected later.
+export const LINE_URL='https://lin.ee/ol9c2rJ'; // Canonical official LINE destination used in the Chapter 2 consultation flow.
 export const LINE_HANDOFF_STORAGE='mudagiri_line_handoff_v1';
 
 export type LineHandoff={version:'1';jobCode:JobCode;guideTitle:string;returnTo:'household';createdAt:string};

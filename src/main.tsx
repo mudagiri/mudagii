@@ -6,7 +6,9 @@ import MoneyPersonalityPublic from './features/money-personality/MoneyPersonalit
 import MoneyPersonalityTelemetry from './features/money-personality/MoneyPersonalityTelemetry';
 import MoneyPersonalityCognitivePilot from './features/money-personality/MoneyPersonalityCognitivePilot';
 import {resolveMoneyPersonalityEntryRoute} from './features/money-personality/publicRouteV1';
+import ProductAnalyticsConsentV1 from './ProductAnalyticsConsentV1';
 import './style.css';
+import './product-analytics-consent-v1.css';
 
 const params=new URLSearchParams(window.location.search);
 const route=resolveMoneyPersonalityEntryRoute(window.location.pathname,window.location.search);
@@ -16,10 +18,13 @@ const isMoneyPersonalityCognitive=isMoneyPersonalityAdaptive&&params.get('cognit
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <>
     {isMoneyPersonalityAdaptive
       ?<><MoneyPersonalityPublic/><MoneyPersonalityTelemetry/>{isMoneyPersonalityCognitive&&<MoneyPersonalityCognitivePilot/>}</>
       :isMoneyPersonalityPilot
         ?<MoneyPersonalityPilot/>
         :<MudagiriAppV2 />}
+    <ProductAnalyticsConsentV1/>
+    </>
   </React.StrictMode>,
 );

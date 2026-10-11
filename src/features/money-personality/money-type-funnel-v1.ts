@@ -1,3 +1,4 @@
+import {trackMudagiriProductEvent} from '../../product-funnel-analytics-v1';
 /**
  * Session-level UX funnel audit for the Money Personality pilot.
  * Local-only, no server transmission and no money, answer, or contact data.
@@ -17,6 +18,7 @@ export type MoneyTypeFunnelEvent=
   |'share_image_downloaded'
   |'share_text_handoff'
   |'share_cancelled'
+  |'line_bonus_outbound_clicked'
   |'line_bonus_preview_opened'
   |'type_book_opened'
   |'household_cta_clicked';
@@ -33,7 +35,7 @@ const VALID_EVENTS:readonly MoneyTypeFunnelEvent[]=[
   'intro_started','intro_resumed','ssr_claimed','result_seen',
   'scenes_expanded','style_expanded','share_attempt',
   'share_native_sheet_resolved','share_image_downloaded','share_text_handoff','share_cancelled',
-  'line_bonus_preview_opened','type_book_opened','household_cta_clicked',
+  'line_bonus_preview_opened','line_bonus_outbound_clicked','type_book_opened','household_cta_clicked',
 ];
 
 // Count milestones only once per session; keep share attempts as repeatable actions.
@@ -53,6 +55,7 @@ export function recordMoneyTypeFunnel(event:MoneyTypeFunnelEvent,sessionId:strin
     };
     list.push(entry);
     localStorage.setItem(MONEY_TYPE_FUNNEL_KEY,JSON.stringify(list.slice(-120)));
+    trackMudagiriProductEvent('chapter1',event,target?{target}:undefined);
   }catch{
     // No storage access must never prevent the user from taking an action.
   }

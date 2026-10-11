@@ -122,7 +122,7 @@ export default function ResultScreenChapter2V3({vm,chapter1,onLine,onEvent,onRes
   onLine?.({diagnosisId:vm.diagnosisId,firstQuest:next?.category??null,placement:'consult_route',
     handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',
     insuranceReview:!!vm.consultRoute?.insuranceReview});
-  if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
+  if(!onLine)window.location.href='https://lin.ee/ol9c2rJ';
  }
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
