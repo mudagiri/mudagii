@@ -16,9 +16,15 @@ const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await context.route(/https:\/\/(?:us|eu)\.i\.posthog\.com\//,async(route)=>{
  const request=route.request();
+ const responseHeaders={'access-control-allow-origin':'*','access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'content-type'};
+ if(request.method()==='OPTIONS'){
+  await route.fulfill({status:204,headers:responseHeaders});
+  return;
+ }
+ assert.equal(request.method(),'POST','No other analytics traffic may be sent');
  const body=JSON.parse(request.postData()||'null');
  captures.push({body,headers:request.headers(),url:request.url()});
- await route.fulfill({status:200,contentType:'application/json',body:'{}'});
+ await route.fulfill({status:200,contentType:'application/json',headers:responseHeaders,body:'{}'});
 });
 const button=(label)=>page.getByRole('button',{name:label,exact:true});
 async function resetChapter1(){
