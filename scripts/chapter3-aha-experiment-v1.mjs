@@ -33,7 +33,7 @@ export function workFreedomAha(v){
 export function travelAha(v){
  const times=nInt(v?.tripsPerYear,20),per=nInt(v?.costPerTripYen),upper=nInt(v?.chapter2CandidateUpperMonthlyYen);
  if(times==null||times===0)return {status:'need_data',ask:'1年間に何回くらい、その体験をしたい？',missing:'times'};
- if(per==null)return {status:'need_data',ask:'1回あたり、いくらの予算を考えている？',missing:'cost'};
+ if(per==null||per===0)return {status:'need_data',ask:'1回あたり、いくらの予算を考えている？',missing:'cost'};
  if(times>1e12/Math.max(per,1))return {status:'invalid',message:'入力条件を確認してください。'};
  const annual=times*per, monthly=Math.ceil(annual/12);
  const scenario=upper===null?null:(upper>1e12/12?null:{
@@ -43,7 +43,7 @@ export function travelAha(v){
   guaranteed:false
  });
  const hypothetical=scenario?(
-  '第2章の見直し候補が月最大'+yen(upper)+'なら、**全額が実際に毎月改善できた場合に限り**年間'+yen(scenario.ifAllCandidatesRealizedYen)+'。年間旅行予算の'+(scenario.hypotheticalPortionPercent??0)+'%相当（上限100%表示）。未確定なので準備済みの資金には含めません。'
+  '第2章の見直し候補が月最大'+yen(upper)+'なら、全額が実際に毎月改善できた場合に限り年間'+yen(scenario.ifAllCandidatesRealizedYen)+'。年間旅行予算の'+(scenario.hypotheticalPortionPercent??0)+'%相当（上限100%表示）。未確定なので準備済みの資金には含めません。'
  ):'第2章の未確定候補は、使える資金として加算していません。';
  return {
   status:'conditional_insight',kind:'travel_reframe',
