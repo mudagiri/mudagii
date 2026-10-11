@@ -43,6 +43,37 @@ assert.equal(routes.length,4);
 assert.equal(locked,5);
 assert.equal(released,5,'Apps Script lock must always release');
 assert.match(v2,/version:CFG\.VERSION/,'Older V2-style health is the observed release blocker');
+
+const cfg=vm.runInContext('CFG',ctx);
+const declarations=vm.runInContext('({STORE_HEADERS,DIAG_HEADERS,CAT_HEADERS,EVENT_HEADERS,CONV_HEADERS,QUALITY_HEADERS,META_HEADERS})',ctx);
+const expected=new Map([
+ [cfg.VISIBLE.STORE,declarations.STORE_HEADERS],
+ [cfg.HIDDEN.DIAG,declarations.DIAG_HEADERS],
+ [cfg.HIDDEN.CAT,declarations.CAT_HEADERS],
+ [cfg.HIDDEN.EVENT,declarations.EVENT_HEADERS],
+ [cfg.HIDDEN.CONV,declarations.CONV_HEADERS],
+ [cfg.HIDDEN.QUALITY,declarations.QUALITY_HEADERS],
+ [cfg.HIDDEN.META,declarations.META_HEADERS]
+]);
+const dashboards=[cfg.VISIBLE.HOME,cfg.VISIBLE.PEOPLE,cfg.VISIBLE.SPEND,cfg.VISIBLE.CONV,cfg.VISIBLE.QUALITY];
+const metaRows=[declarations.META_HEADERS,['gas_version',cfg.GAS_VERSION,''],['schema_version',cfg.VERSION,'']];
+ctx.SpreadsheetApp={getActive:()=>({
+ getSheetByName(name){
+  if(!expected.has(name)&&!dashboards.includes(name))return null;
+  return {
+   getRange(start,row,count,len){
+    assert.equal(start,1);assert.equal(row,1);assert.equal(count,1);
+    return {getValues:()=>[expected.get(name)?.slice(0,len)??[]]};
+   },
+   getDataRange:()=>({getValues:()=>metaRows})
+  };
+ }
+})};
+ctx.Logger={log:()=>{}};
+assert.match(ctx.verifyMudagiriV4Install(),/^PASS:/);
+ctx.SpreadsheetApp={getActive:()=>({getSheetByName:()=>null})};
+assert.throws(()=>ctx.verifyMudagiriV4Install(),/missing/,'must refuse the wrong spreadsheet');
+
 console.log('MUDAGIRI_GAS_V4_CONTRACT_QA_PASS',JSON.stringify({
  schema:response.schema_version,version:response.gas_version,
  routes,unknownKindRejected:true,locksReleased:released,
