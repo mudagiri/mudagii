@@ -108,7 +108,7 @@ export function evaluateChapter3(raw){
  }else if(!when){
   kind="TIME_MISSING";headline="その未来は、いつ頃叶えたい？";explanation="同じ夢でも、実現したい時期によって準備の考え方は変わる。";action="実現したい時期を一つ選ぶ";
  }else if(preserve&&protectedCount>0){
-  kind="VALUE_BRIDGE";headline="未来のために、今の大切なものを全部削る必要はない";explanation="第2章で守ると判定した支出と、第3章で守りたいと答えたものの両方を前提に、実現条件を確認できる。ただし両立可能かはまだ判定できない。";action="守りたい支出を残した条件で「"+GOALS[goal].thing+"」を整理する";
+  kind="VALUE_BRIDGE";headline="好きな時間を、全部あきらめる必要はない。";explanation="第2章で「守る」にしたお金がある。第3章でも、今の暮らしを大事にしたいと答えた。なら、その楽しみを残して未来の準備を考えてみよう。両立できるかは、数字を確かめてからだ。";action="今の楽しみを残したまま、"+GOALS[goal].thing+"を確認する";
  }else if(c3.costKnown!==true){
   kind="COST_UNKNOWN";headline="未来の条件を一つだけ数字にしてみよう";explanation="目標の方向と時期が見えてきた。次は「"+GOALS[goal].thing+"」を確かめることで計画が具体的になる。";action="「"+GOALS[goal].thing+"」を確認する";
  }else if(c3.preparationKnown!==true){
