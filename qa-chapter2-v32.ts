@@ -75,7 +75,7 @@ const monsterHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V
  ...makeVm(0,2500),rows:allCategories,firstQuest:{category:'mobile',label:'通信費',nextAction:'プランを見直す'}
 }}));
 assert.equal((monsterHtml.match(/data-section="MUDAGIRI_TALK"/g)||[]).length,5,'five Chapter 1 style companion beats');
-assert.equal((monsterHtml.match(/c2v32-enemy-record/g)||[]).length,12,'show all 12 canonical enemy cards');
+assert.equal((monsterHtml.match(/class="c2v2-entry c2v32-enemy-record"/g)||[]).length,12,'show all 12 canonical enemy cards');
 assert.match(monsterHtml,/ENEMY_BATTLE_PREVIEW/);
 assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
 for(const enemy of Object.values(ENEMY_ASSETS)){
