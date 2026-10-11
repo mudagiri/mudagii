@@ -47,7 +47,10 @@ function loadImage(url:string):Promise<HTMLImageElement|null>{
 }
 
 /** Social card contains only quest completion and no amounts, locations, incomes or type claim. */
-async function createQuestShareCard():Promise<File|null>{
+async function createQuestShareCard(jobCode?:string):Promise<File|null>{
+ // An intentionally shared JOB is the only personalized data in this image.
+ const job=jobCode&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,jobCode)
+  ?JOB_CHARACTER_ASSETS[jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
  const ctx=canvas.getContext('2d');if(!ctx)return null;
  ctx.fillStyle='#0e2434';ctx.fillRect(0,0,1080,1350);
@@ -68,14 +71,20 @@ async function createQuestShareCard():Promise<File|null>{
  ctx.fillStyle='#ffe9aa';ctx.font='bold 40px sans-serif';ctx.fillText('ムダギリ診断',540,134);
  ctx.fillStyle='#ffffff';ctx.font='bold 75px sans-serif';ctx.fillText('家計クエスト',540,250);
  ctx.fillText('完全クリア！',540,340);
- const img=await loadImage(ART.result);
+ const [img,mascot]=await Promise.all([loadImage(job?.file||ART.result),job?loadImage(ART.result):Promise.resolve(null)]);
  if(img&&img.naturalWidth&&img.naturalHeight){
   const sc=Math.min(540/img.naturalWidth,530/img.naturalHeight);
   ctx.imageSmoothingEnabled=false;
   ctx.drawImage(img,540-img.naturalWidth*sc/2,440,img.naturalWidth*sc,img.naturalHeight*sc);
  }
- ctx.fillStyle='#ffe9aa';ctx.font='bold 52px sans-serif';ctx.fillText('12カテゴリ鑑定完了',540,1050);
- ctx.fillStyle='#d7e3eb';ctx.font='bold 28px sans-serif';ctx.fillText('好きなものは守って、ムダだけ斬る。',540,1130);
+ if(mascot&&mascot.naturalWidth&&mascot.naturalHeight){
+  const sc=Math.min(195/mascot.naturalWidth,200/mascot.naturalHeight);
+  ctx.drawImage(mascot,850-mascot.naturalWidth*sc/2,785,mascot.naturalWidth*sc,mascot.naturalHeight*sc);
+ }
+ ctx.fillStyle='#ffe9aa';ctx.font=job?'bold 53px sans-serif':'bold 52px sans-serif';
+ ctx.fillText(job?'冒険者：'+job.name:'12カテゴリ鑑定完了',540,1047);
+ ctx.fillStyle='#d7e3eb';ctx.font='bold 28px sans-serif';
+ ctx.fillText(job?'12カテゴリ鑑定完了！好きなものは守って、ムダだけ斬る。':'好きなものは守って、ムダだけ斬る。',540,1128);
  ctx.fillStyle='#f4d76b';ctx.font='bold 29px sans-serif';ctx.fillText('あなたの家計にも、隠れた敵がいるかも。',540,1198);
  ctx.fillStyle='#9eb4c1';ctx.font='24px sans-serif';ctx.fillText('#ムダギリ診断  ｜  あなたも冒険してみる？',540,1240);
  const blob=await new Promise<Blob|null>(r=>canvas.toBlob(r,'image/png'));
@@ -95,20 +104,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
  // triggered only after an asynchronous image load loses transient activation.
  useEffect(()=>{
   let mounted=true;
-  void createQuestShareCard().then(file=>{
+  void createQuestShareCard(chapter1?.jobCode).then(file=>{
    if(!mounted)return;
    shareFile.current=file;
    setShareReady(Boolean(file));
   }).catch(()=>{if(mounted)setShareReady(false)});
   return ()=>{mounted=false};
- },[]);
+ },[chapter1?.jobCode]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
  // extra fractions of a yen can be saved when the monthly card shows integers.
  const reviewUpper=Math.round(nonnegative(vm.potential?.cUpper));
- const next=vm.firstQuest??null;
+ const candidates=rows.filter((x:any)=>x&&nonnegative(x.cUpper)>0)
+  .sort((a:any,b:any)=>nonnegative(b.cUpper)-nonnegative(a.cUpper));
+ const primaryCandidate=candidates[0]??null;
+ const next=primaryCandidate??vm.firstQuest??null;
  const filtered=rows.filter((x:any)=>x&&x.category&&x.v5Status!=='na');
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const shown=showAll?filtered:highlighted.slice(0,3);
@@ -275,12 +287,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     </div>
     <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
    </section>
-
+   {primaryCandidate&&<div className="c2v32-first-action" data-section="FIRST_REVIEW_ACTION">
+    <span>⚔ 最初に確かめるなら</span>
+    <strong>{primaryCandidate.label||primaryCandidate.category}</strong>
+    <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
+    <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
+   </div>}
   </section>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
    <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
+   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>すべて</span>毎月改善できたら？<small>未確定の参考シミュレーション</small></p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
@@ -321,7 +339,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
    <h2>次の冒険は、<br/>未来の作戦会議。</h2>
-   <p>未鑑定の支出や将来のお金を、一緒に整理しよう。</p>
+   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」など、見直し候補を本当に変えられるか確かめよう。その先のお金の使い道まで一緒に考えるぞ。</>:'無理に削らず、今の家計を守りながら未来のお金を整理しよう。'}</p>
    <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
    <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
@@ -357,7 +375,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
 
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
-   <p>ここで共有するのは「12カテゴリ鑑定完了」のカードだけ。金額や性格称号は載せないよ。</p>
+   <p>{jobAsset?'第1章で獲得した冒険者JOBとクリア記念のカードを共有できるよ。':'家計クエスト完全クリアの記念カードを共有できるよ。'}金額・家計情報は載せないよ。</p>
    <button className="c2v2-share-primary c2v31-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像付きでシェアする ↗':'画像カードを準備中…'}</button>
    <small className="c2v31-share-help">共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。</small>
    <details className="c2v31-share-alternatives">
