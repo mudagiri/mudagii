@@ -34,6 +34,8 @@ export default function ProductAnalyticsConsentV1(){
  // Unconfigured/disabled builds—including the permanent public root and all
  // current Hidden Previews—must not show an unnecessary opt-in surface.
  const enabled=(import.meta as any).env?.VITE_MUDAGIRI_ANALYTICS_ENABLED==='1';
+ const displayOnly=typeof window!=='undefined'&&window.location.pathname.includes('/pilot/')&&
+  (import.meta as any).env?.VITE_MUDAGIRI_ANALYTICS_ALLOW_PILOT!=='1';
  const [preference,setPreference]=useState<ConsentState>(currentPreference);
  const [expanded,setExpanded]=useState(()=>currentPreference()==='unset');
  const [error,setError]=useState('');
@@ -58,6 +60,7 @@ export default function ProductAnalyticsConsentV1(){
  return <aside className="mg-privacy" aria-label="匿名の利用状況計測の設定" data-testid="mg-analytics-consent">
   {expanded?<section className="mg-privacy-panel" aria-label="匿名計測について">
    <div className="mg-privacy-title">匿名の利用状況計測について</div>
+   {displayOnly&&<p className="mg-privacy-preview" role="note">これはUI確認用プレビューです。外部への分析データ送信は無効です。</p>}
    <p>診断の開始・完了、共有や相談案内の操作を、サービス改善のためPostHogで分析してもいいですか？</p>
    <p className="mg-privacy-small">診断の回答、支出金額、氏名・連絡先は送りません。画面録画もしません。同意しなくても診断は使えます。許可前の操作を遡って送信しません。</p>
    {preference!=='unset'&&<p className="mg-privacy-status" role="status">{preference==='granted'?'現在：匿名計測に同意中':'現在：匿名計測は停止中'}</p>}
