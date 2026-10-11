@@ -3,6 +3,8 @@ import React from 'react';
 import {readFileSync} from 'node:fs';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
+import {buildSafeFunnelEvent,trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
+import {LINE_URL} from './src/features/money-personality/line-conversion-v1';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
@@ -66,4 +68,23 @@ assert.match(html,/画像は自動添付されないよ/);
 assert.match(component,/chapter2_v31_share_intent/);
 assert.match(component,/chapter2_v31_share_export/);
 assert.match(component,/chapter2_v31_consultation_line_outbound/);
+assert.equal(LINE_URL,'https://lin.ee/ZeLu7i6','Chapter 1 and Chapter 2 official LINE destinations must match');
+assert.deepEqual(buildSafeFunnelEvent('chapter1','result_seen'),{
+ event:'mudagiri_chapter1_completed',properties:{chapter:'chapter1'},
+});
+assert.deepEqual(buildSafeFunnelEvent('chapter2','diagnosis_completed',{monthlyIncome:300000,answers:['private'],email:'private@example.com'}),{
+ event:'mudagiri_chapter2_completed',properties:{chapter:'chapter2'},
+},'private answers and amounts must never reach product analytics');
+assert.deepEqual(buildSafeFunnelEvent('chapter2','chapter2_v31_share_intent',{method:'native_image',amount:100000,name:'sensitive'}),{
+ event:'mudagiri_chapter2_share_attempted',properties:{chapter:'chapter2',method:'native_image'},
+});
+assert.deepEqual(buildSafeFunnelEvent('chapter2','chapter2_v31_consultation_line_outbound',{placement:'consult_route',diagnosisId:'secret'}),{
+ event:'mudagiri_chapter2_line_outbound_clicked',properties:{chapter:'chapter2',placement:'consult_route'},
+});
+assert.equal(buildSafeFunnelEvent('chapter2','line_friend_added'),null,'never invent LINE follow or booking completion');
+assert.equal(buildSafeFunnelEvent('chapter2','consultation_booked'),null,'reservation requires verified server event');
+assert.equal(trackMudagiriProductEvent('chapter2','diagnosis_completed'),false,'SSR must not send analytics');
+const funnel=readFileSync('src/features/money-personality/money-type-funnel-v1.ts','utf8');
+assert.match(funnel,/line_bonus_outbound_clicked/);
+assert.match(funnel,/trackMudagiriProductEvent/);
 console.log('CHAPTER2_V31_RPG_REWARD_QA_PASS all eight JOBs / confirmed and unconfirmed semantics / 1-5-10 / zero / world assets');
