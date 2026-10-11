@@ -195,7 +195,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
    <span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドに届いた戦果報告</span>
   </section>
   {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
-   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章で獲得したJOB</small></div>
+   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
    <div className="c2v31-job-inner">
     <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
     <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
@@ -212,6 +212,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
      <span>{STATUS[key].mark}<br/>{STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
     </div>)}
    </div>
+   {(nonnegative(counts.ok)>0||nonnegative(counts.na)>0)&&<p className="c2v31-remaining-counts">ほかに、問題なし {nonnegative(counts.ok)}件・対象外 {nonnegative(counts.na)}件</p>}
    <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="確認できた改善額">
     <div className="c2v31-confirmed-heading">今回確認できた改善額</div>
     <div className="c2v31-confirmed-content">
@@ -244,7 +245,7 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(confirmed*60)}</strong></div>
     </div>
     <div className="c2v3-reward-ten c2v31-reward-ten">
-     <div className="c2v31-ten-details"><span>✦ 10年間の積み重ね ✦</span><strong>{money(confirmed*120)}</strong></div>
+     <div className="c2v31-ten-details"><span>✦ 10年間の積み重ね ✦</span><strong>{money(confirmed*120)}</strong><small className="c2v31-ten-qualifier">月 {money(confirmed)} の改善が続いた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
     <p className="c2v3-future-footnote">※今回確認できた月額 {money(confirmed)} が継続した場合の単純累計。将来の改善を保証するものではなく、運用益も含みません。</p>
