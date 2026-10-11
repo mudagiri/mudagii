@@ -68,7 +68,7 @@ assert.match(html,/画像は自動添付されないよ/);
 assert.match(component,/chapter2_v31_share_intent/);
 assert.match(component,/chapter2_v31_share_export/);
 assert.match(component,/chapter2_v31_consultation_line_outbound/);
-assert.equal(LINE_URL,'https://lin.ee/ZeLu7i6','Chapter 1 and Chapter 2 official LINE destinations must match');
+assert.equal(LINE_URL,'https://lin.ee/ol9c2rJ','Chapter 1 and Chapter 2 official LINE destinations must match');
 assert.deepEqual(buildSafeFunnelEvent('chapter1','result_seen'),{
  event:'mudagiri_chapter1_completed',properties:{chapter:'chapter1'},
 });
