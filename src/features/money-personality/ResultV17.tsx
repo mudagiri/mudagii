@@ -11,6 +11,7 @@ import ResultWorldBeatV1 from './ResultWorldBeatV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
 import './result-v17-editorial.css';
+import './chapter1-to-chapter2-launch-bridge.css';
 
 type ShareTarget='native'|'x'|'line'|'threads'|'instagram';
 type AxisRow={title:string;left:string;right:string;lean:string;pos:number};
@@ -207,7 +208,7 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
 
       <MudagiriBeat line="性格は分かった。次は財布の中身見に行くぞ。" visual={PERSONALITY_SCENE_VISUALS.householdCta}/>
       <section className="mpp17-next">
-        <small>次にやるなら、これ</small>
+        <small>⚑ NEXT QUEST ／ 第2章へ</small>
         <h2>{content.nextMove}</h2>
         <div className="mpp17-next-quest"><b>次は、実際の家計を見てみよう。</b><p>12カテゴリの支出から、見直せそうなところを一緒に探そう。全部を削る必要はないよ。</p></div>
         <button className="mpp17-button mpp17-button--accent" onClick={onHousehold}>家計クエストへ進む</button>
