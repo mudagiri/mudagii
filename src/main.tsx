@@ -8,6 +8,7 @@ import MoneyPersonalityCognitivePilot from './features/money-personality/MoneyPe
 import {resolveMoneyPersonalityEntryRoute} from './features/money-personality/publicRouteV1';
 import ProductAnalyticsConsentV1 from './ProductAnalyticsConsentV1';
 import './style.css';
+import './product-analytics-consent-v1.css';
 
 const params=new URLSearchParams(window.location.search);
 const route=resolveMoneyPersonalityEntryRoute(window.location.pathname,window.location.search);
