@@ -98,6 +98,7 @@ export default function Chapter3AhaLab({kind,mockCandidateYen,protectedMeaning}:
        <button className="c3a-variation" type="button" onClick={onTryChange} disabled={Number.isNaN(valid(times))||valid(times)>=20}>旅行を年1回増やしたら？ →</button>
        <p className="c3a-caveat">※未鑑定宝箱は未確定の上限。第2章で確定した改善額とも合算しません。{money.caveat}</p>
      </>:null}
+     <div className="c3a-next"><small>NEXT QUEST / 最初の一歩</small><strong>{money.oneNextStep}</strong></div>
      <div className="c3a-personal"><label><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> この気づきは、自分にとって新しかった</label><p>{consent?'本人の感想（このデモでは送信・記録しません）':'すでに知っていたなら、無理に「ハッとした」を選ぶ必要はありません。'}</p></div>
    </div>}
    {!ready&&<div className="c3a-pending" aria-live="polite">まだ計算していません。{result.status==='need_data'?result.ask:'入力条件を確認してください。'}<br/><strong>新しい発見ができたと決めつけない。</strong></div>}
