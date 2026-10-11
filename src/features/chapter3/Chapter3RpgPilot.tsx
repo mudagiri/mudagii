@@ -63,6 +63,7 @@ export default function Chapter3RpgPilot(){
  const selectDemoGoal=(g:Goal)=>{setInheritedGoal(g);setGoal(g);setFuture('');};
  const reset=()=>{setStage('intro');setFuture('');setPreserve('');setWhen('');setReadiness(null);setCalcOpen(false);setShareGoal(false);setFree(false);setCustom('');setTarget('');setEarmarked('');setMonths('');setGoal(inherit?inheritedGoal:null);};
  const start=()=>{setGoal(inherit?inheritedGoal:null);setStage(inherit?'future':'goal');};
+ const fastDemo=()=>{if(!inherit||!['travel','invest'].includes(inheritedGoal))return;setGoal(inheritedGoal);setFuture(inheritedGoal==='invest'?'仕事を減らして自由な時間を増やしたい':'毎年、家族で旅行に行きたい');setPreserve('普段の外食や休日の楽しみ');setWhen(inheritedGoal==='invest'?'10年以上先':'1年以内');setReadiness('preparing');setStage('reward');};
  const chooseGoal=(g:Goal)=>{setGoal(g);setFuture('');setStage('future');};
  const previous=()=>{
   const order:Stage[]=['intro',...(inherit?[]:['goal' as Stage]),'future','preserve','when','readiness','reward'];
@@ -126,6 +127,7 @@ export default function Chapter3RpgPilot(){
     <label className="c3p-check"><input type="checkbox" checked={inherit} onChange={e=>{setInherit(e.target.checked);setGoal(e.target.checked?inheritedGoal:null);}}/> 第2章の未来選択を引き継ぐ（デモ）</label>
     {inherit&&<div className="c3p-select-line"><span>目指す未来</span><select aria-label="第2章で選んだ未来のデモ値" value={inheritedGoal} onChange={e=>selectDemoGoal(e.target.value as Goal)}>{GOALS.map(g=><option value={g.id} key={g.id}>{g.label}</option>)}</select></div>}
     <button className="c3p-primary" onClick={start}>未来の地図へ進む <span aria-hidden="true">→</span></button>
+    {inherit&&(inheritedGoal==='travel'||inheritedGoal==='invest')&&<button className="c3p-secondary" onClick={fastDemo}>2つの発見ケースをすぐ試す（架空の回答をセット） →</button>}
    </section>}
    {stage==='goal'&&<section className="c3p-panel">
     <span className="c3p-kicker">DESTINATION / 目的地</span>
@@ -158,7 +160,7 @@ export default function Chapter3RpgPilot(){
    </section>}
    {isReward&&<section className="c3p-panel c3p-panel--result">
     <div className="c3p-artifact"><div className="c3p-compass" aria-hidden="true"><span>Ｎ</span><i>✦</i></div><b>未来の羅針盤</b><small>伝説のアイテム獲得</small></div>
-    {(goal==='travel'||(goal==='invest'&&/仕事|働/.test(future)))&&<Chapter3AhaLab key={goal} kind={goal==='travel'?'travel':'work'} mockCandidateYen={12000} protectedMeaning={preserve}/>}
+    {(((goal==='travel')&&/旅行|旅/.test(future))||(goal==='invest'&&/仕事|働/.test(future)))&&<Chapter3AhaLab key={goal} kind={goal==='travel'?'travel':'work'} mockCandidateYen={12000} protectedMeaning={preserve}/>}
     <span className="c3p-kicker">未来攻略書 / {title(goal)}</span>
     <h2>{result.insight.headline}</h2>
     <p className="c3p-summary">{result.insight.explanation}</p>
