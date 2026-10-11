@@ -28,7 +28,7 @@ export default function Chapter3AhaLab({kind,mockCandidateYen,protectedMeaning}:
  }):travelAha({tripsPerYear:valid(times),costPerTripYen:valid(cost),chapter2CandidateUpperMonthlyYen:mockCandidateYen}),
  [isWork,age,change,until,gap,investment,times,cost,mockCandidateYen]);
  const ready=result.status==='conditional_insight';
- const money=ready?result.calculated:null;
+ const money=ready?result:null;
  const onTryChange=()=>{
   if(isWork){
    if(!Number.isNaN(valid(gap))&&valid(gap)>=50000)setGap(String(valid(gap)-50000));
