@@ -16,6 +16,7 @@ const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{
  window.__integrationShare=[];
+ try{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(text)=>{window.__integrationShare.push({kind:'clipboard',text:String(text)})}}})}catch{}
  window.open=(url)=>{window.__integrationShare.push({kind:'open',url:String(url)});return null};
  try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true})}catch{}
  try{Object.defineProperty(navigator,'share',{configurable:true,value:async(info)=>{
@@ -262,15 +263,22 @@ await clickButton(/診断結果を見る/);
  await screenshot('05-v31-consultation-modal');
  await page.getByRole('button',{name:'今は結果を見る'}).click();
  await modal.waitFor({state:'hidden'});
- // Chapter 2 share URL must lead back to Chapter 1 of the same hidden preview.
+ // One image-share CTA; optional tools start collapsed to reduce decision load.
+ const alternatives=page.locator('.c2v31-share-alternatives');
+ assert.ok(!(await alternatives.evaluate(el=>el.open)),'Optional share tools must start collapsed');
+ await alternatives.locator('summary').click();
+ await clickButton(/招待リンクをコピー/);
+ const copied=await page.evaluate(()=>window.__integrationShare.find(v=>v.kind==='clipboard'));
+ assert.ok(copied?.text.includes(firstUrl),'Copied referral must point to same-preview Chapter 1');
+ // Text-only share retains correct referral routing and is explicitly labeled.
  await clickButton(/Xで文章を共有/);
  const links=await page.evaluate(()=>window.__integrationShare);
  const x=links.find(v=>v.kind==='open'&&v.url.includes('twitter.com/intent/tweet'));
  assert.ok(x,'X share intent missing');
  const decoded=decodeURIComponent(new URL(x.url).searchParams.get('text')||'');
  assert.ok(decoded.includes(firstUrl),'Chapter 2 referral must lead to the integrated Chapter 1 entry');
- await page.getByRole('button',{name:/画像カードをシェア／保存する/}).waitFor({state:'visible'});
- await clickButton(/画像カードをシェア／保存する/);
+ await page.getByRole('button',{name:/画像付きでシェアする/}).waitFor({state:'visible'});
+ await clickButton(/画像付きでシェアする/);
  await page.waitForFunction(()=>String(window.__v31SharePng||'').startsWith('data:image/png;base64,'),null,{timeout:12000});
  const png=await page.evaluate(()=>window.__v31SharePng);
  await fs.writeFile(out+'/06-v31-guild-social-card.png',Buffer.from(png.split(',')[1],'base64'));
