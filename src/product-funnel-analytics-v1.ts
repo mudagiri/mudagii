@@ -51,7 +51,8 @@ function sessionIdentity(){
 }
 /** Pure, testable event-mapping boundary. No dynamic properties are forwarded. */
 export function buildSafeFunnelEvent(scope:ProductFunnelScope,name:string,details?:Record<string,unknown>){
- const event=(scope==='chapter1'?CHAPTER1_EVENTS:CHAPTER2_EVENTS)[name];
+ const map=scope==='chapter1'?CHAPTER1_EVENTS:CHAPTER2_EVENTS;
+ const event=Object.prototype.hasOwnProperty.call(map,name)?map[name]:undefined;
  if(!event)return null;
  const properties:Record<string,string>={chapter:scope};
  const method=details?.method??details?.target;
@@ -61,21 +62,32 @@ export function buildSafeFunnelEvent(scope:ProductFunnelScope,name:string,detail
  if(typeof placement==='string'&&SAFE_PLACEMENTS.has(placement))properties.placement=placement;
  return {event:'mudagiri_'+event,properties};
 }
+/** Only these allowlisted fields may leave the browser. */
+export function buildPostHogCaptureBody(apiKey:string,distinctId:string,scope:ProductFunnelScope,name:string,details?:Record<string,unknown>){
+ const mapped=buildSafeFunnelEvent(scope,name,details);
+ if(!mapped||!/^phc_[A-Za-z0-9]+$/.test(apiKey)||!/^mg_[a-f0-9-]{36}$/.test(distinctId))return null;
+ return {api_key:apiKey,distinct_id:distinctId,event:mapped.event,
+  properties:{...mapped.properties,$process_person_profile:false,$geoip_disable:true}};
+}
+export function hasProductAnalyticsConsent(storage:Pick<Storage,'getItem'>){
+ try{return storage.getItem('mudagiri_analytics_consent_v1')==='granted';}catch{return false;}
+}
 export function trackMudagiriProductEvent(scope:ProductFunnelScope,name:string,details?:Record<string,unknown>){
  if(typeof window==='undefined')return false;
  const payload=buildSafeFunnelEvent(scope,name,details);
  if(!payload)return false;
  const cfg=allowedConfig((import.meta as any).env??{},window.location.pathname);
- const identity=cfg?sessionIdentity():null;
- if(!cfg||!identity)return false;
+ // Consent must precede collection. No pre-consent event queue or replay.
+ if(!cfg||!hasProductAnalyticsConsent(localStorage))return false;
+ const identity=sessionIdentity();
+ if(!identity)return false;
+ const body=buildPostHogCaptureBody(cfg.apiKey,identity,scope,name,details);
+ if(!body)return false;
  try{
   void fetch(cfg.host+'/capture/',{
    method:'POST',mode:'cors',keepalive:true,
    headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({
-    api_key:cfg.apiKey,distinct_id:identity,event:payload.event,
-    properties:{...payload.properties,$process_person_profile:false,$geoip_disable:true},
-   }),
+   body:JSON.stringify(body),
   }).catch(()=>{});
   return true;
  }catch{return false;}
