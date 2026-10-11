@@ -9,6 +9,9 @@ on:
       - "scripts/chapter3-insight-engine-v1.mjs"
       - "scripts/chapter3-insight-engine-v1.d.mts"
       - "scripts/qa-chapter3-insight-v1.mjs"
+      - "scripts/chapter3-aha-experiment-v1.mjs"
+      - "scripts/chapter3-aha-experiment-v1.d.mts"
+      - "scripts/qa-chapter3-aha-experiment-v1.mjs"
       - "scripts/qa-chapter3-pilot-browser.mjs"
       - "chapter3-pilot.html"
       - "vite.config.ts"
@@ -46,6 +49,7 @@ jobs:
           test -f dist/index.html
           test -f dist/chapter3-pilot.html
           npm run qa:chapter3-insight
+          npm run qa:chapter3-aha
           if grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js; then
             echo "::error::Unexpected live GAS URL in isolated chapter3 pilot build"
             exit 1
