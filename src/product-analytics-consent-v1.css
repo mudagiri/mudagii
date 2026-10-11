@@ -1,0 +1,24 @@
+/* Optional product-analytics preferences; never block diagnosis navigation. */
+.mg-privacy{position:fixed;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));z-index:35;font-family:inherit;color:#f5f8fc;line-height:1.55;box-sizing:border-box;pointer-events:none}
+.mg-privacy *{box-sizing:border-box}
+.mg-privacy-panel{pointer-events:auto;width:min(440px,calc(100vw - 20px));max-height:min(82dvh,520px);overflow-y:auto;overscroll-behavior:contain;padding:13px 15px 12px;border-radius:13px;border:1px solid #b9c9d2;background:#12263a;box-shadow:0 8px 25px rgba(0,0,0,.38);text-align:left}
+.mg-privacy-title{font-size:15px;font-weight:850;color:#fff}
+.mg-privacy-panel p{margin:6px 0;font-size:13px;line-height:1.55;color:#edf3f7}
+.mg-privacy-panel .mg-privacy-small{color:#d8e9f2}
+.mg-privacy-panel .mg-privacy-fine{font-size:12px;color:#c5d8e4;margin:8px 0 0}
+.mg-privacy-panel .mg-privacy-error{color:#ffe39b;font-weight:700}
+.mg-privacy-panel .mg-privacy-status{font-weight:800}
+.mg-privacy-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;align-items:stretch}
+.mg-privacy-actions button,.mg-privacy-reopen{font-family:inherit;touch-action:manipulation;cursor:pointer;min-height:44px;border-radius:8px;border:1px solid #b9c9d2;padding:8px 11px;font-size:13px;font-weight:800;line-height:1.3}
+.mg-privacy-actions .mg-privacy-allow{background:#f6db8b;color:#162332;border-color:#f6db8b;flex:1}
+.mg-privacy-actions .mg-privacy-decline{background:#254055;color:#fff;flex:1}
+.mg-privacy-actions .mg-privacy-later{background:transparent;color:#f5f8fc;flex:0 0 auto}
+.mg-privacy-actions button:focus-visible,.mg-privacy-reopen:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.mg-privacy-reopen{pointer-events:auto;background:#13273a;color:#f1f5f9;opacity:.86;box-shadow:0 3px 12px rgba(0,0,0,.35)}
+.mg-privacy-reopen:hover,.mg-privacy-reopen:focus-visible{opacity:1}
+@media(max-width:350px){
+ .mg-privacy-panel{padding:11px 12px}
+ .mg-privacy-actions{gap:5px}
+ .mg-privacy-actions button{padding:8px 7px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.mg-privacy *{scroll-behavior:auto}}
