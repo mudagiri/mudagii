@@ -20,6 +20,7 @@ import type {ExpenseRecordsV4} from './expense-record-v4';
 import type {ComparisonFactsV4} from './benchmark-router-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildPersistencePayloadV4} from './persistence-v4';
+import {trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -52,8 +53,9 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
 
  const emit=useCallback((name:string,data?:Record<string,unknown>)=>{
    onEvent?.(name,data);
+   if(chapter2V31)trackMudagiriProductEvent('chapter2',name,data);
    store?.appendEvent(eventV3(anonymousUserId,diagnosisId,name,data));
- },[onEvent,store,anonymousUserId,diagnosisId]);
+ },[onEvent,store,anonymousUserId,diagnosisId,chapter2V31]);
 
  useEffect(()=>{if(resumeOffered&&draft)emit('journey_resume_offered',{scene:draft.scene})},[resumeOffered,draft,emit]);
 
