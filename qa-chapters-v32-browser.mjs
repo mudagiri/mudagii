@@ -96,6 +96,10 @@ try{
   return getComputedStyle(el).opacity==='1'&&
    (!img||(img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0));
  },null,{timeout:6500});
+ await page.locator('.mpp17-unified-next-preview').scrollIntoViewIfNeeded();
+ await page.waitForFunction(()=>[...document.querySelectorAll('.mpp17-unified-next-enemies img')].length===3&&
+  [...document.querySelectorAll('.mpp17-unified-next-enemies img')].every(x=>x.complete&&x.naturalWidth>0),
+  null,{timeout:12000});
  const ch1Journey=await page.evaluate(()=>{
   const root=document.querySelector('.mpp17-unified-world');
   const hud=document.querySelector('.mpp17-unified-progress');
