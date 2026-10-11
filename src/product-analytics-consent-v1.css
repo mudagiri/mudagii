@@ -5,6 +5,7 @@
 .mg-privacy-title{font-size:15px;font-weight:850;color:#fff}
 .mg-privacy-panel p{margin:6px 0;font-size:13px;line-height:1.55;color:#edf3f7}
 .mg-privacy-panel .mg-privacy-small{color:#d8e9f2}
+.mg-privacy-panel .mg-privacy-preview{padding:6px 9px;border-radius:7px;background:#29425a;color:#fff1bd;font-weight:850;font-size:12px}
 .mg-privacy-panel .mg-privacy-fine{font-size:12px;color:#c5d8e4;margin:8px 0 0}
 .mg-privacy-panel .mg-privacy-error{color:#ffe39b;font-weight:700}
 .mg-privacy-panel .mg-privacy-status{font-weight:800}
