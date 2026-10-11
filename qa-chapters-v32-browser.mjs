@@ -240,7 +240,7 @@ await clickButton(/診断結果を見る/);
    return {width:innerWidth,scrollWidth:doc.scrollWidth,speechMascotOverlap:intersect,
     rewardSize:parseFloat(getComputedStyle(reward).fontSize),
     rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2,
-    confirmedY:document.querySelector('.c2v31-confirmed-amount strong').getBoundingClientRect().bottom,
+    heroY:document.querySelector('.c2v32-hero-teaser strong').getBoundingClientRect().bottom,
     counterFont:parseFloat(getComputedStyle(document.querySelector('.c2v31-counts span')).fontSize),
     tenQualified:!!document.querySelector('.c2v31-ten-qualifier')};
   });
