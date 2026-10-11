@@ -6,6 +6,7 @@ on:
       - feat/chapter2-result-v32-possible-rewards-20261011
     paths:
       - ".github/workflows/deploy-chapter2-v31-hidden-preview.yml"
+      - ".github/workflows/deploy-chapter2-v32-hidden-preview.yml"
       - "MudagiriAppV2.tsx"
       - "RpgBlock1.tsx"
       - "chapter2-v2-contract.ts"
