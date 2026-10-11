@@ -50,6 +50,7 @@ for(const width of widths){
  await page.getByRole('button',{name:/55歳から働く日数を変える/}).click();
  await page.getByRole('button',{name:/選んだ道から攻略書を見る/}).click();
  assert((await page.locator('.f21-meeting').innerText()).includes('55歳から'),width+' specific work meeting');
+ await page.locator('.f21-details summary').click();
  assert((await page.locator('.f21-details').innerText()).includes('未確定'),width+' money semantics');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-work-reward.png'),fullPage:true});
  await page.getByRole('button',{name:/別の未来でもう一度試す/}).click();
