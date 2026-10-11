@@ -1,5 +1,7 @@
 /* Chapter 2 V3.2: preserve V3.1 art, refocus the quest on explicitly uncertain possibilities. */
 export const V32CSS = `
+.c2v32-rpg .c2v32-chapter-label{position:relative;z-index:4;display:block;max-width:350px;margin:0 auto 6px;padding:6px 7px;border:1px solid rgba(242,208,139,.75);border-radius:8px;background:rgba(3,31,42,.89);font-size:12px;font-weight:900;line-height:1.4;color:#f2e9d4;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.c2v32-rpg .c2v32-chapter-label span{color:#f8d682}
 .c2v32-rpg .c2v31-hero{min-height:380px!important;padding-bottom:26px!important}
 .c2v32-rpg .c2v32-hero-teaser{position:relative;z-index:4;display:grid;gap:4px;text-align:center;margin:7px auto 8px;max-width:370px;padding:12px 12px 11px;border:2px solid #ebcd76;border-radius:12px;background:linear-gradient(135deg,rgba(12,30,40,.97),rgba(39,37,47,.94));box-shadow:inset 0 0 0 1px rgba(255,244,194,.2),0 7px 15px rgba(0,0,0,.34),0 0 18px rgba(232,182,83,.17)}
 .c2v32-rpg .c2v32-hero-teaser span{font-size:16px;line-height:1.45;color:#fff0c4;font-weight:900}
