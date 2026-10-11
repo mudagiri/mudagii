@@ -100,6 +100,13 @@ try{
  await page.waitForFunction(()=>[...document.querySelectorAll('.mpp17-unified-next-enemies img')].length===3&&
   [...document.querySelectorAll('.mpp17-unified-next-enemies img')].every(x=>x.complete&&x.naturalWidth>0),
   null,{timeout:12000});
+ // WebKit can finish transfer before the large transparent PNGs are decoded.
+ // Give the official enemy sprites time to rasterize while they are onscreen.
+ await page.locator('.mpp17-unified-next-enemies img').evaluateAll(async images=>{
+   await Promise.all(images.map(img=>img.decode().catch(()=>{})));
+ });
+ await page.waitForTimeout(220);
+ if(engine==='webkit')await page.screenshot({path:out+'/02b-chapter1-enemy-viewport.png',fullPage:false,timeout:12000});
  const ch1Journey=await page.evaluate(()=>{
   const root=document.querySelector('.mpp17-unified-world');
   const hud=document.querySelector('.mpp17-unified-progress');
