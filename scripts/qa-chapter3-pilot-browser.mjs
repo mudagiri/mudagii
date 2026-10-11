@@ -30,6 +30,15 @@ for(const width of widths){
  await page.getByRole('button',{name:/5年くらい/}).click();
  await page.getByRole('button',{name:/積立や貯蓄をしている/}).click();
  await page.getByText('未来の羅針盤',{exact:true}).waitFor();
+ await page.locator('.c3a-example').click();
+ expect(await page.getByText('400,000円',{exact:true}).count()>0,width+' travel annual');
+ expect(await page.getByText('36%相当',{exact:true}).count()>0,width+' conditional 36 percent');
+ expect((await page.locator('.c3a-example-flag').innerText()).includes('仮定'),width+' sample explicit');
+ await page.locator('.c3a-variation').click();
+ expect(await page.getByText('600,000円',{exact:true}).count()>0,width+' travel +1 changes result');
+ expect(await page.getByText('24%相当',{exact:true}).count()>0,width+' conditional percent updates');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-aha-travel.png'),fullPage:true});
+
  expect(await page.locator('.c3p-reward-grid').getByText(/12,000円/).count()>0,width+' unconfirmed treasure');
  expect(!(await page.locator('.c3p-private-card').innerText()).includes('旅行'),width+' private share defaults');
  expect(await page.locator('.c3p-private-card').getByText(/直感魔導士/).count()>0,width+' inherited job');
@@ -48,8 +57,21 @@ for(const width of widths){
  await page.getByLabel('第2章の未来選択を引き継ぐ（デモ）').uncheck();
  await page.getByRole('button',{name:/未来の地図へ進む/}).click();
  expect(await page.getByRole('button',{name:/老後/}).count()>0,width+' uninherited goal choice');
+ await page.getByRole('button',{name:/資産形成/}).click();
+ await page.getByRole('button',{name:/仕事を減らして自由な時間を増やしたい/}).click();
+ await page.getByRole('button',{name:/安心して暮らせる貯蓄/}).click();
+ await page.getByRole('button',{name:/10年以上先/}).click();
+ await page.getByRole('button',{name:/積立や貯蓄をしている/}).click();
+ await page.locator('.c3a-example').click();
+ expect(await page.getByText('18,000,000円',{exact:true}).count()>0,width+' work income gap 18m');
+ expect(await page.getByText('12,000,000円',{exact:true}).count()>0,width+' contributed principal 12m');
+ expect((await page.locator('.c3a-clarify').innerText()).includes('差し引いて'),width+' no auto subtract');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-aha-work.png'),fullPage:true});
+ await page.locator('.c3a-variation').click();
+ expect(await page.getByText('12,000,000円',{exact:true}).count()>=2,width+' work gap scenario changes independent of principal');
+ expect(external.length===0,width+' work no external requests');
  await context.close();
 }
 await browser.close();
 if(errors.length){console.error(JSON.stringify({status:'FAIL',engine,errors},null,2));process.exitCode=1;}
-else console.log(JSON.stringify({status:'PASS',engine,widths,flow:'C1 JOB -> C2 goals/treasure -> C3 future -> reward -> optional calculation -> reset',screenshots:widths.length*3}));
+else console.log(JSON.stringify({status:'PASS',engine,widths,flow:'C1 JOB -> C2 goals/treasure -> C3 future -> reward -> optional calculation -> reset',screenshots:widths.length*5}));
