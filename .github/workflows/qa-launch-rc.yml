@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: release/chapter1-chapter2-launch-gate-20261011
       - run: npm ci
       - name: Chapter bridge, privacy and official LINE static guard
         run: node scripts/launch-rc-static-guard.mjs
