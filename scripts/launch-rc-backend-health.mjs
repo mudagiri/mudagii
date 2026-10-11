@@ -19,8 +19,17 @@ for(const target of endpoints){
   const reply=await fetch(url,{method:'GET',redirect:'follow',signal:AbortSignal.timeout(16000)});
   if(!reply.ok)throw Error('HTTP_NOT_OK');
   const body=await reply.json();
-  if(Object.entries(target.keys).some(([key,value])=>body[key]!==value))
+  if(Object.entries(target.keys).some(([key,value])=>body[key]!==value)){
+   // Expose only fixed, bounded protocol labels (no URL, row data or IDs).
+   const version=v=>typeof v==='string'&&/^[a-zA-Z0-9_]{1,80}$/.test(v)?v:'MISSING_OR_UNEXPECTED';
+   log.observedProtocol={
+    gasVersion:version(body.gas_version),
+    schemaVersion:version(body.schema_version),
+    backend:version(body.backend),
+    separated:body.household_backend_separated===true
+   };
    throw Error('BACKEND_VERSION_OR_SEPARATION_MISMATCH');
+  }
   log.healthy=true;
  }catch(e){
   const safe=['ENDPOINT_NOT_CONFIGURED','UNEXPECTED_ENDPOINT_SHAPE','HTTP_NOT_OK','BACKEND_VERSION_OR_SEPARATION_MISMATCH'];
