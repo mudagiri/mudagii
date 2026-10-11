@@ -164,3 +164,15 @@ button,select,textarea,input{font:inherit}
 .c3a-personal p{font-size:11px;line-height:1.6;color:#cbded8}
 @media(max-width:350px){.c3a{padding:12px 9px}.c3a-two{gap:8px}.c3a-field strong{font-size:12px}.c3a-hero-number{font-size:31px}}
 @media(prefers-reduced-motion:reduce){.c3a *{animation:none!important;transition:none!important}}
+
+
+/* V1.7: treat generic narration as optional evidence; main reward is the condition comparison. */
+.c3p-history{margin:13px 0 7px;padding:4px 11px 10px;border:1px solid #a6a989;background:#082d39;border-radius:11px}
+.c3p-history summary{color:#f4e3ab;font-size:14px;line-height:1.6;font-weight:850;cursor:pointer;min-height:45px;padding:12px 4px;touch-action:manipulation}
+.c3p-history summary:focus-visible{outline:3px solid #5cd8d2;outline-offset:3px}
+.c3p-record-body{padding:9px 0 11px}
+.c3p-history .c3p-record-body h2{font-size:19px}
+.c3p-history .c3p-record-body .c3p-summary{font-size:14px;font-weight:600}
+.c3a-next{margin:11px 0;padding:13px;border:1px solid #dfc27a;border-radius:11px;background:linear-gradient(115deg,#393a22,#12434c)}
+.c3a-next small{display:block;font-size:12px;color:#f7d787;font-weight:900;margin-bottom:7px}
+.c3a-next strong{display:block;color:#fff8d2;font-size:16px;line-height:1.65}
