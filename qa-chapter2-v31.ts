@@ -5,6 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
 import {buildSafeFunnelEvent,buildPostHogCaptureBody,hasProductAnalyticsConsent,trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
 import {LINE_URL} from './src/features/money-personality/line-conversion-v1';
+import {PRODUCT_ANALYTICS_CONSENT_KEY,PRODUCT_ANALYTICS_REVIEW_KEY,readProductAnalyticsPreference,writeProductAnalyticsPreference} from './src/ProductAnalyticsConsentV1';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
@@ -69,6 +70,11 @@ assert.match(component,/chapter2_v31_share_intent/);
 assert.match(component,/chapter2_v31_share_export/);
 assert.match(component,/chapter2_v31_consultation_line_outbound/);
 assert.equal(LINE_URL,'https://lin.ee/ol9c2rJ','Chapter 1 and Chapter 2 official LINE destinations must match');
+for(const path of ['MudagiriAppV2.tsx','ResultScreenChapter2V2.tsx','ResultScreenChapter2V3.tsx','ResultScreenChapter2V31.tsx','src/features/money-personality/line-conversion-v1.ts']){
+ const source=readFileSync(path,'utf8');
+ assert.ok(source.includes(LINE_URL),path+' must use the latest user-designated official LINE URL');
+ assert.ok(!source.includes('https://lin.ee/ZeLu7i6'),path+' must not keep the outdated official LINE URL');
+}
 assert.deepEqual(buildSafeFunnelEvent('chapter1','result_seen'),{
  event:'mudagiri_chapter1_completed',properties:{chapter:'chapter1'},
 });
@@ -100,6 +106,32 @@ assert.equal(hasProductAnalyticsConsent({getItem:()=>null} as any),false,'consen
 assert.equal(hasProductAnalyticsConsent({getItem:()=> 'denied'} as any),false,'denial must disable analytics');
 assert.equal(hasProductAnalyticsConsent({getItem:()=> 'granted'} as any),true,'explicit consent must enable only after configuration');
 assert.equal(hasProductAnalyticsConsent({getItem:()=>{throw new Error('blocked storage')}} as any),false,'storage failures must fail closed');
+const memoryStorage=new Map<string,string>();
+const testStorage={
+ getItem:(key:string)=>memoryStorage.get(key)??null,
+ setItem:(key:string,value:string)=>{memoryStorage.set(key,value)},
+};
+assert.equal(readProductAnalyticsPreference(testStorage),'unset','consent is OFF by default');
+assert.ok(writeProductAnalyticsPreference(testStorage,'granted'),'consent choice should persist');
+assert.equal(memoryStorage.get(PRODUCT_ANALYTICS_CONSENT_KEY),'granted');
+assert.equal(readProductAnalyticsPreference(testStorage),'granted');
+assert.ok(writeProductAnalyticsPreference(testStorage,'denied'),'withdrawal must persist');
+assert.equal(readProductAnalyticsPreference(testStorage),'denied');
+assert.ok(PRODUCT_ANALYTICS_CONSENT_KEY!==PRODUCT_ANALYTICS_REVIEW_KEY,'Review consent must never double as production consent');
+assert.ok(writeProductAnalyticsPreference(testStorage,'granted',PRODUCT_ANALYTICS_REVIEW_KEY));
+assert.equal(readProductAnalyticsPreference(testStorage),'denied','Review choice cannot grant production analytics');
+assert.equal(readProductAnalyticsPreference(testStorage,PRODUCT_ANALYTICS_REVIEW_KEY),'granted');
+assert.equal(readProductAnalyticsPreference({getItem:()=>{throw Error('storage blocked')}}),'unset');
+assert.equal(writeProductAnalyticsPreference({setItem:()=>{throw Error('storage blocked')}},'granted'),false);
+const ui=readFileSync('src/ProductAnalyticsConsentV1.tsx','utf8');
+assert.match(ui,/同意しなくても診断は使えます/);
+assert.match(ui,/同意を撤回する/);
+assert.match(ui,/許可前の操作を遡って送信しません/);
+assert.match(ui,/VITE_MUDAGIRI_ANALYTICS_ENABLED/);
+const analyticsSource=readFileSync('src/product-funnel-analytics-v1.ts','utf8');
+assert.match(analyticsSource,/hasProductAnalyticsConsent/);
+assert.match(analyticsSource,/credentials:'omit'/);
+assert.match(analyticsSource,/referrerPolicy:'no-referrer'/);
 assert.equal(trackMudagiriProductEvent('chapter2','diagnosis_completed'),false,'SSR must not send analytics');
 const funnel=readFileSync('src/features/money-personality/money-type-funnel-v1.ts','utf8');
 assert.match(funnel,/line_bonus_outbound_clicked/);
