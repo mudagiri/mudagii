@@ -9,6 +9,9 @@ on:
       - ".github/workflows/deploy-chapter3-rpg-pilot-preview.yml"
       - "src/features/chapter3/**"
       - "chapter3-pilot.html"
+      - "chapter3-v21.html"
+      - "scripts/chapter3-life-fork-v21.mjs"
+      - "scripts/qa-chapter3-life-fork-v21.mjs"
       - "scripts/chapter3-insight-engine-v1.mjs"
       - "scripts/qa-chapter3-insight-v1.mjs"
       - "vite.config.ts"
@@ -236,6 +239,8 @@ jobs:
           npm run build
           npm run qa:chapter3-insight
           test -f dist/chapter3-pilot.html
+          test -f dist/chapter3-v21.html
+          npm run qa:chapter3-life-fork
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
 
       - name: Preserve current site paths and add integrated preview subtree
@@ -285,6 +290,7 @@ jobs:
           cp -R chapter3-site/dist/. site/pilot/chapter3-v16/
           git -C chapter3-site rev-parse HEAD > site/pilot/chapter3-v16/REVISION_SHA.txt
           test -f site/pilot/chapter3-v16/chapter3-pilot.html
+          test -f site/pilot/chapter3-v16/chapter3-v21.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter3-v16/assets/*.js
 
           cmp production-site/dist/index.html site/index.html
@@ -363,6 +369,7 @@ jobs:
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v32/" -o /tmp/chapter2-v32.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v32/pilot/money-type/" -o /tmp/chapter1-v32.html
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/chapter3-pilot.html" -o /tmp/chapter3-v16.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/chapter3-v21.html" -o /tmp/chapter3-v21.html
               test "$(sha256sum /tmp/production-root.html | cut -d ' ' -f1)" = "$EXPECTED_ROOT_SHA"
               grep -q 'id="root"' /tmp/chapter1.html
               grep -q 'id="root"' /tmp/chapter2-v2.html
@@ -373,6 +380,7 @@ jobs:
               grep -q 'id="root"' /tmp/chapter2-v32.html
               grep -q 'id="root"' /tmp/chapter1-v32.html
               grep -q 'id="chapter3-pilot-root"' /tmp/chapter3-v16.html
+              grep -q 'id="chapter3-life-fork-root"' /tmp/chapter3-v21.html
               echo "DEPLOY_CHAPTER3_V16_HIDDEN_PREVIEW_PASS"
               echo "Live production index unchanged vs production build; existing pilot and integrated revisions confirmed."
               exit 0
