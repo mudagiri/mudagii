@@ -83,6 +83,21 @@ export default function Chapter3RpgPilot(){
     ...(calcOpen?{optionalMath:{requested:true,targetYen:Number(target),earmarkedYen:Number(earmarked),monthsUntil:Number(months)}}:{})}
   });
  },[jobCode,inherit,inheritedGoal,goal,future,preserve,when,readiness,shareGoal,calcOpen,target,earmarked,months]);
+ const ahaEligible=(goal==='travel'&&/旅行|旅/.test(future))||(goal==='invest'&&/仕事|働/.test(future));
+ const recordSection=<div className="c3p-record-body">
+    <span className="c3p-kicker">未来攻略書 / {title(goal)}</span>
+    <h2>{result.insight.headline}</h2>
+    <p className="c3p-summary">{result.insight.explanation}</p>
+    <div className="c3p-evidence"><strong>その理由は、この冒険記録にある</strong>
+     {result.insight.evidence.slice(0,4).map((e,i)=><p key={i}><span>{i+1}</span>{e.text}</p>)}
+    </div>
+    <div className="c3p-next"><small>次の攻略アクション</small><strong>{result.insight.action}</strong></div>
+    <div className="c3p-reward-grid">
+     <div><small>第2章 確認済み</small><b>{format(result.financial?.confirmedA)}</b></div>
+     <div><small>未確定の見直し候補・月最大</small><b>{format(result.financial?.cUpper)}</b><em>使える資金ではない</em></div>
+    </div>
+    <p className="c3p-hint">金額はデモ値。確認済み改善額と未確定候補を合算しない。実際の計画の十分性はここでは判定できない。</p>
+ </div>;
  const steps:Stage[]=['future','preserve','when','readiness'];
  const currentIdx=steps.indexOf(stage),isReward=stage==='reward';
  const talk=stage==='intro'?'家計の鑑定、おつかれ！今度は、その戦果を何のために使うか考えてみようぜ。'
@@ -160,21 +175,11 @@ export default function Chapter3RpgPilot(){
    </section>}
    {isReward&&<section className="c3p-panel c3p-panel--result">
     <div className="c3p-artifact"><div className="c3p-compass" aria-hidden="true"><span>Ｎ</span><i>✦</i></div><b>未来の羅針盤</b><small>伝説のアイテム獲得</small></div>
-    {(((goal==='travel')&&/旅行|旅/.test(future))||(goal==='invest'&&/仕事|働/.test(future)))&&<Chapter3AhaLab key={goal} kind={goal==='travel'?'travel':'work'} mockCandidateYen={12000} protectedMeaning={preserve}/>}
-    <span className="c3p-kicker">未来攻略書 / {title(goal)}</span>
-    <h2>{result.insight.headline}</h2>
-    <p className="c3p-summary">{result.insight.explanation}</p>
-    <div className="c3p-evidence"><strong>その理由は、この冒険記録にある</strong>
-     {result.insight.evidence.slice(0,4).map((e,i)=><p key={i}><span>{i+1}</span>{e.text}</p>)}
-    </div>
-    <div className="c3p-next"><small>次の攻略アクション</small><strong>{result.insight.action}</strong></div>
-    <div className="c3p-reward-grid">
-     <div><small>第2章 確認済み</small><b>{format(result.financial?.confirmedA)}</b></div>
-     <div><small>未確定の見直し候補・月最大</small><b>{format(result.financial?.cUpper)}</b><em>使える資金ではない</em></div>
-    </div>
-    <p className="c3p-hint">金額はデモ値。確認済み改善額と未確定候補を合算しない。実際の計画の十分性はここでは判定できない。</p>
-    <button className="c3p-secondary" onClick={()=>setCalcOpen(x=>!x)} aria-expanded={calcOpen}>{calcOpen?'追加試算を閉じる −':'条件を入れて簡単に計算する ＋'}</button>
-    {calcOpen&&<div className="c3p-calc">
+    {ahaEligible&&<Chapter3AhaLab key={goal} kind={goal==='travel'?'travel':'work'} mockCandidateYen={12000} protectedMeaning={preserve}/>}
+    {ahaEligible?<details className="c3p-history"><summary>第1〜3章の記録・戦果を確認する ＋</summary>{recordSection}</details>:recordSection}
+
+    {!ahaEligible&&<button className="c3p-secondary" onClick={()=>setCalcOpen(x=>!x)} aria-expanded={calcOpen}>{calcOpen?'追加試算を閉じる −':'条件を入れて簡単に計算する ＋'}</button>}
+    {!ahaEligible&&calcOpen&&<div className="c3p-calc">
       <p>この目的のための資金だけで計算します。運用益や物価変動を含まない単純試算です。</p>
       <label>目標金額（円）<input type="number" min="1" max="1000000000000" step="1" inputMode="numeric" value={target} onChange={e=>setTarget(e.target.value)} placeholder="例：400000"/></label>
       <label>この目的に使える現在の資金（円）<input type="number" min="0" max="1000000000000" step="1" inputMode="numeric" value={earmarked} onChange={e=>setEarmarked(e.target.value)} placeholder="例：40000"/></label>
