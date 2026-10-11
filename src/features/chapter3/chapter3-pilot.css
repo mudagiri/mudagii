@@ -1,0 +1,108 @@
+/* CHAPTER 3 V1.6 isolated visual pilot.
+   Existing first-party Guild/JOB/Mudagiri art only; no new character files.
+   No changes to chapter1/chapter2 frozen diagnostic CSS. */
+:root{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body,#chapter3-pilot-root{margin:0;min-height:100%;width:100%}
+body{background:#061a24}
+button,select,textarea,input{font:inherit}
+.c3p{--gold:#f2d184;--gold-deep:#bd9045;--light:#edf4f0;--muted:#c0d0d0;--teal:#60d0bf;min-height:100dvh;color:var(--light);position:relative;isolation:isolate;overflow-x:hidden;background:#061c26}
+.c3p-world{position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:linear-gradient(180deg,rgba(2,16,26,.52),rgba(2,20,28,.65) 37%,rgba(1,14,24,.96) 94%),url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp');background-position:center center;background-size:cover;image-rendering:auto}
+.c3p--future .c3p-world,.c3p--preserve .c3p-world,.c3p--when .c3p-world,.c3p--readiness .c3p-world{background-image:linear-gradient(180deg,rgba(2,16,26,.42),rgba(2,20,28,.69) 45%,rgba(1,14,24,.97) 95%),url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp')}
+.c3p--reward .c3p-world{background-image:linear-gradient(180deg,rgba(2,16,26,.35),rgba(2,20,28,.73) 40%,rgba(1,14,24,.98) 90%),url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp')}
+.c3p-shell{width:min(100%,530px);min-height:100dvh;padding:calc(14px + env(safe-area-inset-top)) 15px calc(20px + env(safe-area-inset-bottom));margin:0 auto;background:linear-gradient(90deg,rgba(0,0,0,.04),transparent,rgba(0,0,0,.04))}
+.c3p-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#faeab7;margin-bottom:10px}
+.c3p-brand{font-family:"Yu Mincho","Noto Serif JP",serif;font-weight:900;font-size:16px;text-shadow:0 2px 7px black;white-space:nowrap}
+.c3p-pilot-label{font-size:11px;color:#fff0bd;font-weight:750;text-align:right;max-width:56%;line-height:1.4;background:#174054d9;border:1px solid #ba9a5e80;padding:4px 7px;border-radius:8px}
+.c3p-hud{background:rgba(4,28,38,.9);border:1px solid rgba(235,193,110,.57);border-radius:15px;padding:8px 10px;box-shadow:0 5px 20px #0007}
+.c3p-job{display:flex;align-items:center;gap:12px}
+.c3p-job img{width:64px;height:58px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 7px #8c6b4180)}
+.c3p-job span{display:grid;gap:1px}
+.c3p-job small{font-size:12px;color:#c6dcdc;font-weight:700}
+.c3p-job b{font-size:19px;color:#ffe3a1;line-height:1.2}
+.c3p-progress{display:flex;justify-content:space-between;gap:2px;margin-top:7px;border-top:1px solid #d2aa6066;padding:8px 0 2px;font-size:12px;font-weight:800;color:#bed5d5}
+.c3p-progress span{padding:2px 5px;border-radius:5px;color:#aff0d7}
+.c3p-progress strong{color:#ffe095;font-size:13px}
+.c3p-scene{position:relative;text-align:center;padding:9px 3px 0}
+.c3p-emblem{font-family:serif;font-size:37px;line-height:1;color:#f8d681;text-shadow:0 0 25px #fae393;animation:c3p-float 4s ease-in-out infinite}
+.c3p-scene>small{display:block;color:#ffe29b;font-size:13px;letter-spacing:.10em;font-weight:800;text-shadow:0 2px 7px #000;margin:1px 0 5px}
+.c3p-scene h1{font-family:"Yu Mincho","Noto Serif JP",serif;font-weight:950;font-size:clamp(24px,7.5vw,39px);line-height:1.3;letter-spacing:-.05em;color:#fff3bf;margin:0 0 9px;text-shadow:0 3px 2px #0f1722,0 5px 14px #000}
+.c3p-dialogue{display:flex;align-items:flex-end;gap:5px;position:relative;padding:0 0 0 1px;min-height:109px}
+.c3p-dialogue>img{width:31%;max-width:137px;align-self:end;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 7px 6px #000b);flex-shrink:0;max-height:142px}
+.c3p-dialogue>div{flex:1;text-align:left;background:rgba(3,29,39,.94);border:2px solid var(--gold-deep);border-radius:14px 14px 14px 3px;padding:10px 11px 12px;margin-bottom:4px;box-shadow:0 5px 0 #041118aa,inset 0 0 0 1px #f7d89122}
+.c3p-dialogue b{font-size:12px;display:block;color:#f9da83;margin-bottom:4px}
+.c3p-dialogue p{font-size:clamp(14px,3.8vw,17px);font-weight:800;line-height:1.65;color:#fff;margin:0}
+.c3p-panel{margin-top:8px;border:2px solid #c5a35f;border-radius:17px;background:linear-gradient(165deg,rgba(5,47,55,.96),rgba(3,29,39,.97) 68%,rgba(3,23,33,.99));padding:17px 14px 16px;box-shadow:inset 0 0 0 2px #f8dda021,0 14px 22px #0009;position:relative}
+.c3p-panel::before{position:absolute;content:"✦";top:-12px;left:14px;padding:0 6px;color:#eac578;background:#0a3240;font-size:19px}
+.c3p-kicker{color:#ffe4a6;font-size:12px;letter-spacing:.03em;font-weight:850;display:block;margin-bottom:9px}
+.c3p-panel h2{font-size:clamp(19px,5.1vw,25px);font-family:"Yu Mincho","Noto Serif JP",serif;color:#fff6c8;margin:0 0 12px;line-height:1.52;font-weight:900}
+.c3p-small{font-size:13px;color:#d3e2e4;margin:0 0 11px}
+.c3p-options{display:grid;gap:10px}
+.c3p-options--grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c3p-options button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:12px 13px;border:1px solid #b59a63;border-radius:12px;background:linear-gradient(180deg,#174956,#113642);color:#fff;text-align:left;font-size:15px;font-weight:750;line-height:1.5;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff15,0 4px 8px #0004;touch-action:manipulation}
+.c3p-options button:hover{background:#1b5860;border-color:#f6db95}
+.c3p-options button:active{transform:translateY(1px)}
+.c3p-options button:focus-visible,.c3p-primary:focus-visible,.c3p-back:focus-visible,.c3p-secondary:focus-visible{outline:3px solid #5cd8d2;outline-offset:3px}
+.c3p-options button small{display:block;font-size:12px;color:#bed3d2;font-weight:600;margin-top:3px}
+.c3p-options button:has(small){min-height:68px}
+.c3p-options .c3p-soft-option{background:#13313b;color:#c4d7dd;border-style:dashed}
+.c3p-option-icon{font-size:26px;color:#ffe6ae;min-width:28px;text-align:center}
+.c3p-arrow{font-size:22px;color:#fbd583;margin-left:auto;line-height:1}
+.c3p-custom{display:grid;gap:10px;padding:12px;border:1px solid #9bafad;border-radius:10px;background:#062531}
+.c3p-custom label{font-size:13px;color:#f1e5bd}
+.c3p-custom textarea{width:100%;min-height:86px;resize:vertical;background:#092a37;border:1px solid #bdac7f;color:#fff;border-radius:10px;padding:12px;font-size:16px;line-height:1.55}
+.c3p-custom button{background:linear-gradient(#f9e6b2,#e2b651);color:#17333b;text-align:center;justify-content:center}
+.c3p-options button:disabled,.c3p-custom button:disabled{opacity:.45;cursor:not-allowed}
+.c3p-primary{margin-top:16px;border:2px solid #ffe0a0;width:100%;min-height:55px;padding:11px 16px;border-radius:13px;background:linear-gradient(#ffe5a0,#e7b956);color:#1d3140;font-size:17px;font-weight:950;cursor:pointer;box-shadow:inset 0 1px 0 #fff9,0 5px 0 #8d612a,0 12px 15px #0006;touch-action:manipulation}
+.c3p-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #8d612a}
+.c3p-select,.c3p-select-line select{width:100%;background:#113741;border:1px solid #ac975f;border-radius:10px;color:#fff;padding:11px;font-size:15px;min-height:45px}
+.c3p-field-label{display:block;color:#dce8de;margin:8px 0 6px;font-size:13px;font-weight:700}
+.c3p-check{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.5;font-weight:650;color:#e9f1e9;margin:14px 0 9px}
+.c3p-check input{appearance:auto;width:21px;height:21px;flex-shrink:0;accent-color:#d7ae55}
+.c3p-select-line{display:flex;align-items:center;gap:9px;margin:8px 0 0;color:#f5e4ae;font-size:13px;font-weight:850}
+.c3p-select-line span{flex:0 0 72px}
+.c3p-select-line select{flex:1;width:auto}
+.c3p-reward-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.c3p-reward-grid>div{display:flex;flex-direction:column;gap:5px;min-width:0;padding:12px 9px;border:1px solid #a38c51;border-radius:11px;background:linear-gradient(150deg,#134c4e,#082e3b)}
+.c3p-reward-grid small{font-size:12px;line-height:1.45;color:#d8eddf;font-weight:750}
+.c3p-reward-grid b{font-size:clamp(17px,5.2vw,24px);color:#ffe7a9;letter-spacing:-.03em}
+.c3p-reward-grid em{font-size:11px;font-style:normal;color:#fae7b0}
+.c3p-hint{font-size:12px;color:#cedcdd;line-height:1.6;margin:9px 0 2px}
+.c3p-divider{height:1px;background:#c6a75e70;margin:14px 0}
+.c3p-back{display:block;border:1px solid #c9ac6d;color:#fce2a7;border-radius:9px;min-height:46px;cursor:pointer;background:#0a2938d9;margin:13px 2px 0;padding:9px 15px;font-size:14px;font-weight:750}
+.c3p-footer{padding:18px 4px 0;font-size:11px;line-height:1.5;text-align:center;color:#c8d7d7}
+.c3p-panel--result{border-color:#f0c56d;background:linear-gradient(158deg,#0d4652f2,#062633f9 52%,#031c29fa)}
+.c3p-artifact{text-align:center;margin:1px auto 19px;padding:14px 4px 10px;background:radial-gradient(ellipse at center,#eebf5738,transparent 70%)}
+.c3p-artifact>span{display:block;font-size:67px;line-height:1;color:#ffe6a1;text-shadow:0 0 13px #fed983,0 0 34px #e8b854;animation:c3p-float 4s ease-in-out infinite}
+.c3p-artifact b{display:block;color:#ffe7ad;font-size:26px;font-family:"Yu Mincho","Noto Serif JP",serif;text-shadow:0 4px 10px #000;letter-spacing:.05em}
+.c3p-artifact small{display:block;color:#b6f2df;font-size:12px;margin-top:4px;letter-spacing:.1em}
+.c3p-summary{font-size:15px;font-weight:750;line-height:1.78;color:#fff;margin:5px 0 16px}
+.c3p-evidence{padding:13px;border:1px solid #7eafab;border-radius:12px;background:#0b3742b9}
+.c3p-evidence strong{color:#d7f7ef;font-size:14px}
+.c3p-evidence p{display:flex;align-items:center;gap:10px;font-size:14px;color:#ebf5f3;line-height:1.58;margin:9px 0 0}
+.c3p-evidence p span{color:#ffe6a4;border:1px solid #e0bd7b;border-radius:50%;width:26px;height:26px;flex:0 0 26px;text-align:center;line-height:24px}
+.c3p-next{padding:14px;margin:15px 0;background:linear-gradient(105deg,#4a3a18,#153e42);border:1px solid #e5c370;border-radius:12px}
+.c3p-next small{display:block;color:#f8db95;font-size:12px;font-weight:800;margin-bottom:7px}
+.c3p-next strong{font-size:18px;color:#fff8d9;line-height:1.6}
+.c3p-secondary{width:100%;min-height:50px;border:1px solid #d6b87a;border-radius:12px;background:#13434c;color:#ffefbe;font-weight:800;font-size:14px;margin:15px 0 5px;cursor:pointer}
+.c3p-calc{border:1px solid #b2ae8a;border-radius:12px;background:#082e3a;padding:13px;display:grid;gap:12px;margin:9px 0 15px}
+.c3p-calc>p{font-size:13px;line-height:1.6;margin:0;color:#e3efeb}
+.c3p-calc label{display:grid;gap:5px;font-size:13px;font-weight:750;color:#eaf1e9}
+.c3p-calc input{font-size:16px;min-height:47px;padding:9px;border:1px solid #c8af7d;background:#071f2b;color:white;border-radius:10px;width:100%}
+.c3p-math-result{border:1px solid #e8c774;border-radius:11px;background:#253f31;padding:12px;display:grid;gap:6px}
+.c3p-math-result small{font-size:13px;color:#e0eddb}
+.c3p-math-result b{font-size:24px;color:#fff0a9}
+.c3p-math-result p{font-size:12px;line-height:1.55;margin:0;color:#dbe9e4}
+.c3p-private-card{border:1px solid #9baea4;border-radius:12px;background:#133747;margin:10px 0;padding:12px}
+.c3p-private-card span{display:block;color:#d8e3e2;font-size:11px;letter-spacing:.04em;font-weight:800}
+.c3p-private-card p{font-size:16px;font-weight:850;color:#fff2cc;margin:8px 0;line-height:1.55}
+.c3p-private-card small{font-size:11px;line-height:1.6;color:#becfce}
+.c3p-consult{padding:14px 13px;border-top:1px solid #cea65a;margin:13px 0 0}
+.c3p-consult span{font-family:Georgia,serif;font-size:12px;color:#f9d480;font-weight:bold;letter-spacing:.08em}
+.c3p-consult h3{font-size:20px;color:#fff2cd;margin:5px 0}
+.c3p-consult p{font-size:14px;line-height:1.65;margin:0 0 10px;color:#ebf1ed}
+.c3p-consult small{font-size:12px;line-height:1.6;color:#bccfce}
+@keyframes c3p-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(min-width:680px){.c3p-shell{border-left:1px solid #7a613b;border-right:1px solid #7a613b}.c3p-world{background-position:center 43%}}
+@media(max-width:350px){.c3p-shell{padding-left:9px;padding-right:9px}.c3p-panel{padding:13px 10px}.c3p-pilot-label{font-size:10px}.c3p-job b{font-size:17px}.c3p-options button{padding:9px 10px}.c3p-option-icon{min-width:20px}}
+@media(prefers-reduced-motion:reduce){.c3p *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
