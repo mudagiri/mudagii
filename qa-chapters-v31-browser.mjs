@@ -238,11 +238,17 @@ await clickButton(/診断結果を見る/);
    const reward=document.querySelector('.c2v31-ten-details strong');
    return {width:innerWidth,scrollWidth:doc.scrollWidth,speechMascotOverlap:intersect,
     rewardSize:parseFloat(getComputedStyle(reward).fontSize),
-    rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2};
+    rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2,
+    confirmedY:document.querySelector('.c2v31-confirmed-amount strong').getBoundingClientRect().bottom,
+    counterFont:parseFloat(getComputedStyle(document.querySelector('.c2v31-counts span')).fontSize),
+    tenQualified:!!document.querySelector('.c2v31-ten-qualifier')};
   });
   if(layout.scrollWidth>layout.width+2)throw new Error('V31_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
   if(layout.speechMascotOverlap>1)throw new Error('V31_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
   if(layout.rewardSize<28||layout.rewardClipped)throw new Error('V31_TEN_YEAR_REWARD_CLIP:'+JSON.stringify(layout));
+  if(width>=375&&layout.confirmedY>844)throw new Error('V31_FIRST_FOLD_REWARD_HIDDEN:'+JSON.stringify(layout));
+  if(layout.counterFont<(width<=350?13:12))throw new Error('V31_COUNTER_TOO_SMALL:'+JSON.stringify(layout));
+  if(!layout.tenQualified)throw new Error('V31_10_YEAR_ASSUMPTION_MISSING');
   await screenshot('04-v31-mobile-'+width);
  }
  await page.setViewportSize({width:390,height:844});
