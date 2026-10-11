@@ -59,7 +59,7 @@ assert.match(component,/nonnegative\(vm\.potential\?\.cUpper\)/);
 assert.match(component,/confirmed\*120/);
 assert.doesNotMatch(component,/reviewUpper\*120|cUpper\*120|confirmed\+reviewUpper/);
 assert.match(component,/無料ライフプラン相談の案内を見る/);
-assert.match(html,/画像付きでシェアする/);
+assert.match(component,/画像付きでシェアする/);
 assert.match(html,/画像の保存・文章だけで共有/);
 assert.match(html,/招待リンクをコピー/);
 assert.match(html,/画像は自動添付されないよ/);
