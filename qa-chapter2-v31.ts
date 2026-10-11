@@ -5,7 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
 import {buildSafeFunnelEvent,buildPostHogCaptureBody,hasProductAnalyticsConsent,trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
 import {LINE_URL} from './src/features/money-personality/line-conversion-v1';
-import {PRODUCT_ANALYTICS_CONSENT_KEY,readProductAnalyticsPreference,writeProductAnalyticsPreference} from './src/ProductAnalyticsConsentV1';
+import {PRODUCT_ANALYTICS_CONSENT_KEY,PRODUCT_ANALYTICS_REVIEW_KEY,readProductAnalyticsPreference,writeProductAnalyticsPreference} from './src/ProductAnalyticsConsentV1';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
@@ -117,6 +117,10 @@ assert.equal(memoryStorage.get(PRODUCT_ANALYTICS_CONSENT_KEY),'granted');
 assert.equal(readProductAnalyticsPreference(testStorage),'granted');
 assert.ok(writeProductAnalyticsPreference(testStorage,'denied'),'withdrawal must persist');
 assert.equal(readProductAnalyticsPreference(testStorage),'denied');
+assert.ok(PRODUCT_ANALYTICS_CONSENT_KEY!==PRODUCT_ANALYTICS_REVIEW_KEY,'Review consent must never double as production consent');
+assert.ok(writeProductAnalyticsPreference(testStorage,'granted',PRODUCT_ANALYTICS_REVIEW_KEY));
+assert.equal(readProductAnalyticsPreference(testStorage),'denied','Review choice cannot grant production analytics');
+assert.equal(readProductAnalyticsPreference(testStorage,PRODUCT_ANALYTICS_REVIEW_KEY),'granted');
 assert.equal(readProductAnalyticsPreference({getItem:()=>{throw Error('storage blocked')}}),'unset');
 assert.equal(writeProductAnalyticsPreference({setItem:()=>{throw Error('storage blocked')}},'granted'),false);
 const ui=readFileSync('src/ProductAnalyticsConsentV1.tsx','utf8');
