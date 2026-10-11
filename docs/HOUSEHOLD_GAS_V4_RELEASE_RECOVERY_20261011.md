@@ -1,6 +1,15 @@
 # ムダギリ診断｜家計GAS V4 接続復旧・限定公開ゲート
 2026-10-11 / 統合デザインRC / 現在の本番書き込み禁止
 
+## 追加確認：家計データ資産V1の復元ステージング（2026-10-11）
+- 過去のChatGPTライブラリ `/ムダギリ診断/MUDAGIRI_DATA_ASSET_V1_FINAL_JP.xlsx` が見つかった。ファイルの解析済み6タブの値と見出しを確認。
+- 原本の生バイトを直接インポートできなかったため、**原本ではなく別のGoogleスプレッドシートに6タブのセル値を復元**した。公式正本としては未承認。所有者に実画面・原本との照合を求める。
+- `①ホーム` `②どんな人？` `③何に使ってる？` `④誰が面談する？` `⑤データ信頼度` `⑥データ保管庫` はGoogle Sheets読み戻しに成功。
+- `⑥データ保管庫` の74見出しはGAS V4の `STORE_HEADERS` と**全列完全一致**。他のダッシュボードタブの表示値も読み戻した。
+- 再構築したステージングには、原本の全書式・グラフ・計算式の完全再現を保証しない。**GAS V4のセットアップと実表示確認が必須**。
+- Google SheetのURL/IDは非公開のためGitHubレポジトリに記さない。接続済みDriveで所有者に直接共有。
+- 本番GASは依然旧V2応答。ステージングSheetを用意しても**Apps Script V4の配置／更新、GET疎通、POST保存検証は未実施**。
+
 ## 現在地（実測）
 - 第1章専用GAS: GETの専用バックエンド／バージョン確認PASS。
 - 第2章GAS: 設定されている`VITE_MUDAGIRI_GAS_URL`はHTTP GET可能だが、`ok + version` の旧V2型応答。想定する `schema_version=MUDAGIRI_DATA_ASSET_V1` と `gas_version=MUDAGIRI_GAS_V4_0` が返らずブロック。
@@ -28,7 +37,7 @@ node scripts/launch-rc-backend-health.mjs
 後者は環境変数 `MUDAGIRI_HOUSEHOLD_GAS_URL` と `MUDAGIRI_PERSONALITY_GAS_URL` がある環境で実行。URL値はログに出さない。
 
 ## 未解決ブロッカー／次に必要な1情報
-**V4を紐付ける正本家計データ資産GoogleスプレッドシートURL（またはそのID）**。現在確認できる2つの既存DBは用途が違う。新規作成済みのSheetが別のGoogleアカウントにあれば、その所有者がGASをデプロイする必要がある。
+**復元ステージング（接続済みDriveに新規作成）と原本の最終目視照合、Apps Script V4のオーナーデプロイ、GET/POST受信検証**。以前の旧分析DB・性格DBは流用しない。新規Sheetから所有者がApps Scriptを開きデプロイする必要がある。
 
 ## ローンチ基準
 - 数値の正確性、12カテゴリ、CONFIRMED意味論、未確定上限の条件表示を維持。
