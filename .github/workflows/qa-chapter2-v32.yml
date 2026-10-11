@@ -3,7 +3,7 @@ name: Chapter 2 V32 World Reward QA
 on:
   push:
     branches:
-      - feat/chapter2-result-v32-guild-reward-20261011
+      - feat/chapter2-result-v32-possible-rewards-20261011
   pull_request:
     branches:
       - feat/chapter2-result-v31-guild-reward-20261011
