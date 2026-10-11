@@ -63,6 +63,30 @@ const withJob=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{
 assert.match(withJob,/冒険者JOBとクリア記念のカード/);
 assert.match(withJob,/先回り司令官/);
 assert.doesNotMatch(uncertain,/冒険者JOBとクリア記念のカード/);
+// The result must actually show the canonical enemy characters, their names
+// and all 12 category states, including categories that are protected or N/A.
+const {ENEMY_ASSETS}=await import('./enemy-assets-v1');
+const allCategories=Object.entries(ENEMY_ASSETS).map(([category,enemy],i)=>({
+ category,label:['通信費','光熱費','サブスク','食費','日用品','娯楽','服・美容','車','住居費','保険','教育費','自己投資'][i],
+ v5Status:(i%4===0?'optimize':i%4===1?'protect':i%4===2?'na':'inspect'),
+ cUpper:i===0?2500:0, nextAction:'契約内容を確認', known:false,
+}));
+const monsterHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,2500),rows:allCategories,firstQuest:{category:'mobile',label:'通信費',nextAction:'プランを見直す'}
+}}));
+assert.equal((monsterHtml.match(/data-section="MUDAGIRI_TALK"/g)||[]).length,5,'five Chapter 1 style companion beats');
+assert.equal((monsterHtml.match(/c2v32-enemy-record/g)||[]).length,12,'show all 12 canonical enemy cards');
+assert.match(monsterHtml,/ENEMY_BATTLE_PREVIEW/);
+assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
+for(const enemy of Object.values(ENEMY_ASSETS)){
+ assert.ok(monsterHtml.includes(enemy.name),'named enemy is missing: '+enemy.name);
+ assert.ok(monsterHtml.includes(enemy.normal),'official enemy image is missing: '+enemy.id);
+}
+assert.match(monsterHtml,/対象外/);
+assert.match(monsterHtml,/守る/);
+assert.match(monsterHtml,/MUDAGIRI_POSE_20_CHECK/);
+assert.match(monsterHtml,/MUDAGIRI_POSE_24_SHARE/);
+assert.match(monsterHtml,/未確定の参考シミュレーション/);
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
 assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
