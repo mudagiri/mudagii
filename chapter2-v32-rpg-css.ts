@@ -30,8 +30,7 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-future-condition{margin:0 0 13px!important;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,226,151,.58);background:rgba(5,22,30,.86);font-size:16px!important;font-weight:900;color:#ffeac2!important;line-height:1.55!important}
 .c2v32-rpg .c2v32-future-condition span{color:#fff;background:rgba(154,54,36,.86);padding:2px 4px;border-radius:3px}
 .c2v32-rpg .c2v32-future-condition small{display:block;color:#e4e9e2!important;font-size:13px;font-weight:750;line-height:1.5}
-.c2v32-rpg .c2v31-chest-art{animation:c2v32-chest-breath 5s ease-in-out infinite;transform-origin:50% 70%}
-@keyframes c2v32-chest-breath{0%,100%{filter:drop-shadow(0 5px 10px rgba(0,0,0,.48))}50%{filter:drop-shadow(0 7px 18px rgba(245,212,119,.40))}}
+.c2v32-rpg .c2v31-chest-art{filter:drop-shadow(0 5px 11px rgba(214,164,72,.29))}
 @media(max-width:375px){
  .c2v32-rpg .c2v31-hero{min-height:376px!important;padding-bottom:22px!important}
  .c2v32-rpg .c2v32-hero-teaser{margin-inline:3px;padding-inline:8px}
