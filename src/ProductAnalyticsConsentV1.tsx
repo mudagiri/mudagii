@@ -6,11 +6,12 @@ import React,{useState} from 'react';
  * It intentionally does not send any event about consent itself.
  */
 export const PRODUCT_ANALYTICS_CONSENT_KEY='mudagiri_analytics_consent_v1';
+export const PRODUCT_ANALYTICS_REVIEW_KEY='mudagiri_analytics_consent_review_v1';
 type ConsentState='unset'|'granted'|'denied';
 
-export function readProductAnalyticsPreference(storage:Pick<Storage,'getItem'>):ConsentState{
+export function readProductAnalyticsPreference(storage:Pick<Storage,'getItem'>,key=PRODUCT_ANALYTICS_CONSENT_KEY):ConsentState{
  try{
-  const value=storage.getItem(PRODUCT_ANALYTICS_CONSENT_KEY);
+  const value=storage.getItem(key);
   return value==='granted'||value==='denied'?value:'unset';
  }catch{return 'unset';}
 }
@@ -18,16 +19,18 @@ export function readProductAnalyticsPreference(storage:Pick<Storage,'getItem'>):
 export function writeProductAnalyticsPreference(
  storage:Pick<Storage,'setItem'>,
  value:'granted'|'denied',
+ key=PRODUCT_ANALYTICS_CONSENT_KEY,
 ):boolean{
  try{
-  storage.setItem(PRODUCT_ANALYTICS_CONSENT_KEY,value);
+  storage.setItem(key,value);
   return true;
  }catch{return false;}
 }
 
-function currentPreference():ConsentState{
+function currentPreference(reviewOnly:boolean):ConsentState{
  if(typeof window==='undefined')return 'unset';
- try{return readProductAnalyticsPreference(window.localStorage)}catch{return 'unset'}
+ const key=reviewOnly?PRODUCT_ANALYTICS_REVIEW_KEY:PRODUCT_ANALYTICS_CONSENT_KEY;
+ try{return readProductAnalyticsPreference(window.localStorage,key)}catch{return 'unset'}
 }
 
 export default function ProductAnalyticsConsentV1(){
@@ -36,15 +39,16 @@ export default function ProductAnalyticsConsentV1(){
  const enabled=(import.meta as any).env?.VITE_MUDAGIRI_ANALYTICS_ENABLED==='1';
  const displayOnly=typeof window!=='undefined'&&window.location.pathname.includes('/pilot/')&&
   (import.meta as any).env?.VITE_MUDAGIRI_ANALYTICS_ALLOW_PILOT!=='1';
- const [preference,setPreference]=useState<ConsentState>(currentPreference);
- const [expanded,setExpanded]=useState(()=>currentPreference()==='unset');
+ const [preference,setPreference]=useState<ConsentState>(()=>currentPreference(displayOnly));
+ const [expanded,setExpanded]=useState(()=>currentPreference(displayOnly)==='unset');
  const [error,setError]=useState('');
 
  if(!enabled)return null;
 
  function update(value:'granted'|'denied'){
   let persisted=false;
-  try{persisted=writeProductAnalyticsPreference(window.localStorage,value)}catch{}
+  try{persisted=writeProductAnalyticsPreference(window.localStorage,value,
+   displayOnly?PRODUCT_ANALYTICS_REVIEW_KEY:PRODUCT_ANALYTICS_CONSENT_KEY)}catch{}
   if(!persisted){
    setError('この端末では設定を保存できません。匿名計測は行われません。');
    setPreference('unset');
@@ -52,7 +56,7 @@ export default function ProductAnalyticsConsentV1(){
   }
   setPreference(value);setError('');setExpanded(false);
   // Stop linking activity to the previous consent period on withdrawal.
-  if(value==='denied'){
+  if(!displayOnly&&value==='denied'){
    try{window.sessionStorage.removeItem('mudagiri_analytics_session_v1')}catch{}
   }
  }
@@ -65,7 +69,7 @@ export default function ProductAnalyticsConsentV1(){
    <p className="mg-privacy-small">診断の回答、支出金額、氏名・連絡先は送りません。画面録画もしません。同意しなくても診断は使えます。許可前の操作を遡って送信しません。</p>
    {preference!=='unset'&&<p className="mg-privacy-status" role="status">{preference==='granted'?'現在：匿名計測に同意中':'現在：匿名計測は停止中'}</p>}
    <div className="mg-privacy-actions">
-    <button type="button" className="mg-privacy-allow" onClick={()=>update('granted')}>同意する</button>
+    <button type="button" className="mg-privacy-allow" onClick={()=>update('granted')}>{displayOnly?'同意する（表示確認）':'同意する'}</button>
     <button type="button" className="mg-privacy-decline" onClick={()=>update('denied')}>{preference==='granted'?'同意を撤回する':'同意しない'}</button>
     <button type="button" className="mg-privacy-later" onClick={()=>{setExpanded(false);setError('')}}>閉じる</button>
    </div>
