@@ -28,7 +28,7 @@ export function writeProductAnalyticsPreference(
 
 function currentPreference():ConsentState{
  if(typeof window==='undefined')return 'unset';
- return readProductAnalyticsPreference(window.localStorage);
+ try{return readProductAnalyticsPreference(window.localStorage)}catch{return 'unset'}
 }
 
 export default function ProductAnalyticsConsentV1(){
@@ -42,7 +42,9 @@ export default function ProductAnalyticsConsentV1(){
  if(!enabled)return null;
 
  function update(value:'granted'|'denied'){
-  if(!writeProductAnalyticsPreference(window.localStorage,value)){
+  let persisted=false;
+  try{persisted=writeProductAnalyticsPreference(window.localStorage,value)}catch{}
+  if(!persisted){
    setError('この端末では設定を保存できません。匿名計測は行われません。');
    setPreference('unset');
    return;
