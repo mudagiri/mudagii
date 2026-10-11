@@ -192,32 +192,32 @@ await screenshot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:16000});
- const inherited=await page.locator('.c2v32-job-card').innerText();
+ const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job and official name persist');
  const resultText=await page.locator('.c2v32-rpg').innerText();
  for(const msg of ['QUEST CLEAR!','BATTLE REPORT','未鑑定の宝箱','¥1,800',yen(cUpper),yen(cUpper*12),yen(cUpper*60),yen(cUpper*120),'未確定','実際の削減額や将来の結果を保証するものではなく','無料ライフプラン相談の案内を見る']){
   assert.ok(resultText.includes(msg),'Missing RPG reward content: '+msg);
  }
  assert.ok(!resultText.includes('8タイプ図鑑'),'Legacy Chapter 2 type gallery must be absent');
- const jobPortrait=page.locator('.c2v32-job-inner img');
+ const jobPortrait=page.locator('.c2v31-job-inner img');
  await jobPortrait.waitFor({state:'visible',timeout:10000});
  const visuals=await page.evaluate(()=>{
-  const job=document.querySelector('.c2v32-job-inner img');
-  const mascot=document.querySelector('.c2v32-hero-mascot');
-  const hero=document.querySelector('.c2v32-hero');
+  const job=document.querySelector('.c2v31-job-inner img');
+  const mascot=document.querySelector('.c2v31-hero-mascot');
+  const hero=document.querySelector('.c2v31-hero');
   const report=document.querySelector('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
   const confirmed=document.querySelector('[data-section="CONFIRMED_REWARD"]');
   const unknown=document.querySelector('[data-section="UNAPPRAISED_TREASURE"]');
   const future=document.querySelector('[data-section="FUTURE_REWARDS"]');
   const cta=document.querySelector('[data-section="CONSULTATION_CTA_TOP"]');
-  const font1=parseFloat(getComputedStyle(confirmed.querySelector('.c2v32-confirmed-amount strong')).fontSize);
-  const font2=parseFloat(getComputedStyle(unknown.querySelector('.c2v32-unknown-details strong')).fontSize);
+  const font1=parseFloat(getComputedStyle(confirmed.querySelector('.c2v31-confirmed-amount strong')).fontSize);
+  const font2=parseFloat(getComputedStyle(unknown.querySelector('.c2v31-unknown-details strong')).fontSize);
   return {jobReady:job.complete&&job.naturalWidth>0,mascotReady:mascot.complete&&mascot.naturalWidth>0,
    heroBg:getComputedStyle(hero).backgroundImage,reportBg:getComputedStyle(report).backgroundImage,
    ctaBg:getComputedStyle(cta).backgroundImage,confirmedFont:font1,uncertainFont:font2,
    sequence:[unknown,future,report,confirmed,cta].every((x,index,a)=>index===0||Boolean(a[index-1].compareDocumentPosition(x)&Node.DOCUMENT_POSITION_FOLLOWING)),
    confirmedIllustration:!!confirmed.querySelector('svg'),lockedChest:!!unknown.querySelector('svg'),
-   gold10:!!future.querySelector('.c2v32-reward-ten'),overflow:document.documentElement.scrollWidth>innerWidth+2};
+   gold10:!!future.querySelector('.c2v31-reward-ten'),overflow:document.documentElement.scrollWidth>innerWidth+2};
  });
  assert.ok(visuals.jobReady&&visuals.mascotReady,'Official character artwork must load');
  assert.ok(visuals.heroBg.includes('MP_BG_01_GUILD_HALL'),'Official guild-hall background must fill hero');
@@ -232,17 +232,17 @@ await clickButton(/診断結果を見る/);
   await page.setViewportSize({width,height:844});
   const layout=await page.evaluate(()=>{
    const doc=document.documentElement;
-   const speech=document.querySelector('.c2v32-dialogue').getBoundingClientRect();
-   const mascot=document.querySelector('.c2v32-hero-mascot').getBoundingClientRect();
+   const speech=document.querySelector('.c2v31-dialogue').getBoundingClientRect();
+   const mascot=document.querySelector('.c2v31-hero-mascot').getBoundingClientRect();
    const intersect=Math.max(0,Math.min(speech.right,mascot.right)-Math.max(speech.left,mascot.left))
     *Math.max(0,Math.min(speech.bottom,mascot.bottom)-Math.max(speech.top,mascot.top));
-   const reward=document.querySelector('.c2v32-ten-details strong');
+   const reward=document.querySelector('.c2v31-ten-details strong');
    return {width:innerWidth,scrollWidth:doc.scrollWidth,speechMascotOverlap:intersect,
     rewardSize:parseFloat(getComputedStyle(reward).fontSize),
     rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2,
-    confirmedY:document.querySelector('.c2v32-confirmed-amount strong').getBoundingClientRect().bottom,
-    counterFont:parseFloat(getComputedStyle(document.querySelector('.c2v32-counts span')).fontSize),
-    tenQualified:!!document.querySelector('.c2v32-ten-qualifier')};
+    confirmedY:document.querySelector('.c2v31-confirmed-amount strong').getBoundingClientRect().bottom,
+    counterFont:parseFloat(getComputedStyle(document.querySelector('.c2v31-counts span')).fontSize),
+    tenQualified:!!document.querySelector('.c2v31-ten-qualifier')};
   });
   if(layout.scrollWidth>layout.width+2)throw new Error('V32_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
   if(layout.speechMascotOverlap>1)throw new Error('V32_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
@@ -264,7 +264,7 @@ await clickButton(/診断結果を見る/);
  await page.getByRole('button',{name:'今は結果を見る'}).click();
  await modal.waitFor({state:'hidden'});
  // One image-share CTA; optional tools start collapsed to reduce decision load.
- const alternatives=page.locator('.c2v32-share-alternatives');
+ const alternatives=page.locator('.c2v31-share-alternatives');
  assert.ok(!(await alternatives.evaluate(el=>el.open)),'Optional share tools must start collapsed');
  await alternatives.locator('summary').click();
  await clickButton(/招待リンクをコピー/);
@@ -287,7 +287,7 @@ await clickButton(/診断結果を見る/);
  assert.ok(!/1800|350000|70000|¥/.test(JSON.stringify(lastShare)),'share must not include sensitive financial amounts');
  await page.reload({waitUntil:'networkidle'});
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:14000});
- assert.ok((await page.locator('.c2v32-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
+ assert.ok((await page.locator('.c2v31-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
  await screenshot('05-chapter2-resumed');
  if(errors.length)throw new Error('BROWSER_PAGE_ERRORS:'+JSON.stringify(errors));
  await fs.writeFile(out+'/report.json',JSON.stringify({
