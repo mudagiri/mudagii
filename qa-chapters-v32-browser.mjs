@@ -124,8 +124,6 @@ try{
  await page.locator('.mpp17-unified-next-cta').click();
  await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v32/'),{timeout:13000});
  assert.equal(new URL(page.url()).pathname,new URL(preview).pathname);
- const ch2Hud=await page.locator('.c2v32-chapter-label').innerText();
- assert.ok(ch2Hud.includes('第1章 JOB獲得')&&ch2Hud.includes('第2章 家計バトル'),'Chapter 2 HUD continues the same two-chapter journey');
  const after=await page.evaluate(()=>({anonymousUserId:localStorage.getItem('mudagiri_anonymous_user_id_v1'),handoff:JSON.parse(localStorage.getItem('mudagiri_money_type_handoff_v1')||'null')}));
  assert.equal(after.anonymousUserId,before.anonymousUserId,'shared origin must retain anonymous join key');
  assert.equal(after.handoff.sessionId,before.handoff.sessionId);
@@ -233,6 +231,8 @@ await screenshot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:16000});
+ const ch2Hud=await page.locator('.c2v32-chapter-label').innerText();
+ assert.ok(ch2Hud.includes('第1章 JOB獲得')&&ch2Hud.includes('第2章 家計バトル'),'Chapter 2 HUD continues the same two-chapter journey');
  const observed=await page.evaluate(()=>({
   url:location.href, rootClass:document.querySelector('.c2v2-root')?.className,
   version:document.querySelector('[data-result-version]')?.getAttribute('data-result-version'),
