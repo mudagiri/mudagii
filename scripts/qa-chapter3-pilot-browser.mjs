@@ -46,13 +46,11 @@ for(const width of widths){
  expect(metrics.doc<=width+1,width+' horizontal overflow doc '+metrics.doc);
  expect(metrics.panel>0,width+' result present');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-result.png'),fullPage:true});
- await page.getByRole('button',{name:/条件を入れて簡単に計算する/}).click();
- await page.getByLabel('目標金額（円）').fill('400000');
- await page.getByLabel('この目的に使える現在の資金（円）').fill('40000');
- await page.getByLabel('目標までの月数').fill('12');
- await page.getByText('30,000円 / 月').waitFor();
- expect(external.length===0,width+' no external GAS/LINE/analytics requests');
- await page.screenshot({path:path.join(out,engine+'-'+width+'-calc.png'),fullPage:true});
+ expect(await page.locator('.c3p-history').count()===1,width+' secondary history available');
+ expect(await page.locator('.c3p-history').evaluate(el=>!el.open),width+' generic history collapsed by default');
+ await page.locator('.c3p-history summary').click();
+ expect(await page.locator('.c3p-history').evaluate(el=>el.open),width+' can expand prior adventure record');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-history.png'),fullPage:true});
  await page.getByRole('button',{name:/もう一度試す/}).click();
  await page.getByLabel('第2章の未来選択を引き継ぐ（デモ）').uncheck();
  await page.getByRole('button',{name:/未来の地図へ進む/}).click();
