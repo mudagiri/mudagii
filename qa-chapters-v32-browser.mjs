@@ -14,6 +14,8 @@ const context=await browser.newContext({viewport:{width:390,height:844},deviceSc
 const page=await context.newPage();
 const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
+page.on('crash',()=>console.error('WEBKIT_RESULT_PAGE_CRASH',engine));
+page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',engine,msg.text())});
 await page.addInitScript(()=>{
  window.__integrationShare=[];
  try{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(text)=>{window.__integrationShare.push({kind:'clipboard',text:String(text)})}}})}catch{}
@@ -192,8 +194,17 @@ await screenshot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:16000});
+ const observed=await page.evaluate(()=>({
+  url:location.href, rootClass:document.querySelector('.c2v2-root')?.className,
+  version:document.querySelector('[data-result-version]')?.getAttribute('data-result-version'),
+  htmlTitle:document.title,
+  hasV32:!!document.querySelector('.c2v32-rpg')
+ }));
+ console.log('RESULT_ENTRY_DIAGNOSTICS',engine,JSON.stringify(observed));
+ await screenshot('13-result-entry-before-assert');
  const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job and official name persist');
+ await page.locator('.c2v32-rpg').waitFor({state:'visible',timeout:10000});
  const resultText=await page.locator('.c2v32-rpg').innerText();
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
