@@ -1,0 +1,27 @@
+name: Read-only GAS Launch Health
+on:
+  push:
+    branches:
+      - release/chapter1-chapter2-launch-gate-20261011
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: pilot-hidden-preview
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/chapter1-chapter2-launch-gate-20261011
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify dedicated GAS versions with GET only
+        env:
+          MUDAGIRI_HOUSEHOLD_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL || vars.VITE_MUDAGIRI_GAS_URL }}
+          MUDAGIRI_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+        run: node scripts/launch-rc-backend-health.mjs
