@@ -3,7 +3,7 @@ import React from 'react';
 import {readFileSync} from 'node:fs';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
-import {buildSafeFunnelEvent,trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
+import {buildSafeFunnelEvent,buildPostHogCaptureBody,hasProductAnalyticsConsent,trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
 import {LINE_URL} from './src/features/money-personality/line-conversion-v1';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 
@@ -83,6 +83,23 @@ assert.deepEqual(buildSafeFunnelEvent('chapter2','chapter2_v31_consultation_line
 });
 assert.equal(buildSafeFunnelEvent('chapter2','line_friend_added'),null,'never invent LINE follow or booking completion');
 assert.equal(buildSafeFunnelEvent('chapter2','consultation_booked'),null,'reservation requires verified server event');
+const anonymousId='mg_12345678-1234-1234-1234-123456789012';
+const capture=buildPostHogCaptureBody('phc_TestKey123',anonymousId,'chapter2','chapter2_v31_share_intent',{
+ method:'native_image',monthlyExpense:900000,name:'private',address:'private',diagnosisId:'private',
+});
+assert.deepEqual(capture,{
+ api_key:'phc_TestKey123',distinct_id:anonymousId,event:'mudagiri_chapter2_share_attempted',
+ properties:{chapter:'chapter2',method:'native_image',$process_person_profile:false,$geoip_disable:true},
+});
+assert.ok(!JSON.stringify(capture).includes('private')&&!JSON.stringify(capture).includes('900000'),'capture body must contain no private inputs');
+assert.equal(buildPostHogCaptureBody('invalid',anonymousId,'chapter2','diagnosis_completed'),null,'invalid public project key must fail closed');
+assert.equal(buildPostHogCaptureBody('phc_TestKey123','wrong','chapter2','diagnosis_completed'),null,'untrusted session ID must fail closed');
+assert.equal(buildSafeFunnelEvent('chapter2','constructor'),null,'inherited properties cannot become analytics events');
+assert.equal(buildSafeFunnelEvent('chapter1','toString'),null,'prototype names cannot become events');
+assert.equal(hasProductAnalyticsConsent({getItem:()=>null} as any),false,'consent defaults to denied');
+assert.equal(hasProductAnalyticsConsent({getItem:()=> 'denied'} as any),false,'denial must disable analytics');
+assert.equal(hasProductAnalyticsConsent({getItem:()=> 'granted'} as any),true,'explicit consent must enable only after configuration');
+assert.equal(hasProductAnalyticsConsent({getItem:()=>{throw new Error('blocked storage')}} as any),false,'storage failures must fail closed');
 assert.equal(trackMudagiriProductEvent('chapter2','diagnosis_completed'),false,'SSR must not send analytics');
 const funnel=readFileSync('src/features/money-personality/money-type-funnel-v1.ts','utf8');
 assert.match(funnel,/line_bonus_outbound_clicked/);
