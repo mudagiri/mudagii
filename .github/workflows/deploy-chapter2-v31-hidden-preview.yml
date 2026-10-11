@@ -19,6 +19,9 @@ on:
       - "docs/CHAPTER2_V31_FINAL_UX_AUDIT_20261011.md"
       - "src/features/money-personality/**"
       - "src/product-funnel-analytics-v1.ts"
+      - "src/ProductAnalyticsConsentV1.tsx"
+      - "src/product-analytics-consent-v1.css"
+      - "qa-product-analytics-consent-browser.mjs"
       - "docs/PRODUCT_FUNNEL_POSTHOG_V1_20261011.md"
       - "docs/LINE_BOOKING_VERIFIED_CV_V1_20261011.md"
       - "src/main.tsx"
@@ -160,6 +163,24 @@ jobs:
           npm run qa:money-engine
           npm run qa:resume
 
+      - name: Build opt-in consent UI review preview (no GAS, no PostHog capture)
+        working-directory: v31-site
+        env:
+          VITE_CHAPTER2_V31: "1"
+          VITE_MUDAGIRI_ANALYTICS_ENABLED: "1"
+          VITE_MUDAGIRI_ANALYTICS_ALLOW_PILOT: "0"
+          VITE_POSTHOG_PROJECT_KEY: ""
+          VITE_POSTHOG_HOST: ""
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MUDAGIRI_GAS_URL: ""
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../v31-consent-preview
+          cp -R dist/. ../v31-consent-preview/
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' ../v31-consent-preview/assets/*.js
+
       - name: Build V31 RPG hidden preview without GAS saving
         working-directory: v31-site
         env:
@@ -205,6 +226,14 @@ jobs:
           git -C v3-site rev-parse HEAD > site/pilot/chapter2-v3/pilot/money-type/REVISION_SHA.txt
           node v3-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/chapter2-v3/pilot/money-type/index.html
 
+          # Consent UX review subtree. Analytics + GAS transmission both disabled.
+          mkdir -p site/pilot/chapter2-v31-consent/pilot/money-type
+          cp -R v31-consent-preview/. site/pilot/chapter2-v31-consent/
+          cp -R v31-consent-preview/. site/pilot/chapter2-v31-consent/pilot/money-type/
+          git -C v31-site rev-parse HEAD > site/pilot/chapter2-v31-consent/REVISION_SHA.txt
+          git -C v31-site rev-parse HEAD > site/pilot/chapter2-v31-consent/pilot/money-type/REVISION_SHA.txt
+          node v31-site/scripts/prepare-money-personality-preview-og.mjs site/pilot/chapter2-v31-consent/pilot/money-type/index.html
+
           # V3.1 lives under a separate prefix. Do not replace V3 or any public path.
           mkdir -p site/pilot/chapter2-v31/pilot/money-type
           cp -R v31-site/dist/. site/pilot/chapter2-v31/
@@ -219,6 +248,8 @@ jobs:
           test -f site/pilot/chapter2-v2/pilot/money-type/index.html
           test -f site/pilot/chapter2-v3/index.html
           test -f site/pilot/chapter2-v3/pilot/money-type/index.html
+          test -f site/pilot/chapter2-v31-consent/index.html
+          test -f site/pilot/chapter2-v31-consent/pilot/money-type/index.html
           test -f site/pilot/chapter2-v31/index.html
           test -f site/pilot/chapter2-v31/pilot/money-type/index.html
           test "$(cat site/pilot/money-type/REVISION_SHA.txt)" = "$(git -C pilot-site rev-parse HEAD)"
@@ -226,6 +257,7 @@ jobs:
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v2/pilot/money-type/assets/*.js
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v3/assets/*.js
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v3/pilot/money-type/assets/*.js
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v31-consent/assets/*.js
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v31/assets/*.js
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter2-v31/pilot/money-type/assets/*.js
           echo "root_index_sha=$(sha256sum site/index.html | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
@@ -270,12 +302,15 @@ jobs:
             existing="$(curl -fsSL --max-time 12 "$base/pilot/money-type/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
             v3="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v3/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
             v31="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v31/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
-            if [ "$integrated" = "$EXPECTED_INTEGRATION" ] && [ "$existing" = "$EXPECTED_PILOT" ] && [ "$v3" = "$EXPECTED_V3" ] && [ "$v31" = "$EXPECTED_V31" ]; then
+            consent="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v31-consent/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
+            if [ "$integrated" = "$EXPECTED_INTEGRATION" ] && [ "$existing" = "$EXPECTED_PILOT" ] && [ "$v3" = "$EXPECTED_V3" ] && [ "$v31" = "$EXPECTED_V31" ] && [ "$consent" = "$EXPECTED_V31" ]; then
               curl -fsSL --max-time 12 "$base/" -o /tmp/production-root.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/" -o /tmp/chapter2-v2.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/pilot/money-type/" -o /tmp/chapter1.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v3/" -o /tmp/chapter2-v3.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v3/pilot/money-type/" -o /tmp/chapter1-v3.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter2-v31-consent/" -o /tmp/chapter2-v31-consent.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter2-v31-consent/pilot/money-type/" -o /tmp/chapter1-v31-consent.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v31/" -o /tmp/chapter2-v31.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v31/pilot/money-type/" -o /tmp/chapter1-v31.html
               test "$(sha256sum /tmp/production-root.html | cut -d ' ' -f1)" = "$EXPECTED_ROOT_SHA"
@@ -283,6 +318,8 @@ jobs:
               grep -q 'id="root"' /tmp/chapter2-v2.html
               grep -q 'id="root"' /tmp/chapter2-v3.html
               grep -q 'id="root"' /tmp/chapter1-v3.html
+              grep -q 'id="root"' /tmp/chapter2-v31-consent.html
+              grep -q 'id="root"' /tmp/chapter1-v31-consent.html
               grep -q 'id="root"' /tmp/chapter2-v31.html
               grep -q 'id="root"' /tmp/chapter1-v31.html
               echo "DEPLOY_CHAPTER2_V31_HIDDEN_PREVIEW_PASS"
