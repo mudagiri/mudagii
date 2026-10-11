@@ -86,7 +86,7 @@ export function trackMudagiriProductEvent(scope:ProductFunnelScope,name:string,d
  if(!body)return false;
  try{
   void fetch(cfg.host+'/capture/',{
-   method:'POST',mode:'cors',keepalive:true,
+   method:'POST',mode:'cors',keepalive:true,credentials:'omit',referrerPolicy:'no-referrer',
    headers:{'Content-Type':'application/json'},
    body:JSON.stringify(body),
   }).catch(()=>{});
