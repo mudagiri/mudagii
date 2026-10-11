@@ -23,6 +23,8 @@ assert.match(html,/¥21,600/);
 assert.match(html,/¥108,000/);
 assert.match(html,/¥216,000/);
 assert.match(html,/将来の改善を保証するものではなく/);
+assert.match(html,/月 ¥1,800 の改善が続いた場合/);
+assert.match(html,/ほかに、問題なし 7件・対象外 3件/);
 assert.doesNotMatch(html,/¥2,358,480/,'do not multiply unconfirmed additional possibility by 120');
 assert.match(html,/MP_BG_01_GUILD_HALL/);
 assert.match(html,/MP_BG_02_JOB_UNLOCK/);
@@ -43,7 +45,7 @@ for(const [code,asset] of Object.entries(JOB_CHARACTER_ASSETS)){
  const result=renderToStaticMarkup(React.createElement(ResultScreenChapter2V31,{vm:makeVm(1800,17854),chapter1:handoff}));
  assert.ok(result.includes(asset.file),'Official JOB image missing: '+code);
  assert.ok(result.includes(asset.name),'Official JOB name missing: '+code);
- assert.match(result,/第1章で獲得したJOB/);
+ assert.match(result,/第1章のJOB/);
  assert.match(result,/ADVENTURER RECORD/);
  assert.match(result,/挑戦重視/);
 }
