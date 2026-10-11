@@ -195,6 +195,10 @@ await clickButton(/診断結果を見る/);
  const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job and official name persist');
  const resultText=await page.locator('.c2v32-rpg').innerText();
+ const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
+ const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
+ assert.ok(cUpper>0,'QA household inputs must produce an explicit V5 C reference candidate');
+ const yen=(n)=>'¥'+new Intl.NumberFormat('ja-JP').format(n);
  for(const msg of ['QUEST CLEAR!','BATTLE REPORT','未鑑定の宝箱','¥1,800',yen(cUpper),yen(cUpper*12),yen(cUpper*60),yen(cUpper*120),'未確定','実際の削減額や将来の結果を保証するものではなく','無料ライフプラン相談の案内を見る']){
   assert.ok(resultText.includes(msg),'Missing RPG reward content: '+msg);
  }
