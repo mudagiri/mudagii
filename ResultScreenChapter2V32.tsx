@@ -310,7 +310,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
    </div>}
   </section>
-  <MudagiriBeat pose="check" line="まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！"/>
+  <MudagiriBeat pose="check" line={reviewUpper>0?"まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！":"見直し候補が見つからなくても大丈夫。無理にムダを決めつけないぞ！"}/>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
@@ -331,7 +331,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     <p>無理にムダを決めず、確認できることから進めよう。</p>
    </div>}
   </section>
-  <MudagiriBeat pose="explain" line="この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！"/>
+  <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
 
   <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
    <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
