@@ -105,7 +105,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
  const rows=Array.isArray(vm.rows)?vm.rows:[];
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
- const reviewUpper=nonnegative(vm.potential?.cUpper);
+ // Display and compound from the same yen-rounded upper bound; never imply
+ // extra fractions of a yen can be saved when the monthly card shows integers.
+ const reviewUpper=Math.round(nonnegative(vm.potential?.cUpper));
  const next=vm.firstQuest??null;
  const filtered=rows.filter((x:any)=>x&&x.category&&x.v5Status!=='na');
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
