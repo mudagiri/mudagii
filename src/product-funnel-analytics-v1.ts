@@ -78,7 +78,8 @@ export function trackMudagiriProductEvent(scope:ProductFunnelScope,name:string,d
  if(!payload)return false;
  const cfg=allowedConfig((import.meta as any).env??{},window.location.pathname);
  // Consent must precede collection. No pre-consent event queue or replay.
- if(!cfg||!hasProductAnalyticsConsent(localStorage))return false;
+ if(!cfg)return false;
+ try{if(!hasProductAnalyticsConsent(window.localStorage))return false;}catch{return false;}
  const identity=sessionIdentity();
  if(!identity)return false;
  const body=buildPostHogCaptureBody(cfg.apiKey,identity,scope,name,details);
