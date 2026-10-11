@@ -263,6 +263,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
 
  return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS}</style><div className="c2v2-page c2v31-page">
   <section className="c2v2-hero c2v3-hero c2v31-hero" data-section="CHAPTER2_QUEST_COMPLETE">
+   <div className="c2v32-chapter-label" aria-label="第1章から第2章へ">第1章 JOB獲得 <span>✓</span>　›　第2章 家計バトル <span>✓</span></div>
    <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
    <span className="c2v2-eyebrow c2v31-hero-kicker">QUEST CLEAR!</span>
    <h1 className="c2v31-quest-title"><span>家計クエスト</span><em>完全クリア！</em></h1>
