@@ -32,7 +32,14 @@ await page.addInitScript(()=>{
   }
  }})}catch{}
 });
-async function screenshot(name){await page.screenshot({path:out+'/'+name+'.png',fullPage:true});}
+async function screenshot(name){
+ // Full-page captures of the asset-heavy 4,700px result can exhaust the
+ // Playwright WebKit renderer. Keep full-page Chrome baselines, capture
+ // iPhone WebKit viewport at each tested width; DOM overflow is asserted.
+ const onResult=/(result-entry|chapter2-v32-result|v32-mobile|consultation-modal|chapter2-resumed)/.test(name);
+ const fullPage=!(engine==='webkit'&&onResult);
+ await page.screenshot({path:out+'/'+name+'.png',fullPage,timeout:15000});
+}
 async function clickButton(pattern){const button=page.getByRole('button',{name:pattern}).first();await button.waitFor({state:'visible',timeout:12000});await button.click();}
 async function waitHeading(name){await page.getByRole('heading',{name}).first().waitFor({state:'visible',timeout:12000});}
 try{
