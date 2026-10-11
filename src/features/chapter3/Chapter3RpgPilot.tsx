@@ -1,6 +1,7 @@
 import React,{useMemo,useState} from 'react';
 import {evaluateChapter3} from '../../../scripts/chapter3-insight-engine-v1.mjs';
 import {JOB_CHARACTER_ASSETS} from '../money-personality/job-character-assets-v1';
+import Chapter3AhaLab from './Chapter3AhaLab';
 
 type Goal='home'|'family'|'travel'|'invest'|'challenge'|'safety'|'retirement'|'undecided';
 type Stage='intro'|'goal'|'future'|'preserve'|'when'|'readiness'|'reward';
@@ -157,6 +158,7 @@ export default function Chapter3RpgPilot(){
    </section>}
    {isReward&&<section className="c3p-panel c3p-panel--result">
     <div className="c3p-artifact"><div className="c3p-compass" aria-hidden="true"><span>Ｎ</span><i>✦</i></div><b>未来の羅針盤</b><small>伝説のアイテム獲得</small></div>
+    {(goal==='travel'||(goal==='invest'&&/仕事|働/.test(future)))&&<Chapter3AhaLab key={goal} kind={goal==='travel'?'travel':'work'} mockCandidateYen={12000} protectedMeaning={preserve}/>}
     <span className="c3p-kicker">未来攻略書 / {title(goal)}</span>
     <h2>{result.insight.headline}</h2>
     <p className="c3p-summary">{result.insight.explanation}</p>
