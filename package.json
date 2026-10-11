@@ -49,7 +49,9 @@
     "qa:chapter2-v32": "npx --yes tsx@4.20.6 qa-chapter2-v32.ts",
     "qa:chapter3-insight": "node scripts/qa-chapter3-insight-v1.mjs",
     "qa:chapter3-pilot": "node scripts/qa-chapter3-pilot-browser.mjs",
-    "qa:chapter3-aha": "node scripts/qa-chapter3-aha-experiment-v1.mjs"
+    "qa:chapter3-aha": "node scripts/qa-chapter3-aha-experiment-v1.mjs",
+    "qa:chapter3-life-fork": "node scripts/qa-chapter3-life-fork-v21.mjs",
+    "qa:chapter3-v21-browser": "node scripts/qa-chapter3-v21-browser.mjs"
   },
   "dependencies": {
     "react": "19.1.1",
