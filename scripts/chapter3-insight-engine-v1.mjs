@@ -122,7 +122,7 @@ export function evaluateChapter3(raw){
   insight:{headline,explanation,action,evidence,insightProven:false,advisoryOnly:true},
   math,
   optionalConsultation:{required:false,copy:"必要なら「"+(goal?GOALS[goal].label:"未来")+"」の条件をライフプラン相談で具体化する"},
-  shareSafe:{jobCode:adventurer?.jobCode??null,goalIconCode:goal,completed:kind!=="NEED_GOAL"},
+  shareSafe:{jobCode:adventurer?.jobCode??null,goalIconCode:c3.shareGoal===true?goal:null,completed:kind!=="NEED_GOAL"},
   audit:{chapter1DataAccepted:validC1,chapter2DataAccepted:validC2,identityMismatchDropped:Boolean((c1&&!validC1)||(c2&&!validC2))}
  };
 };
