@@ -23,6 +23,11 @@ export const V32CSS = `
 .c2v32-rpg .c2v31-confirmed-caption{font-size:12px;margin:0;background:none;color:#66583d;border:0;padding:0;text-align:left}
 /* The next check feels like an actionable quest reward, not an extra CTA. */
 .c2v32-rpg .c2v32-first-action{position:relative;margin:11px 0 0;padding:13px 14px;background:linear-gradient(130deg,rgba(11,45,53,.93),rgba(30,38,55,.96));border:1px solid #d4b878;border-left:5px solid #eac76d;border-radius:10px;color:#fff3d6}
+.c2v32-rpg .c2v32-primary-enemy{display:flex;align-items:center;gap:10px;margin:7px 0;padding:7px 8px;border:1px solid rgba(239,204,119,.32);border-radius:8px;background:rgba(1,20,35,.48)}
+.c2v32-rpg .c2v32-primary-enemy>img{width:76px;height:80px;object-fit:contain;flex:0 0 76px;image-rendering:pixelated}
+.c2v32-rpg .c2v32-primary-enemy>div{min-width:0;display:grid;gap:3px}
+.c2v32-rpg .c2v32-primary-enemy strong{font-size:20px;color:#ffedb8;font-weight:950;line-height:1.35;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-primary-enemy small{font-size:13px;line-height:1.45;color:#e0e9e2}
 .c2v32-rpg .c2v32-first-action>span{display:block;font-size:14px;color:#f4db9c;font-weight:950;line-height:1.5}
 .c2v32-rpg .c2v32-first-action>strong{display:block;font-size:20px;line-height:1.4;margin:4px 0;color:#ffedb8;overflow-wrap:anywhere}
 .c2v32-rpg .c2v32-first-action>p{margin:4px 0 7px!important;color:#e9f3f0!important;font-size:15px!important;line-height:1.6!important}
