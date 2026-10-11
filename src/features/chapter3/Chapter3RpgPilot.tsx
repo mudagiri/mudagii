@@ -156,7 +156,7 @@ export default function Chapter3RpgPilot(){
     <p className="c3p-hint">ここで「計画済み」と答えても、十分性を判定するものではありません。</p>
    </section>}
    {isReward&&<section className="c3p-panel c3p-panel--result">
-    <div className="c3p-artifact"><span aria-hidden="true">✦</span><b>未来の羅針盤</b><small>伝説のアイテム獲得</small></div>
+    <div className="c3p-artifact"><div className="c3p-compass" aria-hidden="true"><span>Ｎ</span><i>✦</i></div><b>未来の羅針盤</b><small>伝説のアイテム獲得</small></div>
     <span className="c3p-kicker">未来攻略書 / {title(goal)}</span>
     <h2>{result.insight.headline}</h2>
     <p className="c3p-summary">{result.insight.explanation}</p>
