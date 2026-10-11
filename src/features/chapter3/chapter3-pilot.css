@@ -74,6 +74,11 @@ button,select,textarea,input{font:inherit}
 .c3p-panel--result{border-color:#f0c56d;background:linear-gradient(158deg,#0d4652f2,#062633f9 52%,#031c29fa)}
 .c3p-artifact{text-align:center;margin:1px auto 19px;padding:14px 4px 10px;background:radial-gradient(ellipse at center,#eebf5738,transparent 70%)}
 .c3p-artifact>span{display:block;font-size:67px;line-height:1;color:#ffe6a1;text-shadow:0 0 13px #fed983,0 0 34px #e8b854;animation:c3p-float 4s ease-in-out infinite}
+.c3p-compass{position:relative;isolation:isolate;width:123px;height:123px;margin:0 auto 14px;border:5px double #ffe4a0;border-radius:50%;background:radial-gradient(circle at 50% 50%,#f6d287 0 8%,#28666b 9% 25%,#093440 26% 75%,#c5a04f 77% 80%,#0a2832 82%);box-shadow:0 0 0 3px #4b3819,0 0 31px #f4d26c94,0 10px 20px #000a;display:flex;flex-direction:column;align-items:center;overflow:hidden;animation:c3p-float 4s ease-in-out infinite}
+.c3p-compass::before{content:"";position:absolute;inset:10px;border:1px solid #ffebacb8;border-radius:50%}
+.c3p-compass::after{content:"";position:absolute;top:31px;left:calc(50% - 18px);width:36px;height:70px;background:linear-gradient(180deg,#fff0b5 0 45%,#bb522f 45% 100%);clip-path:polygon(50% 0,100% 52%,50% 100%,0 52%);filter:drop-shadow(0 0 6px #fff3c2);opacity:.9;transform:rotate(18deg)}
+.c3p-compass>span{position:absolute;top:5px;left:0;right:0;text-align:center;font:bold 12px Georgia,serif;z-index:2;color:#ffeca3;text-shadow:0 1px 2px #000}
+.c3p-compass>i{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);width:16px;height:16px;line-height:16px;font-size:17px;color:#fff3c3;z-index:3;text-shadow:0 0 5px #ffffff;font-style:normal}
 .c3p-artifact b{display:block;color:#ffe7ad;font-size:26px;font-family:"Yu Mincho","Noto Serif JP",serif;text-shadow:0 4px 10px #000;letter-spacing:.05em}
 .c3p-artifact small{display:block;color:#b6f2df;font-size:12px;margin-top:4px;letter-spacing:.1em}
 .c3p-summary{font-size:15px;font-weight:750;line-height:1.78;color:#fff;margin:5px 0 16px}
