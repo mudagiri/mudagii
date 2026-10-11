@@ -227,6 +227,23 @@ await clickButton(/診断結果を見る/);
   assert.ok(resultText.includes(msg),'Missing RPG reward content: '+msg);
  }
  assert.ok(!resultText.includes('8タイプ図鑑'),'Legacy Chapter 2 type gallery must be absent');
+ const chapter2Creatures=await page.evaluate(()=>{
+   const beats=[...document.querySelectorAll('[data-section="MUDAGIRI_TALK"]')];
+   const records=[...document.querySelectorAll('.c2v32-enemy-record')];
+   const previews=[...document.querySelectorAll('.c2v32-enemy-preview')];
+   return {
+    beatCount:beats.length,
+    beatPortraits:beats.every(el=>!!el.querySelector('img[src*="MUDAGIRI_POSE_"]')&&!!el.querySelector('.c2v32-mudagiri-talk')),
+    namedEnemyCards:records.every(el=>!!el.querySelector('.c2v32-enemy-tile img')&&!!el.querySelector('.c2v2-enemy-text>b')&&!!el.querySelector('.c2v2-enemy-text>small')),
+    enemyCount:records.length, previewCount:previews.length,
+    namedMobile:!!records.find(el=>el.textContent.includes('通信ザウルス')),
+   };
+ });
+ assert.equal(chapter2Creatures.beatCount,5,'Chapter 1 style Mudagiri portrait + bubble must recur throughout Chapter 2');
+ assert.ok(chapter2Creatures.beatPortraits,'All five Mudagiri talk images must use official pose artwork');
+ assert.ok(chapter2Creatures.namedEnemyCards,'Enemy atlas needs both named monster and expense category with art');
+ assert.equal(chapter2Creatures.enemyCount,12,'All 12 category enemy characters must remain visible, including N/A');
+ assert.ok(chapter2Creatures.previewCount>0&&chapter2Creatures.namedMobile,'Battle preview and canonical monster names must display');
  const jobPortrait=page.locator('.c2v31-job-inner img');
  await jobPortrait.waitFor({state:'visible',timeout:10000});
  const visuals=await page.evaluate(()=>{
