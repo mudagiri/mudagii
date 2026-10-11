@@ -507,3 +507,43 @@ function housingTenureLabel_(v){return ({rental:'賃貸',owned:'持ち家',famil
 function housingSubtypeLabel_(v){return ({private_rental:'民間賃貸',public_rental:'公営賃貸',unknown_rental:'賃貸（種別不明）',mortgage:'ローンあり',no_mortgage:'ローンなし',other:'その他'})[v]||v||''}
 function metaValue_(key){const s=SpreadsheetApp.getActive().getSheetByName(CFG.HIDDEN.META),r=find_(s,1,key);return r>1?s.getRange(r,2).getValue():''}
 function upsertKV_(s,k,v,note){const r=find_(s,1,k),row=[k,v,note||''];if(r>1)s.getRange(r,1,1,3).setValues([row]);else s.appendRow(row)}
+
+
+/**
+ * Owner-only deployment preflight. Run in Apps Script editor AFTER
+ * setupMudagiriDataAssetV1, BEFORE publishing the /exec web app.
+ * Pure read-only check: writes no rows and never returns user data.
+ * Deliberately not routed through doGet/doPost.
+ */
+function verifyMudagiriV4Install(){
+  const ss=SpreadsheetApp.getActive();
+  if(!ss)throw new Error('No bound spreadsheet: open Apps Script from the correct V1 household Sheet');
+  const expectations=[
+    [CFG.VISIBLE.STORE,STORE_HEADERS],
+    [CFG.HIDDEN.DIAG,DIAG_HEADERS],
+    [CFG.HIDDEN.CAT,CAT_HEADERS],
+    [CFG.HIDDEN.EVENT,EVENT_HEADERS],
+    [CFG.HIDDEN.CONV,CONV_HEADERS],
+    [CFG.HIDDEN.QUALITY,QUALITY_HEADERS],
+    [CFG.HIDDEN.META,META_HEADERS]
+  ];
+  [CFG.VISIBLE.HOME,CFG.VISIBLE.PEOPLE,CFG.VISIBLE.SPEND,CFG.VISIBLE.CONV,CFG.VISIBLE.QUALITY]
+    .forEach(name=>{if(!ss.getSheetByName(name))throw new Error('Expected visible sheet missing: '+name)});
+  expectations.forEach(([name,headers])=>{
+    const sheet=ss.getSheetByName(name);
+    if(!sheet)throw new Error('Expected V4 sheet missing: '+name);
+    const firstRow=sheet.getRange(1,1,1,headers.length).getValues()[0].map(String);
+    if(firstRow.join('\u0001')!==headers.join('\u0001'))
+      throw new Error('V4 header mismatch: '+name);
+  });
+  const meta=ss.getSheetByName(CFG.HIDDEN.META).getDataRange().getValues();
+  const version=meta.slice(1).find(row=>String(row[0])==='gas_version');
+  const schema=meta.slice(1).find(row=>String(row[0])==='schema_version');
+  if(!version||String(version[1])!==CFG.GAS_VERSION||!schema||String(schema[1])!==CFG.VERSION)
+    throw new Error('V4 metadata version mismatch; run setupMudagiriDataAssetV1 again');
+  const getResult=JSON.parse(doGet().getContent());
+  if(getResult.schema_version!==CFG.VERSION||getResult.gas_version!==CFG.GAS_VERSION)
+    throw new Error('V4 doGet contract mismatch');
+  Logger.log('MUDAGIRI_GAS_V4_OWNER_PREFLIGHT_PASS (read only)');
+  return 'PASS: household GAS V4 schema and all expected sheets; remote POST still unverified';
+}
