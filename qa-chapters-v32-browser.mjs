@@ -96,10 +96,32 @@ try{
   return getComputedStyle(el).opacity==='1'&&
    (!img||(img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0));
  },null,{timeout:6500});
+ const ch1Journey=await page.evaluate(()=>{
+  const root=document.querySelector('.mpp17-unified-world');
+  const hud=document.querySelector('.mpp17-unified-progress');
+  const invite=document.querySelector('[data-section="CHAPTER1_NEXT_BATTLE"]');
+  const images=[...document.querySelectorAll('.mpp17-unified-next-enemies img')];
+  return {
+    root:!!root,hud:!!hud,invite:!!invite,
+    enemyCount:images.length,loaded:images.every(x=>x instanceof HTMLImageElement&&x.complete&&x.naturalWidth>0),
+    buttons:[...document.querySelectorAll('.mpp17-unified-next-cta')].length,
+    background:getComputedStyle(root).backgroundImage,
+    job:document.querySelector('.mpp17-profile h1')?.textContent,
+    share:!!document.querySelector('.mpp17-share-preview')
+  };
+ });
+ assert.ok(ch1Journey.root&&ch1Journey.hud&&ch1Journey.invite,'Chapter 1 result shares Chapter 2 world and progression');
+ assert.equal(ch1Journey.enemyCount,3,'Invite must preview exactly three official RPG enemies');
+ assert.ok(ch1Journey.loaded,'Official monster assets must load in Chapter 1 invite');
+ assert.equal(ch1Journey.buttons,1,'One early continue-to-Chapter2 CTA');
+ assert.ok(ch1Journey.background.includes('MP_BG_01_GUILD_HALL'),'Chapter 1 backdrop must use the official Chapter 2 guild hall');
+ assert.ok(ch1Journey.job&&ch1Journey.share,'SSR JOB and viral share preview must remain intact');
  await screenshot('02-chapter1-result');
- await clickButton('家計クエストへ進む');
+ await page.locator('.mpp17-unified-next-cta').click();
  await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v32/'),{timeout:13000});
  assert.equal(new URL(page.url()).pathname,new URL(preview).pathname);
+ const ch2Hud=await page.locator('.c2v32-chapter-label').innerText();
+ assert.ok(ch2Hud.includes('第1章 JOB獲得')&&ch2Hud.includes('第2章 家計バトル'),'Chapter 2 HUD continues the same two-chapter journey');
  const after=await page.evaluate(()=>({anonymousUserId:localStorage.getItem('mudagiri_anonymous_user_id_v1'),handoff:JSON.parse(localStorage.getItem('mudagiri_money_type_handoff_v1')||'null')}));
  assert.equal(after.anonymousUserId,before.anonymousUserId,'shared origin must retain anonymous join key');
  assert.equal(after.handoff.sessionId,before.handoff.sessionId);
