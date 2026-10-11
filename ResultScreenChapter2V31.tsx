@@ -115,11 +115,13 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
 
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
+  onEvent?.('chapter2_v31_consultation_modal_opened',{placement,goal:goal??null});
   setShowLine(true);
  }
  function confirmConsultation(){
   const code=handoffCode(vm.diagnosisId);
   onEvent?.('line_clicked',{placement:'consult_route',chapter:'household',typeCode:null});
+  onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'consult_route',goal:goal??null});
   onBeforeExternal?.();
   onLine?.({diagnosisId:vm.diagnosisId,firstQuest:next?.category??null,placement:'consult_route',
     handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',
@@ -129,36 +131,81 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
  }
+
+ function downloadCard(file:File){
+  const url=URL.createObjectURL(file);
+  const anchor=document.createElement('a');anchor.href=url;anchor.download=file.name;
+  document.body.appendChild(anchor);anchor.click();anchor.remove();
+  window.setTimeout(()=>URL.revokeObjectURL(url),1500);
+  onEvent?.('chapter2_v31_share_export',{method:'download',content:'quest_card'});
+ }
+ function saveImage(){
+  const file=shareFile.current;
+  if(!file){setShareStatus('画像の準備ができていません。画面を開き直して試してね。');return;}
+  try{
+   downloadCard(file);
+   setShareStatus('画像カードを保存したよ。SNSで画像を添付してね。招待リンクも下からコピーできるよ。');
+  }catch{
+   setShareStatus('画像を保存できませんでした。別のブラウザでも試してみてね。');
+  }
+ }
  async function shareImage(){
-  if(shareBusy)return;setShareBusy(true);setShareStatus('');
+  if(shareBusy)return;
+  setShareBusy(true);setShareStatus('');
   onEvent?.('chapter2_v2_share_clicked',{format:'image'});
+  onEvent?.('chapter2_v31_share_intent',{method:'native_image',content:'quest_card'});
   try{
    const file=shareFile.current;
-   if(!file){setShareStatus('画像カードを作れませんでした。');return;}
-   if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+   if(!file){setShareStatus('画像カードを準備できませんでした。');return;}
+   let canShareFile=false;
+   try{
+    canShareFile=typeof navigator.share==='function'&&
+     (typeof navigator.canShare!=='function'||navigator.canShare({files:[file]}));
+   }catch{canShareFile=false;}
+   if(canShareFile){
     try{
      onBeforeExternal?.();
-     await navigator.share({title:'ムダギリ診断｜家計クエスト',text:chapter2V2ShareText(shareUrl('native')),files:[file]});
-     setShareStatus('共有画面に画像を渡しました。');
-     onEvent?.('chapter2_v2_share_completed',{format:'image'});
+     await navigator.share({
+      title:'ムダギリ診断｜家計クエスト',
+      text:chapter2V2ShareText(shareUrl('native')),
+      files:[file]
+     });
+     setShareStatus('共有画面から戻ったよ。投稿できたかは共有先のアプリで確認してね。');
+     onEvent?.('chapter2_v2_share_completed',{format:'image',delivery:'native_sheet_returned'});
+     onEvent?.('chapter2_v31_share_export',{method:'native_sheet_returned',content:'quest_card'});
      return;
-    }catch(e){if((e as Error)?.name==='AbortError'){setShareStatus('共有をキャンセルしました。');return;}}
+    }catch(e){
+     if((e as Error)?.name==='AbortError'){
+      setShareStatus('共有をキャンセルしたよ。画像はここからいつでも共有できる。');
+      onEvent?.('chapter2_v31_share_cancelled',{method:'native_image'});
+      return;
+     }
+    }
    }
-   const blobUrl=URL.createObjectURL(file);
-   const anchor=document.createElement('a');anchor.href=blobUrl;anchor.download=file.name;
-   document.body.appendChild(anchor);anchor.click();anchor.remove();
-   window.setTimeout(()=>URL.revokeObjectURL(blobUrl),1000);
-   setShareStatus('画像の保存を開始したよ。InstagramやThreadsには保存した画像を添付してね。');
-   onEvent?.('chapter2_v2_share_completed',{format:'download'});
-  }catch{setShareStatus('画像を保存できませんでした。');}
+   downloadCard(file);
+   setShareStatus('このブラウザは画像の直接共有に対応していないため、画像を保存したよ。SNSから画像を添付してね。');
+  }catch{setShareStatus('画像の共有・保存ができませんでした。');}
   finally{setShareBusy(false);}
  }
  function shareText(platform:'x'|'line'){
   onEvent?.('chapter2_v2_share_clicked',{format:'text',platform});
+  onEvent?.('chapter2_v31_share_intent',{method:platform+'_text'});
   const text=chapter2V2ShareText(shareUrl(platform));
   onBeforeExternal?.();
   if(platform==='x')window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
   else window.location.href='https://line.me/R/share?text='+encodeURIComponent(text);
+ }
+ async function copyInviteLink(){
+  const url=shareUrl('copy');
+  onEvent?.('chapter2_v31_share_intent',{method:'copy_link'});
+  try{
+   if(!navigator.clipboard?.writeText)throw new Error('clipboard_unavailable');
+   await navigator.clipboard.writeText(url);
+   setShareStatus('招待リンクをコピーしたよ。画像と一緒に友達に送ってね。');
+   onEvent?.('chapter2_v31_share_export',{method:'copy_link'});
+  }catch{
+   setShareStatus('自動コピーできなかったので、このURLを選んでコピーしてね： '+url);
+  }
  }
  function categoryDetail(x:any){
   const isOpen=opened===x.category;
@@ -295,12 +342,18 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>ここで共有するのは「12カテゴリ鑑定完了」のカードだけ。金額や性格称号は載せないよ。</p>
-   <button className="c2v2-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像カードをシェア／保存する':'画像カードを準備中…'}</button>
-   <div className="c2v2-text-shares">
-    <button onClick={()=>shareText('x')} type="button">Xで文章を共有</button>
-    <button onClick={()=>shareText('line')} type="button">LINEで文章を共有</button>
-   </div>
-   <small>Instagram・Threadsには、共有画面から画像を渡すか、保存した画像を添付してね。</small>
+   <button className="c2v2-share-primary c2v31-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像付きでシェアする ↗':'画像カードを準備中…'}</button>
+   <small className="c2v31-share-help">共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。</small>
+   <details className="c2v31-share-alternatives">
+    <summary>画像の保存・文章だけで共有 <span aria-hidden="true">⌄</span></summary>
+    <div className="c2v31-share-alt-grid">
+     <button type="button" onClick={saveImage} disabled={!shareReady}>画像を保存</button>
+     <button type="button" onClick={()=>void copyInviteLink()}>招待リンクをコピー</button>
+     <button type="button" onClick={()=>shareText('x')}>Xで文章を共有</button>
+     <button type="button" onClick={()=>shareText('line')}>LINEで文章を共有</button>
+    </div>
+    <small>文章共有では画像は自動添付されないよ。画像を使いたい場合は、保存してSNSで添付してね。</small>
+   </details>
    {shareStatus&&<p className="c2v2-share-status" role="status">{shareStatus}</p>}
   </section>
 
@@ -310,9 +363,9 @@ export default function ResultScreenChapter2V31({vm,chapter1,onLine,onEvent,onRe
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
    <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
    <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
-   <p>LINEで相談内容を確認できます。友だち追加だけでは予約は確定しません。</p>
+   <p>公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
-   <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで案内を確認する →</button>
+   <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで無料相談の案内を受け取る →</button>
    <button className="c2v2-subtle" onClick={()=>setShowLine(false)}>今は結果を見る</button>
   </section>
  </div>}
