@@ -14,6 +14,11 @@ on:
       - "scripts/qa-chapter3-aha-experiment-v1.mjs"
       - "scripts/qa-chapter3-pilot-browser.mjs"
       - "chapter3-pilot.html"
+      - "chapter3-v21.html"
+      - "scripts/chapter3-life-fork-v21.mjs"
+      - "scripts/chapter3-life-fork-v21.d.mts"
+      - "scripts/qa-chapter3-life-fork-v21.mjs"
+      - "scripts/qa-chapter3-v21-browser.mjs"
       - "vite.config.ts"
       - "package.json"
       - ".github/workflows/qa-chapter3-rpg-pilot.yml"
@@ -48,6 +53,8 @@ jobs:
           npm run build
           test -f dist/index.html
           test -f dist/chapter3-pilot.html
+          test -f dist/chapter3-v21.html
+          npm run qa:chapter3-life-fork
           npm run qa:chapter3-insight
           npm run qa:chapter3-aha
           if grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js; then
@@ -69,17 +76,23 @@ jobs:
         env:
           BROWSER_ENGINE: chromium
           CHAPTER3_URL: http://127.0.0.1:4173/chapter3-pilot.html
-        run: npm run qa:chapter3-pilot
+        run: |
+          npm run qa:chapter3-pilot
+          CHAPTER3_URL=http://127.0.0.1:4173/chapter3-v21.html npm run qa:chapter3-v21-browser
       - name: iPhone WebKit mobile UI and flow
         env:
           BROWSER_ENGINE: webkit
           CHAPTER3_URL: http://127.0.0.1:4173/chapter3-pilot.html
-        run: npm run qa:chapter3-pilot
+        run: |
+          npm run qa:chapter3-pilot
+          CHAPTER3_URL=http://127.0.0.1:4173/chapter3-v21.html npm run qa:chapter3-v21-browser
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chapter3-rpg-isolated-pilot-screenshots
-          path: chapter3-pilot-qa/
+          path: |
+            chapter3-pilot-qa/
+            chapter3-v21-qa/
           if-no-files-found: warn
           retention-days: 14
