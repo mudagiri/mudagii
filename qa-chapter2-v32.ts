@@ -40,7 +40,32 @@ assert.doesNotMatch(confirmedOnly,/10年間の積み重ね/,'no invented future 
 const empty=show(0,0);
 assert.match(empty,/候補額はまだ未特定/);
 assert.doesNotMatch(empty,/¥2,142,480/);
+const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,17854),
+ rows:[
+  {category:'mobile',label:'通信費',cUpper:5500,nextAction:'スマホ料金プランを確認',v5Status:'optimize'},
+  {category:'food',label:'食費',cUpper:12354,nextAction:'食費の内訳を確認',v5Status:'inspect'},
+ ],
+ firstQuest:{category:'mobile',label:'通信費',nextAction:'料金プランを確認'}
+}}));
+assert.match(candidateHtml,/FIRST_REVIEW_ACTION/);
+assert.match(candidateHtml,/最初に確かめるなら/);
+assert.match(candidateHtml,/食費の内訳を確認/);
+assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
+assert.match(candidateHtml,/もし見直し候補を/);
+assert.match(candidateHtml,/未確定の参考シミュレーション/);
+assert.match(candidateHtml,/見直し候補を本当に変えられるか確かめよう/);
+const jobHandoff={
+ version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',anonymousUserId:'test',sessionId:'test',
+ completedAt:'2026-10-11T00:00:00Z',jobCode:'FDM',jobName:'先回り司令官',primaryStyle:'DRIVE'
+} as const;
+const withJob=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(0,17854),chapter1:jobHandoff}));
+assert.match(withJob,/冒険者JOBとクリア記念のカード/);
+assert.match(withJob,/先回り司令官/);
+assert.doesNotMatch(uncertain,/冒険者JOBとクリア記念のカード/);
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
+assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
+assert.match(source,/loadImage\(job\?\.file\|\|ART\.result\)/);
 assert.doesNotMatch(source,/confirmed\*120|confirmed\+reviewUpper|cUpper\+confirmedA/);
 console.log('CHAPTER2_V32_POTENTIAL_FIRST_QA_PASS: zero confirmed, scenario, both, neither, honest labels, visual hierarchy');
