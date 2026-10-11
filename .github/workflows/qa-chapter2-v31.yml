@@ -60,6 +60,24 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git rev-parse HEAD > site/pilot/chapter2-v31/V31_SHA.txt
 
+      - name: Build opt-in consent QA only with fake project key and no GAS destination
+        env:
+          VITE_CHAPTER2_V31: "1"
+          VITE_MUDAGIRI_ANALYTICS_ENABLED: "1"
+          VITE_MUDAGIRI_ANALYTICS_ALLOW_PILOT: "1"
+          VITE_POSTHOG_PROJECT_KEY: "phc_QATestOnly123"
+          VITE_POSTHOG_HOST: "https://us.i.posthog.com"
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MUDAGIRI_GAS_URL: ""
+        run: |
+          npm run build
+          mkdir -p site/pilot/analytics-consent-qa/pilot/money-type
+          cp -R dist/. site/pilot/analytics-consent-qa/
+          cp -R dist/. site/pilot/analytics-consent-qa/pilot/money-type/
+          # Only the isolated Playwright test may use the synthetic key. Do
+          # not deploy the QA build; every PostHog request is intercepted.
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/analytics-consent-qa/assets/*.js
+
       - name: Start local static website (no deployment)
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 --directory site > /tmp/v31-qa-server.log 2>&1 &
@@ -81,6 +99,18 @@ jobs:
           BROWSER_ENGINE: webkit
           INTEGRATION_URL: http://127.0.0.1:4173/pilot/chapter2-v31/
         run: node qa-chapters-v31-browser.mjs
+
+      - name: Consent, withdrawal and no private PostHog payload in Chrome
+        env:
+          BROWSER_ENGINE: chromium
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/analytics-consent-qa/
+        run: node qa-product-analytics-consent-browser.mjs
+
+      - name: Consent, withdrawal and no private PostHog payload in iPhone WebKit
+        env:
+          BROWSER_ENGINE: webkit
+          INTEGRATION_URL: http://127.0.0.1:4173/pilot/analytics-consent-qa/
+        run: node qa-product-analytics-consent-browser.mjs
 
       - name: Preserve full-width screenshots and QA
         if: always()
