@@ -7,7 +7,7 @@ import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-charact
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
  version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'qa-v31-synthetic',
- v5Counts:{cut:1,optimize:1,protect:7,inspect:3},
+ v5Counts:{cut:1,optimize:1,protect:0,inspect:0,ok:7,na:3},
  potential:{confirmedA,cUpper},rows:[],firstQuest:null,consultRoute:null
 });
 const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V31,{vm:makeVm(1800,17854)}));
