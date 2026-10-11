@@ -10,8 +10,10 @@ import JobCharacterCard from './JobCharacterCard';
 import ResultWorldBeatV1 from './ResultWorldBeatV1';
 import MoneyPersonalityMudagiri from './MoneyPersonalityMudagiri';
 import {PERSONALITY_SCENE_VISUALS} from './mudagiri-personality-visual-v1';
+import {ENEMY_ASSETS} from '../../../enemy-assets-v1';
 import './result-v17-editorial.css';
 import './chapter1-to-chapter2-launch-bridge.css';
+import './chapter-unified-result-v1.css';
 
 type ShareTarget='native'|'x'|'line'|'threads'|'instagram';
 type AxisRow={title:string;left:string;right:string;lean:string;pos:number};
@@ -59,8 +61,16 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
     {label:'対照的',data:neighbors.contrast},
   ] as const;
 
-  return <main className="mpp17-page" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
+  return <main className="mpp17-page mpp17-unified-world" data-chapter-result="chapter1" style={{'--mpp17-accent':asset.accent,'--mpp17-style-accent':STYLE_HOLO[primaryStyle],'--mpp17-secondary-accent':STYLE_HOLO[secondaryStyle]} as React.CSSProperties}>
     <div className="mpp17-wrap">
+      <nav className="mpp17-unified-progress" aria-label="ムダギリの冒険進行">
+        <span className="mpp17-unified-progress-eyebrow">MUDAGIRI QUEST LOG</span>
+        <div className="mpp17-unified-progress-stages">
+          <span className="is-current" aria-current="step">⚔ 第1章 <b>JOB獲得</b> <small>クリア！</small></span>
+          <span aria-hidden="true" className="mpp17-unified-progress-arrow">›</span>
+          <span>🏰 第2章 <b>家計バトル</b></span>
+        </div>
+      </nav>
 
       <section className="mpp17-profile" data-job={jobCode} aria-label="あなたのお金タイプ">
         <div className="mpp17-job-bg" aria-hidden="true"/>
@@ -95,6 +105,20 @@ export default function ResultV17({content,insight,jobCode,primaryStyle,secondar
           <summary><span className="mpp-disclosure-title">ほかのあるあるも見る <em>＋4</em></span><DisclosureCue/></summary>
           <div>{more.map(scene=><article key={scene.label}><small>{scene.label}</small><b>「{scene.voice}」</b></article>)}</div>
         </details>
+      </section>
+
+      <section className="mpp17-unified-next-preview" data-section="CHAPTER1_NEXT_BATTLE" aria-label="次の家計クエスト">
+        <div className="mpp17-unified-next-heading"><small>✦ NEXT QUEST / 次の冒険</small><h2>JOBが決まった。<br/>次は、家計の敵を見つけに行こう。</h2></div>
+        <p>今度は12カテゴリの支出を鑑定。高いからってムダと決めつけず、見直せそうな相手だけ確かめるぞ。</p>
+        <div className="mpp17-unified-next-enemies" aria-label="第2章で登場する敵キャラの例">
+          {(['mobile','sub','food'] as const).map(category=><figure key={category}>
+            <img src={ENEMY_ASSETS[category].normal} alt="" loading="lazy"/>
+            <figcaption>{ENEMY_ASSETS[category].name}</figcaption>
+          </figure>)}
+        </div>
+        <div className="mpp17-unified-next-voice"><MoneyPersonalityMudagiri visual={PERSONALITY_SCENE_VISUALS.householdCta} alt="ムダギリくん"/><span>準備はできた？<br/>このJOBで、第2章へ出発だ！</span></div>
+        <button className="mpp17-unified-next-cta" type="button" onClick={onHousehold}>▶ 第2章・家計クエストへ進む</button>
+        <small className="mpp17-unified-next-explain">ここから先もLINE登録なしで進められるよ。</small>
       </section>
 
       <section className="mpp17-share" id="mpp17-share">
