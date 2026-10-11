@@ -22,6 +22,20 @@ const ART={
  guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
  quest:'./assets/battle1/MUDAGIRI_BATTLE_SWING.png'
 };
+const TALK_POSES={
+ check:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp',
+ explain:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_04_EXPLAIN.webp',
+ proud:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_12_PROUD.webp',
+ guide:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp',
+ share:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_24_SHARE.webp',
+} as const;
+// Inherit Chapter 1's icon + speech pattern, retain Chapter 2 RPG palette.
+function MudagiriBeat({pose,line}:{pose:keyof typeof TALK_POSES;line:string}){
+ return <aside className="c2v32-mudagiri-beat" data-section="MUDAGIRI_TALK">
+  <img src={TALK_POSES[pose]} alt="ムダギリくん" loading="lazy"/>
+  <div className="c2v32-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div>
+ </aside>;
+}
 const GOALS=[
  ['home','住まい'],['family','家族・教育'],['travel','旅行・趣味'],['invest','資産形成'],
  ['challenge','独立・挑戦'],['safety','もしもの備え'],['retirement','老後'],['undecided','まだ決めていない']
@@ -93,7 +107,6 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 
 export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
- const [showAll,setShowAll]=useState(false);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
  const [shareStatus,setShareStatus]=useState('');
@@ -121,9 +134,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   .sort((a:any,b:any)=>nonnegative(b.cUpper)-nonnegative(a.cUpper));
  const primaryCandidate=candidates[0]??null;
  const next=primaryCandidate??vm.firstQuest??null;
- const filtered=rows.filter((x:any)=>x&&x.category&&x.v5Status!=='na');
+ // All available categories (including protected and N/A) are shown without
+ // labeling them as waste. Status keeps the original V5 meaning.
+ const filtered=rows.filter((x:any)=>x&&x.category);
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
- const shown=showAll?filtered:highlighted.slice(0,3);
+ const featured=(highlighted.length?highlighted:filtered).slice(0,3);
+ const shown=filtered;
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
@@ -226,12 +242,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   const isOpen=opened===x.category;
   const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
   const status=STATUS[x.v5Status]??STATUS.review;
-  return <div className="c2v2-entry" key={x.category}>
-   <button className="c2v2-enemy" type="button" aria-expanded={isOpen} onClick={()=>{
+  return <div className={isOpen?'c2v2-entry c2v32-enemy-record is-expanded':'c2v2-entry c2v32-enemy-record'} key={x.category}>
+   <button className="c2v2-enemy c2v32-enemy-tile" type="button" aria-expanded={isOpen} onClick={()=>{
     setOpened(isOpen?null:x.category);onEvent?.('chapter2_v2_category_detail_clicked',{category:x.category});
    }}>
-    {enemy?.normal?<img src={enemy.normal} alt="" loading="lazy"/>:<span className="c2v2-enemy-icon">⚔️</span>}
-    <span className="c2v2-enemy-text"><b>{x.label||x.category}</b><small>{status.mark} {status.name}{x.positionLabel?' ／ '+x.positionLabel:''}</small><span>{isOpen?'詳細を閉じる ↑':'鑑定理由を見る ↓'}</span></span>
+    {enemy?.normal?<img src={enemy.normal} alt={enemy.name} loading="lazy"/>:<span className="c2v2-enemy-icon">⚔️</span>}
+    <span className="c2v2-enemy-text"><b>{enemy?.name||x.label||x.category}</b><small>{x.label||x.category}</small><span>{status.mark} {status.name} {isOpen?'／ 閉じる ↑':'／ 詳細を見る ↓'}</span></span>
    </button>
    {isOpen&&<div className="c2v2-detail">
     <p>{x.reason||'回答内容をもとに確認しています。'}</p>
@@ -294,6 +310,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
    </div>}
   </section>
+  <MudagiriBeat pose="check" line="まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！"/>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
@@ -314,7 +331,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     <p>無理にムダを決めず、確認できることから進めよう。</p>
    </div>}
   </section>
-
+  <MudagiriBeat pose="explain" line="この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！"/>
 
   <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
    <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
@@ -325,6 +342,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     </div>)}
    </div>
    {(nonnegative(counts.ok)>0||nonnegative(counts.na)>0)&&<p className="c2v31-remaining-counts">ほかに、問題なし {nonnegative(counts.ok)}件・対象外 {nonnegative(counts.na)}件</p>}
+   {featured.length>0&&<div className="c2v32-enemy-encounters" data-section="ENEMY_BATTLE_PREVIEW">
+    <h3>今回出会った敵たち</h3>
+    <div className="c2v32-enemy-preview-grid">{featured.map((x:any)=>{
+     const monster=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     const status=STATUS[x.v5Status]??STATUS.review;
+     return <div key={x.category} className="c2v32-enemy-preview">
+      {monster?.normal?<img src={monster.normal} alt={monster.name} loading="lazy"/>:<span aria-hidden="true">⚔️</span>}
+      <strong>{monster?.name||x.label||x.category}</strong>
+      <small>{x.label||x.category} ／ {status.name}</small>
+     </div>;
+    })}</div>
+   </div>}
    <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="確認できた改善額">
     <div className="c2v31-confirmed-heading">確定した改善額</div>
     <div className="c2v31-confirmed-content">
@@ -333,8 +362,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     </div>
     <span className="c2v31-confirmed-caption">{confirmed>0?'確認済みの戦利品':'確定した改善額はまだありません'}</span>
    </section>
-   <p className="c2v2-note c2v31-accounting-note">ムダギリくん「高いからってムダじゃない。守るお金は守ろう！」<br/>※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
+   <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
+  <MudagiriBeat pose="proud" line="敵の顔ぶれも見えてきたな。高いからってムダじゃない。守るお金は守ろう！"/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
@@ -350,18 +380,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
    <h2>まずは、これだけ。</h2>
    {next?<div className="c2v2-quest">
     <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
-    <div><b>{next.label}</b><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
+    <div><b>{(ENEMY_ASSETS as Record<string,any>)[next.category]?.name||next.label}</b><small>{next.label||next.category}</small><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
     {next.aAmount>0&&<strong>確認済み：月 {money(Number(next.aAmount))}</strong>}</div>
    </div>:<div className="c2v2-quest"><img src={ART.guide} alt="" loading="lazy"/><p>無理にムダを探さなくてもOK。今の状態を守るところから始めよう。</p></div>}
-   <p className="c2v2-talk">ムダギリくん「全部まとめて変えなくていい。まず1つで十分だ。」</p>
+   <MudagiriBeat pose="guide" line="全部まとめて変えなくていい。まず1つ、気になる敵を確かめよう！"/>
   </section>
 
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span><h2>気になる敵を、もっと詳しく。</h2>
-   <p>項目をタップすると、比較条件と判定理由が見られるよ。</p>
-   {shown.length?shown.map(categoryDetail):<p className="c2v2-note">優先して見直す敵は見つからなかったよ。必要な支出は守っていい。</p>}
-   {filtered.length>shown.length&&<button className="c2v2-subtle" onClick={()=>setShowAll(true)}>残りの鑑定結果も見る（{filtered.length-shown.length}件） ↓</button>}
-   {showAll&&filtered.length>3&&<button className="c2v2-subtle" onClick={()=>{setShowAll(false);setOpened(null);}}>上位だけに戻す ↑</button>}
+   <p>敵のカードをタップすると、その項目の判定理由と確認ポイントが開くぞ。対象外や守る支出も省かず並べているよ。</p>
+   {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
   </section>
 
@@ -372,6 +400,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
    {selectedGoal&&<p className="c2v2-talk">次の目的地は「{selectedGoal}」。そのためのお金の配分を考えよう。</p>}
    <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
   </section>
+
+  <MudagiriBeat pose="share" line="冒険者カードを友達に見せてみる？家計の金額は載せないから安心してね！"/>
 
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
