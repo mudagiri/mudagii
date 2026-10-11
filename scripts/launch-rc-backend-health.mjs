@@ -22,6 +22,7 @@ for(const target of endpoints){
   if(Object.entries(target.keys).some(([key,value])=>body[key]!==value)){
    // Expose only fixed, bounded protocol labels (no URL, row data or IDs).
    const version=v=>typeof v==='string'&&/^[a-zA-Z0-9_]{1,80}$/.test(v)?v:'MISSING_OR_UNEXPECTED';
+   log.observedKeys=Object.keys(body).filter(key=>/^[a-zA-Z0-9_]{1,30}$/.test(key)).slice(0,12);
    log.observedProtocol={
     gasVersion:version(body.gas_version),
     schemaVersion:version(body.schema_version),
