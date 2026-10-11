@@ -67,7 +67,7 @@ export default function Chapter3RpgPilot(){
   const order:Stage[]=['intro',...(inherit?[]:['goal' as Stage]),'future','preserve','when','readiness','reward'];
   const i=order.indexOf(stage);setStage(order[Math.max(0,i-1)]);
  };
- const goFuture=(s:string)=>{setFuture(s);setFree(false);setStage('preserve');};
+ const goFuture=(s:string)=>{setFuture(s==='まだ具体的には決まっていない'?'':s);setFree(false);setStage('preserve');};
  const goReadiness=(r:Readiness)=>{setReadiness(r);setStage('reward');};
  const job=JOB_CHARACTER_ASSETS[jobCode];
  const result=useMemo(()=>{
@@ -148,7 +148,7 @@ export default function Chapter3RpgPilot(){
    </section>}
    {stage==='when'&&<section className="c3p-panel">
     <span className="c3p-kicker">TIME / 実現する時期</span><h2>その未来は、いつ頃？</h2>
-    <div className="c3p-options">{WHEN.map(s=><button key={s} onClick={()=>{setWhen(s);setStage('readiness');}}>{s}<span className="c3p-arrow">›</span></button>)}</div>
+    <div className="c3p-options">{WHEN.map(s=><button key={s} onClick={()=>{setWhen(s==='まだ決めていない'?'':s);setStage('readiness');}}>{s}<span className="c3p-arrow">›</span></button>)}</div>
    </section>}
    {stage==='readiness'&&<section className="c3p-panel">
     <span className="c3p-kicker">EQUIPMENT / 今の準備</span><h2>今、どこまで考えている？</h2>
