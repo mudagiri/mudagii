@@ -24,6 +24,12 @@ assert.ok(uncertain.indexOf('data-section="POTENTIAL_TREASURE"')<uncertain.index
 assert.ok(uncertain.indexOf('data-section="FUTURE_REWARDS"')<uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
 assert.ok(uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<uncertain.indexOf('data-section="CONSULTATION_CTA_TOP"'));
 assert.ok(!uncertain.includes('確認済みの戦利品'),'do not claim confirmed positive saving when it is zero');
+const fractional=show(0,17853.6);
+assert.match(fractional,/月 最大 ¥17,854/);
+assert.match(fractional,/¥214,248/);
+assert.match(fractional,/¥1,071,240/);
+assert.match(fractional,/¥2,142,480/);
+assert.doesNotMatch(fractional,/¥214,243/,'future must compound from displayed yen, not invisible decimals');
 const mixed=show(1800,17854);
 assert.match(mixed,/¥1,800/);
 assert.match(mixed,/¥2,142,480/);
