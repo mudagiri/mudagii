@@ -1,0 +1,26 @@
+name: Household GAS V4 Contract Gate
+on:
+  push:
+    branches: [fix/household-gas-v4-release-readiness-20261011]
+  pull_request:
+    branches: [feat/unified-chapter1-chapter2-result-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/household-gas-v4-release-readiness-20261011
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Confirm V4 runtime contract in synthetic sandbox (no GAS writes)
+        run: node scripts/qa-gas-v4-contract.mjs
+      - name: Preserve frozen V5 and V3.2 interpretations
+        run: |
+          npm ci
+          npm run qa:chapter2-v32
+          npm run qa:result-v5
