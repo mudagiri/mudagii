@@ -178,6 +178,19 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     insuranceReview:!!vm.consultRoute?.insuranceReview});
   if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
  }
+ // A dedicated coverage consultation route. Keep the global lifeplan CTA unchanged.
+ // For real users, onLine is the app-level lead handoff/official-LINE flow.
+ function consultCoverage(){
+  if(pilotNoExternalActions)return;
+  onEvent?.('chapter2_v32_coverage_consultation_clicked',{placement:'coverage_review',topic:'insurance',noSavingsClaim:true});
+  onEvent?.('line_clicked',{placement:'coverage_review',chapter:'household',typeCode:null});
+  onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'coverage_review',goal:null});
+  onBeforeExternal?.();
+  onLine?.({diagnosisId:vm.diagnosisId,firstQuest:null,placement:'coverage_review',
+   handoffCode:handoffCode(vm.diagnosisId),goal:null,consultPrimary:'lifeplan',
+   consultSelectedTopic:'insurance',insuranceReview:true});
+  if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
+ }
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
  }
@@ -416,7 +429,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
   <MudagiriBeat pose="proud" line="敵の顔ぶれも見えてきたな。高いからってムダじゃない。守るお金は守ろう！"/>
-  <CoverageAwarenessCard rows={rows}/>
+  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions}/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
