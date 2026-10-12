@@ -107,6 +107,9 @@ function App(){
  // A neutral participant-facing link: no developer case chooser or leading hints.
  // The entire test is synthetic and does not collect or submit participant input.
  const pilotMode=new URLSearchParams(window.location.search).get('pilot')==='1';
+ // QA-only dry run: keeps all regular preview actions disabled; it captures
+ // only the insurance intent callback without opening LINE or sending to GAS.
+ const coverageDryRun=!pilotMode&&new URLSearchParams(window.location.search).get('qaCoverageHandoff')==='1';
  const requestedCase=new URLSearchParams(window.location.search).get('case');
  const initialCase:Case=requestedCase&&Object.prototype.hasOwnProperty.call(examples,requestedCase)
   ?requestedCase as Case:'v32_scale';
@@ -132,7 +135,7 @@ function App(){
    <div className="c12preview-stage">
     <ResultScreenChapter2V32 key={selected} vm={vm} chapter1={chapter1} answerCheckEnabled
      answerCheckAnonymousUserId={selected==='identity_mismatch'?'somebody-else':anonymousUserId}
-     answerCheckDemo pilotNoExternalActions onLine={()=>{}} onBeforeExternal={()=>{}}/>
+     answerCheckDemo pilotNoExternalActions coverageDryRun onLine={(payload:any)=>{if(coverageDryRun)(window as any).__coverageHandoff=payload;}} onBeforeExternal={()=>{}}/>
    </div>
  </div>;
 }
