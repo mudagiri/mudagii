@@ -14,6 +14,7 @@ type Props={
  answerCheckEnabled?:boolean;
  answerCheckAnonymousUserId?:string|null;
  answerCheckDemo?:boolean;
+ pilotNoExternalActions?:boolean;
  onLine?:(x:any)=>void;
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
@@ -122,7 +123,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
@@ -167,6 +168,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   setShowLine(true);
  }
  function confirmConsultation(){
+  if(pilotNoExternalActions){setShowLine(false);setShareStatus('調査用のサンプルです。予約やLINE連携は行われません。');return;}
   const code=handoffCode(vm.diagnosisId);
   onEvent?.('line_clicked',{placement:'consult_route',chapter:'household',typeCode:null});
   onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'consult_route',goal:goal??null});
@@ -188,6 +190,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   onEvent?.('chapter2_v31_share_export',{method:'download',content:'quest_card'});
  }
  function saveImage(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは画像保存を実行しません。');return;}
   const file=shareFile.current;
   if(!file){setShareStatus('画像の準備ができていません。画面を開き直して試してね。');return;}
   try{
@@ -198,6 +201,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   }
  }
  async function shareImage(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは共有を実行しません。');return;}
   if(shareBusy)return;
   setShareBusy(true);setShareStatus('');
   onEvent?.('chapter2_v2_share_clicked',{format:'image'});
@@ -236,6 +240,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   finally{setShareBusy(false);}
  }
  function shareText(platform:'x'|'line'){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルではSNS投稿を実行しません。');return;}
   onEvent?.('chapter2_v2_share_clicked',{format:'text',platform});
   onEvent?.('chapter2_v31_share_intent',{method:platform+'_text'});
   const text=chapter2V2ShareText(shareUrl(platform));
@@ -244,6 +249,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   else window.location.href='https://line.me/R/share?text='+encodeURIComponent(text);
  }
  async function copyInviteLink(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは招待リンクを配布しません。');return;}
   const url=shareUrl('copy');
   onEvent?.('chapter2_v31_share_intent',{method:'copy_link'});
   try{
