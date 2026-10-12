@@ -16,11 +16,16 @@ const examples:Record<Case,{label:string;desc:string;style:string;job:string;job
  identity_mismatch:{label:'別人・ID不一致',desc:'本人が同じと証明できなければカード非表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  partial:{label:'カテゴリ未完了',desc:'12カテゴリ未完了の場合はカード非表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'}
 };
+const FIXTURE_AMOUNTS:Record<string,number>={mobile:7800,energy:15500,sub:4200,car:0,food:54000,daily:14000,fun:24000,beautyFashion:6000,rent:92000,insurance:11000,childEducation:0,selfDevelopment:9600};
+// Consistent, deliberately synthetic monthly spending: DO NOT treat as participant or FROZEN benchmark data.
 const row=(category:string)=>({
  category,label:({fun:'娯楽・趣味',sub:'サブスク',selfDevelopment:'自己投資'} as Record<string,string>)[category]||category,
- amount:0,known:true,applicability:'applicable',status:'safe',v5Status:'ok',v5StatusLabel:'今はそのままでOK',
- diagnosisAmount:0,comparisonAmount:null,comparable:null,comparisonQuality:'none',comparisonDifference:null,
- reason:'デモの入力内容です。',nextAction:'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
+ amount:FIXTURE_AMOUNTS[category]??0,known:true,applicability:'applicable',
+ diagnosisAmountLabel:'診断で入力した月額',
+ status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
+ v5StatusLabel:'見極める',
+ diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null,comparable:null,comparisonQuality:'none',comparisonDifference:null,
+ reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
 function makeFixture(example:Case){
  const spec=examples[example],anonymousUserId='chapter12-ui-synthetic-id';
@@ -31,8 +36,9 @@ function makeFixture(example:Case){
  const fun=rows.find(r=>r.category==='fun')!,self=rows.find(r=>r.category==='selfDevelopment')!;
  const sub=rows.find(r=>r.category==='sub')!;
  if(example==='enjoy_good'||example==='partial'){fun.v5Status='protect';fun.appraisal={satisfaction:'verySatisfied'};}
- if(example==='enjoy_question'){fun.v5Status='inspect';fun.appraisal={satisfaction:'inertia'};}
+ if(example==='enjoy_question'){fun.v5Status='optimize';fun.appraisal={satisfaction:'inertia'};}
  if(example==='drive_good'){self.v5Status='protect';self.appraisal={selfDevelopmentValue:'purpose'};}
+ if(example==='secure_no_link'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.v5Status='protect';insurance.appraisal={insurancePurpose:'clear',insuranceLastReview:'within1y'};}
  if(example==='optimize_question'){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
  }
@@ -54,7 +60,7 @@ function App(){
  return <div className="c12preview">
    <div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
-     <p>架空の回答で第2章の実リザルトに試作品を差し込んだ画面です。実ユーザーの性格や家計を診断した結果ではありません。</p>
+     <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
      <label htmlFor="case-change">確認するケースを切り替える</label>
      <select id="case-change" value={selected} onChange={e=>setSelected(e.target.value as Case)}>
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
