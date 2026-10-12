@@ -36,7 +36,7 @@ const row=(category:string)=>({
  diagnosisAmountLabel:'診断で入力した月額',
  status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
  v5StatusLabel:'見極める',
- diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null,comparable:null,comparisonQuality:'none',comparisonDifference:null,
+ diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null,comparable:null as number|null,comparisonQuality:'none',comparisonDifference:null as number|null,
  reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:FIXTURE_NEXT_ACTION[category]||'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
 function makeFixture(example:Case){
