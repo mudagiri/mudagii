@@ -46,3 +46,26 @@
 .c12ac-unknown-title{display:block;font-size:15px;line-height:1.5;color:#fce4aa}
 .c12ac-unknown-note{font-size:12px!important;line-height:1.6!important;color:#deede8!important;margin:6px 0 0!important}
 @media(max-width:340px){.c12ac-money{padding:10px 7px}.c12ac-money strong{font-size:20px}}
+
+/* Compress to keep the original battle/treasure results reachable sooner. */
+.c2v31-rpg .c12ac,.c12ac{padding:12px 12px 10px}
+.c12ac-head{padding-bottom:5px;margin-bottom:6px}
+.c12ac h2{font-size:clamp(20px,5.6vw,25px);margin:3px 0 8px}
+.c12ac-dialogue{min-height:66px;margin-bottom:8px}
+.c12ac-dialogue img{width:21%;max-width:67px}
+.c12ac-dialogue>div{padding:7px 9px}
+.c12ac-dialogue b{margin-bottom:2px}
+.c12ac-dialogue p{font-size:13px!important;line-height:1.55!important}
+.c12ac-insight{padding:10px 10px 9px}
+.c12ac-insight h3{font-size:clamp(17px,4.6vw,20px);line-height:1.44;margin:7px 0}
+.c12ac-money{margin:8px 0 0;padding:8px 9px}
+.c12ac-money>small{margin-bottom:4px}
+.c12ac-money strong{font-size:clamp(19px,5.55vw,25px);line-height:1.4}
+.c12ac-money p{margin:5px 0 0!important}
+.c12ac-next{display:flex;gap:7px;align-items:flex-start;padding:9px 8px;margin:9px 0 0;border-left-width:3px}
+.c12ac-next small{flex:0 0 76px;line-height:1.5}
+.c12ac-next p{margin:0!important;font-size:12px!important;line-height:1.55!important}
+.c12ac-evidence-toggle{min-height:44px;margin-top:9px;padding:8px}
+.c12ac-disclaimer{margin:7px 0 0!important;font-size:10.5px!important;line-height:1.55!important}
+.c12ac--unknown{padding-top:9px!important;padding-bottom:9px!important}
+@media(max-width:350px){.c2v31-rpg .c12ac,.c12ac{padding:10px 9px}.c12ac-next small{flex-basis:70px}}
