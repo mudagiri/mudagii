@@ -28,6 +28,7 @@ const examples:Record<Case,{label:string;desc:string;style:string;job:string;job
  partial:{label:'カテゴリ未完了',desc:'12カテゴリ未完了の場合はカード非表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'}
 };
 const FIXTURE_AMOUNTS:Record<string,number>={mobile:7800,energy:15500,sub:4200,car:0,food:54000,daily:14000,fun:24000,beautyFashion:6000,rent:92000,insurance:11000,childEducation:0,selfDevelopment:9600};
+const FIXTURE_NEXT_ACTION:Record<string,string>={mobile:'スマホ1回線の料金プランと端末代を確認する',food:'食費の内訳と必要な支出を確認する',energy:'直近2〜3か月の明細と契約プランを確認する',daily:'日用品の購入頻度と買い置きを確認する',fun:'満足度の高い支出は守り、使い道を確認する',beautyFashion:'購入頻度と今の満足度を確認する',sub:'使っていない契約と解約条件を確認する',rent:'住居費の契約内容を確認する',insurance:'保障内容と最後の見直し時期を確認する',selfDevelopment:'自己投資の目的と成果を確認する'};
 // Consistent, deliberately synthetic monthly spending: DO NOT treat as participant or FROZEN benchmark data.
 const row=(category:string)=>({
  category,label:({mobile:'通信費',energy:'光熱・水道費',food:'食費',daily:'日用品',fun:'娯楽・趣味',beautyFashion:'美容・被服',sub:'サブスク',selfDevelopment:'自己投資',car:'車',rent:'住居費',insurance:'保険',childEducation:'教育費'} as Record<string,string>)[category]||category,
@@ -36,7 +37,7 @@ const row=(category:string)=>({
  status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
  v5StatusLabel:'見極める',
  diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null,comparable:null,comparisonQuality:'none',comparisonDifference:null,
- reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
+ reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:FIXTURE_NEXT_ACTION[category]||'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
 function makeFixture(example:Case){
  const spec=examples[example],anonymousUserId='chapter12-ui-synthetic-id';
