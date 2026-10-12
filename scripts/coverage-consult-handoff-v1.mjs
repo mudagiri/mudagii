@@ -16,3 +16,14 @@ export function coverageConsultHandoff(diagnosisId,handoffCode){
   insuranceReview:true
  };
 }
+
+/**
+ * External onLine callbacks are not GAS lead persistence. Keep coverage
+ * callback context minimal even if a caller supplies sensitive extra fields.
+ * Existing life-plan callback behavior is retained without changes.
+ */
+export function externalLineContext(ctx,normalPayload){
+ return ctx?.placement==='coverage_review'
+  ?coverageConsultHandoff(ctx?.diagnosisId,ctx?.handoffCode)
+  :normalPayload;
+}
