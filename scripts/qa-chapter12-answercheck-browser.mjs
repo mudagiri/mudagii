@@ -117,6 +117,17 @@ for(const width of [320,375,390,430]){
  check(await coverage.count()===1,width+' coverage awareness shown independently of STYLE');
  check(await coverage.getAttribute('data-coverage-reason')==='UNCLEAR_PURPOSE',width+' coverage unclear purpose evidence used');
  check((await coverage.innerText()).includes('保険'),width+' coverage message concrete');
+ const coverageText=await coverage.innerText();
+ for(const phrase of ['医療の変化','通院・薬物療法','暮らしの変化','保険料・重複','古い保険が無意味とは限らない']){
+  check(coverageText.includes(phrase),width+' coverage visible reason '+phrase);
+ }
+ const coverageConsult=coverage.locator('[data-cta="COVERAGE_LINE_CONSULT"]');
+ check(await coverageConsult.count()===1,width+' dedicated official LINE insurance consultation button visible');
+ check((await coverageConsult.innerText()).includes('公式LINEで保障の相談をする'),width+' insurance-specific CTA wording');
+ check((await coverage.locator('details[open]').count())===0,width+' reasons and consultation visible without details tap');
+ await coverageConsult.click();
+ check((await coverage.locator('[role="status"]').innerText()).includes('LINEへの移動や実際の面談予約は行いません'),width+' pilot suppresses insurance LINE outbound');
+
  const order=await page.evaluate(()=>{
   const reward=document.querySelector('[data-section="FUTURE_REWARDS"]');
   const battle=document.querySelector('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
@@ -130,8 +141,12 @@ for(const width of [320,375,390,430]){
  await coverage.locator('summary').click();
  await selector.selectOption('secure_recent');
  check(await coverage.count()===0,width+' 1y review exemption');
+ check(await page.locator('[data-cta="COVERAGE_LINE_CONSULT"]').count()===0,width+' no insurance CTA on recent review');
+
  await selector.selectOption('secure_no_link');
  check(await coverage.count()===0,width+' full contents awareness exemption');
+ check(await page.locator('[data-cta="COVERAGE_LINE_CONSULT"]').count()===0,width+' no insurance CTA when fully aware');
+
  await selector.selectOption('coverage_zero');
  check(await coverage.count()===1,width+' zero premium still gets neutral coverage awareness');
  check((await coverage.innerText()).includes('保険料が0円でも'),width+' no insurance product prescribed for zero premium');
@@ -187,6 +202,11 @@ for(const width of [320,375,390,430]){
  await alts.locator('summary').click();
  await alts.getByRole('button',{name:/Xで文章を共有/}).click();
  check((await participant.locator('.c2v2-share-status').innerText()).includes('調査用のサンプルではSNS投稿を実行しません'),width+' social posting blocked in synthetic pilot');
+
+ const pilotCoverage=participant.locator('[data-section="COVERAGE_AWARENESS"]');
+ check(await pilotCoverage.locator('[data-cta="COVERAGE_LINE_CONSULT"]').count()===1,width+' participant also sees direct insurance consultation CTA');
+ await pilotCoverage.locator('[data-cta="COVERAGE_LINE_CONSULT"]').click();
+ check((await pilotCoverage.locator('[role="status"]').innerText()).includes('LINEへの移動'),width+' research insurance CTA stays on page');
  check(participantOut.length===0,width+' pilot no external share/booking or GAS request');
  if(width===390)await participant.screenshot({path:path.join(out,engine+'-390-participant.png'),fullPage:true});
  await participant.close();
