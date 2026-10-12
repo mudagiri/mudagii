@@ -6,6 +6,7 @@ import {V32CSS} from './chapter2-v32-rpg-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
+import CoverageAwarenessCard from './CoverageAwarenessCard';
 
 type Props={
  vm:any;
@@ -381,6 +382,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
   <MudagiriBeat pose="proud" line="敵の顔ぶれも見えてきたな。高いからってムダじゃない。守るお金は守ろう！"/>
+  <CoverageAwarenessCard rows={rows}/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
