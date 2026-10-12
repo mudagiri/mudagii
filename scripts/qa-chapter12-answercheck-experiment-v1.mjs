@@ -123,5 +123,43 @@ r=pass(c1('ENJOY'),c2(pairWith({amount:0})));
 ok(r.protectedVsReview===null,'zero monthly subscription cannot create contrast');
 r=pass({...c1('ENJOY'),anonymousUserId:'wrong'},c2(pairRows()));
 ok(r.status==='unavailable'&&r.cards.length===0,'identity mismatch suppresses whole paired card');
+// Four-style answer-check: evidence-backed cases only, never trait validation.
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'inertia'},'cut',{amount:9600})));
+ok(r.cards.some(x=>x.kind==='question'&&x.category==='selfDevelopment'),'DRIVE inertia is a question, not a personality contradiction');
+ok(r.nextStep.includes('惰性'),'DRIVE action reflects self-report');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'inertia'},'inspect',{amount:9600})));
+ok(r.cards.length===0,'DRIVE inertia alone without actual matching C2 status is insufficient');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'unknown'},'optimize',{amount:11000})));
+ok(r.cards.some(x=>x.kind==='question'&&x.category==='insurance'),'SECURE unclear insurance purpose yields verification question');
+ok(r.cards[0]?.financialResult===false,'SECURE does not prescribe product or coverage');
+ok(r.nextStep.includes('保障目的'),'SECURE action is review, not purchase');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLastReview:'over3y'},'optimize',{amount:11000})));
+ok(r.cards[0]?.kind==='question','SECURE last review older than 3 years');
+ok(r.cards[0]?.body.includes('最後の保障確認'),'SECURE review is about elapsed review not unclear purpose');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLastReview:'within1y'},'protect',{amount:11000})));
+ok(r.status==='no_supported_link','SECURE insurance protected does not prove trait accuracy');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'never'},'inspect',{amount:11000})));
+ok(r.status==='no_supported_link','SECURE requires derived review status consistent with V5');
+r=pass(c1('ENJOY'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'never'},'optimize',{amount:11000})));
+ok(r.status==='no_supported_link','insurance question not inferred for other primary style');
+const protectedAndSub=(kind)=>CATEGORY_IDS.map(x=>x==='selfDevelopment'
+ ?{...row(x,{selfDevelopmentValue:'purpose'},'protect'),amount:9600}
+ :x==='fun'?{...row(x,{satisfaction:'verySatisfied'},'protect'),amount:24000}
+ :x==='sub'?{...row(x,{subUnusedAmount:1200,subCancellationConfirmed:true},'cut'),amount:4200,aAmount:1200}
+ :row(x));
+r=pass(c1('DRIVE'),c2(protectedAndSub()));
+ok(r.protectedVsReview?.protect.category==='selfDevelopment','DRIVE pairs only self-development actually protected');
+ok(r.protectedVsReview?.review.monthlyYen===1200,'DRIVE paired review uses confirmed opportunity not total subscriptions');
+ok(r.protectedVsReview?.review.isSavingRealized===false,'DRIVE pairing never labels savings already realized');
+r=pass(c1('OPTIMIZE'),c2(protectedAndSub()));
+ok(r.protectedVsReview?.protect.category==='fun','OPTIMIZE can contrast independently valued fun with unused contracts');
+ok(r.cards.every(x=>x.category!=='fun'),'OPTIMIZE never falsely calls enjoyment a validated style match');
+ok(r.protectedVsReview?.primaryStyle==='OPTIMIZE','OPTIMIZE comparison source labeled as action lens');
+r=pass(c1('SECURE'),c2(protectedAndSub()));
+ok(r.protectedVsReview===null,'SECURE does not treat covered insurance as a personality match');
+r=pass(c1('OPTIMIZE'),c2(protectedAndSub().map(x=>x.category==='fun'?{...x,appraisal:{satisfaction:'inertia'}}:x)));
+ok(r.protectedVsReview===null,'no pairing when enjoyment not explicitly valued');
+r=pass(c1('DRIVE'),c2(protectedAndSub().map(x=>x.category==='selfDevelopment'?{...x,appraisal:{selfDevelopmentValue:'unclear'}}:x)));
+ok(r.protectedVsReview===null,'no pairing when self-development purpose unclear');
 if(failed.length){console.error(JSON.stringify({status:'FAIL',checks,failed},null,2));process.exitCode=1}
 else console.log(JSON.stringify({status:'PASS',checks,scope:'prototype rule gates for Chapter1×Chapter2 self-report resonance, not correlation validity'}));
