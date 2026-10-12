@@ -22,6 +22,7 @@ import type {ComparisonFactsV4} from './benchmark-router-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildPersistencePayloadV4} from './persistence-v4';
 import {trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
+import {externalLineContext} from './scripts/coverage-consult-handoff-v1.mjs';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -157,7 +158,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    // Coverage intent must reach the official LINE handler without forwarding
    // household amounts, appraisals or profile details as callback context.
    // Internal lead saving above keeps its existing attribution fields.
-   if(onLine)onLine(ctx?.placement==='coverage_review'?ctx:payload);
+   if(onLine)onLine(externalLineContext(ctx,payload));
    else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;
 
