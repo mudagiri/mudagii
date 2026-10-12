@@ -44,6 +44,10 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-breakdown-amount{text-align:right;flex:0 0 auto;max-width:53%;display:grid;justify-items:end}
 .c2v32-rpg .c2v32-breakdown-amount strong{font-size:clamp(17px,4.75vw,21px);color:#ffe3a2;font-weight:950;font-variant-numeric:tabular-nums;line-height:1.35;white-space:nowrap}
 .c2v32-rpg .c2v32-breakdown-amount small{font-size:12px!important;line-height:1.35;color:#dce9e5}
+
+.c2v32-rpg .c2v32-breakdown-basis{font-size:12px!important;line-height:1.55!important;margin:6px 0 0!important;padding:7px 8px;border-radius:6px;color:#f0f4e9!important;background:rgba(6,26,38,.6);overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-breakdown-basis b{color:#baf4e5}
+.c2v32-rpg .c2v32-breakdown-basis small{font-size:11px!important;line-height:1.5!important;color:#d6e9de!important}
 .c2v32-rpg .c2v32-breakdown-reason,.c2v32-rpg .c2v32-breakdown-action{font-size:13px!important;line-height:1.6!important;margin:7px 0 0!important;color:#f0f3ea!important}
 .c2v32-rpg .c2v32-breakdown-reason b{color:#f5daa2}
 .c2v32-rpg .c2v32-breakdown-action{padding:7px 7px 2px;border-top:1px solid rgba(211,228,223,.23)}
