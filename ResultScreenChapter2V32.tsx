@@ -4,8 +4,9 @@ import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
 import {V19SCENECSS} from './chapter2-v19-scene-css';
+import {V20BRIDGECSS} from './chapter2-v20-bridge-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
-import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
 import CoverageAwarenessCard from './CoverageAwarenessCard';
 import {coverageConsultHandoff} from './scripts/coverage-consult-handoff-v1.mjs';
@@ -46,6 +47,9 @@ function MudagiriBeat({pose,line}:{pose:keyof typeof TALK_POSES;line:string}){
   <div className="c2v32-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div>
  </aside>;
 }
+const JOB_STYLE_COLORS:Record<string,string>={DRIVE:'#ff625f',ENJOY:'#ff86c8',SECURE:'#62d9e8',OPTIMIZE:'#7bdc91'};
+const JOB_STYLE_LABELS:Record<string,string>={DRIVE:'前進',ENJOY:'楽しさ',SECURE:'安心',OPTIMIZE:'納得'};
+
 const GOALS=[
  ['home','住まい'],['family','家族・教育'],['travel','旅行・趣味'],['invest','資産形成'],
  ['challenge','独立・挑戦'],['safety','もしもの備え'],['retirement','老後'],['undecided','まだ決めていない']
@@ -167,6 +171,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
+ const jobStyleName=chapter1?JOB_STYLE_LABELS[chapter1.primaryStyle]??'':null;
+ const jobStyleColor=chapter1?JOB_STYLE_COLORS[chapter1.primaryStyle]??'#f5c84c':null;
+ const continuityStyle=jobAsset?{'--c2-job-accent':jobAsset.accent,'--c2-style-accent':jobStyleColor} as React.CSSProperties:undefined;
 
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
@@ -324,14 +331,29 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS}</style><div className="c2v2-page c2v31-page">
-  <section className="c2v2-hero c2v3-hero c2v31-hero" data-section="CHAPTER2_QUEST_COMPLETE">
-   <div className="c2v32-chapter-label" aria-label="第1章から第2章へ">第1章 JOB獲得 <span>✓</span>　›　第2章 家計バトル <span>✓</span></div>
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS}</style><div className="c2v2-page c2v31-page">
+  <section className="c2v2-hero c2v3-hero c2v31-hero c2v20-hero" data-section="CHAPTER2_QUEST_COMPLETE" style={continuityStyle}>
+   <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
+    <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
+    <div className="c2v20-quest-stages">
+     <span className="is-complete">⚔ 第1章 <b>JOB獲得</b><small>クリア！</small></span>
+     <span className="c2v20-quest-arrow" aria-hidden="true">›</span>
+     <span className="is-current" aria-current="step">🏰 第2章 <b>家計バトル</b><small>クリア！</small></span>
+    </div>
+   </nav>
    <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
    <span className="c2v2-eyebrow c2v31-hero-kicker">QUEST CLEAR!</span>
    <h1 className="c2v31-quest-title"><span>家計クエスト</span><em>完全クリア！</em></h1>
+   {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card c2v20-hero-job" aria-label="第1章から引き継いだ冒険者" data-section="CHAPTER1_JOB_BRIDGE">
+    <div className="c2v20-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"} loading="eager"/></div>
+    <div className="c2v20-job-identity">
+     <span>第1章で獲得した冒険者</span>
+     <strong>{jobAsset.name}</strong>
+     <div className="c2v20-job-style"><b>{jobStyleName}重視</b><small>そのJOBで家計クエストもクリア！</small></div>
+    </div>
+   </aside>}
    <div className="c2v31-hero-stage">
-    <div className="c2v31-dialogue"><strong>ムダギリくん</strong><p>「おつかれ！<br/>宝箱の中身を見てみよう！」</p></div>
+    <div className="c2v31-dialogue"><strong>ムダギリくん</strong><p>{jobAsset?'「そのJOBで家計バトルもクリア！一緒に戦った戦果を見よう。」':<>「おつかれ！<br/>宝箱の中身を見てみよう！」</>}</p></div>
     <img src={ART.result} alt="勝利を祝うムダギリくん" className="c2v31-hero-mascot"/>
    </div>
    <div className="c2v32-hero-teaser" data-section="POTENTIAL_HERO">
@@ -406,15 +428,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </section>
   <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
 
-  {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
-   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
-   <div className="c2v31-job-inner">
-    <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
-    <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
-     <p>この冒険者と、家計クエストもクリア！</p>
-    </div>
-   </div>
-  </aside>}
+
   {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
   {answerCheckEnabled&&<Chapter12AnswerCheckCard
    enabled={answerCheckEnabled} chapter1={chapter1}
