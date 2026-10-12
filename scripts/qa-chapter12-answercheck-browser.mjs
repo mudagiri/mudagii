@@ -85,7 +85,23 @@ for(const width of [320,375,390,430]){
   let a=document.querySelector('.c2v31-job-card'),b=document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]'),c=document.querySelector('[data-section=POTENTIAL_TREASURE]');
   return a&&b&&c?{a:a.getBoundingClientRect().top+scrollY,b:b.getBoundingClientRect().top+scrollY,c:c.getBoundingClientRect().top+scrollY}:null
  });
- check(Boolean(positions&&positions.c<positions.a&&positions.a<positions.b),width+' candidate reward first, JOB and answercheck after future');
+ check(Boolean(positions&&positions.a<positions.c&&positions.c<positions.b),width+' inherited JOB joins the hero before treasure and answercheck');
+ const heroJob=page.locator('[data-section="CHAPTER1_JOB_BRIDGE"]');
+ const hero=page.locator('[data-section="CHAPTER2_QUEST_COMPLETE"]');
+ check(await heroJob.count()===1&&await heroJob.isVisible(),width+' chapter 1 JOB is a visible part of chapter 2 hero');
+ check(await heroJob.locator('img').evaluate(e=>e.complete&&e.naturalWidth>0),width+' hero JOB artwork loaded');
+ check((await heroJob.innerText()).includes('楽しさ重視'),width+' style identity carried from chapter 1');
+ check((await heroJob.innerText()).includes('そのJOBで家計クエストもクリア'),width+' same adventurer continuity copy');
+ check((await hero.locator('.c2v20-quest-log').innerText()).includes('MUDAGIRI QUEST LOG'),width+' identical chapter quest log');
+ check((await hero.locator('.c2v31-dialogue').innerText()).includes('そのJOBで家計バトルもクリア'),width+' original Mudagiri accompanies player through battle');
+ const heroFont=await heroJob.locator('.c2v20-job-identity strong').evaluate(e=>parseFloat(getComputedStyle(e).fontSize));
+ check(heroFont>=18,width+' legible inherited JOB name');
+ const ledger=page.locator('[data-section="CANDIDATE_BREAKDOWN"]');
+ const ledgerBg=await ledger.evaluate(e=>getComputedStyle(e).backgroundImage);
+ check(ledgerBg.includes('gradient'),width+' chapter 1 parchment ledger visible beneath household candidate evidence');
+ const ledgerColors=await ledger.locator('.c2v32-breakdown-reason').first().evaluate(e=>({color:getComputedStyle(e).color,bg:getComputedStyle(e.parentElement.parentElement).backgroundImage}));
+ check(ledgerColors.color==='rgb(41, 58, 61)',width+' parchment uses dark readable evidence typography');
+
  const cardHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
  check(cardHeight<=(width<=350?500:450),width+' paired answer-check compact enough: '+cardHeight+'px');
  console.log('CHAPTER12_CARD_GEOMETRY',JSON.stringify({engine,width,height:cardHeight}));
