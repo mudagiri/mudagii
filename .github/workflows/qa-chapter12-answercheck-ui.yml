@@ -1,0 +1,69 @@
+name: Chapter 1-2 Answer Check UI Pilot QA
+on:
+  push:
+    branches: [design/chapter12-personality-household-answercheck-v1-20261012]
+    paths:
+      - "Chapter12AnswerCheckCard.tsx"
+      - "chapter12-answercheck-card.css"
+      - "src/chapter12-answercheck-preview.tsx"
+      - "src/chapter12-answercheck-preview.css"
+      - "chapter12-answercheck.html"
+      - "vite.config.ts"
+      - "MudagiriAppV2.tsx"
+      - "ResultScreenChapter2V32.tsx"
+      - "scripts/chapter12-answercheck-experiment-v1.*"
+      - "scripts/qa-chapter12-answercheck*"
+      - ".github/workflows/qa-chapter12-answercheck-ui.yml"
+  pull_request:
+    branches: [feat/unified-chapter1-chapter2-result-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: chapter12-answercheck-ui-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container: {image: "mcr.microsoft.com/playwright:v1.55.0-noble"}
+    env:
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate unchanged C1/C2 logic and preview build
+        run: |
+          npm run build
+          test -f dist/index.html
+          test -f dist/chapter12-answercheck.html
+          npm run qa:chapter2-v32
+          node scripts/qa-chapter12-answercheck-experiment-v1.mjs
+      - name: Install Playwright runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Start isolated static preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/chapter12-preview.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4173/chapter12-answercheck.html >/dev/null; then exit 0; fi
+            sleep 0.3
+          done
+          cat /tmp/chapter12-preview.log
+          exit 1
+      - name: Chrome 4 viewport interaction QA
+        env: {BROWSER_ENGINE: chromium, CHAPTER12_URL: "http://127.0.0.1:4173/chapter12-answercheck.html"}
+        run: node scripts/qa-chapter12-answercheck-browser.mjs
+      - name: WebKit 4 viewport interaction QA
+        env: {BROWSER_ENGINE: webkit, CHAPTER12_URL: "http://127.0.0.1:4173/chapter12-answercheck.html"}
+        run: node scripts/qa-chapter12-answercheck-browser.mjs
+      - name: Upload privacy-safe mock screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter12-answercheck-ui-synthetic-screens
+          path: chapter12-answercheck-qa/
+          if-no-files-found: warn
+          retention-days: 14
