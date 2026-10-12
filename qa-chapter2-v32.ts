@@ -113,7 +113,14 @@ const jobHandoff={
 const withJob=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(0,17854),chapter1:jobHandoff}));
 assert.match(withJob,/冒険者JOBとクリア記念のカード/);
 assert.match(withJob,/先回り司令官/);
-assert.ok(withJob.indexOf('data-section="FUTURE_REWARDS"')<withJob.indexOf('class="c2v31-job-card'), 'JOB handoff must not interrupt candidate-to-future reasoning');
+assert.ok(withJob.indexOf('data-section="CHAPTER1_JOB_BRIDGE"')<withJob.indexOf('data-section="POTENTIAL_HERO"'), 'same Chapter 1 JOB must appear in the Chapter 2 opening before the numbers');
+assert.equal((withJob.match(/data-section="CHAPTER1_JOB_BRIDGE"/g)||[]).length,1,'no duplicate JOB card interrupts the second chapter');
+assert.match(withJob,/MUDAGIRI QUEST LOG/,'chapter progression matches Chapter 1 design grammar');
+assert.match(withJob,/第1章で獲得した冒険者/);
+assert.match(withJob,/前進重視/,'STYLE name matches the finalized Japanese four-style names');
+assert.match(withJob,/一緒に戦った戦果を見よう/,'Mudagiri talks to the same adventurer');
+assert.doesNotMatch(uncertain,/data-section="CHAPTER1_JOB_BRIDGE"/,'no invented JOB without valid handoff');
+assert.match(uncertain,/未連携/,'direct chapter 2 entry cannot falsely imply Chapter 1 completion');
 assert.doesNotMatch(uncertain,/冒険者JOBとクリア記念のカード/);
 // The result must actually show the canonical enemy characters, their names
 // and all 12 category states, including categories that are protected or N/A.
