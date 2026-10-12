@@ -19,6 +19,9 @@ for(const width of [320,375,390,430]){
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
  const future=page.locator('[data-section="FUTURE_REWARDS"]');
  check(await future.count()===1,width+' V32 future reward remains present');
+ const initialFuture=await future.innerText();
+ check(initialFuture.includes('¥214,248')&&initialFuture.includes('¥1,071,240')&&initialFuture.includes('¥2,142,480'),width+' original V3.2 large-scale QA case retained');
+ await selector.selectOption('uncertain_only');
  const futureText=await future.innerText();
  check(futureText.includes('1年間')&&futureText.includes('5年間')&&futureText.includes('10年間'),width+' all three horizons present');
  check(futureText.includes('¥21,600')&&futureText.includes('¥108,000')&&futureText.includes('¥216,000'),width+' only cUpper * 12/60/120, excludes confirmed');
