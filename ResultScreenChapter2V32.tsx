@@ -280,7 +280,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {reviewUpper>0?<strong>月 最大 {money(reviewUpper)}</strong>:<strong>候補額はまだ未特定</strong>}
     <small>※未確定の参考上限。削減できると決まった金額ではありません。</small>
    </div>
-   <span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>
+   {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump" data-section="FUTURE_REWARD_JUMP"
+    onClick={()=>document.querySelector('[data-section="FUTURE_REWARDS"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>
+    ✦ 未確定の1年・5年・10年を見る ↓
+   </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
    <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
