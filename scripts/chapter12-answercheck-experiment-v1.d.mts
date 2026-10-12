@@ -16,6 +16,7 @@ export type AnswerCheckCard={
 export type AnswerCheckResult={
  status:'context_found'|'no_supported_link';
  headline:string;cards:AnswerCheckCard[];explanation:string;
+ protectedVsReview:{kind:'protect_vs_confirmed_review';protect:{category:'fun';label:string;monthlyYen:number;source:string;isSaving:false};review:{category:'sub';label:string;monthlyYen:number;source:string;isSavingRealized:false};nextStep:string;caveat:string;privacy:'private_only'}|null;
  coverage:{reviewedCategoryCount:number;directMatchRulesApplied:number;axesVerified:0};
  cannotInfer:string[];nextStep:string;sensitivity:'private_only';shareAllowed:false;
  source:'same-person-self-report';score:null
