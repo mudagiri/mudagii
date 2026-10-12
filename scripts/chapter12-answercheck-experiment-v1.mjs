@@ -59,18 +59,8 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
    '第1章は成長や前進を重視。第2章では自己投資を「惰性」と答えました。人格の矛盾でも浪費額の証明でもありません。続けるものと見直すものを本人が決めるための手がかりです。',
    '自己投資：本人が惰性と回答＋見直し判定');
  }
- // SECURE never predicts insurance ownership, coverage needs, or adequacy.
- const insurance=get('insurance');
- if(chapter1.primaryStyle==='SECURE'&&insurance&&
-  insurance.v5Status==='optimize'&&
-  (insurance.appraisal?.insurancePurpose==='unclear'||['over3y','never'].includes(insurance.appraisal?.insuranceLastReview))){
-  const needsPurpose=insurance.appraisal.insurancePurpose==='unclear';
-  add('question','insurance','安心を大切にする。今の保障の目的は確認してみよう。',
-   needsPurpose
-    ?'第1章は安心・予測可能性を重視。第2章では保険の目的が不明確と答えました。必要な保障や見直し額は、この情報だけでは判断できません。'
-    :'第1章は安心・予測可能性を重視。第2章では最後の保障確認から時間がたっていると答えました。今の保障が必要かどうかを判定したものではありません。',
-   needsPurpose?'保険：本人が保障目的を不明確と回答':'保険：本人が最後の保障確認は3年以上前・未実施と回答');
- }
+ // Insurance coverage awareness is delivered to all styles by CoverageAwarenessCard.
+ // It is intentionally NOT used as an evidence of personality accuracy.
  const sub=get('sub');
  if(chapter1.primaryStyle==='OPTIMIZE'&&sub
   &&sub.appraisal?.subCancellationConfirmed===true
