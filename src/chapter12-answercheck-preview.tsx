@@ -6,8 +6,9 @@ import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='no_uncertain'|'v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
+ no_uncertain:{label:'未確定候補0円｜金額を作らない',desc:'未確定候補が0円なら架空の内訳・累計を出さない確認用',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  v32_scale_uncertain:{label:'旧V3.2の未確定だけ｜月17,854円',desc:'確認済み改善機会0円・未確定の参考上限だけ月17,854円の架空ケース。節約できると確定した額ではありません。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
  uncertain_only:{label:'未確定だけ｜1年・5年・10年',desc:'確認済み改善機会0円・未確定の見直し候補のみ月1,800円の架空例。未来の戦利品を確認する。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
@@ -29,8 +30,8 @@ const examples:Record<Case,{label:string;desc:string;style:string;job:string;job
 const FIXTURE_AMOUNTS:Record<string,number>={mobile:7800,energy:15500,sub:4200,car:0,food:54000,daily:14000,fun:24000,beautyFashion:6000,rent:92000,insurance:11000,childEducation:0,selfDevelopment:9600};
 // Consistent, deliberately synthetic monthly spending: DO NOT treat as participant or FROZEN benchmark data.
 const row=(category:string)=>({
- category,label:({fun:'娯楽・趣味',sub:'サブスク',selfDevelopment:'自己投資'} as Record<string,string>)[category]||category,
- amount:FIXTURE_AMOUNTS[category]??0,known:true,applicability:'applicable',
+ category,label:({mobile:'通信費',energy:'光熱・水道費',food:'食費',daily:'日用品',fun:'娯楽・趣味',beautyFashion:'美容・被服',sub:'サブスク',selfDevelopment:'自己投資',car:'車',rent:'住居費',insurance:'保険',childEducation:'教育費'} as Record<string,string>)[category]||category,
+ amount:FIXTURE_AMOUNTS[category]??0,known:true,applicability:'applicable',cMethod:null as string|null,
  diagnosisAmountLabel:'診断で入力した月額',
  status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
  v5StatusLabel:'見極める',
@@ -49,7 +50,8 @@ function makeFixture(example:Case){
  const mobile=rows.find(r=>r.category==='mobile')!;
  mobile.appraisal={mobileScope:'mobileOnly',mobileCarrier:'major'};
  mobile.v5Status='optimize';
- mobile.cUpper=1800;
+ mobile.cUpper=example==='no_uncertain'?0:1800;
+ mobile.cMethod=example==='no_uncertain'?null:'mobile';
  // The original V3.2 regression fixture uses monthly cUpper=17,854
  // (mobile: ¥5,500 + food: ¥12,354). These are PRESENTATION QA values,
  // not invented official benchmark averages or a user's verified savings.
@@ -61,6 +63,7 @@ function makeFixture(example:Case){
   mobile.cUpper=5500;
   const foodCandidate=rows.find(r=>r.category==='food')!;
   foodCandidate.cUpper=12354;
+  foodCandidate.cMethod='standard';
   foodCandidate.v5Status='inspect';
   foodCandidate.v5StatusLabel='見極める';
  }
