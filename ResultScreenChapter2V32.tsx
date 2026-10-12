@@ -459,7 +459,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>{jobAsset?'第1章で獲得した冒険者JOBとクリア記念のカードを共有できるよ。':'家計クエスト完全クリアの記念カードを共有できるよ。'}金額・家計情報は載せないよ。</p>
    <button className="c2v2-share-primary c2v31-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像付きでシェアする ↗':'画像カードを準備中…'}</button>
-   <small className="c2v31-share-help">共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。</small>
+   <small className="c2v31-share-help">{pilotNoExternalActions?'調査用の画面です。SNS投稿・画像保存・招待リンク配布は実行されません。':'共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。'}</small>
    <details className="c2v31-share-alternatives">
     <summary>画像の保存・文章だけで共有 <span aria-hidden="true">⌄</span></summary>
     <div className="c2v31-share-alt-grid">
@@ -479,7 +479,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
    <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
    <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
-   <p>公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。</p>
+   <p>{pilotNoExternalActions?'これは調査用の案内画面です。公式LINEへの移動や相談予約は行われません。':'公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。'}</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
    <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで無料相談の案内を受け取る →</button>
    <button className="c2v2-subtle" onClick={()=>setShowLine(false)}>今は結果を見る</button>
