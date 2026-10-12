@@ -336,7 +336,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
     <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
     <div className="c2v20-quest-stages">
-     <span className="is-complete">⚔ 第1章 <b>JOB獲得</b><small>クリア！</small></span>
+     <span className={jobAsset?'is-complete':'is-unlinked'}>⚔ 第1章 <b>JOB獲得</b><small>{jobAsset?'クリア！':'未連携'}</small></span>
      <span className="c2v20-quest-arrow" aria-hidden="true">›</span>
      <span className="is-current" aria-current="step">🏰 第2章 <b>家計バトル</b><small>クリア！</small></span>
     </div>
