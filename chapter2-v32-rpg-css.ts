@@ -27,6 +27,32 @@ export const V32CSS = `
 .c2v32-rpg .c2v31-confirmed-amount span{font-size:13px}
 .c2v32-rpg .c2v31-confirmed-amount strong{font-size:clamp(22px,6vw,28px);color:#513b25;text-shadow:none}
 .c2v32-rpg .c2v31-confirmed-caption{font-size:12px;margin:0;background:none;color:#66583d;border:0;padding:0;text-align:left}
+/* Four-lens result: visible all candidate sources and their factual verification path, no tapping. */
+.c2v32-rpg .c2v32-candidate-breakdown{margin:10px 0 0;padding:12px 10px 10px;border:1px solid #e0c47d;border-radius:11px;background:linear-gradient(154deg,rgba(5,40,48,.97),rgba(6,27,42,.96));box-shadow:inset 0 0 0 1px rgba(255,233,155,.12)}
+.c2v32-rpg .c2v32-breakdown-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:2px 0 8px;border-bottom:1px solid rgba(237,198,122,.4)}
+.c2v32-rpg .c2v32-breakdown-title span{font-size:16px;color:#ffebba;font-weight:950;line-height:1.45}
+.c2v32-rpg .c2v32-breakdown-title small{font-size:12px!important;color:#e1efe8;font-weight:750}
+.c2v32-rpg .c2v32-breakdown-intro{font-size:13px!important;line-height:1.6!important;margin:8px 0 11px!important;color:#f7f7ec!important}
+.c2v32-rpg .c2v32-breakdown-intro strong{color:#ffe2a3}
+.c2v32-rpg .c2v32-breakdown-entries{display:grid;gap:8px}
+.c2v32-rpg .c2v32-breakdown-entry{border:1px solid rgba(188,202,182,.56);border-radius:10px;background:linear-gradient(135deg,rgba(16,54,63,.95),rgba(8,33,49,.94));padding:10px 9px;color:#f6f6f0;min-width:0}
+.c2v32-rpg .c2v32-breakdown-entry-head{display:flex;align-items:center;gap:7px;min-width:0}
+.c2v32-rpg .c2v32-breakdown-entry-head img,.c2v32-rpg .c2v32-breakdown-icon{width:49px;height:54px;flex:0 0 49px;object-fit:contain;image-rendering:pixelated}
+.c2v32-rpg .c2v32-breakdown-name{flex:1;min-width:0;display:grid;gap:1px}
+.c2v32-rpg .c2v32-breakdown-name strong{font-size:15px;line-height:1.4;color:#fff1c4;font-weight:950}
+.c2v32-rpg .c2v32-breakdown-name small{font-size:12px!important;color:#dce9e7;line-height:1.35;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-breakdown-amount{text-align:right;flex:0 0 auto;max-width:53%;display:grid;justify-items:end}
+.c2v32-rpg .c2v32-breakdown-amount strong{font-size:clamp(17px,4.75vw,21px);color:#ffe3a2;font-weight:950;font-variant-numeric:tabular-nums;line-height:1.35;white-space:nowrap}
+.c2v32-rpg .c2v32-breakdown-amount small{font-size:12px!important;line-height:1.35;color:#dce9e5}
+.c2v32-rpg .c2v32-breakdown-reason,.c2v32-rpg .c2v32-breakdown-action{font-size:13px!important;line-height:1.6!important;margin:7px 0 0!important;color:#f0f3ea!important}
+.c2v32-rpg .c2v32-breakdown-reason b{color:#f5daa2}
+.c2v32-rpg .c2v32-breakdown-action{padding:7px 7px 2px;border-top:1px solid rgba(211,228,223,.23)}
+.c2v32-rpg .c2v32-breakdown-action b{color:#aae8dc}
+.c2v32-rpg .c2v32-breakdown-footnote{font-size:12px!important;line-height:1.65!important;margin:9px 0 0!important;color:#dce7e1!important}
+.c2v32-rpg .c2v32-first-action--compact{padding:8px 10px;margin-top:8px}
+.c2v32-rpg .c2v32-first-action--compact>p{font-size:13px!important;margin:3px 0!important}
+.c2v32-rpg .c2v32-first-action--compact>small{font-size:12px}
+@media(max-width:350px){.c2v32-rpg .c2v32-candidate-breakdown{padding:9px 7px}.c2v32-rpg .c2v32-breakdown-entry{padding:9px 6px}.c2v32-rpg .c2v32-breakdown-entry-head img,.c2v32-rpg .c2v32-breakdown-icon{width:38px;flex-basis:38px}.c2v32-rpg .c2v32-breakdown-amount{max-width:55%}.c2v32-rpg .c2v32-breakdown-amount strong{font-size:16px}}
 /* The next check feels like an actionable quest reward, not an extra CTA. */
 .c2v32-rpg .c2v32-first-action{position:relative;margin:11px 0 0;padding:13px 14px;background:linear-gradient(130deg,rgba(11,45,53,.93),rgba(30,38,55,.96));border:1px solid #d4b878;border-left:5px solid #eac76d;border-radius:10px;color:#fff3d6}
 .c2v32-rpg .c2v32-primary-enemy{display:flex;align-items:center;gap:10px;margin:7px 0;padding:7px 8px;border:1px solid rgba(239,204,119,.32);border-radius:8px;background:rgba(1,20,35,.48)}
