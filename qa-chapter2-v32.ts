@@ -119,6 +119,19 @@ assert.match(withJob,/MUDAGIRI QUEST LOG/,'chapter progression matches Chapter 1
 assert.match(withJob,/第1章で獲得した冒険者/);
 assert.match(withJob,/前進重視/,'STYLE name matches the finalized Japanese four-style names');
 assert.match(withJob,/一緒に戦った戦果を見よう/,'Mudagiri talks to the same adventurer');
+
+const {JOB_CHARACTER_ASSETS}=await import('./src/features/money-personality/job-character-assets-v1');
+for(const asset of Object.values(JOB_CHARACTER_ASSETS)){
+ for(const [style,jp] of [['DRIVE','前進'],['ENJOY','楽しさ'],['SECURE','安心'],['OPTIMIZE','納得']] as const){
+  const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(0,17854),chapter1:{...jobHandoff,jobCode:asset.jobCode,jobName:asset.name,primaryStyle:style}}));
+  const block=html.slice(html.indexOf('data-section="CHAPTER1_JOB_BRIDGE"'),html.indexOf('class="c2v31-hero-stage"'));
+  assert.ok(block.includes(asset.name),'canonical JOB must match C1 '+asset.jobCode);
+  assert.ok(block.includes(asset.file),'canonical artwork must match C1 '+asset.jobCode);
+  assert.ok(block.includes(jp+'重視'),'STYLE label must match Japanese system '+style);
+  assert.equal((html.match(/data-section="CHAPTER1_JOB_BRIDGE"/g)||[]).length,1,'single hero JOB '+asset.jobCode+'/'+style);
+ }
+}
+
 assert.doesNotMatch(uncertain,/data-section="CHAPTER1_JOB_BRIDGE"/,'no invented JOB without valid handoff');
 assert.match(uncertain,/未連携/,'direct chapter 2 entry cannot falsely imply Chapter 1 completion');
 assert.doesNotMatch(uncertain,/冒険者JOBとクリア記念のカード/);
