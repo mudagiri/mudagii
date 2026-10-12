@@ -171,7 +171,7 @@ for(const width of [320,375,390,430]){
  // or a real outbound share/consultation. Test both privacy and neutral ordering.
  const participant=await ctx.newPage(),participantOut=[];
  participant.on('pageerror',e=>errors.push(width+' participant runtime '+String(e)));
- participant.on('request',r=>{if(/twitter.com|line.me|lin.ee|script\\.google.com|\/exec\\b/i.test(r.url()))participantOut.push(r.url());});
+ participant.on('request',r=>{if(/twitter\.com|line\.me|lin\.ee|script\.google\.com|\/exec\b/i.test(r.url()))participantOut.push(r.url());});
  await participant.goto(base+'?pilot=1',{waitUntil:'networkidle'});
  check(await participant.locator('[data-pilot-role="participant"]').count()===1,width+' distinct neutral participant header');
  check(await participant.locator('#case-change').count()===0,width+' participant cannot see or switch developer cases');
