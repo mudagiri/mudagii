@@ -1,0 +1,64 @@
+import {chromium,webkit} from 'playwright';
+import fs from 'node:fs';
+import path from 'node:path';
+const engine=process.env.BROWSER_ENGINE==='webkit'?'webkit':'chromium';
+const browser=await (engine==='webkit'?webkit:chromium).launch({headless:true});
+const base=process.env.CHAPTER12_URL||'http://127.0.0.1:4173/chapter12-answercheck.html';
+const out=path.resolve('chapter12-answercheck-qa');fs.mkdirSync(out,{recursive:true});
+const errors=[];const check=(b,msg)=>{if(!b)errors.push(msg)};
+for(const width of [320,375,390,430]){
+ const ctx=await browser.newContext({viewport:{width,height:870},deviceScaleFactor:1,reducedMotion:'reduce'});
+ const page=await ctx.newPage(),outside=[];
+ page.on('pageerror',e=>errors.push(width+' runtime '+String(e)));
+ page.on('request',r=>{if(/script\.google\.com|\/exec\b|lin\.ee|line\.me|analytics/i.test(r.url()))outside.push(r.url());});
+ await page.goto(base,{waitUntil:'networkidle'});
+ const selector=page.locator('#case-change');
+ const card=page.locator('[data-section="CHAPTER12_ANSWER_CHECK"]');
+ await card.waitFor();
+ check(await card.count()===1,width+' initial card');
+ check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
+ check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' initial resonance');
+ check((await card.innerText()).includes('本人の回答'),width+' self report disclaimer');
+ const mascot=card.locator('img');
+ check(await mascot.evaluate(e=>e.complete&&e.naturalWidth>0),width+' mascot loaded');
+ check((await page.locator('.c2v31-job-card').count())===1,width+' official JOB inherited');
+ let job=page.locator('.c2v31-job-card img');
+ check(await job.evaluate(e=>e.complete&&e.naturalWidth>0),width+' official JOB loaded');
+ const positions=await page.evaluate(()=>{
+  let a=document.querySelector('.c2v31-job-card'),b=document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]'),c=document.querySelector('[data-section=POTENTIAL_TREASURE]');
+  return a&&b&&c?{a:a.getBoundingClientRect().top+scrollY,b:b.getBoundingClientRect().top+scrollY,c:c.getBoundingClientRect().top+scrollY}:null
+ });
+ check(Boolean(positions&&positions.a<positions.b&&positions.b<positions.c),width+' answercheck between JOB and treasure');
+ await card.scrollIntoViewIfNeeded();
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
+ await card.getByRole('button',{name:/根拠を見る/}).click();
+ check(await page.locator('[data-answercheck-evidence=true]').isVisible(),width+' evidence opens');
+ await card.getByRole('button',{name:/根拠を閉じる/}).click();
+ check(await page.locator('[data-answercheck-evidence=true]').count()===0,width+' evidence closes');
+ await selector.selectOption('enjoy_question');
+ check(await card.locator('[data-insight-kind="question"]').count()===1,width+' dissatisfaction asked as question');
+ check(!(await card.innerText()).includes('あなたは浪費家'),width+' no shaming');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-review.png'),fullPage:true});
+ await selector.selectOption('drive_good');
+ check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' DRIVE purpose');
+ await selector.selectOption('optimize_question');
+ check(await card.locator('[data-insight-kind="question"]').count()===1,width+' confirmed unused sub');
+ check((await card.innerText()).includes('まだ解約や節約を実行した意味ではありません'),width+' not actual savings');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-subscription.png'),fullPage:true});
+ await selector.selectOption('secure_no_link');
+ check(await card.count()===1,width+' no-link card available');
+ check(await card.getAttribute('data-answercheck-status')==='no_supported_link',width+' no unsupported secure insurance link');
+ check(await card.locator('.c12ac-insight').count()===0,width+' no invented positive result');
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-no-link.png'),fullPage:true});
+ await selector.selectOption('identity_mismatch');
+ check(await card.count()===0,width+' mismatched identity hidden');
+ await selector.selectOption('partial');
+ check(await card.count()===0,width+' incomplete 12 categories hidden');
+ const m=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth}));
+ check(m.doc<=width+1,width+' no horizontal overflow '+m.doc);
+ check(outside.length===0,width+' no external upload');
+ await ctx.close();
+}
+await browser.close();
+if(errors.length){console.error(JSON.stringify({status:'FAIL',engine,errors},null,2));process.exitCode=1}
+else console.log(JSON.stringify({status:'PASS',engine,viewports:[320,375,390,430],screenshots:16,scope:'synthetic C1/C2 joins inside real C2 result; no real user validity'}));
