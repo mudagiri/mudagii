@@ -3,7 +3,7 @@ let checks=0;const failed=[];
 const ok=(v,m)=>{checks++;if(!v)failed.push(m)};
 const id='anonymous-a',version='MUDAGIRI_MONEY_TYPE_HANDOFF_V1';
 const c1=(primaryStyle='ENJOY')=>({version,anonymousUserId:id,sessionId:'s1',primaryStyle,jobCode:'INM',jobName:'直感魔導士',completedAt:'2026-10-12T00:00:00Z'});
-const row=(category,appraisal=null,status='inspect')=>({category,v5Status:status,known:true,applicability:'applicable',appraisal,aAmount:0,cUpper:0,diagnosisAmount:999999});
+const row=(category,appraisal=null,status='inspect')=>({category,v5Status:status,known:true,applicability:'applicable',appraisal,aAmount:0,cUpper:0,amount:24000,diagnosisAmountLabel:'診断で入力した月額',diagnosisAmount:24000});
 const c2=(rows=CATEGORY_IDS.map(x=>row(x)))=>({anonymousUserId:id,diagnosisId:'d1',rows});
 const pass=(a,b)=>assessChapter12AnswerCheck({chapter1:a,chapter2:b});
 let r=pass(c1(),c2());
@@ -31,6 +31,11 @@ ok(r.cards[0].kind==='resonance','positive resonance');
 ok(r.cards[0].financialResult===false,'no financial performance claim');
 ok(!JSON.stringify(r.cards).includes('999999'),'no raw amounts');
 ok(r.source==='same-person-self-report','self report disclaimer');
+ok(r.cards[0].monthlySnapshot?.monthlyYen===24000,'monthly expense exactly as entered');
+ok(r.cards[0].monthlySnapshot?.annualYen===288000,'annual 12x descriptive only');
+ok(r.cards[0].monthlySnapshot?.notSavings===true,'annual amount never a savings claim');
+ok(r.cards[0].monthlySnapshot?.label==='診断で入力した月額','origin label visible');
+
 r=pass(c1(),c2(update('fun',{satisfaction:'waste'},'inspect')));
 ok(r.cards.length===1&&r.cards[0].kind==='question','ENJOY + fun review not contradiction');
 ok(!r.cards[0].title.includes('矛盾'),'no shame contradiction');
@@ -65,5 +70,21 @@ for(const cat of CATEGORY_IDS){
  r=pass(c1('SECURE'),c2(update(cat,{satisfaction:'verySatisfied',insurancePurpose:'clear',selfDevelopmentValue:'purpose'},'protect')));
  ok(r.status==='no_supported_link','SECURE '+cat+' does not predict spending');
 }
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:0})));
+ok(r.status==='no_supported_link','cannot claim protected spend on zero expense');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:-1})));
+ok(r.status==='no_supported_link','negative expense cannot support matching');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:Infinity})));
+ok(r.status==='no_supported_link','nonfinite expense cannot support matching');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:Number.MAX_SAFE_INTEGER})));
+ok(r.cards[0]?.monthlySnapshot===null,'overflowed annual snapshot omitted');
+r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1200,subCancellationConfirmed:true},'cut',{aAmount:1200,amount:4800})));
+ok(r.cards[0]?.monthlySnapshot?.kind==='declared_unused_contract','unused sub separately labeled');
+ok(r.cards[0]?.monthlySnapshot?.monthlyYen===1200,'unused part not total subscription');
+ok(r.cards[0]?.monthlySnapshot?.annualYen===14400,'annualized unused part but not savings');
+ok(r.cards[0]?.monthlySnapshot?.notSavings===true,'unclaimed contract not saved cash');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect',{amount:9600})));
+ok(r.cards[0]?.monthlySnapshot?.annualYen===115200,'self-development nominal annualized spend');
+ok(r.nextStep.includes('自己投資'),'action references actual category');
 if(failed.length){console.error(JSON.stringify({status:'FAIL',checks,failed},null,2));process.exitCode=1}
 else console.log(JSON.stringify({status:'PASS',checks,scope:'prototype rule gates for Chapter1×Chapter2 self-report resonance, not correlation validity'}));
