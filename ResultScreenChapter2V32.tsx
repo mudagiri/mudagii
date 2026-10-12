@@ -349,7 +349,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <div className="c2v31-unknown-layout">
      <TreasureChest className="c2v31-chest-art" locked/>
      <div className="c2v31-unknown-details">
-      {reviewUpper>0?<><span>診断で見つかった見直し候補</span><strong>最大 {money(reviewUpper)}<small> / 月</small></strong></>:<>
+      {reviewUpper>0?<><span>確認が必要な見直し候補</span><strong>{candidates.length>0?`${candidates.length}カテゴリの内訳`:'内訳を確認中'}</strong></>:<>
        <strong>今は未確認</strong><span>追加で見直せる可能性は、まだ特定されていません。</span>
       </>}
      </div>
@@ -379,7 +379,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
     <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
     <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-    <small>削る前に確認。大切にしたい支出は守ろう。</small>
    </div>}
   </section>
 
