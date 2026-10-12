@@ -21,6 +21,31 @@ for(const width of [320,375,390,430]){
  check(await future.count()===1,width+' V32 future reward remains present');
  const initialFuture=await future.innerText();
  check(initialFuture.includes('¥214,248')&&initialFuture.includes('¥1,071,240')&&initialFuture.includes('¥2,142,480'),width+' original V3.2 large-scale QA case retained');
+ // 行動経済学：驚きの直後に、全候補の根拠と一手を開かずに読める。
+ const initialBreakdown=page.locator('[data-section="CANDIDATE_BREAKDOWN"]');
+ check(await initialBreakdown.count()===1,width+' candidate breakdown exists');
+ const initialRows=initialBreakdown.locator('[data-candidate-category]');
+ check(await initialRows.count()===2,width+' two nonzero contributors visible with no tap');
+ for(const [cat,amount] of [['food','¥12,354'],['mobile','¥5,500']]){
+  const tile=initialBreakdown.locator('[data-candidate-category="'+cat+'"]');
+  check(await tile.isVisible(),width+' visible breakdown '+cat);
+  const t=await tile.innerText();
+  check(t.includes(amount)&&t.includes('候補になった理由')&&t.includes('確かめること'),width+' inline numeric why/what '+cat);
+  check(t.includes('未確定'),width+' uncertainty adjacent to '+cat);
+ }
+ const initialBreakdownText=await initialBreakdown.innerText();
+ check(initialBreakdownText.includes('月最大 ¥17,854'),width+' full breakdown keeps total as separate upper bound');
+ check(initialBreakdownText.includes('まだ削減できると決まった金額ではない'),width+' no behavioral anchoring into guaranteed saving');
+ const earlyOrder=await page.evaluate(()=>{
+  const sel=['POTENTIAL_HERO','POTENTIAL_TREASURE','CANDIDATE_BREAKDOWN','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP'];
+  const nodes=sel.map(x=>document.querySelector('[data-section="'+x+'"]'));
+  return nodes.some(x=>!x)?null:nodes.map(x=>x.getBoundingClientRect().top+scrollY);
+ });
+ check(Boolean(earlyOrder&&earlyOrder.every((pos,i)=>i===0||pos>earlyOrder[i-1])),width+' trust building occurs before consultation with four-lens order');
+ check(!(await page.locator('[data-section="CANDIDATE_BREAKDOWN"] details').count()),width+' essential breakdown never hidden behind details');
+ await initialBreakdown.scrollIntoViewIfNeeded();
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-candidate-breakdown.png'),fullPage:true});
+
  await selector.selectOption('uncertain_only');
  const futureText=await future.innerText();
  check(futureText.includes('1年間')&&futureText.includes('5年間')&&futureText.includes('10年間'),width+' all three horizons present');
@@ -56,7 +81,7 @@ for(const width of [320,375,390,430]){
   let a=document.querySelector('.c2v31-job-card'),b=document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]'),c=document.querySelector('[data-section=POTENTIAL_TREASURE]');
   return a&&b&&c?{a:a.getBoundingClientRect().top+scrollY,b:b.getBoundingClientRect().top+scrollY,c:c.getBoundingClientRect().top+scrollY}:null
  });
- check(Boolean(positions&&positions.a<positions.b&&positions.b<positions.c),width+' answercheck between JOB and treasure');
+ check(Boolean(positions&&positions.c<positions.a&&positions.a<positions.b),width+' candidate reward first, JOB and answercheck after future');
  const cardHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
  check(cardHeight<=(width<=350?500:450),width+' paired answer-check compact enough: '+cardHeight+'px');
  console.log('CHAPTER12_CARD_GEOMETRY',JSON.stringify({engine,width,height:cardHeight}));
@@ -128,6 +153,9 @@ for(const width of [320,375,390,430]){
  const noLinkHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
  check(noLinkHeight<220,width+' no-link state stays compact: '+noLinkHeight+'px');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-no-link.png'),fullPage:true});
+ await selector.selectOption('no_uncertain');
+ check(await page.locator('[data-section="CANDIDATE_BREAKDOWN"]').count()===0,width+' no invented candidates for zero upper bound');
+ check(!(await future.innerText()).includes('10年間の積み重ね'),width+' no invented 10y savings when upper bound is zero');
  await selector.selectOption('identity_mismatch');
  check(await card.count()===0,width+' mismatched identity hidden');
  await selector.selectOption('partial');
