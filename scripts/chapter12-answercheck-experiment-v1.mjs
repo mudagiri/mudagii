@@ -26,6 +26,7 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
   if(!STATUS.has(x.v5Status))return unavailable('INVALID_STATUS');
   byCat.set(x.category,x);
  }
+ if(byCat.size!==CATEGORY_IDS.length)return unavailable('INCOMPLETE_DIAGNOSIS');
  const cards=[],add=(kind,category,title,body,reason)=>cards.push(human(kind,category,title,body,reason));
  const get=(c)=>{const r=byCat.get(c);return r&&r.applicability!=='na'&&r.known===true?r:null;};
  const fun=get('fun');
