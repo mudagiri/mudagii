@@ -35,6 +35,7 @@ on:
       - "ResultScreenChapter2V31.tsx"
       - "ResultScreenChapter2V32.tsx"
       - "chapter2-v19-scene-css.ts"
+      - "chapter2-v20-bridge-css.ts"
       - "chapter2-v32-rpg-css.ts"
       - "qa-chapter2-v32.ts"
       - "qa-chapters-v32-browser.mjs"
