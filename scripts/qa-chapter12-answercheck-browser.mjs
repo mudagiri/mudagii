@@ -21,6 +21,30 @@ for(const width of [320,375,390,430]){
  check(await future.count()===1,width+' V32 future reward remains present');
  const initialFuture=await future.innerText();
  check(initialFuture.includes('¥214,248')&&initialFuture.includes('¥1,071,240')&&initialFuture.includes('¥2,142,480'),width+' original V3.2 large-scale QA case retained');
+
+ // Gate A: a screenshot revealed an isolated trailing zero on the 10-year amount.
+ // Check actual text fragments AND the painted text rectangle against the visible card.
+ const gateAMoney=await page.locator('.c2v31-ten-details strong').evaluate(el=>{
+  const range=document.createRange();range.selectNodeContents(el);
+  const rects=[...range.getClientRects()].map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom}));
+  const card=el.closest('.c2v31-reward-ten')?.getBoundingClientRect();
+  return {value:el.textContent?.trim(),rects,card:card?{left:card.left,right:card.right}:null,font:parseFloat(getComputedStyle(el).fontSize)};
+ });
+ check(gateAMoney.value==='¥2,142,480',width+' exact full 10-year digits');
+ check(gateAMoney.rects.length===1,width+' 10-year amount must occupy one visual line '+JSON.stringify(gateAMoney));
+ check(Boolean(gateAMoney.card&&gateAMoney.rects[0]&&gateAMoney.rects[0].left>=gateAMoney.card.left-1&&gateAMoney.rects[0].right<=gateAMoney.card.right-4),width+' 10-year digits must not clip '+JSON.stringify(gateAMoney));
+ check(gateAMoney.font>=20,width+' readable ten-year font size');
+ const treasurer=page.locator('[data-section="UNAPPRAISED_TREASURE"] .c2v31-unknown-details strong');
+ check(await treasurer.innerText()==='2カテゴリ',width+' short unbroken treasure count');
+ const treasureFragments=await treasurer.evaluate(el=>{const r=document.createRange();r.selectNodeContents(el);return r.getClientRects().length;});
+ check(treasureFragments===1,width+' treasure category count is on one line');
+ const sourceCard=page.locator('[data-section="CONFIRMED_REWARD"]');
+ const sourceCopy=await sourceCard.innerText();
+ check(sourceCopy.includes('回答から確認できた改善額'),width+' confirmed wording identifies respondent verification');
+ check(sourceCopy.includes('実行・節約済みかは別途確認が必要'),width+' no realized savings claim');
+ const boxHeight=await sourceCard.evaluate(el=>el.getBoundingClientRect().height);
+ check(boxHeight<174,width+' no oversized confirmed reward blank space '+boxHeight+'px');
+
  // 行動経済学：驚きの直後に、全候補の根拠と一手を開かずに読める。
  const initialBreakdown=page.locator('[data-section="CANDIDATE_BREAKDOWN"]');
  check(await initialBreakdown.count()===1,width+' candidate breakdown exists');
