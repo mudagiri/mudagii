@@ -30,7 +30,7 @@ export function coverageAwarenessFor(rows){
  if(last==='within1y')return {...base,status:'exempt',reason:REASONS.RECENT,show:false};
  const noPremium=x.applicability==='na'||x.known===true&&x.amount===0;
  if(noPremium)return {...base,status:'attention',reason:x.applicability==='na'?REASONS.NA:REASONS.ZERO,show:true,
-  heading:'保険料が0円でも、保障の確認はできる。',
+  heading:x.applicability==='na'?'保険料の入力対象外でも、保障は確認できる。':'保険料が0円でも、保障の確認はできる。',
   text:'今の公的保障や勤務先・家族からの備えを、どこまで使えるか確認してみよう。保険への加入を勧める判定ではないよ。',
   next:'もしものとき、誰にどんな保障があるかを一度整理する'};
  if(purpose==='unclear')return {...base,status:'attention',reason:REASONS.UNCLEAR,show:true,
