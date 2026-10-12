@@ -1,0 +1,8 @@
+export type TravelInput={windowYears?:number|null;tripsPerYear?:number|null;costPerTripYen?:number|null;alternativeCostPerTripYen?:number|null};
+export type WorkInput={earlyAge?:number|null;lateAge?:number|null;endAge?:number|null;currentWorkdays?:number|null;desiredWorkdays?:number|null;monthlyNetIncomeDifferenceYen?:number|null};
+export type Unknown={status:'unknown';message:string};
+export type TravelResult={status:'ready';type:'travel';windowYears:number;tripsPerYear:number;scenarioA:{timesPerYear:number;count:number;budgetYen:number|null};scenarioB:{timesPerYear:number;count:number;budgetYen:number|null};scenarioC:{timesPerYear:number;count:number;budgetYen:number|null}|null;differenceInOpportunities:number;statement:string;financeCaveat:string;neverAssumeFamily:true};
+export type WorkResult={status:'ready';type:'work';scenarioA:{startAge:number;periodYears:number;scheduledWorkdaysDifference:number;netIncomeDifferenceYen:number|null};scenarioB:{startAge:number;periodYears:number;scheduledWorkdaysDifference:number;netIncomeDifferenceYen:number|null};deltaScheduledWorkdays:number;removedDaysPerWeek:number;endAge:number;statement:string;financeCaveat:string;isAffordabilityAssessment:false};
+export function compareTravel(v:TravelInput):TravelResult|Unknown;
+export function compareWork(v:WorkInput):WorkResult|Unknown;
+export function makeMeetingPreview(v:{type?:'travel'|'work';chosenPath?:'a'|'b'|'c'|null;travel?:TravelResult|null;work?:WorkResult|null;keepEverydayJoy?:boolean}):{status:'ready';subject:string;summary:string;consentRequired:true;booked:false;shared:false}|{status:'unavailable'};

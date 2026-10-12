@@ -1,0 +1,98 @@
+name: Chapter 3 RPG Isolated Pilot QA
+
+on:
+  push:
+    branches:
+      - feat/chapter3-rpg-pilot-v16-20261011
+    paths:
+      - "src/features/chapter3/**"
+      - "scripts/chapter3-insight-engine-v1.mjs"
+      - "scripts/chapter3-insight-engine-v1.d.mts"
+      - "scripts/qa-chapter3-insight-v1.mjs"
+      - "scripts/chapter3-aha-experiment-v1.mjs"
+      - "scripts/chapter3-aha-experiment-v1.d.mts"
+      - "scripts/qa-chapter3-aha-experiment-v1.mjs"
+      - "scripts/qa-chapter3-pilot-browser.mjs"
+      - "chapter3-pilot.html"
+      - "chapter3-v21.html"
+      - "scripts/chapter3-life-fork-v21.mjs"
+      - "scripts/chapter3-life-fork-v21.d.mts"
+      - "scripts/qa-chapter3-life-fork-v21.mjs"
+      - "scripts/qa-chapter3-v21-browser.mjs"
+      - "vite.config.ts"
+      - "package.json"
+      - ".github/workflows/qa-chapter3-rpg-pilot.yml"
+  pull_request:
+    branches:
+      - feat/unified-chapter1-chapter2-result-20261011
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chapter3-rpg-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install production dependencies
+        run: npm ci
+      - name: Build production route unchanged and separate Chapter 3 pilot
+        run: |
+          npm run build
+          test -f dist/index.html
+          test -f dist/chapter3-pilot.html
+          test -f dist/chapter3-v21.html
+          npm run qa:chapter3-life-fork
+          npm run qa:chapter3-insight
+          npm run qa:chapter3-aha
+          if grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js; then
+            echo "::error::Unexpected live GAS URL in isolated chapter3 pilot build"
+            exit 1
+          fi
+      - name: Install browser runner (no lockfile changes)
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Start static preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/chapter3-server.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/chapter3-pilot.html >/dev/null; then exit 0; fi
+            sleep 0.5
+          done
+          cat /tmp/chapter3-server.log
+          exit 1
+      - name: Chrome mobile UI and flow
+        env:
+          BROWSER_ENGINE: chromium
+          CHAPTER3_URL: http://127.0.0.1:4173/chapter3-pilot.html
+        run: |
+          npm run qa:chapter3-pilot
+          CHAPTER3_URL=http://127.0.0.1:4173/chapter3-v21.html npm run qa:chapter3-v21-browser
+      - name: iPhone WebKit mobile UI and flow
+        env:
+          BROWSER_ENGINE: webkit
+          CHAPTER3_URL: http://127.0.0.1:4173/chapter3-pilot.html
+        run: |
+          npm run qa:chapter3-pilot
+          CHAPTER3_URL=http://127.0.0.1:4173/chapter3-v21.html npm run qa:chapter3-v21-browser
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-rpg-isolated-pilot-screenshots
+          path: |
+            chapter3-pilot-qa/
+            chapter3-v21-qa/
+          if-no-files-found: warn
+          retention-days: 14
