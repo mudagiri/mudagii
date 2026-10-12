@@ -185,7 +185,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  }
  // LINE friend-add URLs do not prefill a conversation. Give users a short
  // non-sensitive message with a correlation code they can paste into the chat.
- const coverageLineMessage='保障内容の確認について相談したいです。\\n引継ぎコード：'+handoffCode(vm.diagnosisId);
+ const coverageLineMessage='保障内容の確認について相談したいです。\n引継ぎコード：'+handoffCode(vm.diagnosisId);
  function consultCoverage(){
   if(pilotNoExternalActions&&!coverageDryRun)return;
   onEvent?.('chapter2_v32_coverage_consultation_clicked',{placement:'coverage_review',topic:'insurance',noSavingsClaim:true});
