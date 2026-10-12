@@ -33,7 +33,7 @@ export default function CoverageAwarenessCard({rows,onConsultCoverage,pilotNoExt
     {pilotFeedback&&<p className="c2v32-cover-pilot-feedback" role="status">調査用サンプルのため、LINEへの移動や実際の面談予約は行いません。</p>}
   </div>}
   <details className="c2v32-cover-why"><summary>保障の確認方法と注意点</summary>
-   <p>保障は、保険料の高い・安いだけでなく、入院・通院・特定の治療に関する給付条件や支払対象外の条件も確認が必要です。医療の進歩で治療が変わっても、古い契約の利点が残ることがあります。</p>
+   <p>保障は、保険料の高い・安いだけでなく、公的保障や勤務先の制度、今の契約で何に備えられるか、入院・通院・特定の治療に関する給付条件や支払対象外の条件も確認が必要です。医療の進歩で治療が変わっても、古い契約の利点が残ることがあります。</p>
    <p>この診断だけで保障の過不足・給付の可否・削減額は判断できません。相談や契約変更をしなくても大丈夫です。</p>
   </details>
  </section>;
