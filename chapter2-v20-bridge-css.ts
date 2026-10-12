@@ -130,6 +130,56 @@ export const V20BRIDGECSS = `
  .c2v32-rpg .c2v32-breakdown-amount{max-width:49%}
  .c2v32-rpg .c2v32-breakdown-amount strong{font-size:16px!important}
 }
+
+/* Gate A (V2.0.3) — money must remain complete and readable at 320–430px.
+   The 10-year amount is full-width; the decorative chest is no longer a flex sibling
+   allowed to steal digits. No numeric calculations or thresholds are changed. */
+.c2v32-rpg .c2v31-future .c2v31-reward-ten{
+ display:block;position:relative;min-height:144px;padding:14px 12px 15px;
+}
+.c2v32-rpg .c2v31-future .c2v31-ten-details{display:block;width:100%;max-width:100%}
+.c2v32-rpg .c2v31-future .c2v31-ten-details>strong{
+ display:block;position:relative;z-index:3;
+ font-size:clamp(21px,6.85vw,30px)!important;
+ white-space:nowrap;overflow-wrap:normal;word-break:normal;
+ font-variant-numeric:tabular-nums;letter-spacing:-.065em;line-height:1.25;
+ max-width:100%;
+}
+.c2v32-rpg .c2v31-future .c2v31-ten-chest{
+ position:absolute;bottom:7px;right:8px;width:71px;max-width:23%;height:auto;
+ flex:none;z-index:1;pointer-events:none;
+}
+.c2v32-rpg .c2v31-future .c2v31-ten-qualifier{
+ display:block;max-width:100%;padding-right:76px;font-size:13px;line-height:1.5;
+}
+/* Treasure count is one short complete phrase rather than a large stacked word. */
+.c2v32-rpg .c2v31-unknown-details>strong{
+ word-break:keep-all;overflow-wrap:normal;white-space:nowrap;
+ font-size:clamp(17px,5.4vw,23px)!important;line-height:1.35;
+}
+/* Base V3.1 reserved 175–193px for a big gold trophy. V3.2 made the actual
+   content compact but accidentally retained that huge minimum, leaving blank space. */
+.c2v32-rpg .c2v31-reward-confirmed{
+ min-height:0!important;height:auto;padding:16px 12px 13px!important;
+ display:flex;flex-direction:column;align-items:stretch;gap:6px;
+}
+.c2v32-rpg .c2v31-confirmed-heading{margin:-19px auto 0!important}
+.c2v32-rpg .c2v31-confirmed-content{
+ min-height:57px!important;justify-content:flex-start;align-items:center;gap:10px;
+}
+.c2v32-rpg .c2v31-confirmed-caption{
+ display:block;position:relative;margin:0!important;padding:0!important;
+ border:0!important;background:none!important;
+ font-size:13px!important;line-height:1.5!important;
+ color:#4f493e!important;text-align:left!important;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v31-future .c2v31-ten-details>strong{font-size:21px!important;letter-spacing:-.07em}
+ .c2v32-rpg .c2v31-future .c2v31-ten-chest{max-width:22%;width:55px}
+ .c2v32-rpg .c2v31-future .c2v31-ten-qualifier{padding-right:59px}
+ .c2v32-rpg .c2v31-unknown-details>strong{font-size:17px!important}
+}
+
 @media(prefers-reduced-motion:reduce){
  .c2v32-rpg .c2v20-hero-job::before{background:none}
 }
