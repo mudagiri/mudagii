@@ -23,6 +23,13 @@ for(const width of [320,375,390,430]){
  check(futureText.includes('1年間')&&futureText.includes('5年間')&&futureText.includes('10年間'),width+' all three horizons present');
  check(futureText.includes('¥21,600')&&futureText.includes('¥108,000')&&futureText.includes('¥216,000'),width+' only cUpper * 12/60/120, excludes confirmed');
  check(futureText.includes('未確定')&&futureText.includes('保証するものではなく'),width+' caveats stay adjacent to rewards');
+ const rewardJump=page.locator('[data-section="FUTURE_REWARD_JUMP"]');
+ check(await rewardJump.count()===1,width+' reward jump available when uncertainty is nonzero');
+ check(await rewardJump.innerText().then(x=>x.includes('1年・5年・10年')),width+' reward jump names all time horizons');
+ await rewardJump.click();
+ const futureViewportPosition=await future.evaluate(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom}));
+ check(futureViewportPosition.top>=-1&&futureViewportPosition.top<200,width+' reward jump scrolls the main UI to the actual numeric reward '+JSON.stringify(futureViewportPosition));
+
  await page.locator('.c12preview-top button').first().click();
  check(await future.isVisible(),width+' direct jump to future reward works');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-uncertain-future.png'),fullPage:true});
