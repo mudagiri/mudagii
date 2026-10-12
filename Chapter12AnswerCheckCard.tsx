@@ -38,19 +38,17 @@ export default function Chapter12AnswerCheckCard({
  </section>;
  const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(n);
  return <section className={'c12ac c12ac--'+(found?'found':'unknown')} data-section="CHAPTER12_ANSWER_CHECK" aria-label="お金の性格、答え合わせ" data-answercheck-status={result.status}>
-  <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>価値観と家計の答え合わせ</small></div>
+  <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>{demo?"架空デモ ／ ":""}価値観と家計</small></div>
   <h2>お金の性格、<em>答え合わせ。</em></h2>
-  {demo&&<p className="c12ac-demo">これは架空の回答を使った画面見本です。本人の結果ではありません。</p>}
   <div className="c12ac-dialogue">
    <img src={POSE} alt="家計の回答を確かめるムダギリくん" loading="lazy"/>
    <div><b>ムダギリくん</b>
-    <p>{found?'第1章の君の価値観と、第2章の家計の答え。重ねてみたら、こんなつながりが見えたぞ。':'答え合わせをしてみたけど、今回は確かな共通点を決められなかった。だからって、性格診断が間違いとは限らないぞ。'}</p>
+    <p>{found?'よし、答え合わせだ！君が大切にしたいものと、家計の数字を見比べてみよう。':'答え合わせをしてみたけど、今回は確かな共通点を決められなかった。だからって、性格診断が間違いとは限らないぞ。'}</p>
    </div>
   </div>
   {focus&&<div className="c12ac-insight" data-insight-kind={focus.kind}>
    <span>{focus.kind==='resonance'?'🛡 重なっていた価値観':'🔎 意外な確認ポイント'}</span>
    <h3>{focus.title}</h3>
-   <p className="c12ac-brief">{focus.kind==='resonance'?'第1章で大切にしたことが、第2章で守りたいと答えた支出にも重なっていた。':'第1章の価値観と重ねると、今の家計で確認したい支出が見えてきた。'}</p>
    {focus.monthlySnapshot&&<div className="c12ac-money" data-answercheck-monthly="true">
     <small>{focus.monthlySnapshot.label}</small>
     <div><span>ひと月 <strong>¥{yen(focus.monthlySnapshot.monthlyYen)}</strong></span><span>12か月分 <strong>¥{yen(focus.monthlySnapshot.annualYen)}</strong></span></div>
@@ -64,7 +62,7 @@ export default function Chapter12AnswerCheckCard({
     <h3>{card.title}</h3><p>{card.body}</p>
    </div>)}
   </details>}
-  {found&&<div className="c12ac-next"><small>次の確認</small><p>{(result as AnswerCheckResult).nextStep}</p></div>}
+  {found&&<div className="c12ac-next"><small>次の一手　›</small><p>{(result as AnswerCheckResult).nextStep}</p></div>}
   <button className="c12ac-evidence-toggle" type="button" aria-expanded={showEvidence} onClick={()=>setShowEvidence(x=>!x)}>
    {showEvidence?'判定の根拠を閉じる ↑':'なぜそう言える？ 根拠を見る ↓'}
   </button>
