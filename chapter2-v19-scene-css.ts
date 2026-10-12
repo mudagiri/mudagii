@@ -108,6 +108,35 @@ export const V19SCENECSS = `
 .c2v32-rpg .c2v32-enemy-grid{margin:10px 0 15px}
 .c2v32-rpg .c2v32-enemy-record{background:rgba(13,45,53,.73);border:1px solid rgba(174,191,173,.28)}
 .c2v32-rpg .c2v31-sharing .c2v2-share-primary{min-height:54px;background:rgba(190,215,217,.93);border:0;color:#193340;box-shadow:none}
+
+/* V1.9.1: one hero-scale money number. The treasure card explains the source count. */
+.c2v32-rpg .c2v31-unknown-details strong{font-size:clamp(20px,5.8vw,24px)!important;letter-spacing:0;color:#f0dfb4!important}
+.c2v32-rpg .c2v31-unknown-layout{gap:13px}
+.c2v32-rpg .c2v32-treasure-lead{
+ background:linear-gradient(165deg,rgba(5,38,48,.76),rgba(5,28,39,.84)),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp') center/cover;
+}
+.c2v32-rpg .c2v31-future{
+ background:linear-gradient(160deg,rgba(5,35,44,.84),rgba(8,32,42,.9)),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp') center/cover;
+}
+/* The separate insurance route is clearly secondary to the final gold life-plan gate. */
+.c2v32-rpg .c2v32-cover-consult-button{
+ background:linear-gradient(115deg,#1a555b,#0b3e4d);
+ color:#f0fbf6;
+ border:1px solid #8fcac5;
+ box-shadow:0 5px 13px rgba(0,0,0,.21);
+}
+.c2v32-rpg .c2v32-cover-consult-button:focus-visible{outline:3px solid #ffe4a1;outline-offset:3px}
+/* Pairing the two chapters should read as a subdued adventurer notebook, not a fourth treasure. */
+.c2v32-rpg .c12ac{
+ border:1px solid rgba(185,189,158,.53);
+ background:linear-gradient(155deg,rgba(7,43,48,.94),rgba(5,34,44,.95));
+ box-shadow:none;
+ margin:18px 12px;
+}
+.c2v32-rpg .c12ac-dual-box{box-shadow:none;border-color:rgba(177,195,164,.43)}
+.c2v32-rpg .c12ac-dual-box--review{border-color:rgba(222,191,128,.46)}
+.c2v32-rpg .c12ac-dual-box--protect{border-color:rgba(143,195,177,.43)}
+
 @media(max-width:350px){
  .c2v32-rpg .c2v32-treasure-lead,.c2v32-rpg .c2v31-future{margin-inline:9px;padding-inline:10px}
  .c2v32-rpg .c2v32-cover-reasons>div{grid-template-columns:77px minmax(0,1fr);gap:5px}
