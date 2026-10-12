@@ -4,6 +4,7 @@ import ResultScreenChapter2V32 from '../ResultScreenChapter2V32';
 import {CATEGORY_IDS} from '../scripts/chapter12-answercheck-experiment-v1.mjs';
 import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
+import '../chapter12-answercheck-card.css';
 
 type Case='enjoy_good'|'enjoy_question'|'drive_good'|'optimize_question'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
