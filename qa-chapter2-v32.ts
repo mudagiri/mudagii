@@ -40,6 +40,7 @@ assert.doesNotMatch(confirmedOnly,/10年間の積み重ね/,'no invented future 
 const empty=show(0,0);
 assert.match(empty,/候補額はまだ未特定/);
 assert.doesNotMatch(empty,/¥2,142,480/);
+assert.doesNotMatch(empty,/data-section="CANDIDATE_BREAKDOWN"/,'no arbitrary list when there are no candidates');
 const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,17854),
  rows:[
@@ -48,6 +49,22 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
  ],
  firstQuest:{category:'mobile',label:'通信費',nextAction:'料金プランを確認'}
 }}));
+
+// Four-lens UX contract: the amount must be immediately explained, no "open
+// details" required for the *main* monthly upper bound. All contributing rows
+// appear before any annualization, personality card or meeting CTA.
+assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
+assert.match(candidateHtml,/宝箱の中身はこれ/);
+assert.equal((candidateHtml.match(/data-candidate-category=/g)||[]).length,2,'every positive cUpper contributor is initially visible');
+const breakdownHTML=candidateHtml.slice(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'),candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"'));
+for(const label of ['通信費','食費','最大 ¥5,500','最大 ¥12,354','候補になった理由：','確かめること：','スマホ料金プランを確認','食費の内訳を確認','月額・未確定','まだ削減できると決まった金額ではない']){
+ assert.ok(breakdownHTML.includes(label),'missing visible candidate evidence '+label);
+}
+assert.equal((breakdownHTML.match(/候補になった理由：/g)||[]).length,2,'each candidate must have inline evidence');
+assert.equal((breakdownHTML.match(/確かめること：/g)||[]).length,2,'each candidate must give a practical next check');
+assert.ok(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"')<candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
+assert.ok(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(candidateHtml.indexOf('data-section="FUTURE_REWARDS"')<candidateHtml.indexOf('data-section="CONSULTATION_CTA_TOP"'));
 assert.match(candidateHtml,/FIRST_REVIEW_ACTION/);
 assert.match(candidateHtml,/最初に確かめるなら/);
 assert.match(candidateHtml,/食費の内訳を確認/);
@@ -62,6 +79,7 @@ const jobHandoff={
 const withJob=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(0,17854),chapter1:jobHandoff}));
 assert.match(withJob,/冒険者JOBとクリア記念のカード/);
 assert.match(withJob,/先回り司令官/);
+assert.ok(withJob.indexOf('data-section="FUTURE_REWARDS"')<withJob.indexOf('class="c2v31-job-card'), 'JOB handoff must not interrupt candidate-to-future reasoning');
 assert.doesNotMatch(uncertain,/冒険者JOBとクリア記念のカード/);
 // The result must actually show the canonical enemy characters, their names
 // and all 12 category states, including categories that are protected or N/A.
