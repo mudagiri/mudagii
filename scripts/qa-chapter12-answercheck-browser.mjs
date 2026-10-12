@@ -19,6 +19,11 @@ for(const width of [320,375,390,430]){
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' initial resonance');
  check((await card.innerText()).includes('本人の回答'),width+' self report disclaimer');
+ check((await card.innerText()).includes('¥24,000'),width+' actual synthetic monthly fun amount');
+ check((await card.innerText()).includes('¥288,000'),width+' annual nominal amount 12x');
+ check((await card.innerText()).includes('節約額や将来の支出予測ではありません'),width+' no claim that annual spend is savings');
+ check((await card.locator('.c12ac-money').count())===1,width+' one numeric snapshot per card');
+
  const mascot=card.locator('img');
  check(await mascot.evaluate(e=>e.complete&&e.naturalWidth>0),width+' mascot loaded');
  check((await page.locator('.c2v31-job-card').count())===1,width+' official JOB inherited');
@@ -43,12 +48,19 @@ for(const width of [320,375,390,430]){
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' DRIVE purpose');
  await selector.selectOption('optimize_question');
  check(await card.locator('[data-insight-kind="question"]').count()===1,width+' confirmed unused sub');
+ check((await card.innerText()).includes('¥1,200'),width+' declared unused subscription monthly amount');
+ check((await card.innerText()).includes('¥14,400'),width+' nominal annual unconsumed contracts not savings');
+ check(!(await card.innerText()).includes('¥50,400'),width+' do not mislabel total subscriptions as unused');
+ await card.getByRole('button',{name:/根拠を見る/}).click();
  check((await card.innerText()).includes('まだ解約や節約を実行した意味ではありません'),width+' not actual savings');
+ await card.getByRole('button',{name:/根拠を閉じる/}).click();
  await page.screenshot({path:path.join(out,engine+'-'+width+'-subscription.png'),fullPage:true});
  await selector.selectOption('secure_no_link');
  check(await card.count()===1,width+' no-link card available');
  check(await card.getAttribute('data-answercheck-status')==='no_supported_link',width+' no unsupported secure insurance link');
  check(await card.locator('.c12ac-insight').count()===0,width+' no invented positive result');
+ check(await card.locator('.c12ac-money').count()===0,width+' no numeric pseudo-match in secure no-link');
+ check(await card.locator('.c12ac-evidence-toggle').count()===0,width+' no faux evidence toggle on no-link');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-no-link.png'),fullPage:true});
  await selector.selectOption('identity_mismatch');
  check(await card.count()===0,width+' mismatched identity hidden');
