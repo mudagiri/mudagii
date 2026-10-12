@@ -69,3 +69,29 @@
 .c12ac-disclaimer{margin:7px 0 0!important;font-size:10.5px!important;line-height:1.55!important}
 .c12ac--unknown{padding-top:9px!important;padding-bottom:9px!important}
 @media(max-width:350px){.c2v31-rpg .c12ac,.c12ac{padding:10px 9px}.c12ac-next small{flex-basis:70px}}
+
+
+/* V1.2 paired insight: two distinct concepts, no amount arithmetic or fake scoring. */
+.c12ac--contrast{padding:10px 10px 9px!important}
+.c12ac--contrast .c12ac-head{padding-bottom:3px;margin-bottom:4px}
+.c12ac--contrast h2{font-size:clamp(19px,5.1vw,23px);line-height:1.3;margin:3px 0 7px}
+.c12ac-dual-talk{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
+.c12ac-dual-talk img{flex:0 0 39px;width:39px;height:44px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 3px #000a)}
+.c12ac-dual-talk p{flex:1;min-width:0;font-size:12px!important;line-height:1.45!important;color:#f6f6e5!important;font-weight:750;margin:0!important}
+.c12ac-dual-talk b{color:#ffe7a4}
+.c12ac-dual{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+.c12ac-dual-box{border:1px solid #eac676;border-radius:10px;background:#0b343c;padding:10px 6px;min-width:0;display:grid;align-content:start;gap:5px}
+.c12ac-dual-box--protect{border-color:#9fdfbb;background:linear-gradient(140deg,#174c3d,#123c3c)}
+.c12ac-dual-box--review{border-color:#e6c47b;background:linear-gradient(140deg,#4b3b25,#293a3b)}
+.c12ac-dual-box small{font-size:11px;line-height:1.45;color:#fcf0cf;font-weight:800}
+.c12ac-dual-box b{font-size:13px;line-height:1.35;color:white;overflow-wrap:anywhere}
+.c12ac-dual-box strong{font-size:clamp(19px,5.45vw,26px);font-variant-numeric:tabular-nums;line-height:1.3;color:#fff2af;white-space:nowrap;letter-spacing:-.05em}
+.c12ac-dual-box strong i{font-size:10px;letter-spacing:0;margin-left:2px;font-style:normal}
+.c12ac-dual-box span{font-size:10.5px;line-height:1.45;color:#e9eee7}
+.c12ac-dual-caveat{grid-column:1/-1;margin:1px 0 0!important;font-size:10.5px!important;color:#deeee5!important;line-height:1.55!important}
+.c12ac--contrast .c12ac-next{padding:6px 8px;margin:7px 0 0}
+.c12ac--contrast .c12ac-next small{font-size:11px;flex:0 0 62px}
+.c12ac--contrast .c12ac-next p{font-size:12px!important;line-height:1.45!important}
+.c12ac--contrast .c12ac-evidence-toggle{margin-top:6px;min-height:38px;padding:5px;font-size:11.5px}
+.c12ac--contrast .c12ac-disclaimer{font-size:10px!important;line-height:1.42!important;margin:5px 0 0!important}
+@media(max-width:350px){.c12ac-dual-box{padding:8px 5px}.c12ac-dual-box strong{font-size:18px}}
