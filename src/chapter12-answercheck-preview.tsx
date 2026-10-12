@@ -6,8 +6,9 @@ import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='enjoy_good'|'enjoy_question'|'drive_good'|'optimize_question'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_good'|'optimize_question'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
+ enjoy_dual:{label:'楽しさ×守る支出＆未使用契約',desc:'娯楽を守りながら、未使用契約を確認できた架空の例',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  enjoy_good:{label:'楽しさ × 守る支出',desc:'娯楽費に満足していて守りたいと答えた例',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  enjoy_question:{label:'楽しさ × 見直したい支出',desc:'娯楽費の使い方に本人が見直し意向を示した例',style:'ENJOY',job:'INP',jobName:'風読み剣士'},
  drive_good:{label:'前進 × 目的のある自己投資',desc:'目的のある自己投資を守ると答えた例',style:'DRIVE',job:'FDM',jobName:'先回り司令官'},
@@ -35,11 +36,11 @@ function makeFixture(example:Case){
  const rows=CATEGORY_IDS.map(category=>row(category));
  const fun=rows.find(r=>r.category==='fun')!,self=rows.find(r=>r.category==='selfDevelopment')!;
  const sub=rows.find(r=>r.category==='sub')!;
- if(example==='enjoy_good'||example==='partial'){fun.v5Status='protect';fun.appraisal={satisfaction:'verySatisfied'};}
+ if(example==='enjoy_good'||example==='enjoy_dual'||example==='partial'){fun.v5Status='protect';fun.appraisal={satisfaction:'verySatisfied'};}
  if(example==='enjoy_question'){fun.v5Status='optimize';fun.appraisal={satisfaction:'inertia'};}
  if(example==='drive_good'){self.v5Status='protect';self.appraisal={selfDevelopmentValue:'purpose'};}
  if(example==='secure_no_link'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.v5Status='protect';insurance.appraisal={insurancePurpose:'clear',insuranceLastReview:'within1y'};}
- if(example==='optimize_question'){
+ if(example==='optimize_question'||example==='enjoy_dual'){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
  }
  const caseRows=example==='partial'?rows.slice(0,11):rows;
@@ -49,13 +50,13 @@ function makeFixture(example:Case){
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
    v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
-   potential:{confirmedA:example==='optimize_question'?1200:0,cUpper:0},
+   potential:{confirmedA:(example==='optimize_question'||example==='enjoy_dual')?1200:0,cUpper:0},
    improvement:{monthly:0},type:{code:'',name:'',axes:{fv:0,pi:0,au:0},axisStrength:{fv:0,pi:0,au:0}}
   }
  };
 }
 function App(){
- const [selected,setSelected]=useState<Case>('enjoy_good');
+ const [selected,setSelected]=useState<Case>('enjoy_dual');
  const {chapter1,anonymousUserId,vm}=makeFixture(selected);
  return <div className="c12preview">
    <div className="c12preview-top">
