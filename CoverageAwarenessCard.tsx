@@ -1,10 +1,11 @@
-import React from 'react';
+import React,{useState} from 'react';
 import {coverageAwarenessFor} from './scripts/coverage-awareness-v1.mjs';
 
 type Props={rows?:unknown;onConsultCoverage?:()=>void;pilotNoExternalActions?:boolean};
 
 /** Covers the purpose of protection, not an amount of "savings". */
 export default function CoverageAwarenessCard({rows,onConsultCoverage,pilotNoExternalActions=false}:Props){
+ const [pilotFeedback,setPilotFeedback]=useState(false);
  const insight=coverageAwarenessFor(rows);
  if(!insight?.show)return null;
  const noContractAssumed=insight.reason==='NO_PREMIUM_RECORDED'||insight.reason==='CATEGORY_NOT_APPLICABLE';
@@ -25,10 +26,11 @@ export default function CoverageAwarenessCard({rows,onConsultCoverage,pilotNoExt
   <p className="c2v32-cover-caution">古い保険が無意味とは限らない。今の契約を解約・変更する前に、給付条件や継続する利点も確かめよう。</p>
   <div className="c2v32-cover-next"><span>まずはこれだけ ›</span><strong>{insight.next}</strong></div>
   {onConsultCoverage&&<div className="c2v32-cover-consult">
-    <button type="button" className="c2v32-cover-consult-button" onClick={onConsultCoverage} data-cta="COVERAGE_LINE_CONSULT">
+    <button type="button" className="c2v32-cover-consult-button" onClick={()=>pilotNoExternalActions?setPilotFeedback(true):onConsultCoverage()} data-cta="COVERAGE_LINE_CONSULT">
      <span>公式LINEで保障の相談をする</span><span aria-hidden="true">→</span>
     </button>
-    <small>{pilotNoExternalActions?'調査用のためLINEへの移動・予約は行われません。':'相談は無料・任意。LINEの友だち追加だけでは面談予約は確定しません。'}</small>
+    <small>{pilotNoExternalActions?'調査用のためLINEへの移動・予約は行われません。':'相談は任意。LINEの友だち追加だけでは面談予約は確定しません。'}</small>
+    {pilotFeedback&&<p className="c2v32-cover-pilot-feedback" role="status">調査用サンプルのため、LINEへの移動や実際の面談予約は行いません。</p>}
   </div>}
   <details className="c2v32-cover-why"><summary>保障の確認方法と注意点</summary>
    <p>保障は、保険料の高い・安いだけでなく、入院・通院・特定の治療に関する給付条件や支払対象外の条件も確認が必要です。医療の進歩で治療が変わっても、古い契約の利点が残ることがあります。</p>
