@@ -6,8 +6,9 @@ import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
+ uncertain_only:{label:'未確定だけ｜1年・5年・10年',desc:'確認済み改善機会0円・未確定の見直し候補のみ月1,800円の架空例。未来の戦利品を確認する。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
  enjoy_dual:{label:'楽しさ×守る支出＆未使用契約',desc:'娯楽を守りながら、未使用契約を確認できた架空の例',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  enjoy_good:{label:'楽しさ × 守る支出',desc:'娯楽費に満足していて守りたいと答えた例',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  enjoy_question:{label:'楽しさ × 見直したい支出',desc:'娯楽費の使い方に本人が見直し意向を示した例',style:'ENJOY',job:'INP',jobName:'風読み剣士'},
@@ -38,6 +39,13 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
+ // Reproduce the REAL V5 mobile candidate rule: major-carrier single line
+ // with monthly input ¥7,800 has review-only upper bound 7,800 − 6,000 = ¥1,800.
+ // Demo values are invented for visual testing, not statistical averages or savings.
+ const mobile=rows.find(r=>r.category==='mobile')!;
+ mobile.appraisal={mobileScope:'mobileOnly',mobileCarrier:'major'};
+ mobile.v5Status='optimize';
+ mobile.cUpper=1800;
  const fun=rows.find(r=>r.category==='fun')!,self=rows.find(r=>r.category==='selfDevelopment')!;
  const sub=rows.find(r=>r.category==='sub')!;
  if(example==='enjoy_good'||example==='enjoy_dual'||example==='optimize_dual'||example==='partial'){fun.v5Status='protect';fun.appraisal={satisfaction:'verySatisfied'};}
@@ -50,13 +58,18 @@ function makeFixture(example:Case){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
  }
  const caseRows=example==='partial'?rows.slice(0,11):rows;
+ const reviewUpper=caseRows.reduce((sum,x)=>sum+x.cUpper,0);
+ const confirmedA=caseRows.reduce((sum,x)=>sum+x.aAmount,0);
  const totals={cut:0,optimize:0,protect:0,inspect:0,ok:0,na:0};
  for(const r of caseRows){const k=r.v5Status as keyof typeof totals;if(k in totals)totals[k]++;}
  return {chapter1,anonymousUserId,
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
    v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
-   potential:{confirmedA:['optimize_question','enjoy_dual','drive_dual','optimize_dual'].includes(example)?1200:0,cUpper:0},
+   potential:{confirmedA,cUpper:reviewUpper,lower:confirmedA,upper:confirmedA+reviewUpper,
+    oneYear:{lower:confirmedA*12,upper:(confirmedA+reviewUpper)*12},
+    fiveYear:{lower:confirmedA*60,upper:(confirmedA+reviewUpper)*60},
+    tenYear:{lower:confirmedA*120,upper:(confirmedA+reviewUpper)*120}},
    improvement:{monthly:0},type:{code:'',name:'',axes:{fv:0,pi:0,au:0},axisStrength:{fv:0,pi:0,au:0}}
   }
  };
@@ -74,7 +87,8 @@ function App(){
      </select>
      <p>{examples[selected].desc}</p>
      <div className="c12preview-disclaimer">同一人物の回答・完了済み12カテゴリの根拠がある時だけ表示。人格の的中率・家計の良し悪しは判定しない。GAS・予約への送信は行わない。</div>
-     <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>答え合わせカードまで移動 ↓</button>
+     <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
+     <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
    </div>
    <div className="c12preview-stage">
     <ResultScreenChapter2V32 key={selected} vm={vm} chapter1={chapter1} answerCheckEnabled
