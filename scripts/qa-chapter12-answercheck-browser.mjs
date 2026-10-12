@@ -167,6 +167,29 @@ for(const width of [320,375,390,430]){
  const m=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth}));
  check(m.doc<=width+1,width+' no horizontal overflow '+m.doc);
  check(outside.length===0,width+' no external upload');
+ // The real participant has only the synthetic result, not 18 developer fixtures
+ // or a real outbound share/consultation. Test both privacy and neutral ordering.
+ const participant=await ctx.newPage(),participantOut=[];
+ participant.on('pageerror',e=>errors.push(width+' participant runtime '+String(e)));
+ participant.on('request',r=>{if(/twitter.com|line.me|lin.ee|script\\.google.com|\/exec\\b/i.test(r.url()))participantOut.push(r.url());});
+ await participant.goto(base+'?pilot=1',{waitUntil:'networkidle'});
+ check(await participant.locator('[data-pilot-role="participant"]').count()===1,width+' distinct neutral participant header');
+ check(await participant.locator('#case-change').count()===0,width+' participant cannot see or switch developer cases');
+ check(await participant.locator('.c12preview-top').count()===0,width+' developer instructions removed');
+ check(await participant.locator('[data-section="CANDIDATE_BREAKDOWN"] [data-candidate-category]').count()===2,width+' participant sees both money candidate explanations');
+ check((await participant.locator('[data-pilot-role="participant"]').innerText()).includes('架空の回答'),width+' synthetic and no real data entry disclosed');
+ check(await participant.locator('[data-section="FUTURE_REWARDS"]').count()===1,width+' future simulation remains intact');
+ await participant.locator('[data-section="CONSULTATION_CTA_TOP"] button').first().click();
+ check(await participant.locator('[role="dialog"]').count()===1,width+' participant can inspect lifeplan consultation dialog');
+ await participant.locator('[role="dialog"] button').filter({hasText:'公式LINEで'}).click();
+ check(await participant.locator('[role="dialog"]').count()===0,width+' no real booking from pilot');
+ const alts=participant.locator('.c2v31-share-alternatives');
+ await alts.locator('summary').click();
+ await alts.getByRole('button',{name:/Xで文章を共有/}).click();
+ check((await participant.locator('.c2v2-share-status').innerText()).includes('調査用のサンプルではSNS投稿を実行しません'),width+' social posting blocked in synthetic pilot');
+ check(participantOut.length===0,width+' pilot no external share/booking or GAS request');
+ if(width===390)await participant.screenshot({path:path.join(out,engine+'-390-participant.png'),fullPage:true});
+ await participant.close();
  await ctx.close();
 }
 await browser.close();
