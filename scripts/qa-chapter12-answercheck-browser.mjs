@@ -179,6 +179,33 @@ for(const width of [320,375,390,430]){
  check(await card.count()===0,width+' mismatched identity hidden');
  await selector.selectOption('partial');
  check(await card.count()===0,width+' incomplete 12 categories hidden');
+ // V1.9 four-lens hierarchy: the proof is open, but deep browsing is optional.
+ await selector.selectOption('v32_scale');
+ const guild=page.locator('.c2v31-page');
+ const worldStyle=await guild.evaluate(el=>({
+  image:getComputedStyle(el).backgroundImage,
+  background:getComputedStyle(el).backgroundColor
+ }));
+ check(worldStyle.image.includes('MP_BG_01_GUILD_HALL'),width+' unified scenic page background');
+ const gallery=page.locator('[data-optional="enemy-atlas"]');
+ const atlasCards=page.locator('[data-section="ENEMY_FULL_GALLERY"]');
+ check(await gallery.count()===1,width+' optional enemy atlas exists');
+ check(await gallery.evaluate(el=>!el.open),width+' full atlas starts collapsed');
+ check(!(await atlasCards.isVisible()),width+' full twelve enemy list does not compete with initial action');
+ check(await page.locator('[data-section="CANDIDATE_BREAKDOWN"] [data-candidate-category]').count()===2,width+' financial reasons remain initially displayed');
+ await gallery.locator('summary').click();
+ check(await atlasCards.isVisible(),width+' full atlas opens intentionally');
+ check(await atlasCards.locator('.c2v32-enemy-record').count()===12,width+' all twelve enemies remain accessible');
+ await gallery.locator('summary').click();
+ const goals=page.locator('[data-optional="future-goal"]');
+ check(await goals.count()===1&&await goals.evaluate(el=>!el.open),width+' optional goal selector starts closed');
+ await goals.locator('summary').click();
+ check(await goals.locator('.c2v2-goals button').count()===8,width+' all eight life goals remain accessible');
+ await goals.getByRole('button',{name:'住まい'}).click();
+ check((await goals.innerText()).includes('「住まい」について相談する'),width+' goal CTA appears after explicit goal selection');
+ await goals.locator('summary').click();
+ check(await page.locator('[data-section="NEXT_QUEST"] details').evaluate(el=>!el.open),width+' duplicate next step is tucked away');
+ check(await page.locator('[data-section="CONSULTATION_CTA_TOP"] button.c2v2-primary').isVisible(),width+' primary life plan CTA remains immediately available');
  const m=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth}));
  check(m.doc<=width+1,width+' no horizontal overflow '+m.doc);
  check(outside.length===0,width+' no external upload');
