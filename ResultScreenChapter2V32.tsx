@@ -58,6 +58,14 @@ const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(Math.max(0,Math.roun
 const money=(n:number)=>'¥'+yen(n);
 const nonnegative=(n:unknown)=>Math.max(0,Number.isFinite(Number(n))?Number(n):0);
 const handoffCode=(id:string)=>'MG-'+(String(id||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(-12)||'UNKNOWN');
+/** A conditional review clue, not proof of waste or realized savings. */
+function candidateReason(x:any):string{
+ if(x.cMethod==='mobile')return 'スマホ1回線の料金を、契約タイプ別の確認目安と照らした候補';
+ if(x.cMethod==='wide')return '入力した支出を比較可能な目安と照らし、確認余地を抽出';
+ if(x.cMethod==='standard')return '入力した支出と比較目安から、条件付きの確認候補を抽出';
+ return '回答した支出に追加確認の余地がある候補。詳細は敵図鑑で確認';
+}
+
 
 function loadImage(url:string):Promise<HTMLImageElement|null>{
  return new Promise(resolve=>{
@@ -286,22 +294,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     ✦ 未確定の1年・5年・10年を見る ↓
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
-  {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
-   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
-   <div className="c2v31-job-inner">
-    <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
-    <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
-     <p>この冒険者と、家計クエストもクリア！</p>
-    </div>
-   </div>
-  </aside>}
-  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
-  {answerCheckEnabled&&<Chapter12AnswerCheckCard
-   enabled={answerCheckEnabled} chapter1={chapter1}
-   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
-   rows={vm?.rows} demo={answerCheckDemo}
-  />}
-
   <section className="c2v32-treasure-lead" data-section="POTENTIAL_TREASURE">
    <div className="c2v31-section-heading"><span>🔑 TREASURE REPORT</span><small>今回の見直し候補</small></div>
    <h2>宝箱に眠っていたお金</h2>
@@ -317,14 +309,27 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </div>
     <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
    </section>
-   {primaryCandidate&&<div className="c2v32-first-action" data-section="FIRST_REVIEW_ACTION">
-    <span>⚔ 最初に確かめるなら</span>
-    <div className="c2v32-primary-enemy">
-     {(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.normal&&<img src={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].normal} alt={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].name} loading="eager"/>}
-     <div><strong>{(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.name||primaryCandidate.label||primaryCandidate.category}</strong><small>{primaryCandidate.label||primaryCandidate.category}</small></div>
-    </div>
+   {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
+    <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>月額の未確定候補／すべて表示</small></div>
+    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
+    <div className="c2v32-breakdown-entries">{candidates.map((x:any)=>{
+     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
+      <div className="c2v32-breakdown-entry-head">
+       {enemy?.normal?<img src={enemy.normal} alt="" loading="lazy"/>:<span className="c2v32-breakdown-icon" aria-hidden="true">⚔</span>}
+       <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
+       <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
+      </div>
+      <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
+      <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+     </div>;
+    })}</div>
+    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。詳しい比較条件は後半の敵図鑑で確認できます。</p>
+   </section>
+   {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
+    <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
     <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-    <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
+    <small>削る前に確認。大切にしたい支出は守ろう。</small>
    </div>}
   </section>
   <MudagiriBeat pose="check" line={reviewUpper>0?"まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！":"見直し候補が見つからなくても大丈夫。無理にムダを決めつけないぞ！"}/>
@@ -349,6 +354,22 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </div>}
   </section>
   <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
+
+  {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
+   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
+   <div className="c2v31-job-inner">
+    <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
+    <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
+     <p>この冒険者と、家計クエストもクリア！</p>
+    </div>
+   </div>
+  </aside>}
+  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
+  {answerCheckEnabled&&<Chapter12AnswerCheckCard
+   enabled={answerCheckEnabled} chapter1={chapter1}
+   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
+   rows={vm?.rows} demo={answerCheckDemo}
+  />}
 
   <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
    <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
