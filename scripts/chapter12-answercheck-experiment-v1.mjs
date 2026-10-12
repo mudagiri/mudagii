@@ -63,6 +63,31 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  }
  // Strict: neither awareness nor intuition/time preference is independently
  // observed by a one-off list of household spending amounts.
+ // An optional action contrast, never a personality match or available cash.
+ // Show only when this same person has BOTH an independently protected enjoyment
+ // expense and a separately confirmed, unused+cancellable subscription opportunity.
+ let protectedVsReview=null;
+ const protectedFun=byCat.get('fun'),subCandidate=byCat.get('sub');
+ const unused=subCandidate?.appraisal?.subUnusedAmount;
+ if(chapter1.primaryStyle==='ENJOY'&&
+  cards.some(c=>c.category==='fun'&&c.kind==='resonance')&&
+  protectedFun?.v5Status==='protect'&&
+  subCandidate?.known===true&&subCandidate?.applicability!=='na'&&
+  subCandidate?.v5Status==='cut'&&subCandidate.appraisal?.subCancellationConfirmed===true&&
+  Number.isSafeInteger(unused)&&unused>0&&
+  Number.isSafeInteger(subCandidate.amount)&&unused<=subCandidate.amount&&
+  Number.isSafeInteger(subCandidate.aAmount)&&subCandidate.aAmount>0&&subCandidate.aAmount<=unused&&
+  Number.isSafeInteger(protectedFun.amount)&&protectedFun.amount>0&&
+  Number.isSafeInteger(protectedFun.amount*12)&&Number.isSafeInteger(subCandidate.aAmount*12)){
+   protectedVsReview={
+    kind:'protect_vs_confirmed_review',
+    protect:{category:'fun',label:'娯楽・趣味',monthlyYen:protectedFun.amount,source:'第2章の入力支出＋本人の満足・守る判定',isSaving:false},
+    review:{category:'sub',label:'未使用サブスク',monthlyYen:subCandidate.aAmount,source:'本人申告の未使用・解約可能＋確認済み改善機会',isSavingRealized:false},
+    nextStep:'娯楽費はそのままに、未使用サブスクの解約条件を先に確認する',
+    caveat:'左は守りたい支出、右はまだ実行していない確認済み改善機会。2つを差し引いたり、右を貯蓄済みのお金として扱ったりしません。',
+    privacy:'private_only',
+   };
+ }
  const reviewed=byCat.size;
  const limited=cards.slice(0,2).map(card=>({...card,
   monthlySnapshot:moneySnapshot(byCat.get(card.category),card.category==='sub')
@@ -70,10 +95,12 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  return {status:limited.length?'context_found':'no_supported_link',
   headline:limited.length?'お金の価値観と家計の回答、重ねてみたら…':'第1章と第2章の答え合わせ',
   cards:limited,
+  protectedVsReview,
   explanation:limited.length?'今回の共通点・気づきはどちらも本人の回答に基づく「ヒント」。独立に測定した行動証拠でも、性格診断の正解判定でもありません。':EMPTY,
   coverage:{reviewedCategoryCount:reviewed,directMatchRulesApplied:limited.length,axesVerified:0},
   cannotInfer:['時間軸の正しさ','直感／熟考の正しさ','お金の把握頻度の正しさ','全12カテゴリとの一致率','節約の実行','投資適性','資金不足'],
-  nextStep:limited[0]?.category==='sub'?'契約一覧で、未使用分の停止・解約条件を確認する':
+  nextStep:protectedVsReview?protectedVsReview.nextStep:
+    limited[0]?.category==='sub'?'契約一覧で、未使用分の停止・解約条件を確認する':
     limited[0]?.category==='selfDevelopment'?'続けたい自己投資と、その目的を一つ確認する':
     limited[0]?.kind==='question'?'使ってよかった娯楽費と、見直したいものを一つずつ分ける':
     limited[0]?.kind==='resonance'?'この楽しみを来年も守りたいか、今の優先順位を確認する':
