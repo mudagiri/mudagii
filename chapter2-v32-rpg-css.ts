@@ -123,6 +123,18 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-cover-next{display:flex;gap:7px;align-items:flex-start;background:rgba(12,55,61,.9);border-left:3px solid #9edecf;border-radius:6px;padding:10px;margin-top:9px}
 .c2v32-rpg .c2v32-cover-next span{flex:0 0 80px;color:#b9f4e7;font-size:12px;font-weight:900;line-height:1.55}
 .c2v32-rpg .c2v32-cover-next strong{font-size:13px;line-height:1.55;color:#fff6d9}
+
+.c2v32-rpg .c2v32-cover-reasons{display:grid;gap:7px;margin:11px 0 8px}
+.c2v32-rpg .c2v32-cover-reasons>div{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:start;gap:8px;padding:8px 9px;border-radius:8px;background:rgba(28,66,71,.64);border:1px solid rgba(156,211,204,.32)}
+.c2v32-rpg .c2v32-cover-reasons strong{font-size:12px;line-height:1.6;color:#b8f7e3}
+.c2v32-rpg .c2v32-cover-reasons span{font-size:12px;line-height:1.6;color:#eff4ed;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-cover-caution{font-size:12px!important;line-height:1.6!important;color:#f9dca3!important;margin:8px 0!important}
+.c2v32-rpg .c2v32-cover-consult{margin:12px 0 5px;display:grid;gap:6px}
+.c2v32-rpg .c2v32-cover-consult-button{width:100%;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:2px solid #ffe8ac;border-radius:10px;background:linear-gradient(115deg,#f5da94,#f1be64);box-shadow:0 3px 11px rgba(0,0,0,.25);color:#122c37;font-size:15px;font-weight:950;line-height:1.35;text-align:left;cursor:pointer;touch-action:manipulation}
+.c2v32-rpg .c2v32-cover-consult-button:focus-visible{outline:3px solid #b3f4ea;outline-offset:2px}
+.c2v32-rpg .c2v32-cover-consult small{font-size:12px;line-height:1.55;color:#dbe8e3}
+.c2v32-rpg .c2v32-cover-pilot-feedback{font-size:12px!important;line-height:1.5!important;color:#e9f7e4!important;margin:0!important}
+@media(max-width:350px){.c2v32-rpg .c2v32-cover-reasons>div{grid-template-columns:72px minmax(0,1fr);gap:5px;padding:7px 5px}.c2v32-rpg .c2v32-cover-consult-button{font-size:14px}}
 .c2v32-rpg .c2v32-cover-why{margin-top:4px}
 .c2v32-rpg .c2v32-cover-why summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:12px;font-weight:850;color:#d9f1ee;padding:9px 4px;touch-action:manipulation}
 .c2v32-rpg .c2v32-cover-why summary:focus-visible{outline:3px solid #abf0e2;outline-offset:2px}
