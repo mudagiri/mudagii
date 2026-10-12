@@ -34,6 +34,9 @@ for(const width of [320,375,390,430]){
   return a&&b&&c?{a:a.getBoundingClientRect().top+scrollY,b:b.getBoundingClientRect().top+scrollY,c:c.getBoundingClientRect().top+scrollY}:null
  });
  check(Boolean(positions&&positions.a<positions.b&&positions.b<positions.c),width+' answercheck between JOB and treasure');
+ const cardHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
+ check(cardHeight<=(width<=350?730:680),width+' answer-check should not delay battle report: '+cardHeight+'px');
+ console.log('CHAPTER12_CARD_GEOMETRY',JSON.stringify({engine,width,height:cardHeight}));
  await card.scrollIntoViewIfNeeded();
  await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
  await card.getByRole('button',{name:/根拠を見る/}).click();
@@ -61,6 +64,8 @@ for(const width of [320,375,390,430]){
  check(await card.locator('.c12ac-insight').count()===0,width+' no invented positive result');
  check(await card.locator('.c12ac-money').count()===0,width+' no numeric pseudo-match in secure no-link');
  check(await card.locator('.c12ac-evidence-toggle').count()===0,width+' no faux evidence toggle on no-link');
+ const noLinkHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
+ check(noLinkHeight<220,width+' no-link state stays compact: '+noLinkHeight+'px');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-no-link.png'),fullPage:true});
  await selector.selectOption('identity_mismatch');
  check(await card.count()===0,width+' mismatched identity hidden');
