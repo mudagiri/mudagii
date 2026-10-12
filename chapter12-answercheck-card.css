@@ -31,3 +31,18 @@
 .c12ac-disclaimer{font-size:11px!important;line-height:1.65!important;color:#cee0dc!important;margin:11px 0 0!important}
 @media(max-width:350px){.c2v31-rpg .c12ac,.c12ac{padding:14px 9px;margin-left:10px;margin-right:10px}.c12ac-dialogue img{width:27%}.c12ac-dialogue p{font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.c12ac *{animation:none!important;transition:none!important}}
+
+/* V1.1 value-first correction: the user can now see actual amounts while
+   the proof/caveat remains independent from any "trait accuracy" claim. */
+.c12ac-money{margin:10px 0 2px;padding:12px;border:1px solid #dfc577;border-radius:10px;background:linear-gradient(130deg,#0a3342,#18474a)}
+.c12ac-money>small{display:block;color:#e4f7ed;font-size:12px;font-weight:850;line-height:1.55;margin-bottom:7px}
+.c12ac-money>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.c12ac-money>div>span{display:block;color:#d3e9e2;font-size:12px;line-height:1.45;min-width:0}
+.c12ac-money strong{display:block;color:#ffe8a5;font-size:clamp(21px,6vw,29px);font-variant-numeric:tabular-nums;line-height:1.5;overflow-wrap:anywhere}
+.c12ac-money p{font-size:11px!important;line-height:1.6!important;color:#d6e6df!important;margin:7px 0 0!important}
+.c12ac-insight p.c12ac-brief{font-size:13px!important;line-height:1.6!important;color:#e4f4e8!important}
+.c12ac--unknown{padding-top:11px!important;padding-bottom:12px!important;border-color:#77989a!important;background:#0b3541!important}
+.c12ac--unknown .c12ac-head{margin-bottom:6px}
+.c12ac-unknown-title{display:block;font-size:15px;line-height:1.5;color:#fce4aa}
+.c12ac-unknown-note{font-size:12px!important;line-height:1.6!important;color:#deede8!important;margin:6px 0 0!important}
+@media(max-width:340px){.c12ac-money{padding:10px 7px}.c12ac-money strong{font-size:20px}}
