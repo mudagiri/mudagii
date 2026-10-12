@@ -198,6 +198,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   const payload=coverageConsultHandoff(vm.diagnosisId,handoffCode(vm.diagnosisId));
   if(!payload){setCoverageCopyError('引継ぎコードを作れませんでした。結果画面を開き直してからお試しください。');return;}
   onBeforeExternal?.();
+  onEvent?.('chapter2_v32_coverage_line_message_outbound',{placement:'coverage_review',consultSelectedTopic:'insurance'});
   onEvent?.('line_clicked',{placement:'coverage_review',chapter:'household',typeCode:null});
   onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'coverage_review',goal:null});
   setShowCoverageLine(false);
@@ -209,7 +210,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   try {
    if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
    await navigator.clipboard.writeText(coverageLineMessage);
+   onEvent?.('chapter2_v32_coverage_line_copy_success',{placement:'coverage_review'});
   }catch{
+   onEvent?.('chapter2_v32_coverage_line_copy_failed',{placement:'coverage_review'});
    setCoverageCopyError('コピーできませんでした。下の文章を長押ししてコピーし、公式LINEへ進んでください。');
    return;
   }
