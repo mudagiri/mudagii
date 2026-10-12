@@ -86,5 +86,42 @@ ok(r.cards[0]?.monthlySnapshot?.notSavings===true,'unclaimed contract not saved 
 r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect',{amount:9600})));
 ok(r.cards[0]?.monthlySnapshot?.annualYen===115200,'self-development nominal annualized spend');
 ok(r.nextStep.includes('自己投資'),'action references actual category');
+// V1.2: protect-vs-confirmed-review requires both sides in same completed diagnosis.
+// The right amount is not cash or executed savings; never subtract from the left.
+const pairRows=()=>CATEGORY_IDS.map(x=>x==='fun'?{...row(x,{satisfaction:'verySatisfied'},'protect'),amount:24000}:
+ x==='sub'?{...row(x,{subUnusedAmount:1200,subCancellationConfirmed:true},'cut'),amount:4200,aAmount:1200}:row(x));
+r=pass(c1('ENJOY'),c2(pairRows()));
+ok(r.protectedVsReview?.kind==='protect_vs_confirmed_review','paired insight appears only with both evidence streams');
+ok(r.protectedVsReview?.protect.monthlyYen===24000,'protect keeps actual month spend');
+ok(r.protectedVsReview?.review.monthlyYen===1200,'review keeps verified opportunity amount');
+ok(r.protectedVsReview?.review.isSavingRealized===false,'unused review never presented as realized savings');
+ok(r.protectedVsReview?.protect.isSaving===false,'protected consumption not savings');
+ok(r.protectedVsReview?.nextStep.includes('解約条件'),'paired next action grounded in subscription');
+ok(r.protectedVsReview?.privacy==='private_only','paired privacy flag');
+ok(r.protectedVsReview?.caveat.includes('差し引いたり'),'no financial netting');
+ok(r.score===null,'no fake personality score even for pair');
+r=pass(c1('DRIVE'),c2(pairRows()));
+ok(r.protectedVsReview===null,'DRIVE never gets forced enjoyment match');
+r=pass(c1('SECURE'),c2(pairRows()));
+ok(r.protectedVsReview===null,'SECURE never gets invented match');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.protectedVsReview===null,'protect alone not paired');
+const pairWith=(f)=>pairRows().map(x=>x.category==='sub'?{...x,...f}:x);
+r=pass(c1('ENJOY'),c2(pairWith({aAmount:0})));
+ok(r.protectedVsReview===null,'not confirmed when aAmount zero');
+r=pass(c1('ENJOY'),c2(pairWith({v5Status:'inspect'})));
+ok(r.protectedVsReview===null,'inspect not confirmed to cut');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:1200,subCancellationConfirmed:false}})));
+ok(r.protectedVsReview===null,'uncancellable unused subscription not used');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:1200,subCancellationConfirmed:true},aAmount:1500})));
+ok(r.protectedVsReview===null,'confirmed amount greater than identified unused amount refuses contrast');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:5000,subCancellationConfirmed:true}})));
+ok(r.protectedVsReview===null,'unused amount exceeds full subscription spend');
+r=pass(c1('ENJOY'),c2(pairWith({known:false})));
+ok(r.protectedVsReview===null,'unknown subscription does not create contrast');
+r=pass(c1('ENJOY'),c2(pairWith({amount:0})));
+ok(r.protectedVsReview===null,'zero monthly subscription cannot create contrast');
+r=pass({...c1('ENJOY'),anonymousUserId:'wrong'},c2(pairRows()));
+ok(r.status==='unavailable'&&r.cards.length===0,'identity mismatch suppresses whole paired card');
 if(failed.length){console.error(JSON.stringify({status:'FAIL',checks,failed},null,2));process.exitCode=1}
 else console.log(JSON.stringify({status:'PASS',checks,scope:'prototype rule gates for Chapter1×Chapter2 self-report resonance, not correlation validity'}));
