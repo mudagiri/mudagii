@@ -5,10 +5,14 @@ import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
 
 type Props={
  vm:any;
  chapter1?:Chapter1HandoffV1|null;
+ answerCheckEnabled?:boolean;
+ answerCheckAnonymousUserId?:string|null;
+ answerCheckDemo?:boolean;
  onLine?:(x:any)=>void;
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
@@ -105,7 +109,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
@@ -287,7 +291,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     </div>
    </div>
   </aside>}
-
+  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
+  {answerCheckEnabled&&<Chapter12AnswerCheckCard
+   enabled={answerCheckEnabled} chapter1={chapter1}
+   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
+   rows={vm?.rows} demo={answerCheckDemo}
+  />}
 
   <section className="c2v32-treasure-lead" data-section="POTENTIAL_TREASURE">
    <div className="c2v31-section-heading"><span>🔑 TREASURE REPORT</span><small>今回の見直し候補</small></div>
