@@ -44,8 +44,8 @@ assert.doesNotMatch(empty,/data-section="CANDIDATE_BREAKDOWN"/,'no arbitrary lis
 const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,17854),
  rows:[
-  {category:'mobile',label:'通信費',cUpper:5500,nextAction:'スマホ料金プランを確認',v5Status:'optimize'},
-  {category:'food',label:'食費',cUpper:12354,nextAction:'食費の内訳を確認',v5Status:'inspect'},
+  {category:'mobile',label:'通信費',known:true,amount:11500,cUpper:5500,cMethod:'mobile',appraisal:{mobileScope:'mobileOnly',mobileCarrier:'major'},nextAction:'スマホ料金プランを確認',v5Status:'optimize'},
+  {category:'food',label:'食費',known:true,amount:54000,comparable:37860,cUpper:12354,cMethod:'standard',nextAction:'食費の内訳を確認',v5Status:'inspect'},
  ],
  firstQuest:{category:'mobile',label:'通信費',nextAction:'料金プランを確認'}
 }}));
@@ -61,6 +61,13 @@ for(const label of ['通信費','食費','最大 ¥5,500','最大 ¥12,354','候
  assert.ok(breakdownHTML.includes(label),'missing visible candidate evidence '+label);
 }
 assert.equal((breakdownHTML.match(/候補になった理由：/g)||[]).length,2,'each candidate must have inline evidence');
+assert.match(breakdownHTML,/今回の入力：/,'actual expense visible when known');
+assert.match(breakdownHTML,/¥54,000/,'food entered monthly not hidden in gallery');
+assert.match(breakdownHTML,/¥37,860/,'food comparison amount transparent where known');
+assert.match(breakdownHTML,/¥11,500/,'mobile entered monthly shown as source');
+assert.match(breakdownHTML,/月6,000円を超える部分/,'mobile contract-aware upper basis shown');
+assert.match(breakdownHTML,/平均との差がそのまま削減額になるわけではありません/,'no interpretation of benchmark as savings');
+
 assert.equal((breakdownHTML.match(/確かめること：/g)||[]).length,2,'each candidate must give a practical next check');
 assert.ok(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"')<candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.ok(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
