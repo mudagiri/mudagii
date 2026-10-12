@@ -189,7 +189,7 @@ for(const width of [320,375,390,430]){
  dry.on('request',r=>{if(/script\.google\.com|\/exec\b|lin\.ee|line\.me|analytics/i.test(r.url()))dryOutside.push(r.url());});
  await dry.addInitScript(()=>{
   Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
-   writeText:async text=>{window.__copiedCoverage=text;}
+   writeText:async text=>{if(window.__clipboardFail)throw new Error('clipboard denied');window.__copiedCoverage=text;}
   }});
  });
  await dry.goto(base+'?qaCoverageHandoff=1',{waitUntil:'networkidle'});
@@ -207,6 +207,15 @@ for(const width of [320,375,390,430]){
  check(!/¥|月額|健康情報|保険料|医療履歴/.test(transfer.copied||''),width+' no sensitive diagnostic details in LINE text');
  check(!('rawExpenses' in (transfer.context||{}))&&!('confirmedMonthly' in (transfer.context||{})),width+' privacy-minimal external handoff');
  check(await coverageDialog.count()===0,width+' coverage dialog closes after outbound callback');
+ if(width===390){
+  await dryButton.click();
+  await dry.evaluate(()=>{window.__clipboardFail=true;});
+  await coverageDialog.getByRole('button',{name:/相談文をコピーして公式LINEへ/}).click();
+  check((await coverageDialog.locator('[role="status"]').innerText()).includes('コピーできませんでした'),width+' clipboard-denied fallback explains manual copy');
+  check(await coverageDialog.getByRole('button',{name:/手動でコピーして公式LINEを開く/}).count()===1,width+' manual copy path remains available');
+  await coverageDialog.getByRole('button',{name:/手動でコピーして公式LINEを開く/}).click();
+  check(await coverageDialog.count()===0,width+' fallback continues through same insurance context');
+ }
  check(dryOutside.length===0,width+' dry-run never opens LINE or sends to GAS');
  if(width===390)await dry.screenshot({path:path.join(out,engine+'-390-coverage-handoff.png'),fullPage:true});
  await dry.close();
