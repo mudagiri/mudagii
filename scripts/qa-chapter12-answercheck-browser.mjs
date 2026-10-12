@@ -186,7 +186,7 @@ for(const width of [320,375,390,430]){
  // and interception only. Never open the official LINE or transmit lead records.
  const dry=await ctx.newPage(),dryOutside=[];
  dry.on('pageerror',e=>errors.push(width+' coverage dry-run runtime '+String(e)));
- dry.on('request',r=>{if(/script\\.google\\.com|\\/exec\\b|lin\\.ee|line\\.me|analytics/i.test(r.url()))dryOutside.push(r.url());});
+ dry.on('request',r=>{if(/script\.google\.com|\/exec\b|lin\.ee|line\.me|analytics/i.test(r.url()))dryOutside.push(r.url());});
  await dry.addInitScript(()=>{
   Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
    writeText:async text=>{window.__copiedCoverage=text;}
