@@ -473,7 +473,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
    <h2>次の冒険は、<br/>未来の作戦会議。</h2>
-   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」など、見直し候補を本当に変えられるか確かめよう。その先のお金の使い道まで一緒に考えるぞ。</>:'無理に削らず、今の家計を守りながら未来のお金を整理しよう。'}</p>
+   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」が本当に見直せるか、一緒に確かめよう。「いつかやりたいこと」を、今日できる一歩に変える作戦も考えよう。</>:'無理に削らず、今の家計を守りながら考えよう。「いつかやりたいこと」を、今日できる小さな一歩につなげよう。'}</p>
    <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
    <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
