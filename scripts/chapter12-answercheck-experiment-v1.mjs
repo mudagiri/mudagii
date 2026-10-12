@@ -13,6 +13,19 @@ const EMPTY='回答を重ね合わせるだけでは、今は確かな共通点�
 const unavailable=(reason)=>({status:'unavailable',reason,headline:'答え合わせはまだできません',cards:[],coverage:{reviewedCategoryCount:0,directMatchRulesApplied:0,axesVerified:0},cannotInfer:['性格の一致率','衝動買いの有無','金融商品の適合性']});
 const recognized=(x)=>typeof x==='string'&&x.length>0;
 const human=(kind,category,title,body,reason)=>({kind,category,title,body,evidence:{chapter1:'本人が回答したお金の価値観（主STYLE）',chapter2:reason},confidence:'self_report_context_only',financialResult:false});
+/** Descriptive spending only; cannot verify traits or imply a savings opportunity. */
+const moneySnapshot=(row,unused=false)=>{
+ const original=unused?row?.appraisal?.subUnusedAmount:row?.amount;
+ if(!row||row.known!==true||row.applicability==='na'||typeof original!=='number'||!Number.isFinite(original)||original<=0)return null;
+ const monthlyYen=Math.round(original);
+ if(!Number.isSafeInteger(monthlyYen)||monthlyYen<=0||!Number.isSafeInteger(monthlyYen*12))return null;
+ return {kind:unused?'declared_unused_contract':'declared_monthly_spend',monthlyYen,annualYen:monthlyYen*12,
+  label:unused?'本人が未使用と回答した契約分':(row.diagnosisAmountLabel||'入力した月額支出'),
+  scope:unused?'contract_self_report':(row.diagnosisAmountLabel||'diagnosis_input'),
+  caveat:unused?'本人申告の未使用契約分。解約・節約実行後の金額ではありません。':'現在の月額を単純に12倍した参考値。節約額や将来の支出予測ではありません。',
+  notSavings:true,
+ };};
+
 export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  if(!chapter1||!chapter2)return unavailable('NO_JOINED_DATA');
  if(chapter1.version!=='MUDAGIRI_MONEY_TYPE_HANDOFF_V1')return unavailable('INVALID_CH1_VERSION');
@@ -51,7 +64,9 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  // Strict: neither awareness nor intuition/time preference is independently
  // observed by a one-off list of household spending amounts.
  const reviewed=byCat.size;
- const limited=cards.slice(0,2);
+ const limited=cards.slice(0,2).map(card=>({...card,
+  monthlySnapshot:moneySnapshot(byCat.get(card.category),card.category==='sub')
+ }));
  return {status:limited.length?'context_found':'no_supported_link',
   headline:limited.length?'お金の価値観と家計の回答、重ねてみたら…':'第1章と第2章の答え合わせ',
   cards:limited,
