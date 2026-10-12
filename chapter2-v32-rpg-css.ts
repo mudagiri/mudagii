@@ -9,7 +9,7 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-hero-teaser small{font-size:12px;line-height:1.5;color:#e5e7db;font-weight:700}
 .c2v32-rpg .c2v32-reward-jump{position:relative;z-index:5;display:block;width:calc(100% - 28px);max-width:360px;min-height:44px;margin:9px auto 1px;padding:9px 11px!important;color:#fff1bc!important;background:linear-gradient(115deg,#263e42,#705025 72%,#3b3729)!important;border:2px solid #f6cf76!important;border-radius:9px;box-shadow:0 0 0 2px #ffe6a61c,0 4px 12px #0009,0 0 13px #f6cd5540;font-size:14px!important;font-weight:950!important;line-height:1.5;cursor:pointer;touch-action:manipulation}
 .c2v32-rpg .c2v32-reward-jump:focus-visible{outline:3px solid #a5f8ef;outline-offset:3px}
-.c2v32-rpg [data-section="FUTURE_REWARDS"]{scroll-margin-top:15px}
+.c2v32-rpg .c2v31-future{scroll-margin-top:15px}
 
 .c2v32-rpg .c2v32-treasure-lead{position:relative;margin:14px 12px 12px;padding:19px 12px 14px;overflow:hidden;border:2px solid rgba(244,201,104,.8);border-radius:15px;background:linear-gradient(160deg,rgba(5,33,44,.90),rgba(12,29,44,.94)),url('./assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp') center/cover;box-shadow:inset 0 0 0 1px rgba(240,213,137,.15),0 10px 22px rgba(0,0,0,.27)}
 .c2v32-rpg .c2v32-treasure-lead>h2{color:#ffecae;font-size:clamp(22px,5.7vw,28px);line-height:1.35;margin:9px 0 10px;text-shadow:0 2px 6px rgba(0,0,0,.8)}
