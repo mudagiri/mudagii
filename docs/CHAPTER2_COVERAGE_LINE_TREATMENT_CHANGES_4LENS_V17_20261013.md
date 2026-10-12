@@ -72,3 +72,18 @@ V1.7のコードだけでは、公式LINEの「友だち追加」URLへ遷移し
 | バズ理論 | 公開SNSの共有カードは変更しない。保障相談は非公開チャット内だけで扱う。 | 自発的シェアを妨げないか |
 
 FROZEN診断エンジン・12カテゴリ基準・`confirmedA`・`cUpper`・GAS API判定は変更しない。本番公開・ユーザー検証は未完了。
+
+
+## V1.9.1｜相談ファネル計測と実運用データ確認（2026-10-13）
+
+本番の分析Sheet（ムダギリ診断_ANALYTICS_V1）の`LEADS`タブをヘッダーだけ確認したところ、`receivedAt, leadId, diagnosisId, anonymousUserId, createdAt, source, toneMode, typeCode, typeName, annualIncomeBand, monthlyImprovement, firstQuest, leadJson`の13列で、`consultSelectedTopic`の専用列はなかった。したがってWeb側から`insurance`を送信したというだけで、運営が一覧画面でその意図を確実に識別できるとは結論できない。現時点でSheetの生データや列定義は変更していない。
+
+Web側のイベントを以下に細分化した：
+- `chapter2_v32_coverage_consultation_clicked`：保障相談の案内を開いた（送信未成立）
+- `chapter2_v32_coverage_line_copy_success`：相談文がコピーできた（LINE送信未成立）
+- `chapter2_v32_coverage_line_copy_failed`：コピー拒否などで手動転記が必要（LINE送信未成立）
+- `chapter2_v32_coverage_line_message_outbound`：保障としてLINE遷移を開始（面談予約未成立）
+
+これらのイベントの記録内容は`placement`・`consultSelectedTopic`のみで、保険契約情報・保険料・家計・相談文そのものは含まない。研究プレビュー`?qaCoverageHandoff=1`ではLINE/GASを実際に開かず、発火ステップだけを記録してChrome/WebKitで検証する。
+
+本番前の手動停止条件は、①`leadJson`に`consultSelectedTopic=insurance`・`insuranceReview=true`・`handoffCode`が入ることをテスト用一件で照合する、②LINEチャットへ利用者がコードを貼り付けて送信した後に担当者がSheetとの照合を確認する、③相談者の意思表示と友だち追加だけの状態を混同しない、の3点。これは現時点では未検証。
