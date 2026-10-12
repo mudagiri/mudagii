@@ -228,8 +228,10 @@ for(const width of [320,375,390,430]){
  check((await coverageDialog.innerText()).includes('友だち追加だけでは相談内容は伝わりません'),width+' LINE delivery not overpromised');
  check((await coverageDialog.locator('textarea').inputValue()).includes('引継ぎコード：MG-'),width+' selectable draft includes handoff code');
  await coverageDialog.getByRole('button',{name:/相談文をコピーして公式LINEへ/}).click();
- const transfer=await dry.evaluate(()=>({copied:window.__copiedCoverage,context:window.__coverageHandoff}));
+ const transfer=await dry.evaluate(()=>({copied:window.__copiedCoverage,context:window.__coverageHandoff,events:(window.__coverageEvents||[]).map(x=>x.name)}));
  check(transfer.context?.placement==='coverage_review'&&transfer.context?.consultSelectedTopic==='insurance'&&transfer.context?.insuranceReview===true,width+' official LINE callback receives exact coverage intent');
+ check(transfer.events?.includes('chapter2_v32_coverage_consultation_clicked')&&transfer.events?.includes('chapter2_v32_coverage_line_copy_success')&&transfer.events?.includes('chapter2_v32_coverage_line_message_outbound'),width+' insurance funnel stages recorded without message contents');
+
  check(transfer.copied?.includes('保障内容の確認について相談したいです。')&&transfer.copied?.includes('引継ぎコード：'+transfer.context?.handoffCode),width+' copied message correlates to saved lead code');
  check(!/¥|月額|健康情報|保険料|医療履歴/.test(transfer.copied||''),width+' no sensitive diagnostic details in LINE text');
  check(!('rawExpenses' in (transfer.context||{}))&&!('confirmedMonthly' in (transfer.context||{})),width+' privacy-minimal external handoff');
@@ -239,6 +241,8 @@ for(const width of [320,375,390,430]){
   await dry.evaluate(()=>{window.__clipboardFail=true;});
   await coverageDialog.getByRole('button',{name:/相談文をコピーして公式LINEへ/}).click();
   check((await coverageDialog.locator('[role="status"]').innerText()).includes('コピーできませんでした'),width+' clipboard-denied fallback explains manual copy');
+  check(await dry.evaluate(()=>(window.__coverageEvents||[]).some(x=>x.name==='chapter2_v32_coverage_line_copy_failed')),width+' manual fallback is separately measurable');
+
   check(await coverageDialog.getByRole('button',{name:/手動でコピーして公式LINEを開く/}).count()===1,width+' manual copy path remains available');
   await coverageDialog.getByRole('button',{name:/手動でコピーして公式LINEを開く/}).click();
   check(await coverageDialog.count()===0,width+' fallback continues through same insurance context');
