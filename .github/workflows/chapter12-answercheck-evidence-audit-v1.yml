@@ -1,0 +1,26 @@
+name: Chapter 1-2 Answer Check Evidence Audit
+on:
+  push:
+    branches:
+      - design/chapter12-personality-household-answercheck-v1-20261012
+    paths:
+      - 'scripts/chapter12-answercheck-experiment-v1.mjs'
+      - 'scripts/qa-chapter12-answercheck-experiment-v1.mjs'
+      - '.github/workflows/chapter12-answercheck-evidence-audit-v1.yml'
+  pull_request:
+    branches:
+      - feat/unified-chapter1-chapter2-result-20261011
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prove prohibited matches do not appear
+        run: node scripts/qa-chapter12-answercheck-experiment-v1.mjs
