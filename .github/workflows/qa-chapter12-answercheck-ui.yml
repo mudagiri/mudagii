@@ -4,6 +4,9 @@ on:
     branches: [design/chapter12-personality-household-answercheck-v1-20261012]
     paths:
       - "Chapter12AnswerCheckCard.tsx"
+      - "CoverageAwarenessCard.tsx"
+      - "scripts/coverage-awareness-v1.*"
+      - "scripts/qa-coverage-awareness-v1.mjs"
       - "chapter12-answercheck-card.css"
       - "src/chapter12-answercheck-preview.tsx"
       - "src/chapter12-answercheck-preview.css"
@@ -42,6 +45,7 @@ jobs:
           test -f dist/chapter12-answercheck.html
           npm run qa:chapter2-v32
           node scripts/qa-chapter12-answercheck-experiment-v1.mjs
+          node scripts/qa-coverage-awareness-v1.mjs
       - name: Install Playwright runner
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Start isolated static preview
