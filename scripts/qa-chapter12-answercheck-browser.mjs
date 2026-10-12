@@ -182,6 +182,34 @@ for(const width of [320,375,390,430]){
  const m=await page.evaluate(()=>({viewport:innerWidth,doc:document.documentElement.scrollWidth}));
  check(m.doc<=width+1,width+' no horizontal overflow '+m.doc);
  check(outside.length===0,width+' no external upload');
+ // Test the actual coverage dialog and callback contract with a stubbed clipboard
+ // and interception only. Never open the official LINE or transmit lead records.
+ const dry=await ctx.newPage(),dryOutside=[];
+ dry.on('pageerror',e=>errors.push(width+' coverage dry-run runtime '+String(e)));
+ dry.on('request',r=>{if(/script\\.google\\.com|\\/exec\\b|lin\\.ee|line\\.me|analytics/i.test(r.url()))dryOutside.push(r.url());});
+ await dry.addInitScript(()=>{
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+   writeText:async text=>{window.__copiedCoverage=text;}
+  }});
+ });
+ await dry.goto(base+'?qaCoverageHandoff=1',{waitUntil:'networkidle'});
+ const dryButton=dry.locator('[data-cta="COVERAGE_LINE_CONSULT"]');
+ check(await dryButton.count()===1,width+' dry run has coverage CTA');
+ await dryButton.click();
+ const coverageDialog=dry.locator('[data-dialog="COVERAGE_LINE_HANDOFF"]');
+ check(await coverageDialog.count()===1,width+' distinct coverage consultation modal');
+ check((await coverageDialog.innerText()).includes('友だち追加だけでは相談内容は伝わりません'),width+' LINE delivery not overpromised');
+ check((await coverageDialog.locator('textarea').inputValue()).includes('引継ぎコード：MG-'),width+' selectable draft includes handoff code');
+ await coverageDialog.getByRole('button',{name:/相談文をコピーして公式LINEへ/}).click();
+ const transfer=await dry.evaluate(()=>({copied:window.__copiedCoverage,context:window.__coverageHandoff}));
+ check(transfer.context?.placement==='coverage_review'&&transfer.context?.consultSelectedTopic==='insurance'&&transfer.context?.insuranceReview===true,width+' official LINE callback receives exact coverage intent');
+ check(transfer.copied?.includes('保障内容の確認について相談したいです。')&&transfer.copied?.includes('引継ぎコード：'+transfer.context?.handoffCode),width+' copied message correlates to saved lead code');
+ check(!/¥|月額|健康情報|保険料|医療履歴/.test(transfer.copied||''),width+' no sensitive diagnostic details in LINE text');
+ check(!('rawExpenses' in (transfer.context||{}))&&!('confirmedMonthly' in (transfer.context||{})),width+' privacy-minimal external handoff');
+ check(await coverageDialog.count()===0,width+' coverage dialog closes after outbound callback');
+ check(dryOutside.length===0,width+' dry-run never opens LINE or sends to GAS');
+ if(width===390)await dry.screenshot({path:path.join(out,engine+'-390-coverage-handoff.png'),fullPage:true});
+ await dry.close();
  // The real participant has only the synthetic result, not 18 developer fixtures
  // or a real outbound share/consultation. Test both privacy and neutral ordering.
  const participant=await ctx.newPage(),participantOut=[];
