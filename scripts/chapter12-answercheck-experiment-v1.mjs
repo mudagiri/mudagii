@@ -41,17 +41,17 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  }
  if(byCat.size!==CATEGORY_IDS.length)return unavailable('INCOMPLETE_DIAGNOSIS');
  const cards=[],add=(kind,category,title,body,reason)=>cards.push(human(kind,category,title,body,reason));
- const get=(c)=>{const r=byCat.get(c);return r&&r.applicability!=='na'&&r.known===true?r:null;};
+ const get=(c)=>{const r=byCat.get(c);return r&&r.applicability!=='na'&&r.known===true&&typeof r.amount==='number'&&Number.isFinite(r.amount)&&r.amount>0?r:null;};
  const fun=get('fun');
  if(chapter1.primaryStyle==='ENJOY'&&fun){
   if(positive.has(fun.appraisal?.satisfaction)&&fun.v5Status==='protect')
-   add('resonance','fun','「楽しさを大切にする」が、家計で守りたい支出にも表れていたかも。','第1章では楽しさを重視。第2章では娯楽・趣味の支出に満足し、守りたいと答えました。両方とも本人の回答で、支出額から性格を証明したわけではありません。','娯楽・趣味：本人の満足度回答＋守る判定');
+   add('resonance','fun','楽しみは削らない。家計でも「守る」と答えていた。','第1章では楽しさを重視。第2章では娯楽・趣味の支出に満足し、守りたいと答えました。両方とも本人の回答で、支出額から性格を証明したわけではありません。','娯楽・趣味：本人の満足度回答＋守る判定');
   else if(negative.has(fun.appraisal?.satisfaction))
-   add('question','fun','楽しさを大切にしたいのに、今の娯楽費には見直したい部分があった。','第1章で重視した「楽しさ」と、第2章で「見直したい」と答えた娯楽・趣味の支出。矛盾や浪費の証明ではなく、満足できる使い方を探す手がかりです。','娯楽・趣味：本人が見直し意向を回答');
+   add('question','fun','楽しさは大事。でも、この娯楽費は見直したい。','第1章で重視した「楽しさ」と、第2章で「見直したい」と答えた娯楽・趣味の支出。矛盾や浪費の証明ではなく、満足できる使い方を探す手がかりです。','娯楽・趣味：本人が見直し意向を回答');
  }
  const self=get('selfDevelopment');
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.v5Status==='protect'&&['purpose','results'].includes(self.appraisal?.selfDevelopmentValue)){
-   add('resonance','selfDevelopment','「前に進みたい」という価値観と、守る自己投資が重なっていた。','第1章では前進やできることを増やす価値を重視。第2章では自己投資に目的・成果があると答え、守る判定になりました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
+   add('resonance','selfDevelopment','前に進むための自己投資。家計でも「守る」を選んだ。','第1章では前進やできることを増やす価値を重視。第2章では自己投資に目的・成果があると答え、守る判定になりました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
  }
  const sub=get('sub');
  if(chapter1.primaryStyle==='OPTIMIZE'&&sub
@@ -59,7 +59,7 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
   &&Number.isFinite(sub.appraisal?.subUnusedAmount)&&sub.appraisal.subUnusedAmount>0
   &&Number.isFinite(sub.aAmount)&&sub.aAmount>0
   &&sub.v5Status==='cut'){
-   add('question','sub','納得して使いたい人にも、確認済みの未使用契約が残っていた。','第1章は「納得できるお金の使い方」を大切にする価値観。第2章では未使用かつ解約可能と回答した契約を確認しました。性格との不一致ではなく、次に確認できる具体的な契約です。まだ解約や節約を実行した意味ではありません。','サブスク：未使用額＋解約可能の自己申告＋確認済み改善機会');
+   add('question','sub','納得して使いたい。でも未使用の契約が残っていた。','第1章は「納得できるお金の使い方」を大切にする価値観。第2章では未使用かつ解約可能と回答した契約を確認しました。性格との不一致ではなく、次に確認できる具体的な契約です。まだ解約や節約を実行した意味ではありません。','サブスク：未使用額＋解約可能の自己申告＋確認済み改善機会');
  }
  // Strict: neither awareness nor intuition/time preference is independently
  // observed by a one-off list of household spending amounts.
@@ -73,7 +73,11 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
   explanation:limited.length?'今回の共通点・気づきはどちらも本人の回答に基づく「ヒント」。独立に測定した行動証拠でも、性格診断の正解判定でもありません。':EMPTY,
   coverage:{reviewedCategoryCount:reviewed,directMatchRulesApplied:limited.length,axesVerified:0},
   cannotInfer:['時間軸の正しさ','直感／熟考の正しさ','お金の把握頻度の正しさ','全12カテゴリとの一致率','節約の実行','投資適性','資金不足'],
-  nextStep:limited.some(x=>x.kind==='question')?'見直したい支出を一つ選び、今の満足度と必要性を確認する':'自分が大切にしたい支出と、今の支出を一つ見比べる',
+  nextStep:limited[0]?.category==='sub'?'契約一覧で、未使用分の停止・解約条件を確認する':
+    limited[0]?.category==='selfDevelopment'?'続けたい自己投資と、その目的を一つ確認する':
+    limited[0]?.kind==='question'?'使ってよかった娯楽費と、見直したいものを一つずつ分ける':
+    limited[0]?.kind==='resonance'?'この楽しみを来年も守りたいか、今の優先順位を確認する':
+    '自分が大切にしたい支出と、今の支出を一つ見比べる',
   sensitivity:'private_only',shareAllowed:false,
   source:'same-person-self-report',score:null};
 }
