@@ -325,7 +325,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </div>;
     })}</div>
     <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。詳しい比較条件は後半の敵図鑑で確認できます。</p>
-   </section>
+   </section>}
    {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
     <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
     <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
