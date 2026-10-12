@@ -16,6 +16,8 @@ type Props={
  answerCheckAnonymousUserId?:string|null;
  answerCheckDemo?:boolean;
  pilotNoExternalActions?:boolean;
+ /** Isolated QA-only interception of coverage handoff; all other preview outbound remains blocked. */
+ coverageDryRun?:boolean;
  onLine?:(x:any)=>void;
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
@@ -124,10 +126,12 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
+ const [showCoverageLine,setShowCoverageLine]=useState(false);
+ const [coverageCopyError,setCoverageCopyError]=useState('');
  const [shareStatus,setShareStatus]=useState('');
  const [shareBusy,setShareBusy]=useState(false);
  const [shareReady,setShareReady]=useState(false);
@@ -179,17 +183,36 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     insuranceReview:!!vm.consultRoute?.insuranceReview});
   if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
  }
- // A dedicated coverage consultation route. Keep the global lifeplan CTA unchanged.
- // For real users, onLine is the app-level lead handoff/official-LINE flow.
+ // LINE friend-add URLs do not prefill a conversation. Give users a short
+ // non-sensitive message with a correlation code they can paste into the chat.
+ const coverageLineMessage='保障内容の確認について相談したいです。\\n引継ぎコード：'+handoffCode(vm.diagnosisId);
  function consultCoverage(){
-  if(pilotNoExternalActions)return;
+  if(pilotNoExternalActions&&!coverageDryRun)return;
   onEvent?.('chapter2_v32_coverage_consultation_clicked',{placement:'coverage_review',topic:'insurance',noSavingsClaim:true});
+  setCoverageCopyError('');
+  setShowCoverageLine(true);
+ }
+ function openCoverageLine(){
+  if(pilotNoExternalActions&&!coverageDryRun)return;
+  const payload=coverageConsultHandoff(vm.diagnosisId,handoffCode(vm.diagnosisId));
+  if(!payload){setCoverageCopyError('引継ぎコードを作れませんでした。結果画面を開き直してからお試しください。');return;}
+  onBeforeExternal?.();
   onEvent?.('line_clicked',{placement:'coverage_review',chapter:'household',typeCode:null});
   onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'coverage_review',goal:null});
-  onBeforeExternal?.();
-  const payload=coverageConsultHandoff(vm.diagnosisId,handoffCode(vm.diagnosisId));
-  if(payload)onLine?.(payload);
+  setShowCoverageLine(false);
+  onLine?.(payload);
   if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
+ }
+ async function copyAndOpenCoverageLine(){
+  if(pilotNoExternalActions&&!coverageDryRun)return;
+  try {
+   if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
+   await navigator.clipboard.writeText(coverageLineMessage);
+  }catch{
+   setCoverageCopyError('コピーできませんでした。下の文章を長押ししてコピーし、公式LINEへ進んでください。');
+   return;
+  }
+  openCoverageLine();
  }
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
@@ -429,7 +452,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
   <MudagiriBeat pose="proud" line="敵の顔ぶれも見えてきたな。高いからってムダじゃない。守るお金は守ろう！"/>
-  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions}/>
+  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
@@ -488,6 +511,19 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
 
   {onRestart&&<button className="c2v2-restart" onClick={onRestart}>家計クエストを最初からやり直す</button>}
  </div>
+ {showCoverageLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowCoverageLine(false)}>
+  <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v32-coverage-title" onClick={e=>e.stopPropagation()} data-dialog="COVERAGE_LINE_HANDOFF">
+   <span className="c2v2-kicker">🛡 保障の相談</span>
+   <h2 id="c2v32-coverage-title">公式LINEで保障を確認しよう</h2>
+   <p>LINEの友だち追加だけでは相談内容は伝わりません。下の短い文章をコピーし、LINEのトークに貼り付けて送信してください。</p>
+   <textarea className="c2v32-coverage-message" readOnly aria-label="LINEに送る保障相談メッセージ" value={coverageLineMessage} rows={3}/>
+   <small className="c2v32-coverage-note">家計金額・健康情報は、この文章に含まれません。友だち追加だけでは予約は確定しません。</small>
+   {coverageCopyError&&<p className="c2v32-coverage-copy-error" role="status">{coverageCopyError}</p>}
+   <button type="button" className="c2v2-primary" onClick={()=>void copyAndOpenCoverageLine()}>相談文をコピーして公式LINEへ →</button>
+   {coverageCopyError&&<button type="button" className="c2v2-subtle" onClick={openCoverageLine}>手動でコピーして公式LINEを開く →</button>}
+   <button type="button" className="c2v2-subtle" onClick={()=>setShowCoverageLine(false)}>今は結果を見る</button>
+  </section>
+ </div>}
  {showLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowLine(false)}>
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
    <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
@@ -552,6 +588,7 @@ const CSS=[
  '.c2v2-modal{width:min(100%,440px);background:#153047;border:1px solid #8fa8b8;border-radius:17px;padding:24px;color:#fff}',
  '.c2v2-modal h2{font-size:26px;line-height:1.3;margin:10px 0}.c2v2-modal p{font-size:15px;line-height:1.7}',
  ".c2v2-code{background:#10273a;padding:10px;border-radius:9px;font-size:14px!important;word-break:break-word}",
+ '.c2v32-coverage-message{width:100%;display:block;min-height:82px;resize:vertical;padding:12px;border-radius:10px;border:1px solid #92b4b8;background:#092431;color:#fff7d4;font:700 15px/1.65 system-ui;user-select:text}.c2v32-coverage-note{display:block;font-size:13px;line-height:1.6;margin-top:9px;color:#d9e8e8}.c2v32-coverage-copy-error{color:#ffe29c!important}.c2v2-modal{max-height:calc(100dvh - 32px);overflow:auto}',
  "@media(max-width:350px){.c2v2-hero-art{opacity:.45;right:-3px}.c2v2-hero h1,.c2v2-hero>p{max-width:90%}.c2v2-hero{min-height:342px}}",
  '@media(prefers-reduced-motion:reduce){.c2v2-root *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}'
 ].join('');
