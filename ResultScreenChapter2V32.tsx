@@ -60,10 +60,10 @@ const nonnegative=(n:unknown)=>Math.max(0,Number.isFinite(Number(n))?Number(n):0
 const handoffCode=(id:string)=>'MG-'+(String(id||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(-12)||'UNKNOWN');
 /** A conditional review clue, not proof of waste or realized savings. */
 function candidateReason(x:any):string{
- if(x.cMethod==='mobile')return 'スマホ1回線の料金を、契約タイプ別の確認目安と照らした候補';
- if(x.cMethod==='wide')return '入力した支出を比較可能な目安と照らし、確認余地を抽出';
- if(x.cMethod==='standard')return '入力した支出と比較目安から、条件付きの確認候補を抽出';
- return '回答した支出に追加確認の余地がある候補。詳細は敵図鑑で確認';
+ if(x.cMethod==='mobile')return '1回線の料金を、契約タイプ別の確認基準額と比べ、上回る部分を候補として抽出';
+ if(x.cMethod==='wide')return '比較できる目安の約1.15倍を超えた支出の一部を、確認候補として抽出';
+ if(x.cMethod==='standard')return '比較できる目安の約1.10倍を超えた支出の一部を、確認候補として抽出';
+ return '入力した支出について、確認が必要な候補。比較条件の詳細は敵図鑑で確認';
 }
 
 
