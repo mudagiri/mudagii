@@ -6,6 +6,8 @@ on:
       - "Chapter12AnswerCheckCard.tsx"
       - "CoverageAwarenessCard.tsx"
       - "scripts/coverage-awareness-v1.*"
+      - "scripts/coverage-consult-handoff-v1.*"
+      - "scripts/qa-coverage-consult-handoff-v1.mjs"
       - "scripts/qa-coverage-awareness-v1.mjs"
       - "chapter12-answercheck-card.css"
       - "src/chapter12-answercheck-preview.tsx"
@@ -46,6 +48,7 @@ jobs:
           npm run qa:chapter2-v32
           node scripts/qa-chapter12-answercheck-experiment-v1.mjs
           node scripts/qa-coverage-awareness-v1.mjs
+          node scripts/qa-coverage-consult-handoff-v1.mjs
       - name: Install Playwright runner
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Start isolated static preview
