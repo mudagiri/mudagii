@@ -34,6 +34,10 @@ const mixed=show(1800,17854);
 assert.match(mixed,/¥1,800/);
 assert.match(mixed,/¥2,142,480/);
 assert.doesNotMatch(mixed,/¥2,358,480/,'do not add confirmed savings into uncertain future upper');
+assert.match(mixed,/回答から確認できた改善額/,'confirmedA keeps its evidence-backed meaning');
+assert.match(mixed,/実行・節約済みかは別途確認が必要です/,'confirmed opportunity is not proven realized saving');
+assert.match(mixed,/契約変更・解約などが完了した実績ではありません/,'plain-language distinction adjacent to monthly figure');
+assert.doesNotMatch(mixed,/確認済みの戦利品|確定した改善額/,'do not imply achieved saving just because respondent confirmed an opportunity');
 const confirmedOnly=show(1800,0);
 assert.match(confirmedOnly,/¥1,800/);
 assert.doesNotMatch(confirmedOnly,/10年間の積み重ね/,'no invented future scenario without uncertain candidates');
@@ -53,7 +57,7 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
 // Four-lens UX contract: the amount must be immediately explained, no "open
 // details" required for the *main* monthly upper bound. All contributing rows
 // appear before any annualization, personality card or meeting CTA.
-assert.match(candidateHtml,/2カテゴリの内訳/,'treasure summarizes sources instead of repeating the hero-scale monthly amount');
+assert.match(candidateHtml,/>2カテゴリ<\/strong>/,'treasure shows compact count without a split phrase');
 const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same prominent amount in stacked hero and treasure');
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
