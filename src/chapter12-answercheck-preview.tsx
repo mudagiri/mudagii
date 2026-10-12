@@ -104,10 +104,20 @@ function makeFixture(example:Case){
  };
 }
 function App(){
- const [selected,setSelected]=useState<Case>('v32_scale');
+ // A neutral participant-facing link: no developer case chooser or leading hints.
+ // The entire test is synthetic and does not collect or submit participant input.
+ const pilotMode=new URLSearchParams(window.location.search).get('pilot')==='1';
+ const requestedCase=new URLSearchParams(window.location.search).get('case');
+ const initialCase:Case=requestedCase&&Object.prototype.hasOwnProperty.call(examples,requestedCase)
+  ?requestedCase as Case:'v32_scale';
+ const [selected,setSelected]=useState<Case>(initialCase);
  const {chapter1,anonymousUserId,vm}=makeFixture(selected);
- return <div className="c12preview">
-   <div className="c12preview-top">
+ return <div className={'c12preview'+(pilotMode?' c12preview--participant':'')}>
+   {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
+     <strong>家計クエスト｜調査用の画面見本</strong>
+     <p>架空の回答を使った結果です。実際の家計や個人情報は入力しません。スクロールして、普段どおりにご覧ください。</p>
+     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。</small>
+    </header>:<div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
      <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
      <label htmlFor="case-change">確認するケースを切り替える</label>
@@ -115,14 +125,14 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
-     <div className="c12preview-disclaimer">この画面の月17,854円は既存QAの表示例で、本人の家計診断の数字や公的統計の平均値ではありません。実際は12カテゴリから計算します。未確定候補は節約済みではありません。GAS・予約への送信なし。</div>
+     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本で、本人の家計診断や公的統計の平均値ではありません。実際の金額は12カテゴリから計算します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
      <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
      <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
-   </div>
+   </div>}
    <div className="c12preview-stage">
     <ResultScreenChapter2V32 key={selected} vm={vm} chapter1={chapter1} answerCheckEnabled
      answerCheckAnonymousUserId={selected==='identity_mismatch'?'somebody-else':anonymousUserId}
-     answerCheckDemo onLine={()=>{}} onBeforeExternal={()=>{}}/>
+     answerCheckDemo pilotNoExternalActions onLine={()=>{}} onBeforeExternal={()=>{}}/>
    </div>
  </div>;
 }
