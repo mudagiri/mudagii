@@ -19,7 +19,7 @@ const row=(category:string)=>({
  category,label:({fun:'娯楽・趣味',sub:'サブスク',selfDevelopment:'自己投資'} as Record<string,string>)[category]||category,
  amount:0,known:true,applicability:'applicable',status:'safe',v5Status:'ok',v5StatusLabel:'今はそのままでOK',
  diagnosisAmount:0,comparisonAmount:null,comparable:null,comparisonQuality:'none',comparisonDifference:null,
- reason:'デモの入力内容です。',nextAction:'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{}
+ reason:'デモの入力内容です。',nextAction:'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
 function makeFixture(example:Case){
  const spec=examples[example],anonymousUserId='chapter12-ui-synthetic-id';
