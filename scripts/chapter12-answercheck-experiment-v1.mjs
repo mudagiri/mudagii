@@ -53,6 +53,24 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.v5Status==='protect'&&['purpose','results'].includes(self.appraisal?.selfDevelopmentValue)){
    add('resonance','selfDevelopment','前に進むための自己投資。家計でも「守る」を選んだ。','第1章では前進やできることを増やす価値を重視。第2章では自己投資に目的・成果があると答え、守る判定になりました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
  }
+ // DRIVE: self-reported aim and self-reported "inertia" may suggest a question, not a measured contradiction.
+ if(chapter1.primaryStyle==='DRIVE'&&self&&self.appraisal?.selfDevelopmentValue==='inertia'&&self.v5Status==='cut'){
+  add('question','selfDevelopment','前に進みたい。いまの自己投資は惰性になっていない？',
+   '第1章は成長や前進を重視。第2章では自己投資を「惰性」と答えました。人格の矛盾でも浪費額の証明でもありません。続けるものと見直すものを本人が決めるための手がかりです。',
+   '自己投資：本人が惰性と回答＋見直し判定');
+ }
+ // SECURE never predicts insurance ownership, coverage needs, or adequacy.
+ const insurance=get('insurance');
+ if(chapter1.primaryStyle==='SECURE'&&insurance&&
+  insurance.v5Status==='optimize'&&
+  (insurance.appraisal?.insurancePurpose==='unclear'||['over3y','never'].includes(insurance.appraisal?.insuranceLastReview))){
+  const needsPurpose=insurance.appraisal.insurancePurpose==='unclear';
+  add('question','insurance','安心を大切にする。今の保障の目的は確認してみよう。',
+   needsPurpose
+    ?'第1章は安心・予測可能性を重視。第2章では保険の目的が不明確と答えました。必要な保障や見直し額は、この情報だけでは判断できません。'
+    :'第1章は安心・予測可能性を重視。第2章では最後の保障確認から時間がたっていると答えました。今の保障が必要かどうかを判定したものではありません。',
+   needsPurpose?'保険：本人が保障目的を不明確と回答':'保険：本人が最後の保障確認は3年以上前・未実施と回答');
+ }
  const sub=get('sub');
  if(chapter1.primaryStyle==='OPTIMIZE'&&sub
   &&sub.appraisal?.subCancellationConfirmed===true
@@ -67,23 +85,32 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  // Show only when this same person has BOTH an independently protected enjoyment
  // expense and a separately confirmed, unused+cancellable subscription opportunity.
  let protectedVsReview=null;
- const protectedFun=byCat.get('fun'),subCandidate=byCat.get('sub');
+ const subCandidate=byCat.get('sub');
  const unused=subCandidate?.appraisal?.subUnusedAmount;
- if(chapter1.primaryStyle==='ENJOY'&&
-  cards.some(c=>c.category==='fun'&&c.kind==='resonance')&&
-  protectedFun?.v5Status==='protect'&&
+ const primaryStyle=chapter1.primaryStyle;
+ // Explicit value + protected status; OPTIMIZE comparison is an action lens,
+ // not a claim that preference predicts the user's entertainment expenses.
+ const protectedCategory=primaryStyle==='DRIVE'?'selfDevelopment':'fun';
+ const protectedRow=byCat.get(protectedCategory);
+ const protectedValued=primaryStyle==='DRIVE'
+   ?(['purpose','results'].includes(protectedRow?.appraisal?.selfDevelopmentValue)&&
+       cards.some(c=>c.category==='selfDevelopment'&&c.kind==='resonance'))
+   :(positive.has(protectedRow?.appraisal?.satisfaction)&&
+     (primaryStyle==='ENJOY'?cards.some(c=>c.category==='fun'&&c.kind==='resonance'):primaryStyle==='OPTIMIZE'));
+ const reviewValid=Number.isSafeInteger(unused)&&unused>0&&
+  Number.isSafeInteger(subCandidate?.amount)&&unused<=subCandidate.amount&&
+  Number.isSafeInteger(subCandidate?.aAmount)&&subCandidate.aAmount>0&&subCandidate.aAmount<=unused;
+ if(['ENJOY','DRIVE','OPTIMIZE'].includes(primaryStyle)&&protectedValued&&
+  protectedRow?.known===true&&protectedRow?.applicability!=='na'&&
+  protectedRow?.v5Status==='protect'&&Number.isSafeInteger(protectedRow?.amount)&&protectedRow.amount>0&&
   subCandidate?.known===true&&subCandidate?.applicability!=='na'&&
-  subCandidate?.v5Status==='cut'&&subCandidate.appraisal?.subCancellationConfirmed===true&&
-  Number.isSafeInteger(unused)&&unused>0&&
-  Number.isSafeInteger(subCandidate.amount)&&unused<=subCandidate.amount&&
-  Number.isSafeInteger(subCandidate.aAmount)&&subCandidate.aAmount>0&&subCandidate.aAmount<=unused&&
-  Number.isSafeInteger(protectedFun.amount)&&protectedFun.amount>0&&
-  Number.isSafeInteger(protectedFun.amount*12)&&Number.isSafeInteger(subCandidate.aAmount*12)){
+  subCandidate?.v5Status==='cut'&&subCandidate.appraisal?.subCancellationConfirmed===true&&reviewValid){
    protectedVsReview={
     kind:'protect_vs_confirmed_review',
-    protect:{category:'fun',label:'娯楽・趣味',monthlyYen:protectedFun.amount,source:'第2章の入力支出＋本人の満足・守る判定',isSaving:false},
+    primaryStyle,
+    protect:{category:protectedCategory,label:protectedCategory==='fun'?'娯楽・趣味':'自己投資',monthlyYen:protectedRow.amount,source:'第2章の入力支出＋本人の満足・目的と守る判定',isSaving:false},
     review:{category:'sub',label:'未使用サブスク',monthlyYen:subCandidate.aAmount,source:'本人申告の未使用・解約可能＋確認済み改善機会',isSavingRealized:false},
-    nextStep:'娯楽費はそのままに、未使用サブスクの解約条件を先に確認する',
+    nextStep:(protectedCategory==='fun'?'娯楽・趣味':'自己投資')+'は削る前に、未使用サブスクの停止・解約条件を確認する',
     caveat:'左は守りたい支出、右はまだ実行していない確認済み改善機会。2つを差し引いたり、右を貯蓄済みのお金として扱ったりしません。',
     privacy:'private_only',
    };
@@ -100,8 +127,10 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
   coverage:{reviewedCategoryCount:reviewed,directMatchRulesApplied:limited.length,axesVerified:0},
   cannotInfer:['時間軸の正しさ','直感／熟考の正しさ','お金の把握頻度の正しさ','全12カテゴリとの一致率','節約の実行','投資適性','資金不足'],
   nextStep:protectedVsReview?protectedVsReview.nextStep:
+    limited[0]?.category==='insurance'?'保障目的・対象・最後の確認時期を確認する（加入や解約を決める前に）':
     limited[0]?.category==='sub'?'契約一覧で、未使用分の停止・解約条件を確認する':
-    limited[0]?.category==='selfDevelopment'?'続けたい自己投資と、その目的を一つ確認する':
+    limited[0]?.category==='selfDevelopment'?
+      (limited[0].kind==='question'?'惰性になっている自己投資と、続けたいものを一つずつ分ける':'続けたい自己投資と、その目的を一つ確認する'):
     limited[0]?.kind==='question'?'使ってよかった娯楽費と、見直したいものを一つずつ分ける':
     limited[0]?.kind==='resonance'?'この楽しみを来年も守りたいか、今の優先順位を確認する':
     '自分が大切にしたい支出と、今の支出を一つ見比べる',
