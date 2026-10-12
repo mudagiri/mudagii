@@ -79,6 +79,30 @@ assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateH
 assert.match(candidateHtml,/もし見直し候補を/);
 assert.match(candidateHtml,/未確定の参考シミュレーション/);
 assert.match(candidateHtml,/見直し候補を本当に変えられるか確かめよう/);
+// Coverage consultation must be an optional, dedicated pathway after the
+// financial RPG reward, not a disguised savings amount or hidden accordion.
+const coverageVm={
+ ...makeVm(0,17854),
+ rows:[{category:'insurance',known:true,applicability:'applicable',amount:11500,
+  appraisal:{insurancePurpose:'unclear',insuranceLastReview:'never'},v5Status:'optimize',cUpper:0}]
+};
+const coverageHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:coverageVm}));
+for(const mark of ['COVERAGE_AWARENESS','COVERAGE_LINE_CONSULT',
+ '公式LINEで保障の相談をする','医療の変化','通院・薬物療法','暮らしの変化','保険料・重複']){
+ assert.ok(coverageHtml.includes(mark),'visible coverage consultation marker '+mark);
+}
+assert.ok(coverageHtml.indexOf('data-section="FUTURE_REWARDS"')<coverageHtml.indexOf('data-section="COVERAGE_AWARENESS"'));
+assert.ok(coverageHtml.indexOf('data-section="COVERAGE_AWARENESS"')<coverageHtml.indexOf('data-section="CONSULTATION_CTA_TOP"'));
+const exemption=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...coverageVm,rows:[{...coverageVm.rows[0],appraisal:{insurancePurpose:'clear'}}]
+}}));
+assert.doesNotMatch(exemption,/COVERAGE_LINE_CONSULT/,'fully informed user not nudged to insurance advice');
+const recent=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...coverageVm,rows:[{...coverageVm.rows[0],appraisal:{insurancePurpose:'mostly',insuranceLastReview:'within1y'}}]
+}}));
+assert.doesNotMatch(recent,/COVERAGE_LINE_CONSULT/,'recently reviewed user not nudged');
+assert.doesNotMatch(coverageHtml,/LINEで保障相談をすると保険料が下がる/,'no false saving or insurance promise');
+
 const jobHandoff={
  version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',anonymousUserId:'test',sessionId:'test',
  completedAt:'2026-10-11T00:00:00Z',jobCode:'FDM',jobName:'先回り司令官',primaryStyle:'DRIVE'
