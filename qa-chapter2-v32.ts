@@ -81,7 +81,10 @@ assert.match(candidateHtml,/食費の内訳を確認/);
 assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
 assert.match(candidateHtml,/もし見直し候補を/);
 assert.match(candidateHtml,/未確定の参考シミュレーション/);
-assert.match(candidateHtml,/見直し候補を本当に変えられるか確かめよう/);
+assert.match(candidateHtml,/本当に見直せるか、一緒に確かめよう/);
+assert.match(candidateHtml,/「いつかやりたいこと」を、今日できる一歩に変える作戦/,'small next step framed positively, not fear of old age');
+assert.match(empty,/「いつかやりたいこと」を、今日できる小さな一歩につなげよう/,'no savings candidates still receives a voluntary action');
+assert.doesNotMatch(candidateHtml,/老後に後悔|今すぐ申し込まないと/,'no regret/fear-based pressure');
 // Coverage consultation must be an optional, dedicated pathway after the
 // financial RPG reward, not a disguised savings amount or hidden accordion.
 const coverageVm={
