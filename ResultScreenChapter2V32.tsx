@@ -467,7 +467,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </section>
    <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
   </section>
-  <MudagiriBeat pose="proud" line={nonnegative(counts.protect)+nonnegative(counts.ok)>0
+  <MudagiriBeat pose="proud" line={filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
    ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
    :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！'}/>
   <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
