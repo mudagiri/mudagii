@@ -18,7 +18,7 @@ for(const width of [320,375,390,430]){
  check(await card.count()===1,width+' initial card');
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' initial resonance');
- check((await card.innerText()).includes('本人の回答'),width+' self report disclaimer');
+ check((await card.innerText()).includes('性格の的中率・節約額ではありません'),width+' no fake personality validation or savings');
  check((await card.innerText()).includes('¥24,000'),width+' actual synthetic monthly fun amount');
  check((await card.innerText()).includes('¥288,000'),width+' annual nominal amount 12x');
  check((await card.innerText()).includes('節約額や将来の支出予測ではありません'),width+' no claim that annual spend is savings');
