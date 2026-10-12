@@ -17,12 +17,12 @@ for(const width of [320,375,390,430]){
  await card.waitFor();
  check(await card.count()===1,width+' initial card');
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
- check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' initial resonance');
- check((await card.innerText()).includes('性格の的中率・節約額ではありません'),width+' no fake personality validation or savings');
+ check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' dual proof-gated result');
+ check((await card.innerText()).includes('性格の的中率や節約実績ではなく'),width+' no fake personality or realized savings');
  check((await card.innerText()).includes('¥24,000'),width+' actual synthetic monthly fun amount');
- check((await card.innerText()).includes('¥288,000'),width+' annual nominal amount 12x');
- check((await card.innerText()).includes('節約額や将来の支出予測ではありません'),width+' no claim that annual spend is savings');
- check((await card.locator('.c12ac-money').count())===1,width+' one numeric snapshot per card');
+ check((await card.innerText()).includes('¥1,200'),width+' separate confirmed subscription opportunity');
+ check((await card.innerText()).includes('まだ解約していない金額'),width+' unexecuted cancellation visible');
+ check((await card.locator('.c12ac-dual-box').count())===2,width+' protect and review separated');
 
  const mascot=card.locator('img');
  check(await mascot.evaluate(e=>e.complete&&e.naturalWidth>0),width+' mascot loaded');
@@ -35,9 +35,13 @@ for(const width of [320,375,390,430]){
  });
  check(Boolean(positions&&positions.a<positions.b&&positions.b<positions.c),width+' answercheck between JOB and treasure');
  const cardHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
- check(cardHeight<=(width<=350?730:680),width+' answer-check should not delay battle report: '+cardHeight+'px');
+ check(cardHeight<=(width<=350?500:450),width+' paired answer-check compact enough: '+cardHeight+'px');
  console.log('CHAPTER12_CARD_GEOMETRY',JSON.stringify({engine,width,height:cardHeight}));
  await card.scrollIntoViewIfNeeded();
+ await page.screenshot({path:path.join(out,engine+'-'+width+'-paired.png'),fullPage:true});
+ await selector.selectOption('enjoy_good');
+ check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' original single insight stays available');
+ check((await card.innerText()).includes('¥288,000'),width+' single expense annualization still labeled');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
  await card.getByRole('button',{name:/根拠を見る/}).click();
  check(await page.locator('[data-answercheck-evidence=true]').isVisible(),width+' evidence opens');
