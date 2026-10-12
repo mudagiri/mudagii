@@ -49,7 +49,7 @@ r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLas
 ok(r.cards.length===0,'SECURE insurance not proof');
 r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:true},'cut',{aAmount:1000})));
 ok(r.cards[0]?.kind==='question','OPTIMIZE unused and cancellable confirmed opportunity');
-ok(!r.cards[0].body.includes('実行した'),'no claim implemented');
+ok(r.cards[0].body.includes('まだ解約や節約を実行した意味ではありません'),'no claim implemented');
 r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:false},'cut',{aAmount:1000})));
 ok(r.status==='no_supported_link','unconfirmed cancellation no insight');
 r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:true},'cut',{aAmount:0})));
