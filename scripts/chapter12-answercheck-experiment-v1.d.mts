@@ -5,12 +5,13 @@ export type Chapter1AnswerCheckInput={
 export type Chapter2AnswerCheckRow={
  category:string;v5Status:string;known:boolean;applicability?:string;
  appraisal?:{satisfaction?:string;selfDevelopmentValue?:string;subCancellationConfirmed?:boolean;subUnusedAmount?:number|null}|null;
- aAmount?:number;diagnosisAmount?:number|null
+ aAmount?:number;amount?:number|null;diagnosisAmountLabel?:string;diagnosisAmount?:number|null
 };
 export type Chapter2AnswerCheckInput={anonymousUserId:string;diagnosisId:string;rows:Chapter2AnswerCheckRow[]};
 export type AnswerCheckCard={
  kind:'resonance'|'question';category:string;title:string;body:string;
- evidence:{chapter1:string;chapter2:string};confidence:'self_report_context_only';financialResult:false
+ evidence:{chapter1:string;chapter2:string};confidence:'self_report_context_only';financialResult:false;
+ monthlySnapshot:{kind:'declared_unused_contract'|'declared_monthly_spend';monthlyYen:number;annualYen:number;label:string;scope:string;caveat:string;notSavings:true}|null
 };
 export type AnswerCheckResult={
  status:'context_found'|'no_supported_link';
