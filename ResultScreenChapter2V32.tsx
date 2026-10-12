@@ -374,7 +374,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <div className="c2v31-unknown-layout">
      <TreasureChest className="c2v31-chest-art" locked/>
      <div className="c2v31-unknown-details">
-      {reviewUpper>0?<><span>確認が必要な見直し候補</span><strong>{candidates.length>0?`${candidates.length}カテゴリの内訳`:'内訳を確認中'}</strong></>:<>
+      {reviewUpper>0?<><span>確認が必要な見直し候補</span><strong>{candidates.length>0?`${candidates.length}カテゴリ`:'内訳を確認中'}</strong></>:<>
        <strong>今は未確認</strong><span>追加で見直せる可能性は、まだ特定されていません。</span>
       </>}
      </div>
@@ -457,15 +457,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </div>;
     })}</div>
    </div>}
-   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="確認できた改善額">
-    <div className="c2v31-confirmed-heading">確定した改善額</div>
+   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="回答から確認できた改善額。節約済みかは別途確認が必要">
+    <div className="c2v31-confirmed-heading">回答から確認できた改善額</div>
     <div className="c2v31-confirmed-content">
      <CoinPouch className="c2v31-coin-art"/>
      <div className="c2v31-confirmed-amount"><span>毎月</span><strong>{money(confirmed)}</strong></div>
     </div>
-    <span className="c2v31-confirmed-caption">{confirmed>0?'確認済みの戦利品':'確定した改善額はまだありません'}</span>
+    <span className="c2v31-confirmed-caption">{confirmed>0?'回答で確認した改善額。実行・節約済みかは別途確認が必要です。':'回答から確認できた改善額はまだありません'}</span>
    </section>
-   <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
+   <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
   </section>
   <MudagiriBeat pose="proud" line={filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
    ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
