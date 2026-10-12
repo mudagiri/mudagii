@@ -32,6 +32,8 @@ export default function Chapter12AnswerCheckCard({
  const focus=found?result.cards[0]:null;
  const secondary=found?result.cards.slice(1):[];
  const contrast=found?result.protectedVsReview:null;
+ const isInvestment=contrast?.protect.category==='selfDevelopment';
+ const isOptimize=contrast?.primaryStyle==='OPTIMIZE';
  if(!found)return <section className="c12ac c12ac--unknown" data-section="CHAPTER12_ANSWER_CHECK" data-answercheck-status="no_supported_link" aria-label="答え合わせについて">
   <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>答え合わせ</small></div>
   <strong className="c12ac-unknown-title">今回は「一致・不一致」を決めつけない。</strong>
@@ -40,10 +42,10 @@ export default function Chapter12AnswerCheckCard({
  const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(n);
  return <section className={'c12ac c12ac--'+(contrast?'contrast':found?'found':'unknown')} data-section="CHAPTER12_ANSWER_CHECK" aria-label="お金の性格、答え合わせ" data-answercheck-status={result.status}>
   <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>{demo?"架空デモ ／ ":""}価値観と家計</small></div>
-  <h2>{contrast?<>楽しみは守る。<em>見直すのは別。</em></>:<>お金の性格、<em>答え合わせ。</em></>}</h2>
+  <h2>{contrast?(isInvestment?<>自己投資は守る。<em>見直すのは別。</em></>:isOptimize?<>納得して使う。<em>見直すのは別。</em></>:<>楽しみは守る。<em>見直すのは別。</em></>):<>お金の性格、<em>答え合わせ。</em></>}</h2>
   {contrast?<div className="c12ac-dual-talk">
    <img src={POSE} alt="家計を見比べるムダギリくん" loading="lazy"/>
-   <p><b>ムダギリくん：</b>君が守りたい楽しみと、見直せる契約は別物だぞ！</p>
+   <p><b>ムダギリくん：</b>{isInvestment?'君が大切にしている自己投資と、見直せる契約は別物だぞ！':isOptimize?'大事なのは安く済ませることじゃない。使う理由を分けて見よう！':'君が守りたい楽しみと、見直せる契約は別物だぞ！'}</p>
   </div>:<div className="c12ac-dialogue">
    <img src={POSE} alt="家計の回答を確かめるムダギリくん" loading="lazy"/>
    <div><b>ムダギリくん</b>
