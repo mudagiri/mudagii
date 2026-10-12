@@ -135,7 +135,7 @@ function App(){
    <div className="c12preview-stage">
     <ResultScreenChapter2V32 key={selected} vm={vm} chapter1={chapter1} answerCheckEnabled
      answerCheckAnonymousUserId={selected==='identity_mismatch'?'somebody-else':anonymousUserId}
-     answerCheckDemo pilotNoExternalActions coverageDryRun onLine={(payload:any)=>{if(coverageDryRun)(window as any).__coverageHandoff=payload;}} onBeforeExternal={()=>{}}/>
+     answerCheckDemo pilotNoExternalActions coverageDryRun={coverageDryRun} onLine={(payload:any)=>{if(coverageDryRun)(window as any).__coverageHandoff=payload;}} onBeforeExternal={()=>{}}/>
    </div>
  </div>;
 }
