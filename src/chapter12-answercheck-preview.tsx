@@ -65,6 +65,10 @@ function makeFixture(example:Case){
   const foodCandidate=rows.find(r=>r.category==='food')!;
   foodCandidate.cUpper=12354;
   foodCandidate.cMethod='standard';
+  // 54,000 - 1.10 * 37,860 = 12,354; explicitly synthetic comparator,
+  // not an official average nor a guaranteed saving.
+  foodCandidate.comparable=37860;
+  foodCandidate.comparisonDifference=16140;
   foodCandidate.v5Status='inspect';
   foodCandidate.v5StatusLabel='見極める';
  }
