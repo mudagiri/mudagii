@@ -7,6 +7,7 @@ import MoneyPersonalityTelemetry from './features/money-personality/MoneyPersona
 import MoneyPersonalityCognitivePilot from './features/money-personality/MoneyPersonalityCognitivePilot';
 import {resolveMoneyPersonalityEntryRoute} from './features/money-personality/publicRouteV1';
 import './style.css';
+import '../chapter12-answercheck-card.css';
 
 const params=new URLSearchParams(window.location.search);
 const route=resolveMoneyPersonalityEntryRoute(window.location.pathname,window.location.search);
