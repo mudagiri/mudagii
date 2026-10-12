@@ -22,6 +22,7 @@ ok(pass(c1(),{...c2(),diagnosisId:''}).status==='unavailable','missing c2 diagno
 ok(pass(c1('HACK'),c2()).reason==='INVALID_CH1_STYLE','bad style');
 ok(pass(c1(),c2([...CATEGORY_IDS.map(x=>row(x)),row('fun')])).reason==='INVALID_OR_DUPLICATE_CATEGORY','duplicate invalid');
 ok(pass(c1(),c2([row('notCategory')])).status==='unavailable','invalid cat');
+ok(pass(c1(),c2([row('fun',{satisfaction:'verySatisfied'},'protect')])).reason==='INCOMPLETE_DIAGNOSIS','do not match partial 12 category run');
 ok(pass(c1(),c2([row('fun',null,'nonsense')])).status==='unavailable','invalid status');
 const update=(category,appraisal,status='inspect',rest={})=>CATEGORY_IDS.map(x=>x===category?{...row(x,appraisal,status),...rest}:row(x));
 r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
