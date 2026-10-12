@@ -1,7 +1,6 @@
 import React,{useMemo,useState} from 'react';
 import type {Chapter1HandoffV1} from './chapter2-v2-contract';
 import {assessChapter12AnswerCheck,type AnswerCheckResult} from './scripts/chapter12-answercheck-experiment-v1.mjs';
-import './chapter12-answercheck-card.css';
 
 type Props={
  chapter1?:Chapter1HandoffV1|null;
