@@ -35,6 +35,10 @@ for(const width of [320,375,390,430]){
  }
  const initialBreakdownText=await initialBreakdown.innerText();
  check(initialBreakdownText.includes('月最大 ¥17,854'),width+' full breakdown keeps total as separate upper bound');
+ check(initialBreakdownText.includes('¥54,000')&&initialBreakdownText.includes('¥37,860'),width+' food spend and comparison reference both visible');
+ check(initialBreakdownText.includes('¥11,500')&&initialBreakdownText.includes('月6,000円を超える部分'),width+' mobile actual spend and carrier floor visible');
+ check(initialBreakdownText.includes('平均との差がそのまま削減額になるわけではありません'),width+' comparison reference explicitly not savings');
+
  check(initialBreakdownText.includes('まだ削減できると決まった金額ではない'),width+' no behavioral anchoring into guaranteed saving');
  const earlyOrder=await page.evaluate(()=>{
   const sel=['POTENTIAL_HERO','POTENTIAL_TREASURE','CANDIDATE_BREAKDOWN','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP'];
