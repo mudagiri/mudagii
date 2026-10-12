@@ -31,6 +31,12 @@ export default function Chapter12AnswerCheckCard({
  const found=result.status==='context_found'&&result.cards.length>0;
  const focus=found?result.cards[0]:null;
  const secondary=found?result.cards.slice(1):[];
+ if(!found)return <section className="c12ac c12ac--unknown" data-section="CHAPTER12_ANSWER_CHECK" data-answercheck-status="no_supported_link" aria-label="答え合わせについて">
+  <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>答え合わせ</small></div>
+  <strong className="c12ac-unknown-title">今回は「一致・不一致」を決めつけない。</strong>
+  <p className="c12ac-unknown-note">家計の金額だけでは、性格の当たり外れは分からない。第1章の結果が間違いという意味でもないぞ。</p>
+ </section>;
+ const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(n);
  return <section className={'c12ac c12ac--'+(found?'found':'unknown')} data-section="CHAPTER12_ANSWER_CHECK" aria-label="お金の性格、答え合わせ" data-answercheck-status={result.status}>
   <div className="c12ac-head"><span>✦ CHAPTER 1 × CHAPTER 2</span><small>価値観と家計の答え合わせ</small></div>
   <h2>お金の性格、<em>答え合わせ。</em></h2>
@@ -44,7 +50,12 @@ export default function Chapter12AnswerCheckCard({
   {focus&&<div className="c12ac-insight" data-insight-kind={focus.kind}>
    <span>{focus.kind==='resonance'?'🛡 重なっていた価値観':'🔎 意外な確認ポイント'}</span>
    <h3>{focus.title}</h3>
-   <p>{focus.body}</p>
+   <p className="c12ac-brief">{focus.kind==='resonance'?'第1章で大切にしたことが、第2章で守りたいと答えた支出にも重なっていた。':'第1章の価値観と重ねると、今の家計で確認したい支出が見えてきた。'}</p>
+   {focus.monthlySnapshot&&<div className="c12ac-money" data-answercheck-monthly="true">
+    <small>{focus.monthlySnapshot.label}</small>
+    <div><span>ひと月 <strong>¥{yen(focus.monthlySnapshot.monthlyYen)}</strong></span><span>12か月分 <strong>¥{yen(focus.monthlySnapshot.annualYen)}</strong></span></div>
+    <p>{focus.monthlySnapshot.caveat}</p>
+   </div>}
   </div>}
   {!found&&<p className="c12ac-no-link">{result.explanation}</p>}
   {!!secondary.length&&<details className="c12ac-more"><summary>もう一つの発見を見る</summary>
@@ -58,10 +69,10 @@ export default function Chapter12AnswerCheckCard({
    {showEvidence?'判定の根拠を閉じる ↑':'なぜそう言える？ 根拠を見る ↓'}
   </button>
   {showEvidence&&<div className="c12ac-evidence" data-answercheck-evidence="true">
-   {focus&&<><p><b>第1章：</b>{focus.evidence.chapter1}</p><p><b>第2章：</b>{focus.evidence.chapter2}</p></>}
+   {focus&&<><p><b>第1章：</b>{focus.evidence.chapter1}</p><p><b>第2章：</b>{focus.evidence.chapter2}</p><p>{focus.body}</p></>}
    <p><strong>どちらも本人の回答に基づくヒントです。</strong> 性格の的中率や実際の行動を証明する結果ではありません。家計の金額だけから「直感型＝浪費」などとは判断しません。</p>
    <p>3つの性格軸（時間・判断・把握）の当たり外れは、この家計診断だけでは測れません。</p>
   </div>}
-  <p className="c12ac-disclaimer">※性格の一致率ではありません。診断コアの判定・改善額は変更していません。共有カードにもこの内容は含めません。</p>
+  <p className="c12ac-disclaimer">※数字は第2章で入力された支出の参考表示。性格の的中率・節約額ではありません。共有画像には含めません。</p>
  </section>;
 }
