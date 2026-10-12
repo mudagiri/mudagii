@@ -158,7 +158,7 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    // Coverage intent must reach the official LINE handler without forwarding
    // household amounts, appraisals or profile details as callback context.
    // Internal lead saving above keeps its existing attribution fields.
-   if(onLine)onLine(externalLineContext(ctx,payload));
+   if(onLine){const external=externalLineContext(ctx,payload);if(external)onLine(external);}
    else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;
 
