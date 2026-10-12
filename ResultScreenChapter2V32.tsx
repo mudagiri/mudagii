@@ -7,6 +7,7 @@ import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-charact
 import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
 import CoverageAwarenessCard from './CoverageAwarenessCard';
+import {coverageConsultHandoff} from './scripts/coverage-consult-handoff-v1.mjs';
 
 type Props={
  vm:any;
@@ -186,9 +187,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   onEvent?.('line_clicked',{placement:'coverage_review',chapter:'household',typeCode:null});
   onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'coverage_review',goal:null});
   onBeforeExternal?.();
-  onLine?.({diagnosisId:vm.diagnosisId,firstQuest:null,placement:'coverage_review',
-   handoffCode:handoffCode(vm.diagnosisId),goal:null,consultPrimary:'lifeplan',
-   consultSelectedTopic:'insurance',insuranceReview:true});
+  const payload=coverageConsultHandoff(vm.diagnosisId,handoffCode(vm.diagnosisId));
+  if(payload)onLine?.(payload);
   if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
  }
  function shareUrl(platform:string){
