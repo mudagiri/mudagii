@@ -60,7 +60,11 @@ const nonnegative=(n:unknown)=>Math.max(0,Number.isFinite(Number(n))?Number(n):0
 const handoffCode=(id:string)=>'MG-'+(String(id||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(-12)||'UNKNOWN');
 /** A conditional review clue, not proof of waste or realized savings. */
 function candidateReason(x:any):string{
- if(x.cMethod==='mobile')return '1回線の料金を、契約タイプ別の確認基準額と比べ、上回る部分を候補として抽出';
+ if(x.cMethod==='mobile')return x.appraisal?.mobileCarrier==='major'
+  ?'大手のスマホ1回線で、月6,000円を超える部分を参考上限として抽出（対象額は月20,000円まで）'
+  :x.appraisal?.mobileCarrier==='mvno'
+   ?'格安SIMのスマホ1回線で、月3,000円を超える部分を参考上限として抽出（対象額は月10,000円まで）'
+   :'スマホ1回線の契約区分別の確認基準額を超える部分を、参考候補として抽出';
  if(x.cMethod==='wide')return '比較できる目安の約1.15倍を超えた支出の一部を、確認候補として抽出';
  if(x.cMethod==='standard')return '比較できる目安の約1.10倍を超えた支出の一部を、確認候補として抽出';
  return '入力した支出について、確認が必要な候補。比較条件の詳細は敵図鑑で確認';
@@ -320,6 +324,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
        <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
       </div>
+      {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
+       {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月 <small>（平均との差がそのまま削減額になるわけではありません）</small></>}
+      </p>}
       <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
       <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
      </div>;
