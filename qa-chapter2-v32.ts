@@ -123,18 +123,22 @@ const allCategories=Object.entries(ENEMY_ASSETS).map(([category,enemy],i)=>({
 const monsterHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,2500),rows:allCategories,firstQuest:{category:'mobile',label:'通信費',nextAction:'プランを見直す'}
 }}));
-assert.equal((monsterHtml.match(/data-section="MUDAGIRI_TALK"/g)||[]).length,5,'five Chapter 1 style companion beats');
+assert.equal((monsterHtml.match(/data-section="MUDAGIRI_TALK"/g)||[]).length,2,'two intentional companion transitions instead of repeated interruptions');
 assert.equal((monsterHtml.match(/class="c2v2-entry c2v32-enemy-record"/g)||[]).length,12,'show all 12 canonical enemy cards');
 assert.match(monsterHtml,/ENEMY_BATTLE_PREVIEW/);
 assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
+assert.equal((monsterHtml.match(/class="c2v32-optional-detail"/g)||[]).length,3,'optional deep exploration does not interrupt main decision path');
+assert.match(monsterHtml,/data-optional="enemy-atlas"/);
+assert.match(monsterHtml,/data-optional="future-goal"/);
+assert.match(monsterHtml,/data-optional="first-step"/);
 for(const enemy of Object.values(ENEMY_ASSETS)){
  assert.ok(monsterHtml.includes(enemy.name),'named enemy is missing: '+enemy.name);
  assert.ok(monsterHtml.includes(enemy.normal),'official enemy image is missing: '+enemy.id);
 }
 assert.match(monsterHtml,/対象外/);
 assert.match(monsterHtml,/守る/);
-assert.match(monsterHtml,/MUDAGIRI_POSE_20_CHECK/);
-assert.match(monsterHtml,/MUDAGIRI_POSE_24_SHARE/);
+assert.match(monsterHtml,/MUDAGIRI_POSE_04_EXPLAIN/);
+assert.match(monsterHtml,/MUDAGIRI_POSE_12_PROUD/);
 assert.match(monsterHtml,/未確定の参考シミュレーション/);
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
