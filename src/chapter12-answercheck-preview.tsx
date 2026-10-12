@@ -6,7 +6,7 @@ import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  v32_scale_uncertain:{label:'旧V3.2の未確定だけ｜月17,854円',desc:'確認済み改善機会0円・未確定の参考上限だけ月17,854円の架空ケース。節約できると確定した額ではありません。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
@@ -20,6 +20,8 @@ const examples:Record<Case,{label:string;desc:string;style:string;job:string;job
  optimize_dual:{label:'納得 × 守る娯楽＆見直し契約',desc:'守りたい支出と不要契約を分ける行動のヒント。性格一致率ではない',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  optimize_question:{label:'納得 × 未使用サブスク',desc:'未使用・解約可能を確認した契約がある例',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  secure_check:{label:'安心 × 保障目的の確認',desc:'保険の目的が不明確と本人が回答。商品を勧める判定ではない',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
+ secure_recent:{label:'保障｜1年以内に見直し済み',desc:'性格に関係なく、最近見直した人には再点検の案内を出さない',style:'DRIVE',job:'FDM',jobName:'先回り司令官'},
+ coverage_zero:{label:'保障｜保険料0円の方',desc:'保険料0円は保障の不足・必要性を証明しない。公的保障を含めた中立の棚卸し',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  secure_no_link:{label:'安心 × 根拠が足りない',desc:'安心重視でも保険の額だけから一致と決めない例',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
  identity_mismatch:{label:'別人・ID不一致',desc:'本人が同じと証明できなければカード非表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  partial:{label:'カテゴリ未完了',desc:'12カテゴリ未完了の場合はカード非表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'}
@@ -70,6 +72,8 @@ function makeFixture(example:Case){
  if(example==='drive_good'||example==='drive_dual'){self.v5Status='protect';self.appraisal={selfDevelopmentValue:'purpose'};}
  if(example==='drive_inertia'){self.v5Status='cut';self.appraisal={selfDevelopmentValue:'inertia'};}
  if(example==='secure_check'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.v5Status='optimize';insurance.appraisal={insurancePurpose:'unclear',insuranceLastReview:'unknown'};}
+ if(example==='secure_recent'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.v5Status='inspect';insurance.appraisal={insurancePurpose:'mostly',insuranceLastReview:'within1y'};}
+ if(example==='coverage_zero'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.amount=0;insurance.diagnosisAmount=0;insurance.v5Status='ok';insurance.appraisal={};}
  if(example==='secure_no_link'){const insurance=rows.find(r=>r.category==='insurance')!;insurance.v5Status='protect';insurance.appraisal={insurancePurpose:'clear',insuranceLastReview:'within1y'};}
  if(['optimize_question','enjoy_dual','v32_scale','drive_dual','optimize_dual'].includes(example)){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
