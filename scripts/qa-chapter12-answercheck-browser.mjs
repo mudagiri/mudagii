@@ -51,6 +51,16 @@ for(const width of [320,375,390,430]){
  check(await card.locator('[data-insight-kind="question"]').count()===1,width+' dissatisfaction asked as question');
  check(!(await card.innerText()).includes('あなたは浪費家'),width+' no shaming');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-review.png'),fullPage:true});
+ await selector.selectOption('drive_inertia');
+ check(await card.locator('[data-insight-kind="question"]').count()===1,width+' drive review question');
+ await selector.selectOption('drive_dual');
+ check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' drive paired result');
+ check((await card.innerText()).includes('自己投資は守る'),width+' drive heading');
+ await selector.selectOption('optimize_dual');
+ check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' optimize action pair');
+ check((await card.innerText()).includes('納得して使う'),width+' optimize heading');
+ await selector.selectOption('secure_check');
+ check(await card.locator('[data-insight-kind="question"]').count()===1,width+' secure question');
  await selector.selectOption('drive_good');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' DRIVE purpose');
  await selector.selectOption('optimize_question');
