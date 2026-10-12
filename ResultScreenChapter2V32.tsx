@@ -3,6 +3,7 @@ import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
+import {V19SCENECSS} from './chapter2-v19-scene-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
@@ -320,7 +321,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS}</style><div className="c2v2-page c2v31-page">
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS}</style><div className="c2v2-page c2v31-page">
   <section className="c2v2-hero c2v3-hero c2v31-hero" data-section="CHAPTER2_QUEST_COMPLETE">
    <div className="c2v32-chapter-label" aria-label="第1章から第2章へ">第1章 JOB獲得 <span>✓</span>　›　第2章 家計バトル <span>✓</span></div>
    <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
@@ -381,7 +382,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <small>削る前に確認。大切にしたい支出は守ろう。</small>
    </div>}
   </section>
-  <MudagiriBeat pose="check" line={reviewUpper>0?"まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！":"見直し候補が見つからなくても大丈夫。無理にムダを決めつけないぞ！"}/>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
@@ -464,32 +464,39 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </section>
 
   <section className="c2v2-card c2v31-followup" data-section="NEXT_QUEST">
-   <span className="c2v2-kicker">NEXT QUEST ／ 次の一手</span>
-   <h2>まずは、これだけ。</h2>
+   <details className="c2v32-optional-detail" data-optional="first-step">
+    <summary>最初の確認ポイントをもう一度見る</summary>
    {next?<div className="c2v2-quest">
     <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
     <div><b>{(ENEMY_ASSETS as Record<string,any>)[next.category]?.name||next.label}</b><small>{next.label||next.category}</small><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
     {next.aAmount>0&&<strong>確認済み：月 {money(Number(next.aAmount))}</strong>}</div>
    </div>:<div className="c2v2-quest"><img src={ART.guide} alt="" loading="lazy"/><p>無理にムダを探さなくてもOK。今の状態を守るところから始めよう。</p></div>}
-   <MudagiriBeat pose="guide" line="全部まとめて変えなくていい。まず1つ、気になる敵を確かめよう！"/>
+   </details>
   </section>
 
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
-   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span><h2>気になる敵を、もっと詳しく。</h2>
-   <p>敵のカードをタップすると、その項目の判定理由と確認ポイントが開くぞ。対象外や守る支出も省かず並べているよ。</p>
-   {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
-   <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
+   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
+   <details className="c2v32-optional-detail" data-optional="enemy-atlas">
+    <summary>12カテゴリの敵図鑑を見る</summary>
+    <p>見直し候補の金額・理由・確認ポイントは宝箱で確認済み。ここでは守る支出・対象外も含め、敵をもっと詳しく見られるぞ。</p>
+    {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
+    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
+   </details>
   </section>
 
   <section className="c2v2-card c2v31-goals" data-section="GOAL_QUEST">
    <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>
-   <h2>整えたお金、どんな未来に使いたい？</h2>
-   <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
-   {selectedGoal&&<p className="c2v2-talk">次の目的地は「{selectedGoal}」。そのためのお金の配分を考えよう。</p>}
-   <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
+   <details className="c2v32-optional-detail" data-optional="future-goal">
+    <summary>未来の目的地を選ぶ（任意）</summary>
+    <p>やりたいことが決まっていたら選んでみよう。まだ決めなくても大丈夫。</p>
+    <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
+    {selectedGoal&&<>
+     <p className="c2v2-talk">次の目的地は「{selectedGoal}」。このテーマで相談することもできるよ。</p>
+     <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>「{selectedGoal}」について相談する →</button>
+    </>}
+   </details>
   </section>
 
-  <MudagiriBeat pose="share" line="冒険者カードを友達に見せてみる？家計の金額は載せないから安心してね！"/>
 
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
