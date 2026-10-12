@@ -1,0 +1,4 @@
+export type CoverageAwareRow={category:string;known?:boolean;applicability?:string;amount?:number|null;appraisal?:{insurancePurpose?:'clear'|'mostly'|'unclear';insuranceLastReview?:'within1y'|'1to3y'|'over3y'|'never'|'unknown'}|null};
+export type CoverageAwareness={status:'attention';reason:string;show:true;heading:string;text:string;next:string;moneyImpact:null;insuranceAdequacy:null;personalityMatch:null;productRecommendation:null;requiresConsultation:false;shareAllowed:false;scope:'coverage_check_only'}|{status:'exempt';reason:string;show:false;moneyImpact:null;insuranceAdequacy:null;personalityMatch:null;productRecommendation:null;requiresConsultation:false;shareAllowed:false;scope:'coverage_check_only'};
+export const coverageAwarenessReasons:Readonly<Record<string,string>>;
+export function coverageAwarenessFor(rows:CoverageAwareRow[]|unknown):CoverageAwareness|null;
