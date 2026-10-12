@@ -80,4 +80,22 @@ export const V32CSS = `
  .c2v32-rpg .c2v32-treasure-lead{margin-inline:9px;padding-inline:10px}
 }
 @media(prefers-reduced-motion:reduce){.c2v32-rpg *{animation:none!important;transition:none!important}}
+
+/* Universal coverage awareness: editorial guidance, never a calculated saving. */
+.c2v32-rpg .c2v32-cover-awareness{margin:13px 12px 14px;padding:13px 12px 10px;background:linear-gradient(145deg,rgba(11,43,53,.97),rgba(8,35,50,.99));border:1px solid rgba(122,195,189,.75);border-radius:14px;box-shadow:0 6px 15px rgba(0,0,0,.22)}
+.c2v32-rpg .c2v32-cover-eyebrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 9px;font-size:12px;color:#b9f3e4;font-weight:900}
+.c2v32-rpg .c2v32-cover-eyebrow small{font-size:11px!important;color:#e0eae8!important;font-weight:700}
+.c2v32-rpg .c2v32-cover-content{display:flex;align-items:flex-start;gap:9px}
+.c2v32-rpg .c2v32-cover-content img{width:52px;flex:0 0 52px;height:65px;object-fit:contain;image-rendering:pixelated}
+.c2v32-rpg .c2v32-cover-content>div{flex:1;min-width:0}
+.c2v32-rpg .c2v32-cover-content h2{font-size:clamp(17px,4.8vw,20px);line-height:1.45;margin:0 0 6px;color:#fff1bb;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-cover-content p{font-size:13px!important;line-height:1.62!important;margin:0!important;color:#eef3ed!important}
+.c2v32-rpg .c2v32-cover-next{display:flex;gap:7px;align-items:flex-start;background:rgba(12,55,61,.9);border-left:3px solid #9edecf;border-radius:6px;padding:10px;margin-top:9px}
+.c2v32-rpg .c2v32-cover-next span{flex:0 0 80px;color:#b9f4e7;font-size:12px;font-weight:900;line-height:1.55}
+.c2v32-rpg .c2v32-cover-next strong{font-size:13px;line-height:1.55;color:#fff6d9}
+.c2v32-rpg .c2v32-cover-why{margin-top:4px}
+.c2v32-rpg .c2v32-cover-why summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:12px;font-weight:850;color:#d9f1ee;padding:9px 4px;touch-action:manipulation}
+.c2v32-rpg .c2v32-cover-why summary:focus-visible{outline:3px solid #abf0e2;outline-offset:2px}
+.c2v32-rpg .c2v32-cover-why p{font-size:12px!important;line-height:1.67!important;color:#d5eee7!important;margin:5px 0!important}
+@media(max-width:350px){.c2v32-rpg .c2v32-cover-awareness{margin-inline:9px;padding-inline:9px}.c2v32-rpg .c2v32-cover-content img{width:42px;height:54px;flex-basis:42px}.c2v32-rpg .c2v32-cover-next span{flex-basis:67px}}
 `;
