@@ -53,6 +53,9 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
 // Four-lens UX contract: the amount must be immediately explained, no "open
 // details" required for the *main* monthly upper bound. All contributing rows
 // appear before any annualization, personality card or meeting CTA.
+assert.match(candidateHtml,/2カテゴリの内訳/,'treasure summarizes sources instead of repeating the hero-scale monthly amount');
+const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
+assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same prominent amount in stacked hero and treasure');
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
 assert.match(candidateHtml,/宝箱の中身はこれ/);
 assert.equal((candidateHtml.match(/data-candidate-category=/g)||[]).length,2,'every positive cUpper contributor is initially visible');
