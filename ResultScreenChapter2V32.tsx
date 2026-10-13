@@ -590,19 +590,26 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
+     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      const comparable=comparisonAvailable(x);
-     const compareAmount=comparable?comparisonInputAmount(x):null;
+     const referenceAmount=comparisonReferenceAmount(x);
+     const compareAmount=comparable?comparisonTargetAmount(x):null;
+     const noNumber=nonNumericBasis(x);
      const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
      return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
-      <div className="c2v22-comparison-head"><strong>{x.label||x.category}</strong><span>{status.mark} {status.name}</span></div>
+      <div className="c2v22-comparison-head">
+       {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
+       <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
+       <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
+      </div>
       <div className="c2v22-comparison-values">
        <span><small>今回の入力</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b></span>
-       <span><small>{comparable?'比較の目安':'比較基準'}</small><b>{comparable?money(Number(x.comparable))+'/月':'数値比較なし'}</b></span>
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'近い条件の目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b></span>
       </div>
       {comparable?<div className="c2v22-comparison-source">
        {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
-       <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{x.comparisonQuality==='reference'?'参考値':'近い条件との比較'}</p>
-      </div>:<p className="c2v22-comparison-source is-unavailable">{noBenchmarkReason(x)}</p>}
+       <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
+      </div>:<p className="c2v22-comparison-source is-unavailable">{noNumber.detail}</p>}
       {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
      </div>;
     })}
