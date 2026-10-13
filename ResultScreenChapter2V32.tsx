@@ -6,6 +6,7 @@ import {V32CSS} from './chapter2-v32-rpg-css';
 import {V19SCENECSS} from './chapter2-v19-scene-css';
 import {V20BRIDGECSS} from './chapter2-v20-bridge-css';
 import {V21GATEBCSS} from './chapter2-v21-gateb-css';
+import {V22COMPARISONCSS} from './chapter2-v22-comparison-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
@@ -82,11 +83,17 @@ function candidateReason(x:any):string{
 
 
 /** Comparison is not savings. Null/AUDIT references MUST NOT become invented averages. */
+function comparisonInputAmount(x:any):number|null{
+ // An explicitly unavailable comparison scope must never fall back to the
+ // diagnosis amount. Legacy synthetic fixtures simply omit this field.
+ const a=Object.prototype.hasOwnProperty.call(x,'comparisonAmount')?x.comparisonAmount:x.amount;
+ return a===null||a===undefined||!Number.isFinite(Number(a))?null:Number(a);
+}
 function comparisonAvailable(x:any):boolean{
  return x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
   &&x?.comparable!==null&&x?.comparable!==undefined
   &&Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0
-  &&x?.known===true&&Number.isFinite(Number(x.comparisonAmount??x.amount));
+  &&x?.known===true&&comparisonInputAmount(x)!==null;
 }
 function comparisonBasis(x:any):string{
  const raw=x?.comparisonContext?.criteria;
@@ -368,7 +375,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS}</style><div className="c2v2-page c2v31-page">
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS+V22COMPARISONCSS}</style><div className="c2v2-page c2v31-page">
   <section className="c2v2-hero c2v3-hero c2v31-hero c2v20-hero" data-section="CHAPTER2_QUEST_COMPLETE" style={continuityStyle}>
    <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
     <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
@@ -537,7 +544,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
      const comparable=comparisonAvailable(x);
-     const compareAmount=comparable?Number(x.comparisonAmount??x.amount):null;
+     const compareAmount=comparable?comparisonInputAmount(x):null;
      const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
      return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
       <div className="c2v22-comparison-head"><strong>{x.label||x.category}</strong><span>{status.mark} {status.name}</span></div>
@@ -549,6 +556,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
        <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{x.comparisonQuality==='reference'?'参考値':'近い条件との比較'}</p>
       </div>:<p className="c2v22-comparison-source is-unavailable">{noBenchmarkReason(x)}</p>}
+      {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
