@@ -182,7 +182,7 @@ assert.match(monsterHtml,/「守る」「そのままでOK」も、今回の戦�
 assert.doesNotMatch(empty,/「守る」「そのままでOK」も、今回の戦果だ/,'no claim of positive categories without actual assessed rows');
 assert.match(empty,/まずは今できることを1つ、確かめよう/,'a first step should still exist for zero verified positive categories');
 assert.doesNotMatch(monsterHtml,/人生がうまくいかない人|学習性無力感|ワースト1/,'no shaming or diagnosis-by-headline');
-assert.match(monsterHtml,/未確定の参考シミュレーション/);
+assert.match(monsterHtml,/未確定の仮定・まだ節約した金額ではありません/,'future scenario is clearly conditional across category cases');
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
 assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
