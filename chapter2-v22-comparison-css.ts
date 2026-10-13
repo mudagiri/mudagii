@@ -28,13 +28,26 @@ export const V22COMPARISONCSS = `
  min-width:0;padding:12px 0 11px;border-bottom:1px solid #d6d0be;
 }
 .c2v32-rpg .c2v22-comparison-row:last-child{border-bottom:0}
-.c2v32-rpg .c2v22-comparison-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.c2v32-rpg .c2v22-comparison-head strong{
- font-size:16px;line-height:1.4;color:#1e3c43;font-weight:950;
+.c2v32-rpg .c2v22-comparison-head{
+ display:grid;grid-template-columns:60px minmax(0,1fr) auto;
+ align-items:center;gap:8px;min-height:64px;
 }
-.c2v32-rpg .c2v22-comparison-head span{
+.c2v32-rpg .c2v23-comparison-enemy,.c2v32-rpg .c2v23-comparison-enemy-fallback{
+ width:60px;height:62px;object-fit:contain;image-rendering:pixelated;
+ border-radius:8px;filter:drop-shadow(0 3px 3px rgba(45,48,39,.15));
+}
+.c2v32-rpg .c2v23-comparison-enemy-fallback{display:grid;place-items:center;font-size:24px}
+.c2v32-rpg .c2v23-comparison-identity{display:grid;gap:2px;min-width:0}
+.c2v32-rpg .c2v23-comparison-identity strong{
+ font-size:16px;line-height:1.35;color:#1e3c43;font-weight:950;
+}
+.c2v32-rpg .c2v23-comparison-identity small{
+ font-size:12px;line-height:1.45;color:#57615d;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v22-comparison-head .c2v23-comparison-status{
  background:#e7e5d8;border:1px solid #c9c5ad;border-radius:30px;
- padding:3px 7px;color:#39524c;font-weight:850;font-size:12px;line-height:1.4;white-space:nowrap;
+ padding:3px 7px;color:#39524c;font-weight:850;font-size:12px;
+ line-height:1.4;white-space:nowrap;
 }
 .c2v32-rpg .c2v22-comparison-values{
  display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;min-width:0;
@@ -52,6 +65,11 @@ export const V22COMPARISONCSS = `
  line-height:1.42;white-space:nowrap;letter-spacing:-.035em;font-variant-numeric:tabular-nums;
 }
 .c2v32-rpg .c2v22-comparison-values>span:nth-child(2) b{color:#20534c}
+.c2v32-rpg .c2v22-comparison-values>span.c2v23-basis-mode{background:#e9ede8}
+.c2v32-rpg .c2v22-comparison-values>span.c2v23-basis-mode b{
+ color:#465c50;font-size:13px;white-space:normal;overflow-wrap:anywhere;
+ letter-spacing:0;line-height:1.5;
+}
 .c2v32-rpg .c2v22-comparison-source{
  display:block;margin:7px 1px 0;color:#42524f;font-size:13px;line-height:1.6;
  overflow-wrap:anywhere;
@@ -76,6 +94,10 @@ export const V22COMPARISONCSS = `
  .c2v32-rpg .c2v22-comparison-values{gap:5px}
  .c2v32-rpg .c2v22-comparison-values>span{padding:6px 6px}
  .c2v32-rpg .c2v22-comparison-values b{font-size:12px;letter-spacing:-.05em}
- .c2v32-rpg .c2v22-comparison-head strong{font-size:15px}
+ .c2v32-rpg .c2v22-comparison-head{grid-template-columns:48px minmax(0,1fr) auto;gap:5px}
+ .c2v32-rpg .c2v23-comparison-enemy,.c2v32-rpg .c2v23-comparison-enemy-fallback{width:48px;height:53px}
+ .c2v32-rpg .c2v23-comparison-identity strong{font-size:15px}
+ .c2v32-rpg .c2v22-comparison-head .c2v23-comparison-status{font-size:11px;padding:3px 5px}
+ .c2v32-rpg .c2v22-comparison-values>span.c2v23-basis-mode b{font-size:12px}
 }
 `;
