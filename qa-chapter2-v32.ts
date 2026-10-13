@@ -66,6 +66,7 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
 // details" required for the *main* monthly upper bound. All contributing rows
 // appear before any annualization, personality card or meeting CTA.
 assert.match(candidateHtml,/>2カテゴリ<\/strong>/,'treasure shows compact count without a split phrase');
+assert.match(candidateHtml,/まず、見直し候補の理由を見る/,'when source rows exist, invite explanation before scenario numbers');
 const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same prominent amount in stacked hero and treasure');
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
