@@ -2,6 +2,7 @@ import React,{useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import ResultScreenChapter2V32 from '../ResultScreenChapter2V32';
 import {CATEGORY_IDS} from '../scripts/chapter12-answercheck-experiment-v1.mjs';
+import {resolveComparableV2} from '../comparable-resolver-v2';
 import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
@@ -60,6 +61,33 @@ function makeFixture(example:Case){
  // See qa-chapter2-v32.ts. Real diagnostics must use buildResultViewModelV5.
  const useV32DisplayScale=example==='v32_scale'||example==='v32_scale_uncertain';
  if(useV32DisplayScale){
+  // Presentation QA with a SYNTHETIC 35-year-old / 2-person / Tokyo rental profile.
+  // Recover realistic contrast by using the *existing frozen* comparable resolver,
+  // rather than leaving almost every category at 'none'. The food QA amount below
+  // is deliberately retained as a visibly marked synthetic V3.2 regression value.
+  const sample=resolveComparableV2({
+   household:'multi',householdSize:2,age:35,prefecture:'東京都',
+   month:10,housingType:'賃貸',insuranceScope:'household'
+  });
+  const criteria:Record<string,string[]>={
+   energy:['2人世帯','東京都','10月'],
+   daily:['2人世帯'],fun:['2人世帯'],
+   beautyFashion:['30〜39歳（参考モデル）'],
+   rent:['東京都','民営賃貸']
+  };
+  for(const category of Object.keys(criteria)){
+   const rowData=rows.find(r=>r.category===category)!;
+   const reference=sample[category as keyof typeof sample];
+   if(reference?.value===null||reference?.value===undefined||reference.confidence==='AUDIT')continue;
+   rowData.comparisonAmount=rowData.amount;
+   rowData.comparable=reference.value;
+   rowData.comparisonDifference=rowData.amount-reference.value;
+   rowData.comparisonQuality=reference.confidence==='MODEL'?'reference':'exact';
+   rowData.comparisonSourceVersion=reference.sourceVersion;
+   rowData.comparisonContext={criteria:criteria[category]};
+   rowData.evidenceLabel='仮のプロフィールに対する正本比較ルールの表示見本';
+  }
+
   mobile.amount=11500;
   mobile.diagnosisAmount=11500;
   mobile.cUpper=5500;
@@ -126,7 +154,7 @@ function App(){
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
      <strong>家計クエスト｜調査用の画面見本</strong>
      <p>架空の回答を使った結果です。実際の家計や個人情報は入力しません。スクロールして、普段どおりにご覧ください。</p>
-     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。比較の金額は食費だけを表示テスト用に設定しています。他の項目の「数値比較なし」は、実際の統計基準がないという意味ではありません。</small>
+     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。架空プロフィールに正本の比較ルールを適用した目安を表示しています。食費の¥37,860だけは旧表示QA用の架空額です。実際の家計データではありません。</small>
     </header>:<div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
      <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
@@ -135,7 +163,7 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
-     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本です。比較額は食費1件だけの画面確認用データで、他項目の数値未設定は実際の比較基準がないことを意味しません。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
+     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本です。一部の目安は架空のプロフィールに正本比較ルールを適用した表示見本です。食費¥37,860のみ旧QA用の架空額です。未設定のカテゴリでも実際の条件によって比較値が出る場合があります。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
      <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
      <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
    </div>}
