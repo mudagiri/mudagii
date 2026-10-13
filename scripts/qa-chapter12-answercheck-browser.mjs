@@ -85,8 +85,8 @@ for(const width of [320,375,390,430]){
  await evidenceJump.click();
  const evidenceViewportPosition=await initialBreakdown.evaluate(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom}));
  check(evidenceViewportPosition.top>=-1&&evidenceViewportPosition.top<200,width+' main result jump scrolls to already-visible candidate evidence '+JSON.stringify(evidenceViewportPosition));
- check((await future.innerText()).includes('未確定の仮定・まだ節約した金額ではありません'),width+' conditional scenario labeled next to annualizations');
- check((await future.innerText()).includes('10年間の参考シミュレーション'),width+' big ten year prize is labeled as hypothetical, not achieved');
+ check((await future.innerText()).includes('まだ確定した金額じゃないよ。実際に減らせるかは確認してから。'),width+' conditional scenario labeled next to annualizations');
+ check((await future.innerText()).includes('10年間で積み重ねたら'),width+' big ten year prize is labeled as hypothetical, not achieved');
  const heroProgressHeight=await page.locator('[data-section="CHAPTER2_QUEST_COMPLETE"]').evaluate(el=>el.getBoundingClientRect().height);
  check(heroProgressHeight<760,width+' opening remains within reasonable mobile height '+heroProgressHeight);
  check(await page.locator('.c2v31-quest-crest').count()===0,width+' avoid redundant big quest crest');
@@ -219,7 +219,7 @@ for(const width of [320,375,390,430]){
  await page.screenshot({path:path.join(out,engine+'-'+width+'-no-link.png'),fullPage:true});
  await selector.selectOption('no_uncertain');
  check(await page.locator('[data-section="CANDIDATE_BREAKDOWN"]').count()===0,width+' no invented candidates for zero upper bound');
- check(!(await future.innerText()).includes('10年間の参考シミュレーション'),width+' no invented hypothetical 10y amount when upper bound is zero');
+ check(!(await future.innerText()).includes('10年間で積み重ねたら'),width+' no invented hypothetical 10y amount when upper bound is zero');
  await selector.selectOption('identity_mismatch');
  check(await card.count()===0,width+' mismatched identity hidden');
  await selector.selectOption('partial');
