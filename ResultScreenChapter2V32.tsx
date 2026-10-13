@@ -406,11 +406,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>{x.reason||'回答内容をもとに確認しています。'}</p>
     {x.known&&Number.isFinite(Number(x.amount))&&<p>あなたの支出：<b>{money(Number(x.amount))}/月</b></p>}
     {comparisonAvailable(x)?<>
-     <p>比較の目安：{money(Number(x.comparable))}/月（{x.comparisonQuality==='reference'?'参考値':'近い条件との比較'}）</p>
+     <p>比較の目安：{money(comparisonReferenceAmount(x)!)} /月（{comparisonReferenceType(x)}）</p>
      <p>比較条件：{comparisonBasis(x)}</p>
      <p>参照元：{comparisonReference(x)}</p>
-    </>:<p>比較基準：{noBenchmarkReason(x)}</p>}
-    {x.comparisonDifference!==null&&x.comparisonDifference!==undefined&&<p>比較差：{chapter2V2SignedComparisonYen(Number(x.comparisonDifference))}/月 <small>※この差はムダ額・改善額ではありません</small></p>}
+     {comparisonPrimaryV5(x)?.note&&<p>参照データの注意：{comparisonPrimaryV5(x)!.note}</p>}
+     {comparisonTargetAmount(x)!==null&&comparisonReferenceAmount(x)!==null&&
+      <p>基準との差：{chapter2V2SignedComparisonYen(comparisonTargetAmount(x)!-comparisonReferenceAmount(x)!)}/月
+       <small>※この差はムダ額・改善額ではありません</small>
+      </p>}
+    </>:<p>判定の手がかり：{noBenchmarkReason(x)}</p>}
     {x.aAmount>0&&<p>回答から確認できた改善額：<b>{money(Number(x.aAmount))}/月</b></p>}
     {x.cUpper>0&&<p>追加の確認余地：最大 {money(Number(x.cUpper))}/月 <small>※削減できると確定した金額ではありません</small></p>}
     <p className="c2v2-next-check"><b>次の確認：</b>{x.nextAction||x.nextCheck||'支出の内容を確認'}</p>
