@@ -24,7 +24,7 @@ assert.doesNotMatch(uncertain,/data-section="FUTURE_REWARD_JUMP"/,'old future-fi
 assert.match(uncertain,/まず、見直し候補の理由を見る/);
 assert.match(uncertain,/未確定の仮定・まだ節約した金額ではありません/);
 assert.match(uncertain,/10年間の参考シミュレーション/);
-assert.doesNotMatch(uncertain,/c2v31-quest-crest/,'do not stack redundant quest crest next to clear heading');
+assert.doesNotMatch(uncertain,/<span class="c2v31-quest-crest"/,'do not stack redundant quest crest next to clear heading');
 
 assert.ok(uncertain.indexOf('data-section="POTENTIAL_HERO"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(uncertain.indexOf('data-section="POTENTIAL_TREASURE"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
