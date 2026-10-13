@@ -235,6 +235,25 @@ for(const width of [320,375,390,430]){
  const gallery=page.locator('[data-optional="enemy-atlas"]');
  const atlasCards=page.locator('[data-section="ENEMY_FULL_GALLERY"]');
  check(await gallery.count()===1,width+' optional enemy atlas exists');
+ const overview=page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]');
+ check(await overview.count()===1&&await overview.isVisible(),width+' 12-category comparison evidence visible before opening any gallery');
+ check(await overview.locator('[data-comparison-category]').count()===12,width+' all 12 categories visible with their own comparison state');
+ const foodRow=overview.locator('[data-comparison-category="food"]');
+ check((await foodRow.innerText()).includes('¥54,000')&&(await foodRow.innerText()).includes('¥37,860'),width+' pilot food actual and transparent synthetic comparator visible');
+ check((await foodRow.innerText()).includes('架空デモの比較条件')&&(await foodRow.innerText()).includes('画面確認用の架空の比較基準'),width+' pilot comparison criterion/provenance explicit and never passed off as official statistics');
+ check(await foodRow.getAttribute('data-comparison-available')==='true',width+' comparable status is grounded in source and scope');
+ const mobileRow=overview.locator('[data-comparison-category="mobile"]');
+ check(await mobileRow.getAttribute('data-comparison-available')==='false',width+' AUDIT mobile has no invented categorical average');
+ check((await mobileRow.innerText()).includes('月6,000円を超える部分'),width+' real major-carrier conditional floor visible instead of fake mean');
+ const subRow=overview.locator('[data-comparison-category="sub"]');
+ check((await subRow.innerText()).includes('数値比較なし'),width+' subscription with no statistical benchmark labeled clearly');
+ check(await overview.evaluate(el=>![...el.closest('section').querySelectorAll('details')].some(d=>d.contains(el))),width+' 12 criteria cannot be inside a collapsed detail');
+ const overviewJump=page.locator('[data-section="COMPARISON_OVERVIEW_JUMP"]');
+ check(await overviewJump.count()===1&&await overviewJump.isVisible(),width+' direct comparison jump beside battle results');
+ await overviewJump.click();
+ const overviewViewport=await overview.evaluate(el=>el.getBoundingClientRect().top);
+ check(overviewViewport>=-1&&overviewViewport<190,width+' jump lands on the always-open 12 comparisons '+overviewViewport);
+
  check(await gallery.evaluate(el=>!el.open),width+' full atlas starts collapsed');
  check(!(await atlasCards.isVisible()),width+' full twelve enemy list does not compete with initial action');
  check(await page.locator('[data-section="CANDIDATE_BREAKDOWN"] [data-candidate-category]').count()===2,width+' financial reasons remain initially displayed');
