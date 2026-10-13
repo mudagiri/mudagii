@@ -171,19 +171,26 @@ assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
 assert.match(monsterHtml,/data-section="CATEGORY_COMPARISON_OVERVIEW"/,'all 12 comparison rows must be available without expanding atlas');
 assert.equal((monsterHtml.match(/data-comparison-category=/g)||[]).length,12,'all 12 category amounts/benchmarks immediately readable');
 assert.match(monsterHtml,/data-section="COMPARISON_OVERVIEW_JUMP"/,'visible link to comparison on the battle result');
-assert.match(monsterHtml,/数値比較なし/,'AUDIT/no-benchmark categories are honestly labeled');
+assert.match(monsterHtml,/判定の手がかり/,'numeric reference is not required to explain a decision');
+assert.doesNotMatch(monsterHtml,/>数値比較なし</,'avoid high-salience empty benchmark labels');
 
 assert.match(monsterHtml,/敵キャラと詳しい説明を見る（任意）/,'atlas is optional RPG art, not a mandatory evidence tunnel');
 const compareTest=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,12354),rows:[
   {category:'food',label:'食費',known:true,amount:54000,comparisonAmount:54000,comparable:37860,comparisonQuality:'exact',comparisonSourceVersion:'FOOD_V1.1_MULTI_2025',comparisonContext:{criteria:['2人世帯']},v5Status:'inspect',cUpper:12354,cMethod:'standard',nextAction:'食費の内訳を見る'},
   {category:'sub',label:'サブスク',known:true,amount:4200,comparisonAmount:null,comparable:null,comparisonQuality:'none',v5Status:'cut',aAmount:1200,cUpper:0},
-  {category:'energy',label:'光熱・水道費',known:true,amount:15500,comparisonAmount:null,comparable:19000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}
+  {category:'energy',label:'光熱・水道費',known:true,amount:15500,comparisonAmount:null,comparable:19000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0},
+  {category:'insurance',label:'保険',known:true,amount:11000,comparisonAmount:null,comparable:null,comparisonQuality:'none',v5Status:'inspect',cUpper:0,
+   v5ReferencePrimary:{monthly:22500,criteria:['40代','2人以上世帯'],sourceVersion:'JILI_2024_HOUSEHOLD_PREMIUM_BY_HOH_AGE',label:'同年代の2人以上世帯',note:'保険の表示参考'}}
  ]}}));
 const overviewStart=compareTest.indexOf('data-section="CATEGORY_COMPARISON_OVERVIEW"');
 assert.ok(overviewStart>=0,'comparison summary remains present before optional gallery');
 const overview=compareTest.slice(overviewStart,compareTest.indexOf('data-optional="enemy-atlas"',overviewStart));
-assert.equal((overview.match(/data-comparison-category=/g)||[]).length,3);
+assert.equal((overview.match(/data-comparison-category=/g)||[]).length,4);
+assert.equal((overview.match(/class="c2v23-comparison-enemy"/g)||[]).length,4,'each row shows its official enemy');
+assert.match(overview,/クイダオーレの敵キャラ/);
+assert.match(overview,/サブスクサキュバスの敵キャラ/);
+assert.doesNotMatch(overview,/>数値比較なし</,'decision basis replaces giant no-reference box');
 assert.match(overview,/今回の入力/);
 assert.match(overview,/¥54,000/);
 assert.match(overview,/比較の目安/);
@@ -194,9 +201,14 @@ assert.match(overview,/家計調査（2025年）をもとにした参考目安/)
 assert.match(overview,/約1.10倍/,'source of review candidate threshold visible without nested detail');
 assert.match(overview,/見直し候補：月最大 ¥12,354（未確定）/);
 assert.match(overview,/data-comparison-category="sub" data-comparison-available="false"/);
-assert.match(overview,/平均比較なし。利用状況と解約可否を回答から判断/,'subscription benchmark must not be fabricated');
+assert.match(overview,/利用状況で判断/,'subscription category shows decision basis, not a fake average');
+assert.match(overview,/使っていない契約・重複・解約可能かどうか/);
 assert.match(overview,/data-comparison-category="energy" data-comparison-available="false"/,'null comparison scope must not fall back to diagnosis amount');
 assert.doesNotMatch(overview,/¥19,000/,'no benchmark shown without compatible comparison amount');
+assert.match(overview,/data-comparison-category="insurance" data-comparison-available="true"/,'V5 primary lens is displayed even when frozen V4 quality is none');
+assert.match(overview,/¥22,500/,'V5 reference is visible in comparison list');
+assert.match(overview,/40代・2人以上世帯/,'V5 basis shown adjacent');
+assert.match(overview,/生命保険文化センターの調査（2024年）/,'V5 research provenance accurate');
 assert.doesNotMatch(overview,/¥1,200.*節約済み/,'confirmed opportunity is not a realized saving');
 
 assert.equal((monsterHtml.match(/class="c2v32-optional-detail"/g)||[]).length,3,'optional deep exploration does not interrupt main decision path');
