@@ -81,6 +81,38 @@ function candidateReason(x:any):string{
 }
 
 
+/** Comparison is not savings. Null/AUDIT references MUST NOT become invented averages. */
+function comparisonAvailable(x:any):boolean{
+ return x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
+  &&x?.comparable!==null&&x?.comparable!==undefined
+  &&Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0
+  &&x?.known===true&&Number.isFinite(Number(x.comparisonAmount??x.amount));
+}
+function comparisonBasis(x:any):string{
+ const raw=x?.comparisonContext?.criteria;
+ const criteria=Array.isArray(raw)?raw.filter((v:unknown)=>typeof v==='string'&&v.trim().length>0):[];
+ return criteria.length?criteria.join('・'):'このカテゴリで利用できる比較条件';
+}
+function comparisonReference(x:any):string{
+ const source=String(x?.comparisonSourceVersion??x?.comparisonContext?.sourceVersion??'');
+ if(source.includes('HOUSING'))return '住宅・土地統計調査（2023年）';
+ if(/UTILITY|FOOD|DAILY|ENTERTAINMENT|BEAUTY_FASHION/.test(source))return '家計調査（2025年）をもとにした参考目安';
+ if(source.includes('INSURANCE'))return '保険の参照調査（属性別）';
+ if(source.includes('CHILD_EDUCATION'))return '子どもの教育段階別参考値';
+ if(x?.evidenceLabel&&typeof x.evidenceLabel==='string')return x.evidenceLabel;
+ return 'カテゴリ別の参考条件';
+}
+function numericOrDash(x:any):string{
+ return x?.known===true&&Number.isFinite(Number(x?.amount))&&x?.amount!==null?money(Number(x.amount)):'未入力・対象外';
+}
+function noBenchmarkReason(x:any):string{
+ if(x?.v5Status==='na'||x?.applicability==='notApplicable')return '対象外（比較はしていません）';
+ if(x?.category==='sub')return '平均比較なし。利用状況と解約可否を回答から判断';
+ if(x?.category==='mobile'&&x?.cMethod==='mobile')return candidateReason(x);
+ if(x?.category==='mobile')return '一律の平均金額なし。回線・契約区分で確認';
+ return 'この条件で使える数値の比較基準なし';
+}
+
 function loadImage(url:string):Promise<HTMLImageElement|null>{
  return new Promise(resolve=>{
   const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=url;
@@ -323,7 +355,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {isOpen&&<div className="c2v2-detail">
     <p>{x.reason||'回答内容をもとに確認しています。'}</p>
     {x.known&&Number.isFinite(Number(x.amount))&&<p>あなたの支出：<b>{money(Number(x.amount))}/月</b></p>}
-    {x.comparable!==null&&x.comparable!==undefined&&Number.isFinite(Number(x.comparable))&&<p>比較の目安：{money(Number(x.comparable))}/月</p>}
+    {comparisonAvailable(x)?<>
+     <p>比較の目安：{money(Number(x.comparable))}/月（{x.comparisonQuality==='reference'?'参考値':'近い条件との比較'}）</p>
+     <p>比較条件：{comparisonBasis(x)}</p>
+     <p>参照元：{comparisonReference(x)}</p>
+    </>:<p>比較基準：{noBenchmarkReason(x)}</p>}
     {x.comparisonDifference!==null&&x.comparisonDifference!==undefined&&<p>比較差：{chapter2V2SignedComparisonYen(Number(x.comparisonDifference))}/月 <small>※この差はムダ額・改善額ではありません</small></p>}
     {x.aAmount>0&&<p>回答から確認できた改善額：<b>{money(Number(x.aAmount))}/月</b></p>}
     {x.cUpper>0&&<p>追加の確認余地：最大 {money(Number(x.cUpper))}/月 <small>※削減できると確定した金額ではありません</small></p>}
@@ -495,9 +531,31 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
 
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
+   <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
+   <p className="c2v22-ledger-intro">あなたの入力額と、比較できる項目の目安を並べたよ。基準との差は、そのままムダ額・節約額ではない。比較できない項目には平均を作っていないよ。</p>
+   {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
+    {shown.map((x:any)=>{
+     const status=STATUS[x.v5Status]??STATUS.review;
+     const comparable=comparisonAvailable(x);
+     const compareAmount=comparable?Number(x.comparisonAmount??x.amount):null;
+     const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
+     return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+      <div className="c2v22-comparison-head"><strong>{x.label||x.category}</strong><span>{status.mark} {status.name}</span></div>
+      <div className="c2v22-comparison-values">
+       <span><small>今回の入力</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b></span>
+       <span><small>{comparable?'比較の目安':'比較基準'}</small><b>{comparable?money(Number(x.comparable))+'/月':'数値比較なし'}</b></span>
+      </div>
+      {comparable?<div className="c2v22-comparison-source">
+       {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
+       <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{x.comparisonQuality==='reference'?'参考値':'近い条件との比較'}</p>
+      </div>:<p className="c2v22-comparison-source is-unavailable">{noBenchmarkReason(x)}</p>}
+     </div>;
+    })}
+   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
+   <p className="c2v22-ledger-footnote">※比較額はカテゴリごとに対象・条件が異なります。平均より高い／低いだけでは無駄や改善額は決まりません。回答に基づく判定や見直し候補は別の情報です。</p>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
-    <summary>12カテゴリの敵図鑑を見る</summary>
-    <p>見直し候補の金額・理由・確認ポイントは宝箱で確認済み。ここでは守る支出・対象外も含め、敵をもっと詳しく見られるぞ。</p>
+    <summary>敵キャラと詳しい説明を見る（任意）</summary>
+    <p>上の比較一覧が結果の基本だよ。ここからは12体のキャラと回答の理由を、好きなものだけ詳しく見られるぞ。</p>
     {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
     <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
    </details>
