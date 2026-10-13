@@ -410,15 +410,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
-   <h2>{reviewUpper>0?'未来の戦利品（仮定）':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>すべて</span>毎月改善できたら？<small>未確定の仮定・まだ節約した金額ではありません</small></p>}
+   <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
+   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>全部</span>毎月減らせたら？<small>まだ確定した金額じゃないよ。実際に減らせるかは確認してから。</small></p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(reviewUpper*60)}</strong></div>
     </div>
     <div className="c2v3-reward-ten c2v31-reward-ten">
-     <div className="c2v31-ten-details"><span>✦ 10年間の参考シミュレーション ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
+     <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
     <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
