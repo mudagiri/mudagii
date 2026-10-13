@@ -3,6 +3,14 @@
  * Presentation only. No invented AUDIT averages or sum-of-benchmark "saving".
  */
 export const V22COMPARISONCSS = `
+.c2v32-rpg .c2v22-ledger-jump{
+ display:block;max-width:360px;width:calc(100% - 10px);margin:13px auto 3px;
+ padding:10px 12px;border-radius:10px;border:1px solid rgba(202,224,209,.67);
+ background:linear-gradient(110deg,#124e47,#183f45);color:#f8f1d8;
+ font-size:14px;font-weight:900;line-height:1.5;cursor:pointer;min-height:46px;
+}
+.c2v32-rpg .c2v22-ledger-jump:focus-visible{outline:3px solid #a6f5ed;outline-offset:3px}
+.c2v32-rpg .c2v22-comparison-ledger{scroll-margin-top:14px}
 .c2v32-rpg .c2v22-ledger-title{
  margin:10px 0 6px;color:#ffebbd;font-size:clamp(19px,5.2vw,23px);
  line-height:1.36;font-weight:950;
