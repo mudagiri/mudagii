@@ -89,18 +89,49 @@ function comparisonInputAmount(x:any):number|null{
  const a=Object.prototype.hasOwnProperty.call(x,'comparisonAmount')?x.comparisonAmount:x.amount;
  return a===null||a===undefined||!Number.isFinite(Number(a))?null:Number(a);
 }
+/** V5's display-only reference can exist even when the V4 comparisonQuality
+ * was 'none'. V5 keeps the V4 flags unchanged, so a result screen must read
+ * the V5 primary lens explicitly, rather than hide an available reference. */
+function comparisonPrimaryV5(x:any):{monthly:number;criteria:string[];sourceVersion:string;label:string;note:string}|null{
+ if(!['insurance','rent','car'].includes(String(x?.category))||x?.known!==true
+  ||x?.applicability==='notApplicable'||x?.amount===null||x?.amount===undefined
+  ||!Number.isFinite(Number(x.amount)))return null;
+ const ref=x?.v5ReferencePrimary;
+ if(!ref||ref.monthly===null||ref.monthly===undefined
+   ||!Number.isFinite(Number(ref.monthly))||Number(ref.monthly)<=0)return null;
+ return ref;
+}
 function comparisonAvailable(x:any):boolean{
+ if(comparisonPrimaryV5(x))return true;
  return x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
   &&x?.comparable!==null&&x?.comparable!==undefined
   &&Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0
   &&x?.known===true&&comparisonInputAmount(x)!==null;
 }
+function comparisonReferenceAmount(x:any):number|null{
+ const ref=comparisonPrimaryV5(x);
+ return ref?Number(ref.monthly):comparisonAvailable(x)?Number(x.comparable):null;
+}
+function comparisonReferenceType(x:any):string{
+ if(comparisonPrimaryV5(x))return '属性に合わせた参考値';
+ return x?.comparisonQuality==='reference'?'参考値':'近い条件との比較';
+}
+function comparisonTargetAmount(x:any):number|null{
+ return comparisonPrimaryV5(x)?Number(x.amount):comparisonInputAmount(x);
+}
 function comparisonBasis(x:any):string{
- const raw=x?.comparisonContext?.criteria;
+ const raw=comparisonPrimaryV5(x)?.criteria??x?.comparisonContext?.criteria;
  const criteria=Array.isArray(raw)?raw.filter((v:unknown)=>typeof v==='string'&&v.trim().length>0):[];
  return criteria.length?criteria.join('・'):(typeof x?.comparisonAmountLabel==='string'&&x.comparisonAmountLabel?x.comparisonAmountLabel+'（詳しい属性条件は未表示）':'詳細な属性条件は未表示');
 }
 function comparisonReference(x:any):string{
+ const primary=comparisonPrimaryV5(x);
+ if(primary){
+  if(primary.sourceVersion.startsWith('JILI_'))return '生命保険文化センターの調査（'+(primary.sourceVersion.includes('2025')?'2025年':'2024年')+'）';
+  if(primary.sourceVersion.includes('STAT_GO_JP_FIES'))return '家計調査（2025年）・住宅ローン返済世帯';
+  if(primary.sourceVersion.includes('SONY_SONPO'))return '全国カーライフ実態調査（2025年）';
+  return primary.label;
+ }
  const source=String(x?.comparisonSourceVersion??x?.comparisonContext?.sourceVersion??'');
  if(source.includes('HOUSING'))return '住宅・土地統計調査（2023年）';
  if(/UTILITY|FOOD|DAILY|ENTERTAINMENT|BEAUTY_FASHION/.test(source))return '家計調査（2025年）をもとにした参考目安';
@@ -112,13 +143,25 @@ function comparisonReference(x:any):string{
 function numericOrDash(x:any):string{
  return x?.known===true&&Number.isFinite(Number(x?.amount))&&x?.amount!==null?money(Number(x.amount)):'未入力・対象外';
 }
-function noBenchmarkReason(x:any):string{
- if(x?.v5Status==='na'||x?.applicability==='notApplicable')return '対象外（比較はしていません）';
- if(x?.category==='sub')return '平均比較なし。利用状況と解約可否を回答から判断';
- if(x?.category==='mobile'&&x?.cMethod==='mobile')return candidateReason(x);
- if(x?.category==='mobile')return '一律の平均金額なし。回線・契約区分で確認';
- return 'この条件で使える数値の比較基準なし';
+/** Status- and category-based guidance instead of shouting "no benchmark".
+ * No numeric reference is synthesized for AUDIT-only categories. */
+function nonNumericBasis(x:any):{title:string;detail:string}{
+ if(x?.v5Status==='na'||x?.applicability==='notApplicable')
+  return {title:'今回は対象外',detail:'診断条件に当てはまらないため、比較をしていません。'};
+ if(x?.known!==true||x?.amount===null||x?.amount===undefined)
+  return {title:'入力内容を確認',detail:'金額を確認できると、判定を詳しく見られるよ。'};
+ switch(x?.category){
+  case 'sub':return {title:'利用状況で判断',detail:'使っていない契約・重複・解約可能かどうかを確認するよ。'};
+  case 'mobile':return {title:'契約プランで判断',detail:x.cMethod==='mobile'?candidateReason(x):'回線数・通信会社・料金プランを確認するよ。'};
+  case 'selfDevelopment':return {title:'使う目的で判断',detail:'学びや経験の目的・満足度を確認するよ。'};
+  case 'insurance':return {title:'保障の中身を確認',detail:'保険料だけでなく、必要な保障・給付条件を確認するよ。'};
+  case 'car':return {title:'維持費と使い方を確認',detail:'購入費と維持費の範囲・車の利用状況を確認するよ。'};
+  case 'rent':return {title:'住まいの条件で判断',detail:'住居形態や契約内容に合わせて確認するよ。'};
+  case 'childEducation':return {title:'学校段階に合わせて確認',detail:'子どもの学校段階・公私立などを確認するよ。'};
+  default:return {title:'入力条件で確認',detail:'今回の条件では、金額を並べた比較は表示していないよ。'};
+ }
 }
+function noBenchmarkReason(x:any):string{return nonNumericBasis(x).detail;}
 
 function loadImage(url:string):Promise<HTMLImageElement|null>{
  return new Promise(resolve=>{
