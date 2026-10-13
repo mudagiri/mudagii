@@ -22,8 +22,10 @@ assert.match(uncertain,/実際の削減額や将来の結果を保証するも�
 assert.match(uncertain,/data-section="CANDIDATE_EVIDENCE_JUMP"/,'the entry CTA must point to reasoning, not speculative horizon');
 assert.doesNotMatch(uncertain,/data-section="FUTURE_REWARD_JUMP"/,'old future-first hero cue must be removed');
 assert.match(uncertain,/見直し候補を確認する/,'no invented evidence promise when reviewUpper has no source rows');
-assert.match(uncertain,/未確定の仮定・まだ節約した金額ではありません/);
-assert.match(uncertain,/10年間の参考シミュレーション/);
+assert.match(uncertain,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/);
+assert.match(uncertain,/10年間で積み重ねたら/);
+assert.match(uncertain,/未来の戦利品<\/h2>/,'readable RPG heading stays clean');
+assert.doesNotMatch(uncertain,/未来の戦利品（仮定）|未確定の仮定/,'stiff parenthetical should not return');
 assert.doesNotMatch(uncertain,/<span class="c2v31-quest-crest"/,'do not stack redundant quest crest next to clear heading');
 
 assert.ok(uncertain.indexOf('data-section="POTENTIAL_HERO"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
@@ -93,7 +95,7 @@ assert.match(candidateHtml,/最初に確かめるなら/);
 assert.match(candidateHtml,/食費の内訳を確認/);
 assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
 assert.match(candidateHtml,/もし見直し候補を/);
-assert.match(candidateHtml,/未確定の仮定・まだ節約した金額ではありません/,'future values describe a conditional scenario, not earned returns');
+assert.match(candidateHtml,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/,'future values describe a conditional scenario, not earned returns');
 assert.match(candidateHtml,/本当に見直せるか、一緒に確かめよう/);
 assert.match(candidateHtml,/「いつかやりたいこと」を、今日できる一歩に変える作戦/,'small next step framed positively, not fear of old age');
 assert.match(empty,/「いつかやりたいこと」を、今日できる小さな一歩につなげよう/,'no savings candidates still receives a voluntary action');
@@ -182,7 +184,7 @@ assert.match(monsterHtml,/「守る」「そのままでOK」も、今回の戦�
 assert.doesNotMatch(empty,/「守る」「そのままでOK」も、今回の戦果だ/,'no claim of positive categories without actual assessed rows');
 assert.match(empty,/まずは今できることを1つ、確かめよう/,'a first step should still exist for zero verified positive categories');
 assert.doesNotMatch(monsterHtml,/人生がうまくいかない人|学習性無力感|ワースト1/,'no shaming or diagnosis-by-headline');
-assert.match(monsterHtml,/未確定の仮定・まだ節約した金額ではありません/,'future scenario is clearly conditional across category cases');
+assert.match(monsterHtml,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/,'future scenario is clearly conditional across category cases');
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
 assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
