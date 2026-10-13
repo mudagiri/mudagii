@@ -37,6 +37,7 @@ on:
       - "chapter2-v19-scene-css.ts"
       - "chapter2-v20-bridge-css.ts"
       - "chapter2-v21-gateb-css.ts"
+      - "chapter2-v22-comparison-css.ts"
       - "chapter2-v32-rpg-css.ts"
       - "qa-chapter2-v32.ts"
       - "qa-chapters-v32-browser.mjs"
