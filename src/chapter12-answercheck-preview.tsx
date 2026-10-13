@@ -36,7 +36,8 @@ const row=(category:string)=>({
  diagnosisAmountLabel:'診断で入力した月額',
  status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
  v5StatusLabel:'見極める',
- diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null,comparable:null as number|null,comparisonQuality:'none',comparisonDifference:null as number|null,
+ diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null as number|null,comparable:null as number|null,comparisonQuality:'none',comparisonDifference:null as number|null,
+ comparisonSourceVersion:null as string|null,comparisonContext:{criteria:[] as string[]},evidenceLabel:'金額比較なし',
  reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:FIXTURE_NEXT_ACTION[category]||'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
 function makeFixture(example:Case){
@@ -69,6 +70,12 @@ function makeFixture(example:Case){
   // not an official average nor a guaranteed saving.
   foodCandidate.comparable=37860;
   foodCandidate.comparisonDifference=16140;
+  // Display QA ONLY: synthetic comparable. Never label this amount as an official survey average.
+  foodCandidate.comparisonAmount=54000;
+  foodCandidate.comparisonQuality='exact';
+  foodCandidate.comparisonSourceVersion='SYNTHETIC_PILOT_COMPARATOR';
+  foodCandidate.comparisonContext={criteria:['架空デモの比較条件']};
+  foodCandidate.evidenceLabel='画面確認用の架空の比較基準';
   foodCandidate.v5Status='inspect';
   foodCandidate.v5StatusLabel='見極める';
  }
