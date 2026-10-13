@@ -180,7 +180,9 @@ const compareTest=renderToStaticMarkup(React.createElement(ResultScreenChapter2V
   {category:'sub',label:'サブスク',known:true,amount:4200,comparisonAmount:null,comparable:null,comparisonQuality:'none',v5Status:'cut',aAmount:1200,cUpper:0},
   {category:'energy',label:'光熱・水道費',known:true,amount:15500,comparisonAmount:null,comparable:19000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}
  ]}}));
-const overview=compareTest.slice(compareTest.indexOf('data-section="CATEGORY_COMPARISON_OVERVIEW"'),compareTest.indexOf('data-optional="enemy-atlas"'));
+const overviewStart=compareTest.indexOf('data-section="CATEGORY_COMPARISON_OVERVIEW"');
+assert.ok(overviewStart>=0,'comparison summary remains present before optional gallery');
+const overview=compareTest.slice(overviewStart,compareTest.indexOf('data-optional="enemy-atlas"',overviewStart));
 assert.equal((overview.match(/data-comparison-category=/g)||[]).length,3);
 assert.match(overview,/今回の入力/);
 assert.match(overview,/¥54,000/);
