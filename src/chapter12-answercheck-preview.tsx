@@ -126,7 +126,7 @@ function App(){
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
      <strong>家計クエスト｜調査用の画面見本</strong>
      <p>架空の回答を使った結果です。実際の家計や個人情報は入力しません。スクロールして、普段どおりにご覧ください。</p>
-     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。</small>
+     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。比較の金額は食費だけを表示テスト用に設定しています。他の項目の「数値比較なし」は、実際の統計基準がないという意味ではありません。</small>
     </header>:<div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
      <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
@@ -135,7 +135,7 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
-     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本で、本人の家計診断や公的統計の平均値ではありません。実際の金額は12カテゴリから計算します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
+     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本です。比較額は食費1件だけの画面確認用データで、他項目の数値未設定は実際の比較基準がないことを意味しません。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
      <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
      <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
    </div>}
