@@ -19,6 +19,13 @@ assert.match(uncertain,/¥1,071,240/);
 assert.match(uncertain,/¥2,142,480/);
 assert.match(uncertain,/未確定/);
 assert.match(uncertain,/実際の削減額や将来の結果を保証するものではなく/);
+assert.match(uncertain,/data-section="CANDIDATE_EVIDENCE_JUMP"/,'the entry CTA must point to reasoning, not speculative horizon');
+assert.doesNotMatch(uncertain,/data-section="FUTURE_REWARD_JUMP"/,'old future-first hero cue must be removed');
+assert.match(uncertain,/まず、見直し候補の理由を見る/);
+assert.match(uncertain,/未確定の仮定・まだ節約した金額ではありません/);
+assert.match(uncertain,/10年間の参考シミュレーション/);
+assert.doesNotMatch(uncertain,/c2v31-quest-crest/,'do not stack redundant quest crest next to clear heading');
+
 assert.ok(uncertain.indexOf('data-section="POTENTIAL_HERO"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(uncertain.indexOf('data-section="POTENTIAL_TREASURE"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(uncertain.indexOf('data-section="FUTURE_REWARDS"')<uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
@@ -44,6 +51,7 @@ assert.doesNotMatch(confirmedOnly,/10年間の積み重ね/,'no invented future 
 const empty=show(0,0);
 assert.match(empty,/候補額はまだ未特定/);
 assert.doesNotMatch(empty,/¥2,142,480/);
+assert.doesNotMatch(empty,/data-section="CANDIDATE_EVIDENCE_JUMP"/,'never navigate to invented sources when upper bound is zero');
 assert.doesNotMatch(empty,/data-section="CANDIDATE_BREAKDOWN"/,'no arbitrary list when there are no candidates');
 const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,17854),
