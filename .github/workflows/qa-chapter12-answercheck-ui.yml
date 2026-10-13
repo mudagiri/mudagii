@@ -19,6 +19,7 @@ on:
       - "chapter2-v19-scene-css.ts"
       - "chapter2-v20-bridge-css.ts"
       - "chapter2-v21-gateb-css.ts"
+      - "chapter2-v22-comparison-css.ts"
       - "scripts/chapter12-answercheck-experiment-v1.*"
       - "scripts/qa-chapter12-answercheck*"
       - ".github/workflows/qa-chapter12-answercheck-ui.yml"
