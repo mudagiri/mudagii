@@ -93,7 +93,7 @@ assert.match(candidateHtml,/最初に確かめるなら/);
 assert.match(candidateHtml,/食費の内訳を確認/);
 assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
 assert.match(candidateHtml,/もし見直し候補を/);
-assert.match(candidateHtml,/未確定の参考シミュレーション/);
+assert.match(candidateHtml,/未確定の仮定・まだ節約した金額ではありません/,'future values describe a conditional scenario, not earned returns');
 assert.match(candidateHtml,/本当に見直せるか、一緒に確かめよう/);
 assert.match(candidateHtml,/「いつかやりたいこと」を、今日できる一歩に変える作戦/,'small next step framed positively, not fear of old age');
 assert.match(empty,/「いつかやりたいこと」を、今日できる小さな一歩につなげよう/,'no savings candidates still receives a voluntary action');
