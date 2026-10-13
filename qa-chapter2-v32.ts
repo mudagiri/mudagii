@@ -172,7 +172,7 @@ assert.match(monsterHtml,/data-section="CATEGORY_COMPARISON_OVERVIEW"/,'all 12 c
 assert.equal((monsterHtml.match(/data-comparison-category=/g)||[]).length,12,'all 12 category amounts/benchmarks immediately readable');
 assert.match(monsterHtml,/data-section="COMPARISON_OVERVIEW_JUMP"/,'visible link to comparison on the battle result');
 assert.match(monsterHtml,/数値比較なし/,'AUDIT/no-benchmark categories are honestly labeled');
-assert.match(monsterHtml,/平均比較なし。利用状況と解約可否を回答から判断/,'subscription benchmark must not be fabricated');
+
 assert.match(monsterHtml,/敵キャラと詳しい説明を見る（任意）/,'atlas is optional RPG art, not a mandatory evidence tunnel');
 const compareTest=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,12354),rows:[
@@ -192,6 +192,7 @@ assert.match(overview,/家計調査（2025年）をもとにした参考目安/)
 assert.match(overview,/約1.10倍/,'source of review candidate threshold visible without nested detail');
 assert.match(overview,/見直し候補：月最大 ¥12,354（未確定）/);
 assert.match(overview,/data-comparison-category="sub" data-comparison-available="false"/);
+assert.match(overview,/平均比較なし。利用状況と解約可否を回答から判断/,'subscription benchmark must not be fabricated');
 assert.match(overview,/data-comparison-category="energy" data-comparison-available="false"/,'null comparison scope must not fall back to diagnosis amount');
 assert.doesNotMatch(overview,/¥19,000/,'no benchmark shown without compatible comparison amount');
 assert.doesNotMatch(overview,/¥1,200.*節約済み/,'confirmed opportunity is not a realized saving');
