@@ -5,6 +5,7 @@ import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
 import {V19SCENECSS} from './chapter2-v19-scene-css';
 import {V20BRIDGECSS} from './chapter2-v20-bridge-css';
+import {V21GATEBCSS} from './chapter2-v21-gateb-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
@@ -331,7 +332,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS}</style><div className="c2v2-page c2v31-page">
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS}</style><div className="c2v2-page c2v31-page">
   <section className="c2v2-hero c2v3-hero c2v31-hero c2v20-hero" data-section="CHAPTER2_QUEST_COMPLETE" style={continuityStyle}>
    <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
     <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
@@ -341,7 +342,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <span className="is-current" aria-current="step">🏰 第2章 <b>家計バトル</b><small>クリア！</small></span>
     </div>
    </nav>
-   <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
    <span className="c2v2-eyebrow c2v31-hero-kicker">QUEST CLEAR!</span>
    <h1 className="c2v31-quest-title"><span>家計クエスト</span><em>完全クリア！</em></h1>
    {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card c2v20-hero-job" aria-label="第1章から引き継いだ冒険者" data-section="CHAPTER1_JOB_BRIDGE">
@@ -361,9 +361,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {reviewUpper>0?<strong>月 最大 {money(reviewUpper)}</strong>:<strong>候補額はまだ未特定</strong>}
     <small>※未確定の参考上限。削減できると決まった金額ではありません。</small>
    </div>
-   {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump" data-section="FUTURE_REWARD_JUMP"
-    onClick={()=>document.querySelector('[data-section="FUTURE_REWARDS"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>
-    ✦ 未確定の1年・5年・10年を見る ↓
+   {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump c2v21-evidence-jump" data-section="CANDIDATE_EVIDENCE_JUMP"
+    onClick={()=>{onEvent?.('chapter2_v21_candidate_evidence_jump_clicked',{target:candidates.length?'candidate_breakdown':'treasure_report'});
+     document.querySelector(candidates.length?'[data-section="CANDIDATE_BREAKDOWN"]':'[data-section="POTENTIAL_TREASURE"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}>
+    ✦ まず、見直し候補の理由を見る ↓
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   <section className="c2v32-treasure-lead" data-section="POTENTIAL_TREASURE">
@@ -409,15 +410,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
-   <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>すべて</span>毎月改善できたら？<small>未確定の参考シミュレーション</small></p>}
+   <h2>{reviewUpper>0?'未来の戦利品（仮定）':'未来の作戦は、ここから。'}</h2>
+   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>すべて</span>毎月改善できたら？<small>未確定の仮定・まだ節約した金額ではありません</small></p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(reviewUpper*60)}</strong></div>
     </div>
     <div className="c2v3-reward-ten c2v31-reward-ten">
-     <div className="c2v31-ten-details"><span>✦ 10年間の積み重ね ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
+     <div className="c2v31-ten-details"><span>✦ 10年間の参考シミュレーション ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
     <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
