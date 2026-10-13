@@ -98,7 +98,7 @@ function comparisonAvailable(x:any):boolean{
 function comparisonBasis(x:any):string{
  const raw=x?.comparisonContext?.criteria;
  const criteria=Array.isArray(raw)?raw.filter((v:unknown)=>typeof v==='string'&&v.trim().length>0):[];
- return criteria.length?criteria.join('・'):'このカテゴリで利用できる比較条件';
+ return criteria.length?criteria.join('・'):(typeof x?.comparisonAmountLabel==='string'&&x.comparisonAmountLabel?x.comparisonAmountLabel+'（詳しい属性条件は未表示）':'詳細な属性条件は未表示');
 }
 function comparisonReference(x:any):string{
  const source=String(x?.comparisonSourceVersion??x?.comparisonContext?.sourceVersion??'');
@@ -443,7 +443,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
      </div>;
     })}</div>
-    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。詳しい比較条件は後半の敵図鑑で確認できます。</p>
+    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
    </section>}
    {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
     <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
@@ -510,6 +510,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span className="c2v31-confirmed-caption">{confirmed>0?'回答で確認した改善額。実行・節約済みかは別途確認が必要です。':'回答から確認できた改善額はまだありません'}</span>
    </section>
    <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
+   {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
+    onClick={()=>document.querySelector('[data-section="CATEGORY_COMPARISON_OVERVIEW"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>
+    12カテゴリの比較基準を一覧で見る ↓
+   </button>}
   </section>
   <MudagiriBeat pose="proud" line={filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
    ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
