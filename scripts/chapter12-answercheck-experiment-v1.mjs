@@ -111,7 +111,9 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
    protectedVsReview={
     kind:'protect_vs_confirmed_review',
     primaryStyle,
-    protect:{category:protectedCategory,label:protectedCategory==='fun'?'娯楽・趣味':'自己投資',monthlyYen:protectedRow.amount,source:'第2章の入力支出＋本人の満足・目的と守る判定',isSaving:false},
+    protect:{category:protectedCategory,label:protectedCategory==='fun'?'娯楽・趣味':'自己投資',monthlyYen:protectedRow.amount,
+      choiceLabel:protectedCategory==='fun'?SAT_ANSWER_LABELS[protectedRow.appraisal.satisfaction]:SELF_ANSWER_LABELS[protectedRow.appraisal.selfDevelopmentValue],
+      source:'第2章の選択肢に対する本人回答＋診断の「守る」判定',isSaving:false},
     review:{category:'sub',label:'未使用サブスク',monthlyYen:subCandidate.aAmount,source:'本人申告の未使用・解約可能＋確認済み改善機会',isSavingRealized:false},
     nextStep:(protectedCategory==='fun'?'娯楽・趣味':'自己投資')+'は削る前に、未使用サブスクの停止・解約条件を確認する',
     caveat:'左は守りたい支出、右はまだ実行していない確認済み改善機会。2つを差し引いたり、右を貯蓄済みのお金として扱ったりしません。',
