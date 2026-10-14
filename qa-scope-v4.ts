@@ -275,6 +275,28 @@ console.log('SCOPE_V4_QA PASS');
 
 
 {
+ const profile=base({diagnosisScope:'household',householdSize:4,adultCount:2,childCount:2,
+  relationships:['partner','children'],annualIncomeBand:'800_999'});
+ const records=emptyExpenseRecordsV4();
+ amount(records,'food',120000,{personalBurden:null});
+ const facts=buildComparisonFactsV4({profile,records,month:2});
+ A.equal(facts.food.benchmarkMeta?.meta?.modelEstimate,true,'income x household size is a model');
+ A.equal(facts.food.benchmarkMeta?.meta?.crossTableObserved,false,'income x household size is not an official observed cross');
+ const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
+ const final=buildFinalJudgementsV4({records,comparisons:facts,
+  diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,
+  appraisal:{food:{satisfaction:'verySatisfied'}}});
+ const vm=buildResultViewModelV4({profile,finalCategories:final.categories,annualIncomeBand:'800_999'});
+ const foodRow=vm.rows.find(x=>x.category==='food')!;
+ A.equal(foodRow.comparisonModelEstimate,true,'UI method flag propagates');
+ A.ok(foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'comparison conditions show provenance');
+ const stored=buildPersistencePayloadV4({diagnosisId:'policy_provenance_QA',anonymousUserId:'anon_QA',profile,finalCategories:final.categories});
+ A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'income_cross_model','persist model provenance');
+ A.equal(stored.categories.find(x=>x.category==='sub')?.benchmarkMethod,'none','audit-only must not fabricate a mean');
+}
+
+
+{
  const profile=base();
  const records=emptyExpenseRecordsV4();
  amount(records,'mobile',12000);
