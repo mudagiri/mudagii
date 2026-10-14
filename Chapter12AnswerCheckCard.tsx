@@ -12,6 +12,18 @@ type Props={
  demo?:boolean;
 };
 const POSE='./assets/mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp';
+const STYLE_EVIDENCE:Record<string,string>={
+ DRIVE:'前に進むことを大切にする',
+ ENJOY:'楽しさを大切にする',
+ SECURE:'安心を大切にする',
+ OPTIMIZE:'納得して使いたい'
+};
+function chapter2SelfReportEvidence(card:AnswerCheckResult['cards'][number]):string{
+ if(card.category==='fun')return card.kind==='resonance'?'娯楽・趣味を「満足している／守る」と回答':'娯楽・趣味を「見直したい」と回答';
+ if(card.category==='selfDevelopment')return card.kind==='resonance'?'自己投資に「目的・成果がある」と回答':'自己投資が「惰性になっている」と回答';
+ if(card.category==='sub')return '使っていない契約があり、解約可能と回答';
+ return card.evidence.chapter2;
+}
 /**
  * Visual-only follow-on to the Chapter 1 JOB record. No GAS, no storage,
  * no telemetry, no share payload changes, no classification changes.
@@ -45,7 +57,7 @@ export default function Chapter12AnswerCheckCard({
   <h2>{contrast?(isInvestment?<>自己投資は守る。<em>見直すのは別。</em></>:isOptimize?<>納得して使う。<em>見直すのは別。</em></>:<>楽しみは守る。<em>見直すのは別。</em></>):<>お金の性格、<em>答え合わせ。</em></>}</h2>
   {contrast?<div className="c12ac-dual-talk">
    <img src={POSE} alt="家計を見比べるムダギリくん" loading="lazy"/>
-   <p><b>ムダギリくん：</b>{isInvestment?'君が大切にしている自己投資と、見直せる契約は別物だぞ！':isOptimize?'大事なのは安く済ませることじゃない。使う理由を分けて見よう！':'君が守りたい楽しみと、見直せる契約は別物だぞ！'}</p>
+   <p><b>ムダギリくん：</b>{isInvestment?'第1章は「前進」重視。目的のある自己投資は守って、使っていない契約は別に見よう！':isOptimize?'第1章は「納得」重視。楽しみは守って、使っていない契約は分けて確かめよう！':'第1章は「楽しさ」重視。好きなことは守って、使っていない契約は見直そう！'}</p>
   </div>:<div className="c12ac-dialogue">
    <img src={POSE} alt="家計の回答を確かめるムダギリくん" loading="lazy"/>
    <div><b>ムダギリくん</b>
@@ -68,6 +80,10 @@ export default function Chapter12AnswerCheckCard({
   {focus&&!contrast&&<div className="c12ac-insight" data-insight-kind={focus.kind}>
    <span>{focus.kind==='resonance'?'🛡 重なっていた価値観':'🔎 意外な確認ポイント'}</span>
    <h3>{focus.title}</h3>
+   <p className="c12ac-brief" data-answercheck-evidence-inline="true">
+    <b>第1章の結果：</b>{STYLE_EVIDENCE[chapter1!.primaryStyle]}<br/>
+    <b>第2章の回答：</b>{chapter2SelfReportEvidence(focus)}
+   </p>
    {focus.monthlySnapshot&&<div className="c12ac-money" data-answercheck-monthly="true">
     <small>{focus.monthlySnapshot.label}</small>
     <div><span>ひと月 <strong>¥{yen(focus.monthlySnapshot.monthlyYen)}</strong></span><span>12か月分 <strong>¥{yen(focus.monthlySnapshot.annualYen)}</strong></span></div>
