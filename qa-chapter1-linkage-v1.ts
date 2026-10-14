@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chapter1LinkageV1,validatedChapter1LinkageV1} from './chapter1-linkage-v1';
+import {lineLeadIdV1} from './line-lead-id-v1';
 import type {Chapter1HandoffV1} from './chapter2-v2-contract';
 
 const handoff:Chapter1HandoffV1={
@@ -27,6 +28,12 @@ assert.equal(validatedChapter1LinkageV1(link)?.chapter1SessionId,'c1_session_001
 assert.equal(validatedChapter1LinkageV1({...link,chapter1JobCode:'INVALID'}),null,'corrupt restored data rejected');
 assert.equal(validatedChapter1LinkageV1({...link,monthlyTakeHome:999999})?.chapter1SessionId,'c1_session_001','valid data can be restored');
 assert.equal(Object.keys(validatedChapter1LinkageV1({...link,monthlyTakeHome:999999})??{}).includes('monthlyTakeHome'),false,'linkage strips financial data');
+const generalLead=lineLeadIdV1('dx-001','MG-001','consult_route');
+const coverageLead=lineLeadIdV1('dx-001','MG-001','coverage_review');
+assert.notEqual(generalLead,coverageLead,'coverage and life-plan clicks must be independent lead events');
+assert.equal(generalLead,lineLeadIdV1('dx-001','MG-001','consult_route'),'repeated same CTA must be idempotent');
+assert.match(coverageLead,/MG-001/,'retain manual handoff code in conversion identifier');
+assert.notEqual(lineLeadIdV1('dx-001',null,'consult_route'),lineLeadIdV1('dx-001',null,'coverage_review'),'safe when code missing');
 const app=fs.readFileSync('./MudagiriAppV2.tsx','utf8');
 const gas=fs.readFileSync('./MUDAGIRI_GAS_CODE_V4.gs','utf8');
 assert.match(app,/scopeV4:v\.scopeV4\?\?null,persistenceV4,chapter1Link,/,'save diagnosis snapshot');
@@ -35,6 +42,7 @@ assert.match(app,/completed:\{\.\.\.v,toneMode,chapter1Link\}/,'persist linkage 
 assert.match(app,/setResult\(\{\.\.\.vm,chapter1Link\}\)/,'retain linked data in active result');
 assert.match(app,/source:'result_line_cta',toneMode,chapter1Link:validatedChapter1LinkageV1\(result\.chapter1Link\)/,'save linkage in LINE lead');
 assert.match(app,/externalLineContext\(ctx,payload\)/,'external coverage context remains sanitized');
+assert.match(app,/leadId:lineLeadIdV1\(diagnosisId,ctx\?\.handoffCode,ctx\?\.placement\)/,'both line routes get unique conversion keys');
 assert.ok(gas.includes('raw_json:json_(b)'),'GAS raw diagnosis preserves additive lineage without altering frozen columns');
 assert.ok(gas.includes('data_json:json_(b)'),'GAS lead raw JSON preserves linked fields');
 console.log('CHAPTER1_LINKAGE_QA_PASS');
