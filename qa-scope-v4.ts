@@ -280,20 +280,20 @@ console.log('SCOPE_V4_QA PASS');
  const records=emptyExpenseRecordsV4();
  amount(records,'food',120000,{personalBurden:null});
  const facts=buildComparisonFactsV4({profile,records,month:2});
- A.equal(facts.food.benchmarkMeta?.meta?.modelEstimate,true,'income x household size is a model');
- A.equal(facts.food.benchmarkMeta?.meta?.crossTableObserved,false,'income x household size is not an official observed cross');
+ A.equal(facts.food.benchmark,103384,'four-person food uses the contract household-size baseline');
+ A.notEqual(facts.food.benchmarkMeta?.meta?.modelEstimate,true,'contract candidate does not synthesize an income x size cross');
  const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
  const final=buildFinalJudgementsV4({records,comparisons:facts,
   diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,
   appraisal:{food:{satisfaction:'verySatisfied'}}});
  const vm=buildResultViewModelV4({profile,finalCategories:final.categories,annualIncomeBand:'800_999'});
  const foodRow=vm.rows.find(x=>x.category==='food')!;
- A.equal(foodRow.comparisonModelEstimate,true,'UI method flag propagates');
- A.equal(foodRow.comparisonQuality,'reference','income-cross display is a reference, not an exact direct cross');
- A.equal(foodRow.comparisonContext.quality,'reference','comparison context must share modeled presentation quality');
- A.ok(foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'comparison conditions show provenance');
+ A.equal(foodRow.comparisonModelEstimate,false,'UI model flag correctly absent in income-neutral comparator');
+ A.equal(foodRow.comparisonQuality,'exact','published household-size table qualifies as direct comparison');
+ A.equal(foodRow.comparisonContext.quality,'exact','comparison context matches direct table provenance');
+ A.ok(!foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'income-model note cannot appear on contract-aligned comparison');
  const stored=buildPersistencePayloadV4({diagnosisId:'policy_provenance_QA',anonymousUserId:'anon_QA',profile,finalCategories:final.categories});
- A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'income_cross_model','persist model provenance');
+ A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'direct_reference','persist direct household-size comparison provenance');
  A.equal(stored.categories.find(x=>x.category==='sub')?.benchmarkMethod,'none','audit-only must not fabricate a mean');
 }
 
