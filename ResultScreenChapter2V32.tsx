@@ -117,6 +117,9 @@ function comparisonReferenceType(x:any):string{
  return x?.comparisonQuality==='reference'?'参考値':'近い条件との比較';
 }
 function comparisonTargetAmount(x:any):number|null{
+ // Mortgage references describe a whole property's repayment. A personal
+ // contribution is not the matched comparison amount in a shared household.
+ if(comparisonPrimaryV5(x)&&x?.category==='rent')return comparisonInputAmount(x);
  return comparisonPrimaryV5(x)?Number(x.amount):comparisonInputAmount(x);
 }
 function comparisonBasis(x:any):string{
