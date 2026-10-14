@@ -3,7 +3,7 @@ export const CHAPTER2_V2_VERSION='MUDAGIRI_CHAPTER2_V2_PRESENTATION_RC1' as cons
 export const CHAPTER1_HANDOFF_STORAGE_KEY='mudagiri_money_type_handoff_v1';
 const ALLOWED_JOBS=new Set(['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP']);
 const ALLOWED_STYLES=new Set(['DRIVE','ENJOY','SECURE','OPTIMIZE']);
-export const CHAPTER1_STYLE_NAMES:Record<string,string>={DRIVE:'挑戦',ENJOY:'楽しさ',SECURE:'安心',OPTIMIZE:'納得'};
+export const CHAPTER1_STYLE_NAMES:Record<string,string>={DRIVE:'前進',ENJOY:'楽しさ',SECURE:'安心',OPTIMIZE:'納得'};
 
 export type Chapter1HandoffV1={
  version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1';

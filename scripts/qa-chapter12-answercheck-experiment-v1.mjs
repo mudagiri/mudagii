@@ -1,0 +1,193 @@
+import {assessChapter12AnswerCheck,CATEGORY_IDS} from './chapter12-answercheck-experiment-v1.mjs';
+let checks=0;const failed=[];
+const ok=(v,m)=>{checks++;if(!v)failed.push(m)};
+const id='anonymous-a',version='MUDAGIRI_MONEY_TYPE_HANDOFF_V1';
+const c1=(primaryStyle='ENJOY')=>({version,anonymousUserId:id,sessionId:'s1',primaryStyle,jobCode:'INM',jobName:'直感魔導士',completedAt:'2026-10-12T00:00:00Z'});
+const row=(category,appraisal=null,status='inspect')=>({category,v5Status:status,known:true,applicability:'applicable',appraisal,aAmount:0,cUpper:0,amount:24000,diagnosisAmountLabel:'診断で入力した月額',diagnosisAmount:24000});
+const c2=(rows=CATEGORY_IDS.map(x=>row(x)))=>({anonymousUserId:id,diagnosisId:'d1',rows});
+const pass=(a,b)=>assessChapter12AnswerCheck({chapter1:a,chapter2:b});
+let r=pass(c1(),c2());
+ok(r.status==='no_supported_link','no made-up correlation');
+ok(r.coverage.axesVerified===0,'no 3-axis verification');
+ok(r.score===null,'no fake score');
+ok(r.cannotInfer.includes('全12カテゴリとの一致率'),'no 12 category percentage');
+ok(r.shareAllowed===false,'private');
+ok(r.coverage.reviewedCategoryCount===12,'12 category reviewed');
+ok(pass({...c1(),anonymousUserId:'other'},c2()).reason==='IDENTITY_MISMATCH','wrong user');
+ok(pass(null,c2()).status==='unavailable','missing ch1');
+ok(pass(c1(),null).status==='unavailable','missing ch2');
+ok(pass({...c1(),version:'INVALID'},c2()).reason==='INVALID_CH1_VERSION','invalid version');
+ok(pass({...c1(),sessionId:''},c2()).status==='unavailable','missing ch1 session');
+ok(pass(c1(),{...c2(),diagnosisId:''}).status==='unavailable','missing c2 diagnosis');
+ok(pass(c1('HACK'),c2()).reason==='INVALID_CH1_STYLE','bad style');
+ok(pass(c1(),c2([...CATEGORY_IDS.map(x=>row(x)),row('fun')])).reason==='INVALID_OR_DUPLICATE_CATEGORY','duplicate invalid');
+ok(pass(c1(),c2([row('notCategory')])).status==='unavailable','invalid cat');
+ok(pass(c1(),c2([row('fun',{satisfaction:'verySatisfied'},'protect')])).reason==='INCOMPLETE_DIAGNOSIS','do not match partial 12 category run');
+ok(pass(c1(),c2([row('fun',null,'nonsense')])).status==='unavailable','invalid status');
+const update=(category,appraisal,status='inspect',rest={})=>CATEGORY_IDS.map(x=>x===category?{...row(x,appraisal,status),...rest}:row(x));
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.status==='context_found','ENJOY + satisfied fun protected');
+ok(r.cards[0].kind==='resonance','positive resonance');
+ok(r.cards[0].financialResult===false,'no financial performance claim');
+ok(!JSON.stringify(r.cards).includes('999999'),'no raw amounts');
+ok(r.source==='same-person-self-report','self report disclaimer');
+ok(r.cards[0].monthlySnapshot?.monthlyYen===24000,'monthly expense exactly as entered');
+ok(r.cards[0].monthlySnapshot?.annualYen===288000,'annual 12x descriptive only');
+ok(r.cards[0].monthlySnapshot?.notSavings===true,'annual amount never a savings claim');
+ok(r.cards[0].monthlySnapshot?.label==='診断で入力した月額','origin label visible');
+
+r=pass(c1(),c2(update('fun',{satisfaction:'waste'},'inspect')));
+ok(r.cards.length===1&&r.cards[0].kind==='question','ENJOY + fun review not contradiction');
+ok(!r.cards[0].title.includes('矛盾'),'no shame contradiction');
+r=pass(c1(),c2(update('fun',{satisfaction:'satisfied'},'inspect')));
+ok(r.status==='no_supported_link','sat alone cannot imply protected');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{known:false})));
+ok(r.status==='no_supported_link','missing amount invalidates evidence');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{applicability:'na'})));
+ok(r.status==='no_supported_link','NA excluded');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect')));
+ok(r.cards[0]?.kind==='resonance','DRIVE purpose protected');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'results'},'protect')));
+ok(r.cards[0]?.kind==='resonance','DRIVE results protected');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'unclear'},'protect')));
+ok(r.cards.length===0,'not invent DRIVE success');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLastReview:'within1y'},'protect')));
+ok(r.cards.length===0,'SECURE insurance not proof');
+r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:true},'cut',{aAmount:1000})));
+ok(r.cards[0]?.kind==='question','OPTIMIZE unused and cancellable confirmed opportunity');
+ok(r.cards[0].body.includes('まだ解約や節約を実行した意味ではありません'),'no claim implemented');
+r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:false},'cut',{aAmount:1000})));
+ok(r.status==='no_supported_link','unconfirmed cancellation no insight');
+r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1000,subCancellationConfirmed:true},'cut',{aAmount:0})));
+ok(r.status==='no_supported_link','aAmount 0 no explicit verified saving');
+r=pass(c1('OPTIMIZE'),c2(update('mobile',{mobileContractReviewed:false},'optimize')));
+ok(r.status==='no_supported_link','mobile review not personality proof');
+r=pass(c1('ENJOY'),c2(update('food',{satisfaction:'satisfied'},'protect')));
+ok(r.status==='no_supported_link','ENJOY not necessarily food appetite');
+r=pass(c1('ENJOY'),c2(update('beautyFashion',{satisfaction:'satisfied'},'protect')));
+ok(r.status==='no_supported_link','ENJOY not necessarily fashion');
+for(const cat of CATEGORY_IDS){
+ r=pass(c1('SECURE'),c2(update(cat,{satisfaction:'verySatisfied',insurancePurpose:'clear',selfDevelopmentValue:'purpose'},'protect')));
+ ok(r.status==='no_supported_link','SECURE '+cat+' does not predict spending');
+}
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:0})));
+ok(r.status==='no_supported_link','cannot claim protected spend on zero expense');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:-1})));
+ok(r.status==='no_supported_link','negative expense cannot support matching');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:Infinity})));
+ok(r.status==='no_supported_link','nonfinite expense cannot support matching');
+r=pass(c1(),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{amount:Number.MAX_SAFE_INTEGER})));
+ok(r.cards[0]?.monthlySnapshot===null,'overflowed annual snapshot omitted');
+r=pass(c1('OPTIMIZE'),c2(update('sub',{subUnusedAmount:1200,subCancellationConfirmed:true},'cut',{aAmount:1200,amount:4800})));
+ok(r.cards[0]?.monthlySnapshot?.kind==='declared_unused_contract','unused sub separately labeled');
+ok(r.cards[0]?.monthlySnapshot?.monthlyYen===1200,'unused part not total subscription');
+ok(r.cards[0]?.monthlySnapshot?.annualYen===14400,'annualized unused part but not savings');
+ok(r.cards[0]?.monthlySnapshot?.notSavings===true,'unclaimed contract not saved cash');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect',{amount:9600})));
+ok(r.cards[0]?.monthlySnapshot?.annualYen===115200,'self-development nominal annualized spend');
+ok(r.nextStep.includes('自己投資'),'action references actual category');
+// V1.2: protect-vs-confirmed-review requires both sides in same completed diagnosis.
+// The right amount is not cash or executed savings; never subtract from the left.
+const pairRows=()=>CATEGORY_IDS.map(x=>x==='fun'?{...row(x,{satisfaction:'verySatisfied'},'protect'),amount:24000}:
+ x==='sub'?{...row(x,{subUnusedAmount:1200,subCancellationConfirmed:true},'cut'),amount:4200,aAmount:1200}:row(x));
+r=pass(c1('ENJOY'),c2(pairRows()));
+ok(r.protectedVsReview?.kind==='protect_vs_confirmed_review','paired insight appears only with both evidence streams');
+ok(r.protectedVsReview?.protect.monthlyYen===24000,'protect keeps actual month spend');
+ok(r.protectedVsReview?.review.monthlyYen===1200,'review keeps verified opportunity amount');
+ok(r.protectedVsReview?.review.isSavingRealized===false,'unused review never presented as realized savings');
+ok(r.protectedVsReview?.protect.isSaving===false,'protected consumption not savings');
+ok(r.protectedVsReview?.nextStep.includes('解約条件'),'paired next action grounded in subscription');
+ok(r.protectedVsReview?.privacy==='private_only','paired privacy flag');
+ok(r.protectedVsReview?.caveat.includes('差し引いたり'),'no financial netting');
+ok(r.score===null,'no fake personality score even for pair');
+r=pass(c1('DRIVE'),c2(pairRows()));
+ok(r.protectedVsReview===null,'DRIVE never gets forced enjoyment match');
+r=pass(c1('SECURE'),c2(pairRows()));
+ok(r.protectedVsReview===null,'SECURE never gets invented match');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.protectedVsReview===null,'protect alone not paired');
+const pairWith=(f)=>pairRows().map(x=>x.category==='sub'?{...x,...f}:x);
+r=pass(c1('ENJOY'),c2(pairWith({aAmount:0})));
+ok(r.protectedVsReview===null,'not confirmed when aAmount zero');
+r=pass(c1('ENJOY'),c2(pairWith({v5Status:'inspect'})));
+ok(r.protectedVsReview===null,'inspect not confirmed to cut');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:1200,subCancellationConfirmed:false}})));
+ok(r.protectedVsReview===null,'uncancellable unused subscription not used');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:1200,subCancellationConfirmed:true},aAmount:1500})));
+ok(r.protectedVsReview===null,'confirmed amount greater than identified unused amount refuses contrast');
+r=pass(c1('ENJOY'),c2(pairWith({appraisal:{subUnusedAmount:5000,subCancellationConfirmed:true}})));
+ok(r.protectedVsReview===null,'unused amount exceeds full subscription spend');
+r=pass(c1('ENJOY'),c2(pairWith({known:false})));
+ok(r.protectedVsReview===null,'unknown subscription does not create contrast');
+r=pass(c1('ENJOY'),c2(pairWith({amount:0})));
+ok(r.protectedVsReview===null,'zero monthly subscription cannot create contrast');
+r=pass({...c1('ENJOY'),anonymousUserId:'wrong'},c2(pairRows()));
+ok(r.status==='unavailable'&&r.cards.length===0,'identity mismatch suppresses whole paired card');
+// Four-style answer-check: evidence-backed cases only, never trait validation.
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'inertia'},'cut',{amount:9600})));
+ok(r.cards.some(x=>x.kind==='question'&&x.category==='selfDevelopment'),'DRIVE inertia is a question, not a personality contradiction');
+ok(r.nextStep.includes('惰性'),'DRIVE action reflects self-report');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'inertia'},'inspect',{amount:9600})));
+ok(r.cards.length===0,'DRIVE inertia alone without actual matching C2 status is insufficient');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'unknown'},'optimize',{amount:11000})));
+ok(r.cards.length===0,'SECURE insurance details not in personality result');
+ok(r.status==='no_supported_link','global coverage handled separately');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLastReview:'over3y'},'optimize',{amount:11000})));
+ok(r.cards.length===0,'no repeated insurance question in SECURE');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'clear',insuranceLastReview:'within1y'},'protect',{amount:11000})));
+ok(r.status==='no_supported_link','SECURE insurance protected does not prove trait accuracy');
+r=pass(c1('SECURE'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'never'},'inspect',{amount:11000})));
+ok(r.status==='no_supported_link','SECURE requires derived review status consistent with V5');
+r=pass(c1('ENJOY'),c2(update('insurance',{insurancePurpose:'unclear',insuranceLastReview:'never'},'optimize',{amount:11000})));
+ok(r.status==='no_supported_link','insurance question not inferred for other primary style');
+const protectedAndSub=(kind)=>CATEGORY_IDS.map(x=>x==='selfDevelopment'
+ ?{...row(x,{selfDevelopmentValue:'purpose'},'protect'),amount:9600}
+ :x==='fun'?{...row(x,{satisfaction:'verySatisfied'},'protect'),amount:24000}
+ :x==='sub'?{...row(x,{subUnusedAmount:1200,subCancellationConfirmed:true},'cut'),amount:4200,aAmount:1200}
+ :row(x));
+r=pass(c1('DRIVE'),c2(protectedAndSub()));
+ok(r.protectedVsReview?.protect.category==='selfDevelopment','DRIVE pairs only self-development actually protected');
+ok(r.protectedVsReview?.review.monthlyYen===1200,'DRIVE paired review uses confirmed opportunity not total subscriptions');
+ok(r.protectedVsReview?.review.isSavingRealized===false,'DRIVE pairing never labels savings already realized');
+r=pass(c1('OPTIMIZE'),c2(protectedAndSub()));
+ok(r.protectedVsReview?.protect.category==='fun','OPTIMIZE can contrast independently valued fun with unused contracts');
+ok(r.cards.every(x=>x.category!=='fun'),'OPTIMIZE never falsely calls enjoyment a validated style match');
+ok(r.protectedVsReview?.primaryStyle==='OPTIMIZE','OPTIMIZE comparison source labeled as action lens');
+r=pass(c1('SECURE'),c2(protectedAndSub()));
+ok(r.protectedVsReview===null,'SECURE does not treat covered insurance as a personality match');
+r=pass(c1('OPTIMIZE'),c2(protectedAndSub().map(x=>x.category==='fun'?{...x,appraisal:{satisfaction:'inertia'}}:x)));
+ok(r.protectedVsReview===null,'no pairing when enjoyment not explicitly valued');
+r=pass(c1('DRIVE'),c2(protectedAndSub().map(x=>x.category==='selfDevelopment'?{...x,appraisal:{selfDevelopmentValue:'unclear'}}:x)));
+ok(r.protectedVsReview===null,'no pairing when self-development purpose unclear');
+
+// User input and engine outcome are separate facts. Never pretend the user
+// explicitly chose the system-generated "protect" status.
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.cards[0]?.title.includes('「守る」判定'),'ENJOY copy attributes protect to diagnosis');
+ok(r.cards[0]?.body.includes('診断では「守る」と判定'),'ENJOY body separates input and verdict');
+ok(!r.cards[0]?.body.includes('守りたいと答え'),'ENJOY must not invent question response');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'waste'},'protect')));
+ok(r.status==='no_supported_link','negative satisfaction + protected status is not a defensible match');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{applicability:'notApplicable'})));
+ok(r.status==='no_supported_link','legacy notApplicable must not generate match');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect')));
+ok(r.cards[0]?.title.includes('「守る」判定'),'DRIVE protect is diagnostic decision, not self-report');
+ok(r.cards[0]?.body.includes('目的は明確'),'DRIVE quotes selected choice, not a generic combined purpose/results claim');
+
+
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('大切なので守りたい'),'very satisfied copies actual button wording');
+ok(r.protectedVsReview===null,'no contract contrast without independent contract evidence');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'satisfied'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('今くらいでいい'),'satisfied copies actual button wording');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'waste'},'inspect')));
+ok(r.cards[0]?.evidence.chapter2.includes('かなり見直したい'),'strong dissatisfaction choice retained');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'inertia'},'inspect')));
+ok(r.cards[0]?.evidence.chapter2.includes('少し見直したい'),'mild dissatisfaction choice retained');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'results'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('成果につながってる'),'self-investment results choice retained');
+r=pass(c1('ENJOY'),c2(pairRows()));
+ok(r.protectedVsReview?.protect.choiceLabel==='大切なので守りたい','paired insight must show exact respondent choice and separate engine decision');
+
+if(failed.length){console.error(JSON.stringify({status:'FAIL',checks,failed},null,2));process.exitCode=1}
+else console.log(JSON.stringify({status:'PASS',checks,scope:'prototype rule gates for Chapter1×Chapter2 self-report resonance, not correlation validity'}));

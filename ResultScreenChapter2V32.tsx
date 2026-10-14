@@ -3,12 +3,27 @@ import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
+import {V19SCENECSS} from './chapter2-v19-scene-css';
+import {V20BRIDGECSS} from './chapter2-v20-bridge-css';
+import {V21GATEBCSS} from './chapter2-v21-gateb-css';
+import {V22COMPARISONCSS} from './chapter2-v22-comparison-css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
-import {CHAPTER1_STYLE_NAMES,chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
+import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
+import CoverageAwarenessCard from './CoverageAwarenessCard';
+import {chapter2RecognitionV1} from './chapter2-recognition-v1';
+import {validatedChapter1LinkageV1} from './chapter1-linkage-v1';
+import {coverageConsultHandoff} from './scripts/coverage-consult-handoff-v1.mjs';
 
 type Props={
  vm:any;
  chapter1?:Chapter1HandoffV1|null;
+ answerCheckEnabled?:boolean;
+ answerCheckAnonymousUserId?:string|null;
+ answerCheckDemo?:boolean;
+ pilotNoExternalActions?:boolean;
+ /** Isolated QA-only interception of coverage handoff; all other preview outbound remains blocked. */
+ coverageDryRun?:boolean;
  onLine?:(x:any)=>void;
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
@@ -36,6 +51,9 @@ function MudagiriBeat({pose,line}:{pose:keyof typeof TALK_POSES;line:string}){
   <div className="c2v32-mudagiri-talk"><small>ムダギリくん</small><p>{line}</p></div>
  </aside>;
 }
+const JOB_STYLE_COLORS:Record<string,string>={DRIVE:'#ff625f',ENJOY:'#ff86c8',SECURE:'#62d9e8',OPTIMIZE:'#7bdc91'};
+const JOB_STYLE_LABELS:Record<string,string>={DRIVE:'前進',ENJOY:'楽しさ',SECURE:'安心',OPTIMIZE:'納得'};
+
 const GOALS=[
  ['home','住まい'],['family','家族・教育'],['travel','旅行・趣味'],['invest','資産形成'],
  ['challenge','独立・挑戦'],['safety','もしもの備え'],['retirement','老後'],['undecided','まだ決めていない']
@@ -53,6 +71,114 @@ const yen=(n:number)=>new Intl.NumberFormat('ja-JP').format(Math.max(0,Math.roun
 const money=(n:number)=>'¥'+yen(n);
 const nonnegative=(n:unknown)=>Math.max(0,Number.isFinite(Number(n))?Number(n):0);
 const handoffCode=(id:string)=>'MG-'+(String(id||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(-12)||'UNKNOWN');
+/** A conditional review clue, not proof of waste or realized savings. */
+function candidateReason(x:any):string{
+ if(x.cMethod==='mobile')return x.appraisal?.mobileCarrier==='major'
+  ?'大手のスマホ1回線で、月6,000円を超える部分を参考上限として抽出（対象額は月20,000円まで）'
+  :x.appraisal?.mobileCarrier==='mvno'
+   ?'格安SIMのスマホ1回線で、月3,000円を超える部分を参考上限として抽出（対象額は月10,000円まで）'
+   :'スマホ1回線の契約区分別の確認基準額を超える部分を、参考候補として抽出';
+ if(x.cMethod==='wide')return '比較できる目安の約1.15倍を超えた支出の一部を、確認候補として抽出';
+ if(x.cMethod==='standard')return '比較できる目安の約1.10倍を超えた支出の一部を、確認候補として抽出';
+ return '入力した支出について、確認が必要な候補。比較条件の詳細は敵図鑑で確認';
+}
+
+
+/** Comparison is not savings. Null/AUDIT references MUST NOT become invented averages. */
+function comparisonInputAmount(x:any):number|null{
+ // An explicitly unavailable comparison scope must never fall back to the
+ // diagnosis amount. Legacy synthetic fixtures simply omit this field.
+ const a=Object.prototype.hasOwnProperty.call(x,'comparisonAmount')?x.comparisonAmount:x.amount;
+ return a===null||a===undefined||!Number.isFinite(Number(a))?null:Number(a);
+}
+/** V5's display-only reference can exist even when the V4 comparisonQuality
+ * was 'none'. V5 keeps the V4 flags unchanged, so a result screen must read
+ * the V5 primary lens explicitly, rather than hide an available reference. */
+function comparisonPrimaryV5(x:any):{monthly:number;criteria:string[];sourceVersion:string;label:string;note:string}|null{
+ if(!['insurance','rent','car'].includes(String(x?.category))||x?.known!==true
+  ||(x?.applicability==='na'||x?.applicability==='notApplicable')||x?.amount===null||x?.amount===undefined
+  ||!Number.isFinite(Number(x.amount)))return null;
+ const ref=x?.v5ReferencePrimary;
+ if(!ref||ref.monthly===null||ref.monthly===undefined
+   ||!Number.isFinite(Number(ref.monthly))||Number(ref.monthly)<=0)return null;
+ return ref;
+}
+function comparisonAvailable(x:any):boolean{
+ if(comparisonPrimaryV5(x))return true;
+ return x?.applicability!=='na'&&x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
+  &&x?.comparable!==null&&x?.comparable!==undefined
+  &&Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0
+  &&x?.known===true&&comparisonInputAmount(x)!==null;
+}
+function comparisonReferenceAmount(x:any):number|null{
+ const ref=comparisonPrimaryV5(x);
+ return ref?Number(ref.monthly):comparisonAvailable(x)?Number(x.comparable):null;
+}
+function comparisonReferenceType(x:any):string{
+ if(comparisonPrimaryV5(x))return '属性に合わせた参考値';
+ // Published household-size data and separate income tables were multiplied in
+ // the V2 frozen runtime. Never label the derived cell as a direct official mean.
+ if(x?.comparisonModelEstimate===true)return '統計を組み合わせた推計値';
+ return x?.comparisonQuality==='reference'?'参考値':'近い条件との比較';
+}
+function comparisonTargetAmount(x:any):number|null{
+ // Mortgage references describe a whole property's repayment. A personal
+ // contribution is not the matched comparison amount in a shared household.
+ if(comparisonPrimaryV5(x)&&x?.category==='rent')return comparisonInputAmount(x);
+ return comparisonPrimaryV5(x)?Number(x.amount):comparisonInputAmount(x);
+}
+function comparisonBasis(x:any):string{
+ const raw=comparisonPrimaryV5(x)?.criteria??x?.comparisonContext?.criteria;
+ const criteria=Array.isArray(raw)?raw.filter((v:unknown)=>typeof v==='string'&&v.trim().length>0):[];
+ // The beauty tables have different populations: single sex×age,
+ // single combined-age, and multi-household age MODEL. Do not collapse them
+ // into a generic "same household" claim.
+ if(x?.category==='beautyFashion'&&comparisonAvailable(x)){
+  const source=String(x?.comparisonSourceVersion??'');
+  if(source.includes('MULTI_AGE_MODEL'))criteria.push('年代別の参考モデル（世帯人数別ではない）');
+  else if(source.includes('SINGLE_SEX_AGE'))criteria.push('性別と年代を組み合わせた比較');
+  else if(source.includes('SINGLE_'))criteria.push('単身・年代別の比較');
+ }
+ return criteria.length?criteria.join('・'):(typeof x?.comparisonAmountLabel==='string'&&x.comparisonAmountLabel?x.comparisonAmountLabel+'（詳しい属性条件は未表示）':'詳細な属性条件は未表示');
+}
+function comparisonReference(x:any):string{
+ const primary=comparisonPrimaryV5(x);
+ if(primary){
+  if(primary.sourceVersion.startsWith('JILI_'))return '生命保険文化センターの調査（'+(primary.sourceVersion.includes('2025')?'2025年':'2024年')+'）';
+  if(primary.sourceVersion.includes('STAT_GO_JP_FIES'))return '家計調査（2025年）・住宅ローン返済世帯';
+  if(primary.sourceVersion.includes('SONY_SONPO'))return '全国カーライフ実態調査（2025年）';
+  return primary.label;
+ }
+ const source=String(x?.comparisonSourceVersion??x?.comparisonContext?.sourceVersion??'');
+ if(source.includes('HOUSING'))return '住宅・土地統計調査（2023年）';
+ if(/UTILITY|FOOD|DAILY|ENTERTAINMENT|BEAUTY_FASHION/.test(source))return '家計調査（2025年）をもとにした参考目安';
+ if(source.includes('INSURANCE'))return '保険の参照調査（属性別）';
+ if(source.includes('CHILD_EDUCATION'))return '子どもの教育段階別参考値';
+ if(x?.evidenceLabel&&typeof x.evidenceLabel==='string')return x.evidenceLabel;
+ return 'カテゴリ別の参考条件';
+}
+function numericOrDash(x:any):string{
+ return x?.known===true&&Number.isFinite(Number(x?.amount))&&x?.amount!==null?money(Number(x.amount)):'未入力・対象外';
+}
+/** Status- and category-based guidance instead of shouting "no benchmark".
+ * No numeric reference is synthesized for AUDIT-only categories. */
+function nonNumericBasis(x:any):{title:string;detail:string}{
+ if(x?.v5Status==='na'||(x?.applicability==='na'||x?.applicability==='notApplicable'))
+  return {title:'今回は対象外',detail:'診断条件に当てはまらないため、比較をしていません。'};
+ if(x?.known!==true||x?.amount===null||x?.amount===undefined)
+  return {title:'入力内容を確認',detail:'金額を確認できると、判定を詳しく見られるよ。'};
+ switch(x?.category){
+  case 'sub':return {title:'利用状況で判断',detail:'使っていない契約・重複・解約可能かどうかを確認するよ。'};
+  case 'mobile':return {title:'契約プランで判断',detail:x.cMethod==='mobile'?candidateReason(x):'回線数・通信会社・料金プランを確認するよ。'};
+  case 'selfDevelopment':return {title:'使う目的で判断',detail:'学びや経験の目的・満足度を確認するよ。'};
+  case 'insurance':return {title:'保障の中身を確認',detail:'保険料だけでなく、必要な保障・給付条件を確認するよ。'};
+  case 'car':return {title:'維持費と使い方を確認',detail:'購入費と維持費の範囲・車の利用状況を確認するよ。'};
+  case 'rent':return {title:'住まいの条件で判断',detail:'住居形態や契約内容に合わせて確認するよ。'};
+  case 'childEducation':return {title:'学校段階に合わせて確認',detail:'子どもの学校段階・公私立などを確認するよ。'};
+  default:return {title:'入力条件で確認',detail:'今回の条件では、金額を並べた比較は表示していないよ。'};
+ }
+}
+function noBenchmarkReason(x:any):string{return nonNumericBasis(x).detail;}
 
 function loadImage(url:string):Promise<HTMLImageElement|null>{
  return new Promise(resolve=>{
@@ -105,10 +231,12 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
+ const [showCoverageLine,setShowCoverageLine]=useState(false);
+ const [coverageCopyError,setCoverageCopyError]=useState('');
  const [shareStatus,setShareStatus]=useState('');
  const [shareBusy,setShareBusy]=useState(false);
  const [shareReady,setShareReady]=useState(false);
@@ -140,9 +268,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
  const shown=filtered;
+ // This optional lineage was validated against the anonymousUserId when it
+ // was written by the diagnosis journey. Do not infer STYLE from spending.
+ const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
+ const recognition=chapter2RecognitionV1(shown,verifiedChapter1Style);
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
+ const jobStyleName=chapter1?JOB_STYLE_LABELS[chapter1.primaryStyle]??'':null;
+ const jobStyleColor=chapter1?JOB_STYLE_COLORS[chapter1.primaryStyle]??'#f5c84c':null;
+ const continuityStyle=jobAsset?{'--c2-job-accent':jobAsset.accent,'--c2-style-accent':jobStyleColor} as React.CSSProperties:undefined;
 
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
@@ -150,6 +285,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   setShowLine(true);
  }
  function confirmConsultation(){
+  if(pilotNoExternalActions){setShowLine(false);setShareStatus('調査用のサンプルです。予約やLINE連携は行われません。');return;}
   const code=handoffCode(vm.diagnosisId);
   onEvent?.('line_clicked',{placement:'consult_route',chapter:'household',typeCode:null});
   onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'consult_route',goal:goal??null});
@@ -158,6 +294,40 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',
     insuranceReview:!!vm.consultRoute?.insuranceReview});
   if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
+ }
+ // LINE friend-add URLs do not prefill a conversation. Give users a short
+ // non-sensitive message with a correlation code they can paste into the chat.
+ const coverageLineMessage='保障内容の確認について相談したいです。\n引継ぎコード：'+handoffCode(vm.diagnosisId);
+ function consultCoverage(){
+  if(pilotNoExternalActions&&!coverageDryRun)return;
+  onEvent?.('chapter2_v32_coverage_consultation_clicked',{placement:'coverage_review',topic:'insurance',noSavingsClaim:true});
+  setCoverageCopyError('');
+  setShowCoverageLine(true);
+ }
+ function openCoverageLine(){
+  if(pilotNoExternalActions&&!coverageDryRun)return;
+  const payload=coverageConsultHandoff(vm.diagnosisId,handoffCode(vm.diagnosisId));
+  if(!payload){setCoverageCopyError('引継ぎコードを作れませんでした。結果画面を開き直してからお試しください。');return;}
+  onBeforeExternal?.();
+  onEvent?.('chapter2_v32_coverage_line_message_outbound',{placement:'coverage_review',consultSelectedTopic:'insurance'});
+  onEvent?.('line_clicked',{placement:'coverage_review',chapter:'household',typeCode:null});
+  onEvent?.('chapter2_v31_consultation_line_outbound',{placement:'coverage_review',goal:null});
+  setShowCoverageLine(false);
+  onLine?.(payload);
+  if(!onLine)window.location.href='https://lin.ee/ZeLu7i6';
+ }
+ async function copyAndOpenCoverageLine(){
+  if(pilotNoExternalActions&&!coverageDryRun)return;
+  try {
+   if(!navigator.clipboard?.writeText)throw new Error('clipboard unavailable');
+   await navigator.clipboard.writeText(coverageLineMessage);
+   onEvent?.('chapter2_v32_coverage_line_copy_success',{placement:'coverage_review'});
+  }catch{
+   onEvent?.('chapter2_v32_coverage_line_copy_failed',{placement:'coverage_review'});
+   setCoverageCopyError('コピーできませんでした。下の文章を長押ししてコピーし、公式LINEへ進んでください。');
+   return;
+  }
+  openCoverageLine();
  }
  function shareUrl(platform:string){
   return chapter2V2ReferralUrl(window.location.href,platform);
@@ -171,6 +341,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   onEvent?.('chapter2_v31_share_export',{method:'download',content:'quest_card'});
  }
  function saveImage(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは画像保存を実行しません。');return;}
   const file=shareFile.current;
   if(!file){setShareStatus('画像の準備ができていません。画面を開き直して試してね。');return;}
   try{
@@ -181,6 +352,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   }
  }
  async function shareImage(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは共有を実行しません。');return;}
   if(shareBusy)return;
   setShareBusy(true);setShareStatus('');
   onEvent?.('chapter2_v2_share_clicked',{format:'image'});
@@ -219,6 +391,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   finally{setShareBusy(false);}
  }
  function shareText(platform:'x'|'line'){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルではSNS投稿を実行しません。');return;}
   onEvent?.('chapter2_v2_share_clicked',{format:'text',platform});
   onEvent?.('chapter2_v31_share_intent',{method:platform+'_text'});
   const text=chapter2V2ShareText(shareUrl(platform));
@@ -227,6 +400,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   else window.location.href='https://line.me/R/share?text='+encodeURIComponent(text);
  }
  async function copyInviteLink(){
+  if(pilotNoExternalActions){setShareStatus('調査用のサンプルでは招待リンクを配布しません。');return;}
   const url=shareUrl('copy');
   onEvent?.('chapter2_v31_share_intent',{method:'copy_link'});
   try{
@@ -252,8 +426,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
    {isOpen&&<div className="c2v2-detail">
     <p>{x.reason||'回答内容をもとに確認しています。'}</p>
     {x.known&&Number.isFinite(Number(x.amount))&&<p>あなたの支出：<b>{money(Number(x.amount))}/月</b></p>}
-    {x.comparable!==null&&x.comparable!==undefined&&Number.isFinite(Number(x.comparable))&&<p>比較の目安：{money(Number(x.comparable))}/月</p>}
-    {x.comparisonDifference!==null&&x.comparisonDifference!==undefined&&<p>比較差：{chapter2V2SignedComparisonYen(Number(x.comparisonDifference))}/月 <small>※この差はムダ額・改善額ではありません</small></p>}
+    {comparisonAvailable(x)?<>
+     <p>比較の目安：{money(comparisonReferenceAmount(x)!)} /月（{comparisonReferenceType(x)}）</p>
+     <p>比較条件：{comparisonBasis(x)}</p>
+     <p>参照元：{comparisonReference(x)}</p>
+     {comparisonPrimaryV5(x)?.note&&<p>参照データの注意：{comparisonPrimaryV5(x)!.note}</p>}
+     {comparisonTargetAmount(x)!==null&&comparisonReferenceAmount(x)!==null&&
+      <p>基準との差：{chapter2V2SignedComparisonYen(comparisonTargetAmount(x)!-comparisonReferenceAmount(x)!)}/月
+       <small>※この差はムダ額・改善額ではありません</small>
+      </p>}
+    </>:<p>判定の手がかり：{noBenchmarkReason(x)}</p>}
     {x.aAmount>0&&<p>回答から確認できた改善額：<b>{money(Number(x.aAmount))}/月</b></p>}
     {x.cUpper>0&&<p>追加の確認余地：最大 {money(Number(x.cUpper))}/月 <small>※削減できると確定した金額ではありません</small></p>}
     <p className="c2v2-next-check"><b>次の確認：</b>{x.nextAction||x.nextCheck||'支出の内容を確認'}</p>
@@ -261,14 +443,28 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS}</style><div className="c2v2-page c2v31-page">
-  <section className="c2v2-hero c2v3-hero c2v31-hero" data-section="CHAPTER2_QUEST_COMPLETE">
-   <div className="c2v32-chapter-label" aria-label="第1章から第2章へ">第1章 JOB獲得 <span>✓</span>　›　第2章 家計バトル <span>✓</span></div>
-   <span className="c2v31-quest-crest" aria-hidden="true">✦ ⚔ ✦</span>
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS+V22COMPARISONCSS}</style><div className="c2v2-page c2v31-page">
+  <section className="c2v2-hero c2v3-hero c2v31-hero c2v20-hero" data-section="CHAPTER2_QUEST_COMPLETE" style={continuityStyle}>
+   <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
+    <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
+    <div className="c2v20-quest-stages">
+     <span className={jobAsset?'is-complete':'is-unlinked'}>⚔ 第1章 <b>JOB獲得</b><small>{jobAsset?'クリア！':'未連携'}</small></span>
+     <span className="c2v20-quest-arrow" aria-hidden="true">›</span>
+     <span className="is-current" aria-current="step">🏰 第2章 <b>家計バトル</b><small>クリア！</small></span>
+    </div>
+   </nav>
    <span className="c2v2-eyebrow c2v31-hero-kicker">QUEST CLEAR!</span>
    <h1 className="c2v31-quest-title"><span>家計クエスト</span><em>完全クリア！</em></h1>
+   {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card c2v20-hero-job" aria-label="第1章から引き継いだ冒険者" data-section="CHAPTER1_JOB_BRIDGE">
+    <div className="c2v20-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"} loading="eager"/></div>
+    <div className="c2v20-job-identity">
+     <span>第1章で獲得した冒険者</span>
+     <strong>{jobAsset.name}</strong>
+     <div className="c2v20-job-style"><b>{jobStyleName}重視</b><small>そのJOBで家計クエストもクリア！</small></div>
+    </div>
+   </aside>}
    <div className="c2v31-hero-stage">
-    <div className="c2v31-dialogue"><strong>ムダギリくん</strong><p>「おつかれ！<br/>宝箱の中身を見てみよう！」</p></div>
+    <div className="c2v31-dialogue"><strong>ムダギリくん</strong><p>{jobAsset?'「そのJOBで家計バトルもクリア！一緒に戦った戦果を見よう。」':<>「おつかれ！<br/>宝箱の中身を見てみよう！」</>}</p></div>
     <img src={ART.result} alt="勝利を祝うムダギリくん" className="c2v31-hero-mascot"/>
    </div>
    <div className="c2v32-hero-teaser" data-section="POTENTIAL_HERO">
@@ -276,19 +472,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     {reviewUpper>0?<strong>月 最大 {money(reviewUpper)}</strong>:<strong>候補額はまだ未特定</strong>}
     <small>※未確定の参考上限。削減できると決まった金額ではありません。</small>
    </div>
-   <span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>
+   {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump c2v21-evidence-jump" data-section="CANDIDATE_EVIDENCE_JUMP"
+    onClick={()=>{onEvent?.('chapter2_v21_candidate_evidence_jump_clicked',{target:candidates.length?'candidate_breakdown':'treasure_report'});
+     document.querySelector(candidates.length?'[data-section="CANDIDATE_BREAKDOWN"]':'[data-section="POTENTIAL_TREASURE"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}>
+    {candidates.length?'✦ まず、見直し候補の理由を見る ↓':'✦ 見直し候補を確認する ↓'}
+   </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
-  {jobAsset&&chapter1&&<aside className="c2v31-job-card c2v3-job-card" aria-label="第1章から引き継いだ冒険者">
-   <div className="c2v31-section-heading"><span>⚜ ADVENTURER RECORD</span><small>第1章のJOB</small></div>
-   <div className="c2v31-job-inner">
-    <div className="c2v3-job-portrait"><img src={jobAsset.file} alt={jobAsset.name+"のJOB画像"}/></div>
-    <div className="c2v3-job-meta"><strong>{jobAsset.name}</strong><span className="c2v31-style">{CHAPTER1_STYLE_NAMES[chapter1.primaryStyle]}重視</span>
-     <p>この冒険者と、家計クエストもクリア！</p>
-    </div>
-   </div>
-  </aside>}
-
-
   <section className="c2v32-treasure-lead" data-section="POTENTIAL_TREASURE">
    <div className="c2v31-section-heading"><span>🔑 TREASURE REPORT</span><small>今回の見直し候補</small></div>
    <h2>宝箱に眠っていたお金</h2>
@@ -297,36 +486,50 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
     <div className="c2v31-unknown-layout">
      <TreasureChest className="c2v31-chest-art" locked/>
      <div className="c2v31-unknown-details">
-      {reviewUpper>0?<><span>診断で見つかった見直し候補</span><strong>最大 {money(reviewUpper)}<small> / 月</small></strong></>:<>
+      {reviewUpper>0?<><span>確認が必要な見直し候補</span><strong>{candidates.length>0?`${candidates.length}カテゴリ`:'内訳を確認中'}</strong></>:<>
        <strong>今は未確認</strong><span>追加で見直せる可能性は、まだ特定されていません。</span>
       </>}
      </div>
     </div>
     <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
    </section>
-   {primaryCandidate&&<div className="c2v32-first-action" data-section="FIRST_REVIEW_ACTION">
-    <span>⚔ 最初に確かめるなら</span>
-    <div className="c2v32-primary-enemy">
-     {(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.normal&&<img src={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].normal} alt={(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category].name} loading="eager"/>}
-     <div><strong>{(ENEMY_ASSETS as Record<string,any>)[primaryCandidate.category]?.name||primaryCandidate.label||primaryCandidate.category}</strong><small>{primaryCandidate.label||primaryCandidate.category}</small></div>
-    </div>
+   {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
+    <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>月額の未確定候補／すべて表示</small></div>
+    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
+    <div className="c2v32-breakdown-entries">{candidates.map((x:any)=>{
+     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
+      <div className="c2v32-breakdown-entry-head">
+       {enemy?.normal?<img src={enemy.normal} alt="" loading="lazy"/>:<span className="c2v32-breakdown-icon" aria-hidden="true">⚔</span>}
+       <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
+       <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
+      </div>
+      {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
+       {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月 <small>（平均との差がそのまま削減額になるわけではありません）</small></>}
+      </p>}
+      <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
+      <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+     </div>;
+    })}</div>
+    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
+   </section>}
+   {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
+    <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
     <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-    <small>まず内容を確認。今すぐ削ると決まった支出ではないよ。</small>
    </div>}
   </section>
-  <MudagiriBeat pose="check" line={reviewUpper>0?"まだ見直せるかも、っていう候補だよ。まず中身を確かめよう！":"見直し候補が見つからなくても大丈夫。無理にムダを決めつけないぞ！"}/>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
    <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>すべて</span>毎月改善できたら？<small>未確定の参考シミュレーション</small></p>}
+   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>全部</span>毎月減らせたら？<small>まだ確定した金額じゃないよ。実際に減らせるかは確認してから。</small></p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(reviewUpper*60)}</strong></div>
     </div>
     <div className="c2v3-reward-ten c2v31-reward-ten">
-     <div className="c2v31-ten-details"><span>✦ 10年間の積み重ね ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
+     <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
     <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
@@ -337,7 +540,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
   </section>
   <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
 
-  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
+
+  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
+  {answerCheckEnabled&&<Chapter12AnswerCheckCard
+   enabled={answerCheckEnabled} chapter1={chapter1}
+   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
+   rows={vm?.rows} demo={answerCheckDemo}
+  />}
+
+  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS" data-observation-kind={recognition?.kind??"no_supported_observation"}>
    <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
    <h2>今回の戦果</h2>
    <div className="c2v2-counts c2v31-counts">
@@ -358,60 +569,104 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
      </div>;
     })}</div>
    </div>}
-   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="確認できた改善額">
-    <div className="c2v31-confirmed-heading">確定した改善額</div>
+   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="回答から確認できた改善額。節約済みかは別途確認が必要">
+    <div className="c2v31-confirmed-heading">回答から確認できた改善額</div>
     <div className="c2v31-confirmed-content">
      <CoinPouch className="c2v31-coin-art"/>
      <div className="c2v31-confirmed-amount"><span>毎月</span><strong>{money(confirmed)}</strong></div>
     </div>
-    <span className="c2v31-confirmed-caption">{confirmed>0?'確認済みの戦利品':'確定した改善額はまだありません'}</span>
+    <span className="c2v31-confirmed-caption">{confirmed>0?'回答で確認した改善額。実行・節約済みかは別途確認が必要です。':'回答から確認できた改善額はまだありません'}</span>
    </section>
-   <p className="c2v2-note c2v31-accounting-note">※平均・基準との差額を削減額とは扱わず、未確定額を確認済み改善額には加えていません。</p>
+   <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
+   {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
+    onClick={()=>document.querySelector('[data-section="CATEGORY_COMPARISON_OVERVIEW"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>
+    12カテゴリの比較基準を一覧で見る ↓
+   </button>}
   </section>
-  <MudagiriBeat pose="proud" line="敵の顔ぶれも見えてきたな。高いからってムダじゃない。守るお金は守ろう！"/>
+  <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
+   ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
+   :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！')}/>
+  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
    <span className="c2v31-next-head">⚑ NEXT QUEST</span>
    <h2>次の冒険は、<br/>未来の作戦会議。</h2>
-   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」など、見直し候補を本当に変えられるか確かめよう。その先のお金の使い道まで一緒に考えるぞ。</>:'無理に削らず、今の家計を守りながら未来のお金を整理しよう。'}</p>
+   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」が本当に見直せるか、一緒に確かめよう。「いつかやりたいこと」を、今日できる一歩に変える作戦も考えよう。</>:'無理に削らず、今の家計を守りながら考えよう。「いつかやりたいこと」を、今日できる小さな一歩につなげよう。'}</p>
    <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
    <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
   <section className="c2v2-card c2v31-followup" data-section="NEXT_QUEST">
-   <span className="c2v2-kicker">NEXT QUEST ／ 次の一手</span>
-   <h2>まずは、これだけ。</h2>
+   <details className="c2v32-optional-detail" data-optional="first-step">
+    <summary>最初の確認ポイントをもう一度見る</summary>
    {next?<div className="c2v2-quest">
     <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
     <div><b>{(ENEMY_ASSETS as Record<string,any>)[next.category]?.name||next.label}</b><small>{next.label||next.category}</small><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
     {next.aAmount>0&&<strong>確認済み：月 {money(Number(next.aAmount))}</strong>}</div>
    </div>:<div className="c2v2-quest"><img src={ART.guide} alt="" loading="lazy"/><p>無理にムダを探さなくてもOK。今の状態を守るところから始めよう。</p></div>}
-   <MudagiriBeat pose="guide" line="全部まとめて変えなくていい。まず1つ、気になる敵を確かめよう！"/>
+   </details>
   </section>
 
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
-   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span><h2>気になる敵を、もっと詳しく。</h2>
-   <p>敵のカードをタップすると、その項目の判定理由と確認ポイントが開くぞ。対象外や守る支出も省かず並べているよ。</p>
-   {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
-   <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
+   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
+   <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
+   <p className="c2v22-ledger-intro">あなたの入力額と、比較できる項目の目安を並べたよ。基準との差は、そのままムダ額・節約額ではない。比較できない項目には平均を作っていないよ。</p>
+   {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
+    {shown.map((x:any)=>{
+     const status=STATUS[x.v5Status]??STATUS.review;
+     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     const comparable=comparisonAvailable(x);
+     const referenceAmount=comparisonReferenceAmount(x);
+     const compareAmount=comparable?comparisonTargetAmount(x):null;
+     const noNumber=nonNumericBasis(x);
+     const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
+     return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+      <div className="c2v22-comparison-head">
+       {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
+       <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
+       <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
+      </div>
+      <div className="c2v22-comparison-values">
+       <span><small>今回の入力</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b></span>
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'近い条件の目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b></span>
+      </div>
+      {comparable?<div className="c2v22-comparison-source">
+       {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
+       <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
+      </div>:<p className="c2v22-comparison-source is-unavailable">{noNumber.detail}</p>}
+      {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
+     </div>;
+    })}
+   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
+   <p className="c2v22-ledger-footnote">※比較額はカテゴリごとに対象・条件が異なります。平均より高い／低いだけでは無駄や改善額は決まりません。回答に基づく判定や見直し候補は別の情報です。</p>
+   <details className="c2v32-optional-detail" data-optional="enemy-atlas">
+    <summary>敵キャラと詳しい説明を見る（任意）</summary>
+    <p>上の比較一覧が結果の基本だよ。ここからは12体のキャラと回答の理由を、好きなものだけ詳しく見られるぞ。</p>
+    {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
+    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
+   </details>
   </section>
 
   <section className="c2v2-card c2v31-goals" data-section="GOAL_QUEST">
    <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>
-   <h2>整えたお金、どんな未来に使いたい？</h2>
-   <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
-   {selectedGoal&&<p className="c2v2-talk">次の目的地は「{selectedGoal}」。そのためのお金の配分を考えよう。</p>}
-   <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>{selectedGoal?'「'+selectedGoal+'」の相談案内を見る →':'ライフプラン相談の案内を見る →'}</button>
+   <details className="c2v32-optional-detail" data-optional="future-goal">
+    <summary>未来の目的地を選ぶ（任意）</summary>
+    <p>やりたいことが決まっていたら選んでみよう。まだ決めなくても大丈夫。</p>
+    <div className="c2v2-goals">{GOALS.map(([code,label])=><button type="button" key={code} className={goal===code?'is-selected':''} aria-pressed={goal===code} onClick={()=>{setGoal(code);onEvent?.('goal_selected',{goal:code,chapter:'household'});}}>{label}</button>)}</div>
+    {selectedGoal&&<>
+     <p className="c2v2-talk">次の目的地は「{selectedGoal}」。このテーマで相談することもできるよ。</p>
+     <button className="c2v2-primary" onClick={()=>consultation('goal_quest')}>「{selectedGoal}」について相談する →</button>
+    </>}
+   </details>
   </section>
 
-  <MudagiriBeat pose="share" line="冒険者カードを友達に見せてみる？家計の金額は載せないから安心してね！"/>
 
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>{jobAsset?'第1章で獲得した冒険者JOBとクリア記念のカードを共有できるよ。':'家計クエスト完全クリアの記念カードを共有できるよ。'}金額・家計情報は載せないよ。</p>
    <button className="c2v2-share-primary c2v31-share-primary" onClick={()=>void shareImage()} disabled={shareBusy||!shareReady}>{shareBusy?'共有画面を開いています…':shareReady?'画像付きでシェアする ↗':'画像カードを準備中…'}</button>
-   <small className="c2v31-share-help">共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。</small>
+   <small className="c2v31-share-help">{pilotNoExternalActions?'調査用の画面です。SNS投稿・画像保存・招待リンク配布は実行されません。':'共有先はスマホの画面で選んでね。X・LINE・Instagram・Threadsなど、使えるアプリは端末によって異なるよ。'}</small>
    <details className="c2v31-share-alternatives">
     <summary>画像の保存・文章だけで共有 <span aria-hidden="true">⌄</span></summary>
     <div className="c2v31-share-alt-grid">
@@ -427,11 +682,24 @@ export default function ResultScreenChapter2V32({vm,chapter1,onLine,onEvent,onRe
 
   {onRestart&&<button className="c2v2-restart" onClick={onRestart}>家計クエストを最初からやり直す</button>}
  </div>
+ {showCoverageLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowCoverageLine(false)}>
+  <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v32-coverage-title" onClick={e=>e.stopPropagation()} data-dialog="COVERAGE_LINE_HANDOFF">
+   <span className="c2v2-kicker">🛡 保障の相談</span>
+   <h2 id="c2v32-coverage-title">公式LINEで保障を確認しよう</h2>
+   <p>LINEの友だち追加だけでは相談内容は伝わりません。下の短い文章をコピーし、LINEのトークに貼り付けて送信してください。</p>
+   <textarea className="c2v32-coverage-message" readOnly aria-label="LINEに送る保障相談メッセージ" value={coverageLineMessage} rows={3}/>
+   <small className="c2v32-coverage-note">家計金額・健康情報は、この文章に含まれません。友だち追加だけでは予約は確定しません。</small>
+   {coverageCopyError&&<p className="c2v32-coverage-copy-error" role="status">{coverageCopyError}</p>}
+   <button type="button" className="c2v2-primary" onClick={()=>void copyAndOpenCoverageLine()}>相談文をコピーして公式LINEへ →</button>
+   {coverageCopyError&&<button type="button" className="c2v2-subtle" onClick={openCoverageLine}>手動でコピーして公式LINEを開く →</button>}
+   <button type="button" className="c2v2-subtle" onClick={()=>setShowCoverageLine(false)}>今は結果を見る</button>
+  </section>
+ </div>}
  {showLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowLine(false)}>
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
    <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
    <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
-   <p>公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。</p>
+   <p>{pilotNoExternalActions?'これは調査用の案内画面です。公式LINEへの移動や相談予約は行われません。':'公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。'}</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
    <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで無料相談の案内を受け取る →</button>
    <button className="c2v2-subtle" onClick={()=>setShowLine(false)}>今は結果を見る</button>
@@ -491,6 +759,7 @@ const CSS=[
  '.c2v2-modal{width:min(100%,440px);background:#153047;border:1px solid #8fa8b8;border-radius:17px;padding:24px;color:#fff}',
  '.c2v2-modal h2{font-size:26px;line-height:1.3;margin:10px 0}.c2v2-modal p{font-size:15px;line-height:1.7}',
  ".c2v2-code{background:#10273a;padding:10px;border-radius:9px;font-size:14px!important;word-break:break-word}",
+ '.c2v32-coverage-message{width:100%;display:block;min-height:82px;resize:vertical;padding:12px;border-radius:10px;border:1px solid #92b4b8;background:#092431;color:#fff7d4;font:700 15px/1.65 system-ui;user-select:text}.c2v32-coverage-note{display:block;font-size:13px;line-height:1.6;margin-top:9px;color:#d9e8e8}.c2v32-coverage-copy-error{color:#ffe29c!important}.c2v2-modal{max-height:calc(100dvh - 32px);overflow:auto}',
  "@media(max-width:350px){.c2v2-hero-art{opacity:.45;right:-3px}.c2v2-hero h1,.c2v2-hero>p{max-width:90%}.c2v2-hero{min-height:342px}}",
  '@media(prefers-reduced-motion:reduce){.c2v2-root *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}'
 ].join('');

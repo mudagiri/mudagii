@@ -7,6 +7,8 @@ import ResultScreenChapter2V3 from './ResultScreenChapter2V3';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
 import {chapter2V2Enabled,readChapter1HandoffV1} from './chapter2-v2-contract';
+import {chapter1LinkageV1,validatedChapter1LinkageV1,type Chapter1LinkageV1} from './chapter1-linkage-v1';
+import {lineLeadIdV1} from './line-lead-id-v1';
 import type {ToneMode} from './tone-mode-v3';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
 import {scoreTypeAnswersV31,type TypeAnswersV31} from './type-questionnaire-v3.1';
@@ -22,6 +24,7 @@ import type {ComparisonFactsV4} from './benchmark-router-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildPersistencePayloadV4} from './persistence-v4';
 import {trackMudagiriProductEvent} from './src/product-funnel-analytics-v1';
+import {externalLineContext} from './scripts/coverage-consult-handoff-v1.mjs';
 
 export type CompletedV3={
  profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number};
@@ -34,11 +37,14 @@ export type CompletedV3={
  methodologyVersion:string;
  resolverVersion:string;
  scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null};
+ chapter1Link?:Chapter1LinkageV1|null;
 };
 
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
  // V1 remains the default; V2 is enabled explicitly for previews or release builds.
  const chapter2V32=(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter2v32')==='1')||(import.meta as any).env?.VITE_CHAPTER2_V32==='1';
+ // Prototype only; V32 diagnosis logic, default UI and external handoff stay unchanged.
+ const answerCheckEnabled=chapter2V32&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter12check')==='1';
  const chapter2V31=(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter2v31')==='1')||(import.meta as any).env?.VITE_CHAPTER2_V31==='1';
  const chapter2V3=(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter2v3')==='1')||(import.meta as any).env?.VITE_CHAPTER2_V3==='1';
  const requestedChapter2V2=chapter2V32||chapter2V31||chapter2V3||chapter2V2Enabled(typeof window==='undefined'?'':window.location.search,(import.meta as any).env?.VITE_CHAPTER2_V2);
@@ -83,12 +89,14 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
        diagnosisId:restored.diagnosisId,toneMode:restored.completed.toneMode??'serious',profile:v.profile,
        type:typeVm??{code:'',name:'',description:'旧形式の保存データ',axes:{fv:0,pi:0,au:0},axisStrength:{fv:0,pi:0,au:0},nearMiddle:{fv:true,pi:true,au:true}},finalCategories:v.finalJudgements,monthlyImprovement:v.finalJudgements.reduce((sum,x)=>sum+x.reducible,0),annualIncomeBand:v.annualIncomeBand
      });
-     setToneMode(restored.completed.toneMode??'serious');setResult(vm);
+     const chapter1Link=chapter2V2?(validatedChapter1LinkageV1(v.chapter1Link)??chapter1LinkageV1(readChapter1HandoffV1(anonymousUserId),anonymousUserId)):null;
+     setToneMode(restored.completed.toneMode??'serious');setResult({...vm,chapter1Link});
      emit('result_restored',{source:'reload_or_return'});
    }catch{}
  },[restored,result]);
 
  const complete=async(v:CompletedV3)=>{
+   const chapter1Link=chapter2V2?chapter1LinkageV1(readChapter1HandoffV1(anonymousUserId),anonymousUserId):null;
    const scored=chapter2V2?null:scoreTypeAnswersV31(v.typeAnswers);
    const content=scored?TYPE_CONTENT_V31[scored.code]:null;
    const typeVm=scored&&content?{code:scored.code,name:content.name,description:content.summary,catchphrase:content.catchphrase,strengthLabel:content.strength,blindSpot:content.blindSpot,shareHook:content.shareHook,axes:scored.axes,axisStrength:scored.strength,nearMiddle:scored.nearMiddle}:undefined;
@@ -112,10 +120,10 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
      schemaVersion:'MUDAGIRI_SHEET_V3' as const,
      diagnosisId,anonymousUserId,createdAt:new Date().toISOString(),
      acquisition:typeof window!=='undefined'?acquisitionFromLocation():undefined,
-     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,persistenceV4,
+     toneMode,profile:v.profile,annualIncomeBand:v.annualIncomeBand,annualIncomeResolverInput:v.annualIncomeResolverInput,scopeV4:v.scopeV4??null,persistenceV4,chapter1Link,
      rawExpenses:v.rawExpenses,typeAnswers:chapter2V2?{}:v.typeAnswers,appraisal:v.appraisal,
      methodology:{diagnosis:v.scopeV4?.diagnosisMethodology??v.methodologyVersion,resolver:v.resolverVersion,type:chapter2V2?'CHAPTER2_V2_NO_PERSONALITY':'TYPE_MODEL_V3_1_8'},
-     result:{...(scored&&content?{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle}:{}),counts:vm.counts,improvement:vm.improvement,
+     result:{...(scored&&content?{typeCode:scored.code,typeName:content.name,typeAxes:scored.axes,typeStrength:scored.strength,typeNearMiddle:scored.nearMiddle}:{}),chapter1Link,counts:vm.counts,improvement:vm.improvement,
        finalStatuses:savedFinalStatuses,
        finalDetails:savedFinalDetails,
        battleTargets:vm.battleTargets.map((x:any)=>x.category),encounterTargets:vm.encounterTargets.map((x:any)=>x.category),secondaryReviewTargets:vm.secondaryReviewTargets.map((x:any)=>x.category),
@@ -134,10 +142,10 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
    // RESULT must feel instant. Persist the resumable result locally first, render,
    // then send the heavier diagnosis snapshot without blocking navigation.
    if(typeof window!=='undefined'){
-     writeActiveResultV1({schemaVersion:'MUDAGIRI_ACTIVE_RESULT_V1',diagnosisId,anonymousUserId,completedAt:new Date().toISOString(),methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:chapter2V2?'CHAPTER2_V2_NO_PERSONALITY':'TYPE_MODEL_V3_1_8'},completed:{...v,toneMode}});
+     writeActiveResultV1({schemaVersion:'MUDAGIRI_ACTIVE_RESULT_V1',diagnosisId,anonymousUserId,completedAt:new Date().toISOString(),methodology:{diagnosis:v.methodologyVersion,resolver:v.resolverVersion,type:chapter2V2?'CHAPTER2_V2_NO_PERSONALITY':'TYPE_MODEL_V3_1_8'},completed:{...v,toneMode,chapter1Link}});
      clearJourneyDraftV1();
    }
-   setResult(vm);
+   setResult({...vm,chapter1Link});
    if(typeof window!=='undefined')window.scrollTo({top:0,behavior:'auto'});
    queueMicrotask(()=>{
      emit('diagnosis_completed',scored?{typeCode:scored.code,typeAxes:scored.axes,typeStrength:scored.strength,toneMode}:{toneMode,chapter2Version:'V2_NO_DUPLICATE_PERSONALITY'});
@@ -149,10 +157,14 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
 
  const ResultComponent:any=chapter2V32&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V32:(chapter2V31&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V31:(chapter2V3&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V3:(chapter2V2&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V2:(result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenV5:ResultScreenV4))));
 
- if(result)return <ResultComponent vm={result} chapter1={chapter2V2?readChapter1HandoffV1(anonymousUserId):null} onEvent={emit} onBeforeExternal={()=>{const active=typeof window!=='undefined'?readActiveResultV1():null;if(!active||active.diagnosisId!==diagnosisId)throw new Error('active result missing before external navigation')}} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={(ctx:any)=>{
+ if(result)return <ResultComponent vm={result} chapter1={chapter2V2?readChapter1HandoffV1(anonymousUserId):null} answerCheckEnabled={answerCheckEnabled} answerCheckAnonymousUserId={answerCheckEnabled?anonymousUserId:null} onEvent={emit} onBeforeExternal={()=>{const active=typeof window!=='undefined'?readActiveResultV1():null;if(!active||active.diagnosisId!==diagnosisId)throw new Error('active result missing before external navigation')}} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={(ctx:any)=>{
    const payload={...ctx,anonymousUserId,diagnosisId,confirmedMonthly:result.potential?.confirmedA??result.improvement?.monthly??0,potentialLower:result.potential?.lower??result.improvement?.monthly??0,potentialUpper:result.potential?.upper??result.improvement?.monthly??0,futureGoal:ctx?.goal??null};
-   void Promise.resolve(store?.saveLead?.({leadId:'lead_'+diagnosisId+(ctx?.handoffCode?'_'+ctx.handoffCode:''),anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null,ctaPlacement:ctx?.placement??null,handoffCode:ctx?.handoffCode??null,consultPrimary:ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',consultSelectedTopic:ctx?.consultSelectedTopic??ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',insuranceReview:ctx?.insuranceReview??result.consultRoute?.insuranceReview??false,homeStructure:ctx?.homeStructure??null,solarEligible:ctx?.solarEligible??false,consultRoute:result.consultRoute??null,goal:ctx?.goal??null})).catch(()=>{});
-   if(onLine)onLine(payload); else window.location.href='https://lin.ee/ZeLu7i6';
+   void Promise.resolve(store?.saveLead?.({leadId:lineLeadIdV1(diagnosisId,ctx?.handoffCode,ctx?.placement),anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,chapter1Link:validatedChapter1LinkageV1(result.chapter1Link),typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null,ctaPlacement:ctx?.placement??null,handoffCode:ctx?.handoffCode??null,consultPrimary:ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',consultSelectedTopic:ctx?.consultSelectedTopic??ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',insuranceReview:ctx?.insuranceReview??result.consultRoute?.insuranceReview??false,homeStructure:ctx?.homeStructure??null,solarEligible:ctx?.solarEligible??false,consultRoute:result.consultRoute??null,goal:ctx?.goal??null})).catch(()=>{});
+   // Coverage intent must reach the official LINE handler without forwarding
+   // household amounts, appraisals or profile details as callback context.
+   // Internal lead saving above keeps its existing attribution fields.
+   if(onLine){const external=externalLineContext(ctx,payload);if(external)onLine(external);}
+   else window.location.href='https://lin.ee/ZeLu7i6';
  }}/>;
 
  return <RpgBlock1
