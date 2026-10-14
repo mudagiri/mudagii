@@ -39,6 +39,14 @@ const LABEL:Partial<Record<Category,string>>={
  childEducation:'教育費'
 };
 const VALUED=['fun','food','selfDevelopment','beautyFashion','rent'] as const;
+// STYLE only chooses which independently supported observation to mention first.
+// It never proves that the Chapter 1 personality classification was correct.
+const STYLE_FOCUS={
+ ENJOY:{category:'fun',name:'楽しさ'},
+ DRIVE:{category:'selfDevelopment',name:'前進'},
+ SECURE:{category:'rent',name:'安心'}
+} as const;
+
 function active(r:CategoryObservationRow|undefined):r is CategoryObservationRow{
  return !!r&&r.known===true&&r.applicability!=='na'&&r.applicability!=='notApplicable'
   &&typeof r.amount==='number'&&Number.isFinite(r.amount)&&r.amount>0;
@@ -62,7 +70,7 @@ function unusedConfirmed(r:CategoryObservationRow|undefined):boolean{
  return typeof unused==='number'&&Number.isSafeInteger(unused)&&unused>0&&unused<=r.amount!
   &&typeof opportunity==='number'&&Number.isSafeInteger(opportunity)&&opportunity>0&&opportunity<=unused;
 }
-export function chapter2RecognitionV1(raw:unknown):Chapter2RecognitionV1|null{
+export function chapter2RecognitionV1(raw:unknown,chapter1Style:unknown=null):Chapter2RecognitionV1|null{
  if(!Array.isArray(raw)||raw.length!==12)return null;
  const byCat=new Map<Category,CategoryObservationRow>();
  for(const row of raw){
@@ -71,8 +79,14 @@ export function chapter2RecognitionV1(raw:unknown):Chapter2RecognitionV1|null{
   byCat.set(row.category as Category,row);
  }
  // Protect only when explicitly self-reported AND the computed result agrees.
- const p=VALUED.map(c=>byCat.get(c)).find(r=>active(r)&&declaredProtection(r!)!==null);
+ const protectedRows=VALUED.map(c=>byCat.get(c)).filter((r):r is CategoryObservationRow=>!!r&&active(r)&&declaredProtection(r)!==null);
+ const focus=typeof chapter1Style==='string'&&Object.prototype.hasOwnProperty.call(STYLE_FOCUS,chapter1Style)
+  ?STYLE_FOCUS[chapter1Style as keyof typeof STYLE_FOCUS]:null;
+ const linked=focus?protectedRows.find(r=>r.category===focus.category):null;
+ const p=linked??protectedRows[0];
  const pReason=p?declaredProtection(p):null;
+ const chapterContinuity=linked&&focus?`第1章では「${focus.name}」を大事にしてたよな。`:'';
+
  const sub=byCat.get('sub');
  const confirmed=unusedConfirmed(sub);
  // Candidate means review upper, not a saving. Never use the biggest amount
@@ -85,25 +99,25 @@ export function chapter2RecognitionV1(raw:unknown):Chapter2RecognitionV1|null{
  if(p&&pReason){
   if(confirmed)return {
    kind:'protected_and_confirmed_contract',
-   line:`「${catName(p)}」は${pReason}んだな。一方で、サブスクには未使用・解約可能と答えた契約がある。大切な支出を守って、そっちから確かめよう！`,
+   line:`${chapterContinuity}「${catName(p)}」は${pReason}んだな。一方で、サブスクには未使用・解約可能と答えた契約がある。大切な支出を守って、そっちから確かめよう！`,
    protectCategory:p.category,reviewCategory:'sub',
    evidenceCodes:['SELF_REPORTED_VALUE','PROTECTED_V5','UNUSED_CANCELLABLE_SELF_REPORT'],shareAllowed:false
   };
   if(candidate)return {
    kind:'protected_and_candidate',
-   line:`「${catName(p)}」は${pReason}んだな。なら「${catName(candidate)}」の内訳から確かめよう。候補額はまだ節約できた金額じゃないぞ！`,
+   line:`${chapterContinuity}「${catName(p)}」は${pReason}んだな。なら「${catName(candidate)}」の内訳から確かめよう。候補額はまだ節約できた金額じゃないぞ！`,
    protectCategory:p.category,reviewCategory:candidate.category,
    evidenceCodes:['SELF_REPORTED_VALUE','PROTECTED_V5','UNCONFIRMED_REVIEW_UPPER'],shareAllowed:false
   };
   return {
    kind:'protected_only',
-   line:`「${catName(p)}」は${pReason}んだな。使う価値があるお金を無理に削らないのも、今回の戦果だ！`,
+   line:`${chapterContinuity}「${catName(p)}」は${pReason}んだな。使う価値があるお金を無理に削らないのも、今回の戦果だ！`,
    protectCategory:p.category,evidenceCodes:['SELF_REPORTED_VALUE','PROTECTED_V5'],shareAllowed:false
   };
  }
  if(confirmed)return {
   kind:'confirmed_unused_contract',
-  line:'サブスクに未使用で解約できると答えた契約がある。まず契約一覧を確認しよう。まだ節約済みではないぞ！',
+  line:(chapter1Style==='OPTIMIZE'?'第1章では「納得」を大事にしてたよな。':'')+'サブスクに未使用で解約できると答えた契約がある。まず契約一覧を確認しよう。まだ節約済みではないぞ！',
   reviewCategory:'sub',evidenceCodes:['UNUSED_CANCELLABLE_SELF_REPORT'],shareAllowed:false
  };
  return null;
