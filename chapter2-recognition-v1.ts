@@ -67,7 +67,7 @@ export function chapter2RecognitionV1(raw:unknown):Chapter2RecognitionV1|null{
  const byCat=new Map<Category,CategoryObservationRow>();
  for(const row of raw){
   if(!row||typeof row!=='object'||typeof row.category!=='string'
-   ||!(row.category in LABEL)||byCat.has(row.category as Category))return null;
+   ||!Object.prototype.hasOwnProperty.call(LABEL,row.category)||byCat.has(row.category as Category))return null;
   byCat.set(row.category as Category,row);
  }
  // Protect only when explicitly self-reported AND the computed result agrees.
