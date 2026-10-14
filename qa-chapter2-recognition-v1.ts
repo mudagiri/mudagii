@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import {chapter2RecognitionV1} from './chapter2-recognition-v1';
+import {chapter2RecognitionV1,RECOGNITION_APPRAISAL_LABELS} from './chapter2-recognition-v1';
 import {CATEGORY_IDS} from './scripts/chapter12-answercheck-experiment-v1.mjs';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
 
@@ -10,6 +11,19 @@ type Row={
  amount:number;v5Status:string;cUpper:number;aAmount:number;
  appraisal:Record<string,unknown>;
 };
+// Verify text echoes the real button labels, not guessed or generalized
+// descriptions. The underlying question choices are FROZEN.
+const liveQuestions=fs.readFileSync('./RpgBlock1.tsx','utf8');
+for(const [code,label] of Object.entries(RECOGNITION_APPRAISAL_LABELS.satisfaction)){
+ assert.ok(liveQuestions.includes("label:'"+label+"'")&&liveQuestions.includes("value:'"+code+"'"),'satisfaction exact UI option '+code);
+}
+for(const [code,label] of Object.entries(RECOGNITION_APPRAISAL_LABELS.selfDevelopment)){
+ assert.ok(liveQuestions.includes("label:'"+label+"'")&&liveQuestions.includes("selfDevelopmentValue:'"+code+"'"),'self-investment exact UI option '+code);
+}
+for(const [code,label] of Object.entries(RECOGNITION_APPRAISAL_LABELS.rent)){
+ assert.ok(liveQuestions.includes("label:'"+label+"'")&&liveQuestions.includes("rentPreference:'"+code+"'"),'housing exact UI option '+code);
+}
+
 const make=():Row[]=>CATEGORY_IDS.map(category=>({
  category,label:category,known:true,applicability:'applicable',
  amount:18000,v5Status:'inspect',cUpper:0,aAmount:0,appraisal:{}
@@ -27,6 +41,7 @@ assert.equal(chapter2RecognitionV1([...make().slice(0,11),make()[0]]),null,'dupl
  patch(d,'fun',{v5Status:'protect',appraisal:{satisfaction:'verySatisfied'}});
  const result=chapter2RecognitionV1(d)!;
  assert.equal(result.kind,'protected_only');
+ assert.match(result.line,/「大切なので守りたい」と答えた/,'strong user preference preserved verbatim');
  assert.equal(result.protectCategory,'fun');
  assert.match(result.line,/娯楽・趣味/);
  assert.doesNotMatch(result.line,/あなたは浪費家|未来型|直感型|節約済み|¥/);
@@ -89,7 +104,7 @@ assert.equal(chapter2RecognitionV1([...make().slice(0,11),make()[0]]),null,'dupl
   rows:d,potential:{confirmedA:0,cUpper:4500},
   firstQuest:null,consultRoute:null};
  const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm}));
- assert.match(html,/「食費」は満足していると答えた/);
+ assert.match(html,/「食費」は「今くらいでいい」と答えた/);
  assert.match(html,/「日用品」の内訳から確かめよう/);
  assert.match(html,/data-observation-kind="protected_and_candidate"/);
  assert.ok(!html.includes('今までのあなたは衝動買い'),'copy does not invent personality or purchases');
