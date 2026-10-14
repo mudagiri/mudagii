@@ -19,8 +19,8 @@ const STYLE_EVIDENCE:Record<string,string>={
  OPTIMIZE:'納得して使いたい'
 };
 function chapter2SelfReportEvidence(card:AnswerCheckResult['cards'][number]):string{
- if(card.category==='fun')return card.kind==='resonance'?'娯楽・趣味を「満足している／守る」と回答':'娯楽・趣味を「見直したい」と回答';
- if(card.category==='selfDevelopment')return card.kind==='resonance'?'自己投資に「目的・成果がある」と回答':'自己投資が「惰性になっている」と回答';
+ if(card.category==='fun')return card.kind==='resonance'?'娯楽・趣味に満足と回答／診断では「守る」判定':'娯楽・趣味について「もったいない／惰性」を回答';
+ if(card.category==='selfDevelopment')return card.kind==='resonance'?'自己投資に目的または成果があると回答／診断では「守る」判定':'自己投資が「惰性になっている」と回答';
  if(card.category==='sub')return '使っていない契約があり、解約可能と回答';
  return card.evidence.chapter2;
 }
@@ -68,7 +68,7 @@ export default function Chapter12AnswerCheckCard({
     <div className="c12ac-dual-box c12ac-dual-box--protect">
      <small>🛡 守りたい支出</small><b>{contrast.protect.label}</b>
      <strong>¥{yen(contrast.protect.monthlyYen)}<i>/月</i></strong>
-     <span>本人が満足・守ると回答</span>
+     <span>満足・目的は本人回答／守るは診断判定</span>
     </div>
     <div className="c12ac-dual-box c12ac-dual-box--review">
      <small>🔎 確認済みの見直し機会</small><b>{contrast.review.label}</b>
@@ -78,7 +78,7 @@ export default function Chapter12AnswerCheckCard({
     <p className="c12ac-dual-caveat">※右はまだ解約していない金額。節約済み・貯蓄済みではありません。</p>
    </div>}
   {focus&&!contrast&&<div className="c12ac-insight" data-insight-kind={focus.kind}>
-   <span>{focus.kind==='resonance'?'🛡 重なっていた価値観':'🔎 意外な確認ポイント'}</span>
+   <span>{focus.kind==='resonance'?'🛡 価値観と回答が重なった':'🔎 確認ポイントが見つかった'}</span>
    <h3>{focus.title}</h3>
    <p className="c12ac-brief" data-answercheck-evidence-inline="true">
     <b>第1章の結果：</b>{STYLE_EVIDENCE[chapter1!.primaryStyle]}<br/>
