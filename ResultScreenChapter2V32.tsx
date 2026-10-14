@@ -12,6 +12,7 @@ import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
 import CoverageAwarenessCard from './CoverageAwarenessCard';
 import {chapter2RecognitionV1} from './chapter2-recognition-v1';
+import {validatedChapter1LinkageV1} from './chapter1-linkage-v1';
 import {coverageConsultHandoff} from './scripts/coverage-consult-handoff-v1.mjs';
 
 type Props={
@@ -267,7 +268,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
  const shown=filtered;
- const recognition=chapter2RecognitionV1(shown);
+ // This optional lineage was validated against the anonymousUserId when it
+ // was written by the diagnosis journey. Do not infer STYLE from spending.
+ const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
+ const recognition=chapter2RecognitionV1(shown,verifiedChapter1Style);
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
