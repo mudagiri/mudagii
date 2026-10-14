@@ -94,7 +94,7 @@ function comparisonInputAmount(x:any):number|null{
  * the V5 primary lens explicitly, rather than hide an available reference. */
 function comparisonPrimaryV5(x:any):{monthly:number;criteria:string[];sourceVersion:string;label:string;note:string}|null{
  if(!['insurance','rent','car'].includes(String(x?.category))||x?.known!==true
-  ||x?.applicability==='notApplicable'||x?.amount===null||x?.amount===undefined
+  ||(x?.applicability==='na'||x?.applicability==='notApplicable')||x?.amount===null||x?.amount===undefined
   ||!Number.isFinite(Number(x.amount)))return null;
  const ref=x?.v5ReferencePrimary;
  if(!ref||ref.monthly===null||ref.monthly===undefined
@@ -103,7 +103,7 @@ function comparisonPrimaryV5(x:any):{monthly:number;criteria:string[];sourceVers
 }
 function comparisonAvailable(x:any):boolean{
  if(comparisonPrimaryV5(x))return true;
- return x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
+ return x?.applicability!=='na'&&x?.applicability!=='notApplicable'&&x?.comparisonQuality!=='none'
   &&x?.comparable!==null&&x?.comparable!==undefined
   &&Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0
   &&x?.known===true&&comparisonInputAmount(x)!==null;
@@ -149,7 +149,7 @@ function numericOrDash(x:any):string{
 /** Status- and category-based guidance instead of shouting "no benchmark".
  * No numeric reference is synthesized for AUDIT-only categories. */
 function nonNumericBasis(x:any):{title:string;detail:string}{
- if(x?.v5Status==='na'||x?.applicability==='notApplicable')
+ if(x?.v5Status==='na'||(x?.applicability==='na'||x?.applicability==='notApplicable'))
   return {title:'今回は対象外',detail:'診断条件に当てはまらないため、比較をしていません。'};
  if(x?.known!==true||x?.amount===null||x?.amount===undefined)
   return {title:'入力内容を確認',detail:'金額を確認できると、判定を詳しく見られるよ。'};
