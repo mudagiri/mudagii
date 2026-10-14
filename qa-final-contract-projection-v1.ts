@@ -12,6 +12,12 @@ assert.equal(rows.find(x=>x.category==='food')?.contractProjection,103384,'FOOD 
 assert.equal(rows.find(x=>x.category==='daily')?.contractProjection,7469,'DAILY household-size direct baseline');
 assert.equal(rows.find(x=>x.category==='fun')?.contractProjection,11067,'FUN household-size direct baseline');
 assert.notEqual(rows.find(x=>x.category==='food')?.frozenValue,103384,'P0 model conflict must be exposed');
+assert.equal(original.food?.meta?.modelEstimate,true,'income-adjusted food must expose model provenance');
+assert.equal(original.food?.meta?.crossTableObserved,false,'synthesized income-size cross is not a directly observed cell');
+assert.equal(original.energy?.meta?.modelEstimate,true,'income-adjusted utilities must expose model provenance');
+assert.equal(original.daily?.meta?.modelEstimate,true,'income-adjusted daily goods must expose model provenance');
+assert.equal(original.fun?.meta?.modelEstimate,true,'income-adjusted entertainment must expose model provenance');
+assert.notEqual(resolveComparableV2({...base,annualIncome:null}).food?.meta?.modelEstimate,true,'neutral baseline must not claim income model');
 assert.equal(original.rent?.value,99065,'housing comparator is unaffected');
 assert.equal(original.mobile?.value,null,'no fictional mobile mean');
 assert.equal(original.sub?.value,null,'no fictional subscription mean');
