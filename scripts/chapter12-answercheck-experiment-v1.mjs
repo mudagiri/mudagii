@@ -41,17 +41,17 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  }
  if(byCat.size!==CATEGORY_IDS.length)return unavailable('INCOMPLETE_DIAGNOSIS');
  const cards=[],add=(kind,category,title,body,reason)=>cards.push(human(kind,category,title,body,reason));
- const get=(c)=>{const r=byCat.get(c);return r&&r.applicability!=='na'&&r.known===true&&typeof r.amount==='number'&&Number.isFinite(r.amount)&&r.amount>0?r:null;};
+ const get=(c)=>{const r=byCat.get(c);return r&&r.applicability!=='na'&&r.applicability!=='notApplicable'&&r.known===true&&typeof r.amount==='number'&&Number.isFinite(r.amount)&&r.amount>0?r:null;};
  const fun=get('fun');
  if(chapter1.primaryStyle==='ENJOY'&&fun){
   if(positive.has(fun.appraisal?.satisfaction)&&fun.v5Status==='protect')
-   add('resonance','fun','楽しみは削らない。家計でも「守る」と答えていた。','第1章では楽しさを重視。第2章では娯楽・趣味の支出に満足し、守りたいと答えました。両方とも本人の回答で、支出額から性格を証明したわけではありません。','娯楽・趣味：本人の満足度回答＋守る判定');
-  else if(negative.has(fun.appraisal?.satisfaction))
-   add('question','fun','楽しさは大事。でも、この娯楽費は見直したい。','第1章で重視した「楽しさ」と、第2章で「見直したい」と答えた娯楽・趣味の支出。矛盾や浪費の証明ではなく、満足できる使い方を探す手がかりです。','娯楽・趣味：本人が見直し意向を回答');
+   add('resonance','fun','楽しさを大切にする。実際の娯楽費も「守る」判定だった。','第1章では楽しさを重視すると回答。第2章では娯楽・趣味の支出に満足していると回答し、診断では「守る」と判定されました。価値観と満足度は本人回答、守る判定は家計診断の結果です。性格の的中を証明したものではありません。','娯楽・趣味：本人の満足度回答＋守る判定');
+  else if(negative.has(fun.appraisal?.satisfaction)&&['review','inspect','optimize','cut'].includes(fun.v5Status))
+   add('question','fun','楽しさは大事。でも今の娯楽費には見直す余地がありそう。','第1章では「楽しさ」を大切にすると回答。第2章では娯楽・趣味について「もったいない」「惰性」のいずれかを選びました。価値観の矛盾や浪費の証明ではなく、満足できる使い方を考える手がかりです。','娯楽・趣味：本人が「もったいない／惰性」を選択');
  }
  const self=get('selfDevelopment');
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.v5Status==='protect'&&['purpose','results'].includes(self.appraisal?.selfDevelopmentValue)){
-   add('resonance','selfDevelopment','前に進むための自己投資。家計でも「守る」を選んだ。','第1章では前進やできることを増やす価値を重視。第2章では自己投資に目的・成果があると答え、守る判定になりました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
+   add('resonance','selfDevelopment','前に進むための自己投資。家計では「守る」判定。','第1章では「前進」を重視すると回答。第2章では自己投資に目的または成果があると回答し、診断で「守る」と判定されました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
  }
  // DRIVE: self-reported aim and self-reported "inertia" may suggest a question, not a measured contradiction.
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.appraisal?.selfDevelopmentValue==='inertia'&&self.v5Status==='cut'){
@@ -91,9 +91,9 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
   Number.isSafeInteger(subCandidate?.amount)&&unused<=subCandidate.amount&&
   Number.isSafeInteger(subCandidate?.aAmount)&&subCandidate.aAmount>0&&subCandidate.aAmount<=unused;
  if(['ENJOY','DRIVE','OPTIMIZE'].includes(primaryStyle)&&protectedValued&&
-  protectedRow?.known===true&&protectedRow?.applicability!=='na'&&
+  protectedRow?.known===true&&protectedRow?.applicability!=='na'&&protectedRow?.applicability!=='notApplicable'&&
   protectedRow?.v5Status==='protect'&&Number.isSafeInteger(protectedRow?.amount)&&protectedRow.amount>0&&
-  subCandidate?.known===true&&subCandidate?.applicability!=='na'&&
+  subCandidate?.known===true&&subCandidate?.applicability!=='na'&&subCandidate?.applicability!=='notApplicable'&&
   subCandidate?.v5Status==='cut'&&subCandidate.appraisal?.subCancellationConfirmed===true&&reviewValid){
    protectedVsReview={
     kind:'protect_vs_confirmed_review',
