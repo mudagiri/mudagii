@@ -121,6 +121,7 @@ for(const width of [320,375,390,430]){
  check(await battle.getAttribute('data-observation-kind')==='protected_and_confirmed_contract',width+' battle-report personalization is grounded in protected spend and confirmed unused contract');
  const personalBeat=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"] + [data-section="MUDAGIRI_TALK"]');
  check((await personalBeat.innerText()).includes('「娯楽・趣味」は満足していると答えた'),width+' personal battle insight cites explicitly protected fun');
+ check((await personalBeat.innerText()).includes('第1章では「楽しさ」を大事にしてたよな'),width+' same-person ENJOY style matches explicitly supported entertainment satisfaction');
  check((await personalBeat.innerText()).includes('サブスクには未使用・解約可能と答えた契約がある'),width+' contract fact is attributed to respondent');
  check((await card.locator('.c12ac-dual-talk').innerText()).includes('第1章は「楽しさ」重視'),width+' paired results name inherited preference');
 
@@ -166,7 +167,7 @@ for(const width of [320,375,390,430]){
  check(await page.locator('[data-answercheck-evidence=true]').count()===0,width+' evidence closes');
  await selector.selectOption('enjoy_question');
  check(await card.locator('[data-insight-kind="question"]').count()===1,width+' dissatisfaction asked as question');
- check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('見直したい'),width+' self-reported question not called a personality failure');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('もったいない／惰性'),width+' self-reported question not called a personality failure');
  check(!(await card.innerText()).includes('あなたは浪費家'),width+' no shaming');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-review.png'),fullPage:true});
  await selector.selectOption('drive_inertia');
@@ -174,6 +175,7 @@ for(const width of [320,375,390,430]){
  await selector.selectOption('drive_dual');
  check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' drive paired result');
  check((await card.innerText()).includes('自己投資は守る'),width+' drive heading');
+ check((await personalBeat.innerText()).includes('第1章では「前進」を大事にしてたよな'),width+' DRIVE style focuses on independently supported purpose-based self investment');
  await selector.selectOption('optimize_dual');
  check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' optimize action pair');
  check((await card.innerText()).includes('納得して使う'),width+' optimize heading');
