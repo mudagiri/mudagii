@@ -81,3 +81,16 @@
 これは10/14のV2.2画面改善で新規発生した変更ではなく、9/30 FROZEN実装時点に存在した矛盾。9/30の `START_HERE.md` は「カテゴリ正本で指定された場合に利用」と書くが、カテゴリ正本の食費は乗算禁止を明記。作成日だけで勝手に優先順位を決めない。
 
 **公開ゲート**：年収別の統計データ自体は保持。食費をP0として保留し、energy/daily/funも直接クロス・属性許可・表示品質を調査。FROZEN数式の自動変更や過去のQA上書きはしない。既存UI/QAのSUCCESSは最終Excel正本への一致を証明しない。PR #46の本番マージは保留。
+
+## H. 数値影響の並列評価・根拠の表示（2026-10-14）
+
+3つの履歴を分けた：(A) 9/28 `MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0.xlsx` 食費の掛け算禁止とG03/G07/G12、(B) 同日 `MUDAGIRI_V3_0_12CATEGORY_ENGINE_SPEC_2026-09-28.csv` の `base × sqrt(income_factor × age_factor)` という別方針、(C) 9/30 `4d2cc8f…` で意図的にV1年収係数をV2人数基準へ復元。**BとCの計算も一致するとは限らない。** よって作成日の新旧だけで判断しない。
+
+- `contract-benchmark-projection-v1.ts`：既存FROZEN式はそのまま実行し、もう一方に「人数別公式基準を維持してV1所得係数だけ外した値」を算出する**監査専用**の純関数を追加。診断エンジン・削減額・RPG判定・公開VMには接続しない。
+- `qa-final-contract-projection-v1.ts`：47都道府県×4代表月（1,2,6,12）×世帯人数2〜6×年収4条件（0, 499.9万, 500万, 800万）＝**3,760プロフィール／15,040カテゴリ比較**でFROZEN式と契約投影式を照合。差分があること自体をP0として記録、データを失わない。
+- `comparable-resolver-v2.ts`：年収補正を実行した4カテゴリに `meta.modelEstimate=true`、`crossTableObserved=false`、`contractStatus` を追記。**比較の金額は変更しない**。
+- `result-view-model-v4.ts` と `ResultScreenChapter2V32.tsx`：属性別の**直接観測平均と誤認させない**ため「人数別基準×年収帯の推計（直接集計ではない）」「統計を組み合わせた推計値」を表示。診断に使う `ComparisonFactV4.quality` はFROZEN維持し、画面に使う `comparisonQuality` だけreferenceへ、かつ `comparisonModelEstimate=true` を伝える。
+- `persistence-v4.ts`：比較品質とは別の `benchmarkMethod`（`income_cross_model`／`modeled_reference`／`direct_reference`／`none`）を追記し、正本・推計の出自をスナップショットのカテゴリ内に保存。GASシート列は変更しない。
+- `qa-scope-v4.ts` と第2章V32のSSR検証に、年収補正の推計ラベル／保存メソッド／CORE数値が不変であることの検証を追加。
+
+**結論**：9/28契約だけから、元の価値ある属性別統計データを破棄しない。9/30実装だけから「所得×人数の公表クロス表が存在する」とも断定しない。比較の正本政策はP0レビュー対象のまま。現時点の「数値が従来どおり」＝「統計規則に完全準拠」とは言わない。
