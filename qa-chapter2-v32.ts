@@ -234,3 +234,6 @@ assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
 assert.match(source,/loadImage\(job\?\.file\|\|ART\.result\)/);
 assert.doesNotMatch(source,/confirmed\*120|confirmed\+reviewUpper|cUpper\+confirmedA/);
 console.log('CHAPTER2_V32_POTENTIAL_FIRST_QA_PASS: zero confirmed, scenario, both, neither, honest labels, visual hierarchy');
+
+// Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
+await import('./qa-result-v5');
