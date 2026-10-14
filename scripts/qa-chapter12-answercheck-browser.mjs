@@ -17,6 +17,9 @@ for(const width of [320,375,390,430]){
  await card.waitFor();
  check(await card.count()===1,width+' initial card');
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
+ const initialEvidence=card.locator('[data-answercheck-evidence-inline=true]');
+ check(await initialEvidence.isVisible(),width+' personal evidence visible without another tap');
+ check((await initialEvidence.innerText()).includes('第1章の結果：')&&(await initialEvidence.innerText()).includes('第2章の回答：'),width+' both chapter evidence streams visible');
  const future=page.locator('[data-section="FUTURE_REWARDS"]');
  check(await future.count()===1,width+' V32 future reward remains present');
  const initialFuture=await future.innerText();
@@ -104,6 +107,7 @@ for(const width of [320,375,390,430]){
  check((await card.innerText()).includes('¥1,200'),width+' separate confirmed subscription opportunity');
  check((await card.innerText()).includes('まだ解約していない金額'),width+' unexecuted cancellation visible');
  check((await card.locator('.c12ac-dual-box').count())===2,width+' protect and review separated');
+ check((await card.locator('.c12ac-dual-talk').innerText()).includes('第1章は「楽しさ」重視'),width+' paired results name inherited preference');
 
  const mascot=card.locator('img');
  check(await mascot.evaluate(e=>e.complete&&e.naturalWidth>0),width+' mascot loaded');
@@ -138,6 +142,7 @@ for(const width of [320,375,390,430]){
  await page.screenshot({path:path.join(out,engine+'-'+width+'-paired.png'),fullPage:true});
  await selector.selectOption('enjoy_good');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' original single insight stays available');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('娯楽・趣味を「満足している／守る」と回答'),width+' user-based finding surfaced inline');
  check((await card.innerText()).includes('¥288,000'),width+' single expense annualization still labeled');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
  await card.getByRole('button',{name:/根拠を見る/}).click();
@@ -146,6 +151,7 @@ for(const width of [320,375,390,430]){
  check(await page.locator('[data-answercheck-evidence=true]').count()===0,width+' evidence closes');
  await selector.selectOption('enjoy_question');
  check(await card.locator('[data-insight-kind="question"]').count()===1,width+' dissatisfaction asked as question');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('見直したい'),width+' self-reported question not called a personality failure');
  check(!(await card.innerText()).includes('あなたは浪費家'),width+' no shaming');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-review.png'),fullPage:true});
  await selector.selectOption('drive_inertia');
@@ -212,6 +218,7 @@ for(const width of [320,375,390,430]){
  check(await card.count()===1,width+' no-link card available');
  check(await card.getAttribute('data-answercheck-status')==='no_supported_link',width+' no unsupported secure insurance link');
  check(await card.locator('.c12ac-insight').count()===0,width+' no invented positive result');
+ check(await card.locator('[data-answercheck-evidence-inline=true]').count()===0,width+' unsupported match creates no personal evidence');
  check(await card.locator('.c12ac-money').count()===0,width+' no numeric pseudo-match in secure no-link');
  check(await card.locator('.c12ac-evidence-toggle').count()===0,width+' no faux evidence toggle on no-link');
  const noLinkHeight=await card.evaluate(e=>Math.ceil(e.getBoundingClientRect().height));
