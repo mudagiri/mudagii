@@ -114,13 +114,27 @@ export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
  return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
 }
 
-export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'}):Partial<Record<Category,ComparableV2>>{
+export type ComparableArgsV2={household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'};
+type IncomePolicyV2='FINAL_CONTRACT_20260928'|'FROZEN_INCOME_20260930';
+
+/** Candidate contract-aligned default: MASTER_ENGINE and GLOBAL_RULES G03/G07
+ * prohibit income-factor multiplication on a household-size series.
+ * Keep the explicitly approved 2026-09-30 income model separately available
+ * for audits and snapshot reconciliation; never silently discard that work.
+ * This code is on an isolated Draft PR, not merged to production.
+ */
+export function resolveComparableV2(a:ComparableArgsV2):Partial<Record<Category,ComparableV2>>{
+ return resolveComparableV2WithPolicy(a,'FINAL_CONTRACT_20260928');
+}
+export function resolveComparableV2LegacyIncome0930(a:ComparableArgsV2):Partial<Record<Category,ComparableV2>>{
+ return resolveComparableV2WithPolicy(a,'FROZEN_INCOME_20260930');
+}
+function resolveComparableV2WithPolicy(a:ComparableArgsV2,policy:IncomePolicyV2):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
- // Restore the frozen V1 income correction only for multi-person households >= ¥5m.
- // V2 keeps its newer household-size / seasonality / direct-source bases, then applies
- // the V1 correction as a ratio so we do not regress those improvements.
- const incomeRef=a.annualIncome&&a.household==='multi'&&a.annualIncome>=5_000_000
+ // The 9/30 frozen income-ratio correction is archived for audit only.
+ // MASTER_ENGINE forbids the final contract's food size × income synthesis.
+ const incomeRef=policy==='FROZEN_INCOME_20260930'&&a.annualIncome&&a.household==='multi'&&a.annualIncome>=5_000_000
   ?resolveComparableV1({household:'multi',age:a.age,annualIncome:a.annualIncome,prefecture:undefined})
   :null;
  const neutralRef=incomeRef?resolveComparableV1({household:'multi',age:a.age,annualIncome:0,prefecture:undefined}):null;
@@ -133,7 +147,7 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   incomeAdjusted:true,
   methodology:'V1_INCOME_RATIO_ON_V2_HOUSEHOLD_SIZE_BASE',
   crossTableObserved:false,
-  contractStatus:'P0_FINAL_12_CATEGORY_CONTRACT_REVIEW'
+  contractStatus:'HISTORICAL_INCOME_RATIO_SNAPSHOT_ONLY'
  }:null;
  if(a.household==='single'){
   out.energy={value:Math.round((SINGLE.energy[ai])*incomeFactor('energy')),confidence:'DIRECT',sourceVersion:'UTILITY_V2.1_SINGLE_2025'};
@@ -181,5 +195,6 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
  return out;
 }
 
-export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_2';
+export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_3_CONTRACT_CANDIDATE';
+export const RESOLVER_V2_POLICY='MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0_20260928' as const;
 export const __resolverV2Audit={SINGLE,MULTI,MULTI_BEAUTY_AGE,INSURANCE_PERSONAL_MONTHLY_2025,INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024,INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024,REGION,MONTH,EDU,H};
