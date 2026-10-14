@@ -116,11 +116,11 @@ for(const width of [320,375,390,430]){
  check((await card.innerText()).includes('¥1,200'),width+' separate confirmed subscription opportunity');
  check((await card.innerText()).includes('まだ解約していない金額'),width+' unexecuted cancellation visible');
  check((await card.locator('.c12ac-dual-box').count())===2,width+' protect and review separated');
- check((await card.innerText()).includes('満足・目的は本人回答／守るは診断判定'),width+' separates respondent facts from V5 verdict');
+ check((await card.innerText()).includes('回答「大切なので守りたい」／判定「守る」'),width+' separates respondent facts from V5 verdict');
  const battle=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
  check(await battle.getAttribute('data-observation-kind')==='protected_and_confirmed_contract',width+' battle-report personalization is grounded in protected spend and confirmed unused contract');
  const personalBeat=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"] + [data-section="MUDAGIRI_TALK"]');
- check((await personalBeat.innerText()).includes('「娯楽・趣味」は満足していると答えた'),width+' personal battle insight cites explicitly protected fun');
+ check((await personalBeat.innerText()).includes('「娯楽・趣味」は「大切なので守りたい」と答えた'),width+' personal battle insight cites explicitly protected fun');
  check((await personalBeat.innerText()).includes('第1章では「楽しさ」を大事にしてたよな'),width+' same-person ENJOY style matches explicitly supported entertainment satisfaction');
  check((await personalBeat.innerText()).includes('サブスクには未使用・解約可能と答えた契約がある'),width+' contract fact is attributed to respondent');
  check((await card.locator('.c12ac-dual-talk').innerText()).includes('第1章は「楽しさ」重視'),width+' paired results name inherited preference');
@@ -158,7 +158,7 @@ for(const width of [320,375,390,430]){
  await page.screenshot({path:path.join(out,engine+'-'+width+'-paired.png'),fullPage:true});
  await selector.selectOption('enjoy_good');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' original single insight stays available');
- check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('娯楽・趣味に満足と回答／診断では「守る」判定'),width+' user-based finding surfaced inline');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('娯楽・趣味：本人が「大切なので守りたい」を選択／診断で「守る」判定'),width+' user-based finding surfaced inline');
  check((await card.innerText()).includes('¥288,000'),width+' single expense annualization still labeled');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
  await card.getByRole('button',{name:/根拠を見る/}).click();
@@ -167,7 +167,7 @@ for(const width of [320,375,390,430]){
  check(await page.locator('[data-answercheck-evidence=true]').count()===0,width+' evidence closes');
  await selector.selectOption('enjoy_question');
  check(await card.locator('[data-insight-kind="question"]').count()===1,width+' dissatisfaction asked as question');
- check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('もったいない／惰性'),width+' self-reported question not called a personality failure');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('少し見直したい'),width+' self-reported question not called a personality failure');
  check(!(await card.innerText()).includes('あなたは浪費家'),width+' no shaming');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-review.png'),fullPage:true});
  await selector.selectOption('drive_inertia');
@@ -175,6 +175,7 @@ for(const width of [320,375,390,430]){
  await selector.selectOption('drive_dual');
  check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' drive paired result');
  check((await card.innerText()).includes('自己投資は守る'),width+' drive heading');
+ check((await card.innerText()).includes('回答「目的は明確」／判定「守る」'),width+' purpose response is shown word-for-word');
  check((await personalBeat.innerText()).includes('第1章では「前進」を大事にしてたよな'),width+' DRIVE style focuses on independently supported purpose-based self investment');
  await selector.selectOption('optimize_dual');
  check(await card.locator('[data-answercheck-contrast=true]').count()===1,width+' optimize action pair');
