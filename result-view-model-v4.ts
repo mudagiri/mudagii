@@ -106,7 +106,10 @@ export function buildResultViewModelV4(a:{
  const rows=a.finalCategories.map(x=>{
   const diagnosisAmountLabel=a.profile.diagnosisScope==='personal'?'あなたの負担':'家全体の支出';
   const incomeModelEstimate=x.comparison.benchmarkMeta?.meta?.modelEstimate===true;
-  const compLabel=incomeModelEstimate?'統計を組み合わせた推計目安':x.comparison.quality==='exact'?'近い条件との比較':x.comparison.quality==='reference'?'参考値との比較':'金額比較なし';
+  // Presentation quality reflects provenance without mutating the FROZEN
+  // comparison/diagnosis record used for status and Potential.
+  const displayQuality=incomeModelEstimate&&x.comparison.quality!=='none'?'reference':x.comparison.quality;
+  const compLabel=incomeModelEstimate?'統計を組み合わせた推計目安':displayQuality==='exact'?'近い条件との比較':displayQuality==='reference'?'参考値との比較':'金額比較なし';
   const encounterStrength=x.status==='cut'?'strong':x.status==='review'&&x.attentionFlag?'medium':'none';
   return {
    category:x.category,label:LABEL[x.category],status:x.status==='cut'?'battle':x.status,
@@ -115,10 +118,10 @@ export function buildResultViewModelV4(a:{
    known:x.record.known,applicability:x.record.applicability,amount:x.record.diagnosisAmount,
    comparisonAmount:x.comparison.amount,comparisonAmountLabel:scopeLabel(x.comparison.amountScope),
    comparable:x.comparison.benchmark,comparisonDifference:x.comparison.difference,
-   comparisonQuality:x.comparison.quality,comparisonSourceVersion:x.comparison.sourceVersion,
+   comparisonQuality:displayQuality,comparisonSourceVersion:x.comparison.sourceVersion,
    comparisonModelEstimate:incomeModelEstimate,
    comparator:{kind:x.comparison.quality==='none'?'none':'scope_matched',label:compLabel},
-   comparisonContext:{criteria:criteria(a.profile,x,a.annualIncomeBand),amountScope:x.comparison.amountScope,quality:x.comparison.quality,sourceVersion:x.comparison.sourceVersion},
+   comparisonContext:{criteria:criteria(a.profile,x,a.annualIncomeBand),amountScope:x.comparison.amountScope,quality:displayQuality,sourceVersion:x.comparison.sourceVersion},
    evidenceLabel:compLabel,referenceDetail:null,
    reviewPotential:reviewPotential(x),
    appraisal:x.appraisal,appraisalSummary:appraisalSummary(x),
