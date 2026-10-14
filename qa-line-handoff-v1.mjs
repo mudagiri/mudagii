@@ -11,7 +11,7 @@ const checks=[
  ['handoff code itself contains no financial copy',result.includes('コード自体には収入・支出額は含まれません。')],
  ['confirm copies code before LINE',result.includes("navigator.clipboard?.writeText(message)")&&result.includes("line_handoff_confirmed")],
  ['lead payload stores handoff code',app.includes('handoffCode:ctx?.handoffCode??null')],
- ['handoff code is searchable in current Lead ID without GAS redeploy',app.includes("leadId:'lead_'+diagnosisId+(ctx?.handoffCode?'_'+ctx.handoffCode:'')")],
+ ['handoff code is searchable in current Lead ID without GAS redeploy',app.includes('leadId:lineLeadIdV1(diagnosisId,ctx?.handoffCode,ctx?.placement)')&&fs.readFileSync('./line-lead-id-v1.ts','utf8').includes("handoffCode?'_'+handoffCode:'")],
  ['lead payload stores CTA placement',app.includes('ctaPlacement:ctx?.placement??null')],
  ['LINE navigation does not await lead persistence',app.includes("void Promise.resolve(store?.saveLead?.(")&&!app.includes("try{await store?.saveLead?.(")],
  ['GAS lead keepalive request starts immediately',persistence.includes("const local=this.fallback.saveLead?.(v);")&&persistence.includes("remote=this.send({kind:'lead_v3',...v})")],
