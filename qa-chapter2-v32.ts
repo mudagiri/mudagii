@@ -235,5 +235,18 @@ assert.match(source,/loadImage\(job\?\.file\|\|ART\.result\)/);
 assert.doesNotMatch(source,/confirmed\*120|confirmed\+reviewUpper|cUpper\+confirmedA/);
 console.log('CHAPTER2_V32_POTENTIAL_FIRST_QA_PASS: zero confirmed, scenario, both, neither, honest labels, visual hierarchy');
 
+// A visual benchmark must also disclose whether beauty/fashion is an
+// age-only household MODEL or a sex-by-age single-person table.
+const beautyExample=(sourceVersion:string)=>renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),
+ rows:[{category:'beautyFashion',label:'美容・服飾費',known:true,applicability:'applicable',
+  amount:50000,comparisonAmount:50000,comparable:20039,comparisonQuality:'reference',
+  comparisonSourceVersion:sourceVersion,comparisonContext:{criteria:[]},
+  v5Status:'inspect',cUpper:0,nextAction:'内訳を確認'}]
+}}));
+assert.match(beautyExample('BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025'),/年代別の参考モデル（世帯人数別ではない）/);
+assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'),/性別と年代を組み合わせた比較/);
+assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_2025'),/単身・年代別の比較/);
+
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-result-v5');
