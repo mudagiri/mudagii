@@ -249,4 +249,6 @@ assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'),/性別と
 assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_2025'),/単身・年代別の比較/);
 
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
+await import('./qa-resolver-v2');
+await import('./qa-scope-v4');
 await import('./qa-result-v5');
