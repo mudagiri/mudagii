@@ -252,3 +252,4 @@ assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_2025'),/単身・年代�
 await import('./qa-resolver-v2');
 await import('./qa-scope-v4');
 await import('./qa-result-v5');
+await import('./qa-chapter1-linkage-v1');
