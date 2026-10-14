@@ -1,6 +1,7 @@
 import type { Category } from './mudagiri-diagnosis-v2';
 import type { ProfileV4 } from './mudagiri-profile-v4';
 import type { FinalCategoryV4 } from './final-judgement-v4';
+import { RESOLVER_V2_VERSION, RESOLVER_V2_POLICY } from './comparable-resolver-v2';
 
 export interface DiagnosisPersistenceV4 {
  schemaVersion:'MUDAGIRI_PERSISTENCE_V4';
@@ -18,6 +19,9 @@ export interface DiagnosisPersistenceV4 {
  bundledContributionAmount:number|null;
  monthlyTakeHome:number|null;
  categories:CategoryPersistenceV4[];
+ /** Additive, optional for backwards compatibility with pre-policy snapshots. */
+ benchmarkResolverVersion?:string;
+ benchmarkPolicySource?:string;
 }
 
 export interface CategoryPersistenceV4 {
@@ -77,6 +81,8 @@ export function buildPersistencePayloadV4(a:{diagnosisId:string;anonymousUserId:
   housingSubtype:a.profile.housingSubtype??null,
   bundledContributionAmount:a.profile.bundledContributionAmount,
   monthlyTakeHome:a.profile.monthlyTakeHome,
+  benchmarkResolverVersion:RESOLVER_V2_VERSION,
+  benchmarkPolicySource:RESOLVER_V2_POLICY,
   categories,
  };
 }
