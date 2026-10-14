@@ -9,6 +9,13 @@ const STYLES=new Set(['DRIVE','ENJOY','SECURE','OPTIMIZE']);
 const STATUS=new Set(['cut','optimize','protect','inspect','ok','na','review']);
 const positive=new Set(['satisfied','verySatisfied']);
 const negative=new Set(['waste','inertia']);
+// Preserve the choices the participant actually saw, never collapse a
+// mild review wish and an emphatic one into the same self-reported quote.
+const SAT_ANSWER_LABELS={
+ waste:'かなり見直したい',inertia:'少し見直したい',
+ satisfied:'今くらいでいい',verySatisfied:'大切なので守りたい'
+};
+const SELF_ANSWER_LABELS={purpose:'目的は明確',results:'成果につながってる'};
 const EMPTY='回答を重ね合わせるだけでは、今は確かな共通点を見つけられませんでした。第1章のタイプが間違いという意味でもありません。';
 const unavailable=(reason)=>({status:'unavailable',reason,headline:'答え合わせはまだできません',cards:[],coverage:{reviewedCategoryCount:0,directMatchRulesApplied:0,axesVerified:0},cannotInfer:['性格の一致率','衝動買いの有無','金融商品の適合性']});
 const recognized=(x)=>typeof x==='string'&&x.length>0;
@@ -45,13 +52,19 @@ export function assessChapter12AnswerCheck({chapter1,chapter2}={}){
  const fun=get('fun');
  if(chapter1.primaryStyle==='ENJOY'&&fun){
   if(positive.has(fun.appraisal?.satisfaction)&&fun.v5Status==='protect')
-   add('resonance','fun','楽しさを大切にする。実際の娯楽費も「守る」判定だった。','第1章では楽しさを重視すると回答。第2章では娯楽・趣味の支出に満足していると回答し、診断では「守る」と判定されました。価値観と満足度は本人回答、守る判定は家計診断の結果です。性格の的中を証明したものではありません。','娯楽・趣味：本人の満足度回答＋守る判定');
+   add('resonance','fun','楽しさを大切にする。実際の娯楽費も「守る」判定だった。',
+    `第1章では「楽しさ」を重視。第2章では「${SAT_ANSWER_LABELS[fun.appraisal.satisfaction]}」と回答し、診断では「守る」と判定されました。これは本人の回答を重ねたヒントで、性格の的中を証明したものではありません。`,
+    `娯楽・趣味：本人が「${SAT_ANSWER_LABELS[fun.appraisal.satisfaction]}」を選択／診断で「守る」判定`);
   else if(negative.has(fun.appraisal?.satisfaction)&&['review','inspect','optimize','cut'].includes(fun.v5Status))
-   add('question','fun','楽しさは大事。でも今の娯楽費には見直す余地がありそう。','第1章では「楽しさ」を大切にすると回答。第2章では娯楽・趣味について「もったいない」「惰性」のいずれかを選びました。価値観の矛盾や浪費の証明ではなく、満足できる使い方を考える手がかりです。','娯楽・趣味：本人が「もったいない／惰性」を選択');
+   add('question','fun','楽しさは大事。でも今の娯楽費には見直す余地がありそう。',
+    `第1章では「楽しさ」を大切にすると回答。第2章では娯楽・趣味を「${SAT_ANSWER_LABELS[fun.appraisal.satisfaction]}」と選択しました。性格の矛盾や浪費の証明ではなく、満足できる使い方を考えるヒントです。`,
+    `娯楽・趣味：本人が「${SAT_ANSWER_LABELS[fun.appraisal.satisfaction]}」を選択`);
  }
  const self=get('selfDevelopment');
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.v5Status==='protect'&&['purpose','results'].includes(self.appraisal?.selfDevelopmentValue)){
-   add('resonance','selfDevelopment','前に進むための自己投資。家計では「守る」判定。','第1章では「前進」を重視すると回答。第2章では自己投資に目的または成果があると回答し、診断で「守る」と判定されました。実際の成果や投資適性を証明するものではありません。','自己投資：目的・成果についての本人回答＋守る判定');
+   add('resonance','selfDevelopment','前に進むための自己投資。家計では「守る」判定。',
+     `第1章では「前進」を重視。第2章では自己投資について「${SELF_ANSWER_LABELS[self.appraisal.selfDevelopmentValue]}」と選択し、診断では「守る」と判定されました。実際の成果や投資適性を証明するものではありません。`,
+     `自己投資：本人が「${SELF_ANSWER_LABELS[self.appraisal.selfDevelopmentValue]}」を選択／診断で「守る」判定`);
  }
  // DRIVE: self-reported aim and self-reported "inertia" may suggest a question, not a measured contradiction.
  if(chapter1.primaryStyle==='DRIVE'&&self&&self.appraisal?.selfDevelopmentValue==='inertia'&&self.v5Status==='cut'){
