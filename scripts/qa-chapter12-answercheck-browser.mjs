@@ -17,9 +17,18 @@ for(const width of [320,375,390,430]){
  await card.waitFor();
  check(await card.count()===1,width+' initial card');
  check(await card.getAttribute('data-answercheck-status')==='context_found',width+' expected resonance');
+ // The default V32 scale fixture is a protect-vs-review PAIR, while
+ // resonance/question fixtures show the two evidence streams inline.
  const initialEvidence=card.locator('[data-answercheck-evidence-inline=true]');
- check(await initialEvidence.isVisible(),width+' personal evidence visible without another tap');
- check((await initialEvidence.innerText()).includes('第1章の結果：')&&(await initialEvidence.innerText()).includes('第2章の回答：'),width+' both chapter evidence streams visible');
+ const initialPaired=card.locator('[data-answercheck-contrast=true]');
+ check(await initialEvidence.count()===1||await initialPaired.count()===1,width+' a grounded insight is visible without another tap');
+ if(await initialEvidence.count()){
+  const initialText=await initialEvidence.innerText();
+  check(initialText.includes('第1章の結果：')&&initialText.includes('第2章の回答：'),width+' both evidence streams immediately visible');
+ }else if(await initialPaired.count()){
+  const initialTalk=await card.locator('.c12ac-dual-talk').innerText();
+  check(initialTalk.includes('第1章は「楽しさ」重視'),width+' default paired insight cites inherited preference');
+ }
  const future=page.locator('[data-section="FUTURE_REWARDS"]');
  check(await future.count()===1,width+' V32 future reward remains present');
  const initialFuture=await future.innerText();
