@@ -294,6 +294,8 @@ console.log('SCOPE_V4_QA PASS');
  A.ok(!foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'income-model note cannot appear on contract-aligned comparison');
  const stored=buildPersistencePayloadV4({diagnosisId:'policy_provenance_QA',anonymousUserId:'anon_QA',profile,finalCategories:final.categories});
  A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'direct_reference','persist direct household-size comparison provenance');
+ A.equal(stored.benchmarkResolverVersion,'MUDAGIRI_COMPARABLE_RESOLVER_V2_3_CONTRACT_CANDIDATE','persist effective resolver version');
+ A.equal(stored.benchmarkPolicySource,'MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0_20260928','persist chosen master contract');
  A.equal(stored.categories.find(x=>x.category==='sub')?.benchmarkMethod,'none','audit-only must not fabricate a mean');
 }
 
