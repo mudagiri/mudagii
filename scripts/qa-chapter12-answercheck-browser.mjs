@@ -119,7 +119,7 @@ for(const width of [320,375,390,430]){
  const battle=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
  check(await battle.getAttribute('data-observation-kind')==='protected_and_confirmed_contract',width+' battle-report personalization is grounded in protected spend and confirmed unused contract');
  const personalBeat=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"] + [data-section="MUDAGIRI_TALK"]');
- check((await personalBeat.innerText()).includes('「娯楽・趣味」は満足して守りたいと答えた'),width+' personal battle insight cites explicitly protected fun');
+ check((await personalBeat.innerText()).includes('「娯楽・趣味」は満足していると答えた'),width+' personal battle insight cites explicitly protected fun');
  check((await personalBeat.innerText()).includes('サブスクには未使用・解約可能と答えた契約がある'),width+' contract fact is attributed to respondent');
  check((await card.locator('.c12ac-dual-talk').innerText()).includes('第1章は「楽しさ」重視'),width+' paired results name inherited preference');
 
