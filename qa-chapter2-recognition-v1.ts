@@ -95,4 +95,47 @@ assert.equal(chapter2RecognitionV1([...make().slice(0,11),make()[0]]),null,'dupl
  assert.ok(!html.includes('今までのあなたは衝動買い'),'copy does not invent personality or purchases');
  assert.equal(result.shareAllowed,false);
 }
+
+{
+ // One person has more than one legitimate "protect" category. Mention the
+ // one aligned to their verified Chapter 1 preference first; never claim this
+ // proves a trait or invalidate an unmatched preference.
+ const d=make();
+ patch(d,'fun',{amount:26000,v5Status:'protect',appraisal:{satisfaction:'verySatisfied'}});
+ patch(d,'selfDevelopment',{amount:9800,v5Status:'protect',appraisal:{selfDevelopmentValue:'purpose'}});
+ patch(d,'rent',{amount:95000,v5Status:'protect',appraisal:{rentPreference:'protect'}});
+ assert.equal(chapter2RecognitionV1(d)?.protectCategory,'fun','backward-compatible default observation');
+ const drive=chapter2RecognitionV1(d,'DRIVE')!;
+ assert.equal(drive.protectCategory,'selfDevelopment','DRIVE selects an independently supported self-investment choice');
+ assert.match(drive.line,/第1章では「前進」を大事に/);
+ assert.equal(chapter2RecognitionV1(d,'ENJOY')?.protectCategory,'fun','ENJOY focuses on explicit entertainment satisfaction');
+ assert.equal(chapter2RecognitionV1(d,'SECURE')?.protectCategory,'rent','SECURE focuses on a declared housing preference');
+ assert.equal(chapter2RecognitionV1(d,'UNRECOGNIZED')?.protectCategory,'fun','unknown STYLE is not inferred from spending');
+ patch(d,'selfDevelopment',{appraisal:{selfDevelopmentValue:'unclear'}});
+ assert.equal(chapter2RecognitionV1(d,'DRIVE')?.protectCategory,'fun','do not invent a Chapter1-2 match without Chapter2 supporting evidence');
+ assert.doesNotMatch(chapter2RecognitionV1(d,'DRIVE')?.line??'',/第1章では「前進」/,'unsupported STYLE match is silent');
+}
+{
+ const d=make();
+ patch(d,'sub',{amount:5500,v5Status:'cut',aAmount:1000,appraisal:{subUnusedAmount:1000,subCancellationConfirmed:true}});
+ assert.match(chapter2RecognitionV1(d,'OPTIMIZE')?.line??'',/第1章では「納得」を大事に/,'OPTIMIZE may connect explicit values to independently supported review');
+ assert.doesNotMatch(chapter2RecognitionV1(d,'ENJOY')?.line??'',/第1章では「楽しさ」/,'ENJOY alone cannot prove unused subscriptions validate the style');
+}
+{
+ const d=make();
+ patch(d,'fun',{amount:22000,v5Status:'protect',appraisal:{satisfaction:'verySatisfied'}});
+ const vm={version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'synthetic-matched',
+  v5Counts:{cut:0,optimize:0,protect:1,inspect:11,ok:0,na:0},rows:d,
+  potential:{confirmedA:0,cUpper:0},firstQuest:null,consultRoute:null,
+  chapter1Link:{schemaVersion:'MUDAGIRI_CHAPTER1_LINKAGE_V1',
+   chapter1SessionId:'session-synthetic',chapter1JobCode:'INM',
+   chapter1JobName:'直感魔導士',chapter1StyleCode:'ENJOY',
+   chapter1CompletedAt:'2026-10-12T00:00:00Z'}};
+ const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm}));
+ assert.match(html,/第1章では「楽しさ」を大事に/,'verified lineage reaches the ordinary Chapter 2 report');
+ const invalid={...vm,chapter1Link:{...vm.chapter1Link,chapter1StyleCode:'INVALID'}};
+ const unmatched=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:invalid}));
+ assert.doesNotMatch(unmatched,/第1章では「楽しさ」を大事に/,'forged STYLE is not displayed');
+}
+
 console.log('CHAPTER2_RECOGNITION_QA_PASS: explicit protect/candidate/contract/unknown/NA/invalid and SSR narrative');
