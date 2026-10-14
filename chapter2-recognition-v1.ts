@@ -46,7 +46,7 @@ function active(r:CategoryObservationRow|undefined):r is CategoryObservationRow{
 function declaredProtection(r:CategoryObservationRow):string|null{
  if(r.v5Status!=='protect')return null;
  if(['fun','food','beautyFashion'].includes(String(r.category))&&['satisfied','verySatisfied'].includes(String(r.appraisal?.satisfaction)))
-  return '満足して守りたいと答えた';
+  return '満足していると答えた';
  if(r.category==='selfDevelopment'&&['purpose','results'].includes(String(r.appraisal?.selfDevelopmentValue)))
   return '目的や成果があると答えた';
  if(r.category==='rent'&&r.appraisal?.rentPreference==='protect')
