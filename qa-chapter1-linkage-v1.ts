@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chapter1LinkageV1,validatedChapter1LinkageV1} from './chapter1-linkage-v1';
 import {lineLeadIdV1} from './line-lead-id-v1';
-import type {Chapter1HandoffV1} from './chapter2-v2-contract';
+import {CHAPTER1_STYLE_NAMES,type Chapter1HandoffV1} from './chapter2-v2-contract';
 
+assert.equal(CHAPTER1_STYLE_NAMES.DRIVE,'前進','finalized four-style wording must be consistent across all Chapter 2 variants');
 const handoff:Chapter1HandoffV1={
  version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',
  anonymousUserId:'anon_same_user',
