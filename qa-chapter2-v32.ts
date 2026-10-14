@@ -267,6 +267,7 @@ assert.doesNotMatch(modeledIncome,/今回の支出は.*節約済み/,'no claimed
 await import('./qa-resolver-v2');
 await import('./qa-final-contract-projection-v1');
 await import('./qa-final-contract-100case-v1');
+await import('./qa-frozen100-original-evidence-v1');
 await import('./qa-scope-v4');
 await import('./qa-result-v5');
 await import('./qa-chapter1-linkage-v1');
