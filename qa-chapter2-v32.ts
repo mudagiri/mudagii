@@ -248,6 +248,21 @@ assert.match(beautyExample('BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025'),/年代�
 assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_SEX_AGE_2025'),/性別と年代を組み合わせた比較/);
 assert.match(beautyExample('BEAUTY_FASHION_V1.0_SINGLE_2025'),/単身・年代別の比較/);
 
+// A frozen 2026-09-30 income-ratio result combines separate official tables.
+// It may remain visible while P0 is reconciled, but must never be presented as
+// a directly observed household-size × income mean.
+const modeledIncome=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),
+ rows:[{category:'food',label:'食費',known:true,applicability:'applicable',
+  amount:120000,comparisonAmount:120000,comparable:110000,comparisonQuality:'exact',
+  comparisonModelEstimate:true,comparisonSourceVersion:'FOOD_V1.1_MULTI_2025',
+  comparisonContext:{criteria:['4人世帯','人数別基準×年収帯の推計（直接集計ではない）']},
+  v5Status:'inspect',cUpper:0,nextAction:'食費の内訳を確認'}]
+}}));
+assert.match(modeledIncome,/統計を組み合わせた推計値/,'modeled income x size is never represented as directly measured mean');
+assert.match(modeledIncome,/人数別基準×年収帯の推計（直接集計ではない）/,'display explicit lack of direct cross table');
+assert.doesNotMatch(modeledIncome,/今回の支出は.*節約済み/,'no claimed savings based on model');
+
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-resolver-v2');
 await import('./qa-final-contract-projection-v1');
