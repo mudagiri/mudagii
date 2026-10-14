@@ -94,4 +94,4 @@
 .c12ac--contrast .c12ac-next p{font-size:12px!important;line-height:1.45!important}
 .c12ac--contrast .c12ac-evidence-toggle{margin-top:6px;min-height:38px;padding:5px;font-size:11.5px}
 .c12ac--contrast .c12ac-disclaimer{font-size:10px!important;line-height:1.42!important;margin:5px 0 0!important}
-@media(max-width:350px){.c12ac-dual-box{padding:8px 5px}.c12ac-dual-box strong{font-size:18px}}
+@media(max-width:350px){.c12ac-dual-box{padding:8px 5px}.c12ac-dual-box strong{font-size:18px}.c12ac--contrast .c12ac-dual-talk{margin-bottom:3px}}
