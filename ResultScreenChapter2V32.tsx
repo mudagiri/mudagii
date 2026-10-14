@@ -11,6 +11,7 @@ import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-charact
 import {chapter2V2ShareText,chapter2V2ReferralUrl,chapter2V2SignedComparisonYen,type Chapter1HandoffV1} from './chapter2-v2-contract';
 import Chapter12AnswerCheckCard from './Chapter12AnswerCheckCard';
 import CoverageAwarenessCard from './CoverageAwarenessCard';
+import {chapter2RecognitionV1} from './chapter2-recognition-v1';
 import {coverageConsultHandoff} from './scripts/coverage-consult-handoff-v1.mjs';
 
 type Props={
@@ -266,6 +267,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
  const shown=filtered;
+ const recognition=chapter2RecognitionV1(shown);
  const selectedGoal=GOALS.find(g=>g[0]===goal)?.[1]??null;
  const jobAsset=chapter1&&Object.prototype.hasOwnProperty.call(JOB_CHARACTER_ASSETS,chapter1.jobCode)
   ?JOB_CHARACTER_ASSETS[chapter1.jobCode as keyof typeof JOB_CHARACTER_ASSETS]:null;
@@ -542,7 +544,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    rows={vm?.rows} demo={answerCheckDemo}
   />}
 
-  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS">
+  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS" data-observation-kind={recognition?.kind??"no_supported_observation"}>
    <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
    <h2>今回の戦果</h2>
    <div className="c2v2-counts c2v31-counts">
@@ -577,9 +579,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     12カテゴリの比較基準を一覧で見る ↓
    </button>}
   </section>
-  <MudagiriBeat pose="proud" line={filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
+  <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
    ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
-   :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！'}/>
+   :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！')}/>
   <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
 
   <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
