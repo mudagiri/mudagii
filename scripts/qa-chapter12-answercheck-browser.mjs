@@ -116,6 +116,11 @@ for(const width of [320,375,390,430]){
  check((await card.innerText()).includes('¥1,200'),width+' separate confirmed subscription opportunity');
  check((await card.innerText()).includes('まだ解約していない金額'),width+' unexecuted cancellation visible');
  check((await card.locator('.c12ac-dual-box').count())===2,width+' protect and review separated');
+ const battle=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
+ check(await battle.getAttribute('data-observation-kind')==='protected_and_confirmed_contract',width+' battle-report personalization is grounded in protected spend and confirmed unused contract');
+ const personalBeat=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"] + [data-section="MUDAGIRI_TALK"]');
+ check((await personalBeat.innerText()).includes('「娯楽・趣味」は満足して守りたいと答えた'),width+' personal battle insight cites explicitly protected fun');
+ check((await personalBeat.innerText()).includes('サブスクには未使用・解約可能と答えた契約がある'),width+' contract fact is attributed to respondent');
  check((await card.locator('.c12ac-dual-talk').innerText()).includes('第1章は「楽しさ」重視'),width+' paired results name inherited preference');
 
  const mascot=card.locator('img');
@@ -227,6 +232,7 @@ for(const width of [320,375,390,430]){
  check(await card.count()===1,width+' no-link card available');
  check(await card.getAttribute('data-answercheck-status')==='no_supported_link',width+' no unsupported secure insurance link');
  check(await card.locator('.c12ac-insight').count()===0,width+' no invented positive result');
+ check(await page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]').getAttribute('data-observation-kind')==='no_supported_observation',width+' SECURE insurance ownership alone cannot create a fake personal link');
  check(await card.locator('[data-answercheck-evidence-inline=true]').count()===0,width+' unsupported match creates no personal evidence');
  check(await card.locator('.c12ac-money').count()===0,width+' no numeric pseudo-match in secure no-link');
  check(await card.locator('.c12ac-evidence-toggle').count()===0,width+' no faux evidence toggle on no-link');
