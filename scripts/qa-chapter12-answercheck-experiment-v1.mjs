@@ -172,7 +172,22 @@ r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect',{app
 ok(r.status==='no_supported_link','legacy notApplicable must not generate match');
 r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'purpose'},'protect')));
 ok(r.cards[0]?.title.includes('「守る」判定'),'DRIVE protect is diagnostic decision, not self-report');
-ok(r.cards[0]?.body.includes('目的または成果'),'DRIVE report must not claim both answered');
+ok(r.cards[0]?.body.includes('目的は明確'),'DRIVE quotes selected choice, not a generic combined purpose/results claim');
+
+
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'verySatisfied'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('大切なので守りたい'),'very satisfied copies actual button wording');
+ok(r.protectedVsReview===null,'no contract contrast without independent contract evidence');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'satisfied'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('今くらいでいい'),'satisfied copies actual button wording');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'waste'},'inspect')));
+ok(r.cards[0]?.evidence.chapter2.includes('かなり見直したい'),'strong dissatisfaction choice retained');
+r=pass(c1('ENJOY'),c2(update('fun',{satisfaction:'inertia'},'inspect')));
+ok(r.cards[0]?.evidence.chapter2.includes('少し見直したい'),'mild dissatisfaction choice retained');
+r=pass(c1('DRIVE'),c2(update('selfDevelopment',{selfDevelopmentValue:'results'},'protect')));
+ok(r.cards[0]?.evidence.chapter2.includes('成果につながってる'),'self-investment results choice retained');
+r=pass(c1('ENJOY'),c2(pairRows()));
+ok(r.protectedVsReview?.protect.choiceLabel==='大切なので守りたい','paired insight must show exact respondent choice and separate engine decision');
 
 if(failed.length){console.error(JSON.stringify({status:'FAIL',checks,failed},null,2));process.exitCode=1}
 else console.log(JSON.stringify({status:'PASS',checks,scope:'prototype rule gates for Chapter1×Chapter2 self-report resonance, not correlation validity'}));
