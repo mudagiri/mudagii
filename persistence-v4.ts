@@ -31,6 +31,8 @@ export interface CategoryPersistenceV4 {
  comparisonBenchmark:number|null;
  comparisonQuality:'exact'|'reference'|'none';
  comparisonSourceVersion:string|null;
+ /** Methodology provenance is separate from the frozen quality used by diagnosis. */
+ benchmarkMethod:'none'|'direct_reference'|'modeled_reference'|'income_cross_model';
  outcome:FinalCategoryV4['status'];
  confirmedSaving:number;
  benchmarkEligible:boolean;
@@ -54,6 +56,7 @@ export function buildPersistencePayloadV4(a:{diagnosisId:string;anonymousUserId:
    comparisonBenchmark:x.comparison.benchmark,
    comparisonQuality:x.comparison.quality,
    comparisonSourceVersion:x.comparison.sourceVersion,
+   benchmarkMethod:x.comparison.benchmarkMeta?.meta?.modelEstimate===true?'income_cross_model':x.comparison.quality==='none'?'none':x.comparison.benchmarkMeta?.confidence==='MODEL'?'modeled_reference':'direct_reference',
    outcome:x.status,
    confirmedSaving:x.confirmedSaving,
    benchmarkEligible,
