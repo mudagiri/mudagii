@@ -125,6 +125,15 @@ function comparisonTargetAmount(x:any):number|null{
 function comparisonBasis(x:any):string{
  const raw=comparisonPrimaryV5(x)?.criteria??x?.comparisonContext?.criteria;
  const criteria=Array.isArray(raw)?raw.filter((v:unknown)=>typeof v==='string'&&v.trim().length>0):[];
+ // The beauty tables have different populations: single sex×age,
+ // single combined-age, and multi-household age MODEL. Do not collapse them
+ // into a generic "same household" claim.
+ if(x?.category==='beautyFashion'&&comparisonAvailable(x)){
+  const source=String(x?.comparisonSourceVersion??'');
+  if(source.includes('MULTI_AGE_MODEL'))criteria.push('年代別の参考モデル（世帯人数別ではない）');
+  else if(source.includes('SINGLE_SEX_AGE'))criteria.push('性別と年代を組み合わせた比較');
+  else if(source.includes('SINGLE_'))criteria.push('単身・年代別の比較');
+ }
  return criteria.length?criteria.join('・'):(typeof x?.comparisonAmountLabel==='string'&&x.comparisonAmountLabel?x.comparisonAmountLabel+'（詳しい属性条件は未表示）':'詳細な属性条件は未表示');
 }
 function comparisonReference(x:any):string{
