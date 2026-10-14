@@ -269,3 +269,4 @@ await import('./qa-final-contract-projection-v1');
 await import('./qa-scope-v4');
 await import('./qa-result-v5');
 await import('./qa-chapter1-linkage-v1');
+await import('./qa-chapter2-recognition-v1');
