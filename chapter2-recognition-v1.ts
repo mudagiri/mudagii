@@ -51,17 +51,27 @@ function active(r:CategoryObservationRow|undefined):r is CategoryObservationRow{
  return !!r&&r.known===true&&r.applicability!=='na'&&r.applicability!=='notApplicable'
   &&typeof r.amount==='number'&&Number.isFinite(r.amount)&&r.amount>0;
 }
+// Exact user-facing choice labels from RpgBlock1's appraisal questions.
+// A source change must update these labels AND the matching regression test.
+export const RECOGNITION_APPRAISAL_LABELS={
+ satisfaction:{satisfied:'今くらいでいい',verySatisfied:'大切なので守りたい'},
+ selfDevelopment:{purpose:'目的は明確',results:'成果につながってる'},
+ rent:{reasonable:'今の家なら妥当',protect:'今の住環境を優先'}
+} as const;
 function declaredProtection(r:CategoryObservationRow):string|null{
  if(r.v5Status!=='protect')return null;
- if(['fun','food','beautyFashion'].includes(String(r.category))&&['satisfied','verySatisfied'].includes(String(r.appraisal?.satisfaction)))
-  return '満足していると答えた';
- if(r.category==='selfDevelopment'&&['purpose','results'].includes(String(r.appraisal?.selfDevelopmentValue)))
-  return '目的や成果があると答えた';
- if(r.category==='rent'&&r.appraisal?.rentPreference==='protect')
-  return '今の住環境を優先したいと答えた';
- if(r.category==='rent'&&r.appraisal?.rentPreference==='reasonable')
-  return '今の住居費を妥当と答えた';
- return null;
+ let selected:string|null=null;
+ if(['fun','food','beautyFashion'].includes(String(r.category))){
+  const value=r.appraisal?.satisfaction;
+  if(value==='satisfied'||value==='verySatisfied')selected=RECOGNITION_APPRAISAL_LABELS.satisfaction[value];
+ }else if(r.category==='selfDevelopment'){
+  const value=r.appraisal?.selfDevelopmentValue;
+  if(value==='purpose'||value==='results')selected=RECOGNITION_APPRAISAL_LABELS.selfDevelopment[value];
+ }else if(r.category==='rent'){
+  const value=r.appraisal?.rentPreference;
+  if(value==='protect'||value==='reasonable')selected=RECOGNITION_APPRAISAL_LABELS.rent[value];
+ }
+ return selected?`「${selected}」と答えた`:null;
 }
 function unusedConfirmed(r:CategoryObservationRow|undefined):boolean{
  if(!active(r)||r.category!=='sub'||r.v5Status!=='cut'
