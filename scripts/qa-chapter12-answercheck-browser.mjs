@@ -116,6 +116,7 @@ for(const width of [320,375,390,430]){
  check((await card.innerText()).includes('¥1,200'),width+' separate confirmed subscription opportunity');
  check((await card.innerText()).includes('まだ解約していない金額'),width+' unexecuted cancellation visible');
  check((await card.locator('.c12ac-dual-box').count())===2,width+' protect and review separated');
+ check((await card.innerText()).includes('満足・目的は本人回答／守るは診断判定'),width+' separates respondent facts from V5 verdict');
  const battle=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
  check(await battle.getAttribute('data-observation-kind')==='protected_and_confirmed_contract',width+' battle-report personalization is grounded in protected spend and confirmed unused contract');
  const personalBeat=page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"] + [data-section="MUDAGIRI_TALK"]');
@@ -156,7 +157,7 @@ for(const width of [320,375,390,430]){
  await page.screenshot({path:path.join(out,engine+'-'+width+'-paired.png'),fullPage:true});
  await selector.selectOption('enjoy_good');
  check(await card.locator('[data-insight-kind="resonance"]').count()===1,width+' original single insight stays available');
- check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('娯楽・趣味を「満足している／守る」と回答'),width+' user-based finding surfaced inline');
+ check((await card.locator('[data-answercheck-evidence-inline=true]').innerText()).includes('娯楽・趣味に満足と回答／診断では「守る」判定'),width+' user-based finding surfaced inline');
  check((await card.innerText()).includes('¥288,000'),width+' single expense annualization still labeled');
  await page.screenshot({path:path.join(out,engine+'-'+width+'-resonance.png'),fullPage:true});
  await card.getByRole('button',{name:/根拠を見る/}).click();
