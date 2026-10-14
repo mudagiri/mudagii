@@ -105,6 +105,36 @@ eq(row(mvm,'rent').comparable,93705,'mortgage 40-44 reference');
 eq(row(mvm,'rent').cUpper,0,'mortgage reference must never create C');
 eq(mvm.potential.upper,0,'mortgage gap must not inflate Potential');
 
+// Personal contribution is not a whole-household mortgage repayment:
+ // a V5 display reference must be withheld until a matching household total exists.
+const personalMortgageProfile:any={...mortgageProfile,diagnosisScope:'personal'};
+const personalMortgageCats=ALL.map(c=>c==='rent'
+ ?cat('rent',{amount:40000,benchmark:null,engineComparableAllowed:false,amountScope:'property',appraisal:{rentPreference:'burdenSome'}})
+ :cat(c,{amount:0,benchmark:null,status:'safe'}));
+const personalMortgageRent=personalMortgageCats.find(x=>x.category==='rent')!;
+personalMortgageRent.comparison.amount=null;
+let pmm=buildResultViewModelV5({diagnosisId:'QA-PM',toneMode:'serious',type,profile:personalMortgageProfile,annualIncomeBand:'600_699',finalCategories:personalMortgageCats as any});
+eq(row(pmm,'rent').v5ReferencePrimary,null,'personal mortgage without household total must not show household reference');
+eq(row(pmm,'rent').comparable,null,'personal mortgage without household total must not compare');
+eq(row(pmm,'rent').comparisonDifference,null,'personal-only mortgage must not fabricate gap');
+eq(pmm.potential.upper,0,'personal mortgage no automatic saving');
+
+// When the whole household repayment is separately known, use that total,
+// never the user's partial contribution, against the household reference.
+personalMortgageRent.record.personalBurden=40000;
+personalMortgageRent.record.householdTotal=150000;
+personalMortgageRent.comparison.amount=150000;
+pmm=buildResultViewModelV5({diagnosisId:'QA-PM-FULL',toneMode:'serious',type,profile:personalMortgageProfile,annualIncomeBand:'600_699',finalCategories:personalMortgageCats as any});
+eq(row(pmm,'rent').v5ReferencePrimary?.monthly,93705,'matched household mortgage reference');
+eq(row(pmm,'rent').comparisonAmount,150000,'household total must be shown as comparison amount');
+eq(row(pmm,'rent').comparisonDifference,56295,'mortgage difference must use household total');
+eq(row(pmm,'rent').cUpper,0,'mortgage reference cannot create unconfirmed savings');
+
+// A separately identified family contribution is not a mortgage repayment.
+personalMortgageRent.record.metadata={housingAmountKind:'family_contribution'};
+pmm=buildResultViewModelV5({diagnosisId:'QA-PM-CONTRIB',toneMode:'serious',type,profile:personalMortgageProfile,annualIncomeBand:'600_699',finalCategories:personalMortgageCats as any});
+eq(row(pmm,'rent').v5ReferencePrimary,null,'family contribution cannot compare with mortgage repayments');
+
 // Single mortgage household is outside the official 3-10 population and must not get a fake comparator.
 const singleMortgageProfile:any={...profile,housingTenure:'owned',housingSubtype:'mortgage',householdSize:1,adultCount:1,relationships:[]};
 const smvm=buildResultViewModelV5({diagnosisId:'QA-SM',toneMode:'serious',type,profile:singleMortgageProfile,annualIncomeBand:'600_699',finalCategories:mortgageCats as any});
