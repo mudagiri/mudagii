@@ -89,7 +89,7 @@ assert.equal(chapter2RecognitionV1([...make().slice(0,11),make()[0]]),null,'dupl
   rows:d,potential:{confirmedA:0,cUpper:4500},
   firstQuest:null,consultRoute:null};
  const html=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm}));
- assert.match(html,/「食費」は満足して守りたいと答えた/);
+ assert.match(html,/「食費」は満足していると答えた/);
  assert.match(html,/「日用品」の内訳から確かめよう/);
  assert.match(html,/data-observation-kind="protected_and_candidate"/);
  assert.ok(!html.includes('今までのあなたは衝動買い'),'copy does not invent personality or purchases');
