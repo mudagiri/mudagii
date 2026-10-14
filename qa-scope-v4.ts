@@ -289,6 +289,8 @@ console.log('SCOPE_V4_QA PASS');
  const vm=buildResultViewModelV4({profile,finalCategories:final.categories,annualIncomeBand:'800_999'});
  const foodRow=vm.rows.find(x=>x.category==='food')!;
  A.equal(foodRow.comparisonModelEstimate,true,'UI method flag propagates');
+ A.equal(foodRow.comparisonQuality,'reference','income-cross display is a reference, not an exact direct cross');
+ A.equal(foodRow.comparisonContext.quality,'reference','comparison context must share modeled presentation quality');
  A.ok(foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'comparison conditions show provenance');
  const stored=buildPersistencePayloadV4({diagnosisId:'policy_provenance_QA',anonymousUserId:'anon_QA',profile,finalCategories:final.categories});
  A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'income_cross_model','persist model provenance');
