@@ -234,20 +234,32 @@ export function buildResultViewModelV5(a:{
     :row.category==='car'
      ?carMaintenanceReferenceV5(a.profile,original.record.metadata.carScope)
      :null;
+  // A mortgage survey reports the whole household's repayment, not one person's
+  // contribution. Never overlay that reference onto personal-only spending.
+  const mortgageComparisonAmount=row.category==='rent'&&mortgageRef
+   &&original.record.applicability==='applicable'
+   &&original.comparison.amountScope==='property'
+   &&original.comparison.amount!==null&&Number.isFinite(original.comparison.amount)
+   &&(a.profile.diagnosisScope==='household'||original.record.householdTotal!==null)
+   &&original.record.metadata.housingAmountKind!=='family_contribution'
+   &&original.record.metadata.housingAmountKind!=='rent_total'
+   ?original.comparison.amount:null;
+  const displayRef=row.category==='rent'&&mortgageComparisonAmount===null?null:primaryRef;
   const secondaryRefs=row.category==='insurance'?insuranceBundle?.secondary??[]:[];
-  const referenceMonthly=primaryRef?.monthly??null;
-  const canOverlay=referenceMonthly!==null&&original.record.known&&original.record.diagnosisAmount!==null
-   &&(row.category==='insurance'||row.category==='rent'||row.category==='car');
+  const referenceMonthly=displayRef?.monthly??null;
+  const overlayAmount=row.category==='rent'?mortgageComparisonAmount:original.record.diagnosisAmount;
+  const canOverlay=referenceMonthly!==null&&original.record.known&&overlayAmount!==null
+   &&Number.isFinite(overlayAmount)&&(row.category==='insurance'||row.category==='rent'||row.category==='car');
   const overlayReason=row.category==='insurance'?'V5_INSURANCE_REFERENCE_OVERLAY':row.category==='rent'?'V5_MORTGAGE_REFERENCE_OVERLAY':'V5_CAR_MAINTENANCE_REFERENCE_OVERLAY';
-  const x:FinalCategoryV4=canOverlay?{...original,comparison:{...original.comparison,amount:original.record.diagnosisAmount,benchmark:referenceMonthly,quality:'reference',amountScope:original.comparison.amountScope,sourceVersion:primaryRef!.sourceVersion,difference:original.record.diagnosisAmount!-referenceMonthly!,engineComparableAllowed:false,autoSavingAllowed:false,benchmarkMeta:null,reason:overlayReason}}:original;
+  const x:FinalCategoryV4=canOverlay?{...original,comparison:{...original.comparison,amount:overlayAmount,benchmark:referenceMonthly,quality:'reference',amountScope:original.comparison.amountScope,sourceVersion:displayRef!.sourceVersion,difference:overlayAmount!-referenceMonthly!,engineComparableAllowed:false,autoSavingAllowed:false,benchmarkMeta:null,reason:overlayReason}}:original;
   const position=positionFor(x);
   const v5Status=v5StatusFor(x,position);
   const c=cUpperFor(x,position);
   const aAmount=x.category==='sub'?Math.max(0,x.confirmedSaving):0;
   return {
    ...row,
-   ...(canOverlay?{comparable:referenceMonthly,comparisonDifference:x.comparison.difference,evidenceLabel:primaryRef!.label,comparisonContext:{criteria:primaryRef!.criteria}}:{}),
-   v5ReferencePrimary:primaryRef,
+   ...(canOverlay?{comparable:referenceMonthly,comparisonDifference:x.comparison.difference,evidenceLabel:displayRef!.label,comparisonContext:{criteria:displayRef!.criteria}}:{}),
+   v5ReferencePrimary:displayRef,
    v5ReferenceSecondary:secondaryRefs,
    positionAvailable:position.available,positionLabel:position.label,positionMethod:position.method,positionRatio:position.ratio,
    v5Status,v5StatusLabel:V5_STATUS_LABEL[v5Status],
