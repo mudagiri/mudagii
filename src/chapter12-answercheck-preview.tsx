@@ -130,6 +130,12 @@ function makeFixture(example:Case){
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
    v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
+   // Anonymous, fictitious Chapter 1 lineage for displaying continuity in
+   // the isolated pilot. No income, spend or participant data is copied.
+   chapter1Link:{schemaVersion:'MUDAGIRI_CHAPTER1_LINKAGE_V1',
+    chapter1SessionId:chapter1.sessionId,chapter1JobCode:chapter1.jobCode,
+    chapter1JobName:chapter1.jobName,chapter1StyleCode:chapter1.primaryStyle,
+    chapter1CompletedAt:chapter1.completedAt},
    potential:{confirmedA,cUpper:reviewUpper,lower:confirmedA,upper:confirmedA+reviewUpper,
     oneYear:{lower:confirmedA*12,upper:(confirmedA+reviewUpper)*12},
     fiveYear:{lower:confirmedA*60,upper:(confirmedA+reviewUpper)*60},
