@@ -1,0 +1,29 @@
+{
+  "version": "MUDAGIRI_VISUAL_ASSETS_V1",
+  "pose_count": 25,
+  "background_count": 3,
+  "backgrounds": [
+    {
+      "id": "MP_BG_01_GUILD_HALL",
+      "file": "backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp",
+      "role": "ギルド受付・診断開始",
+      "source": "29287.png"
+    },
+    {
+      "id": "MP_BG_02_JOB_UNLOCK",
+      "file": "backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp",
+      "role": "JOB認定・UNLOCK",
+      "source": "29288.png"
+    },
+    {
+      "id": "MP_BG_03_NEXT_QUEST",
+      "file": "backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp",
+      "role": "第2章へ出発",
+      "source": "29289.png"
+    }
+  ],
+  "paths": {
+    "poses": "/assets/mudagiri/poses/v1/",
+    "backgrounds": "/assets/mudagiri/backgrounds/money-personality/v1/"
+  }
+}

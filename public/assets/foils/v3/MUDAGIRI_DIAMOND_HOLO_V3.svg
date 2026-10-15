@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1120" viewBox="0 0 720 1120">
+<defs>
+  <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#52e7ff" stop-opacity=".92"/>
+    <stop offset=".55" stop-color="#477cff" stop-opacity=".52"/>
+    <stop offset="1" stop-color="#915bff" stop-opacity=".08"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="1" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff07a" stop-opacity=".92"/>
+    <stop offset=".5" stop-color="#ff9d42" stop-opacity=".50"/>
+    <stop offset="1" stop-color="#ff6fb5" stop-opacity=".08"/>
+  </linearGradient>
+  <linearGradient id="green" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#69f2bc" stop-opacity=".76"/>
+    <stop offset=".55" stop-color="#47dff4" stop-opacity=".42"/>
+    <stop offset="1" stop-color="#7e69ff" stop-opacity=".08"/>
+  </linearGradient>
+  <linearGradient id="violet" x1="0" y1="0" x2="1" y2=".2">
+    <stop offset="0" stop-color="#d96bff" stop-opacity=".80"/>
+    <stop offset=".48" stop-color="#7f71ff" stop-opacity=".40"/>
+    <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ffffff" stop-opacity=".72"/>
+    <stop offset=".5" stop-color="#d5f3ff" stop-opacity=".24"/>
+    <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation=".45"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="1.2"/></filter>
+</defs>
+
+<!-- large, sparse prism facets: edges/corners only; center intentionally open -->
+<g filter="url(#blur)">
+  <polygon points="18,52 112,18 82,126" fill="url(#cyan)" opacity=".82"/>
+  <polygon points="112,18 198,48 142,132" fill="url(#violet)" opacity=".52"/>
+  <polygon points="236,28 326,8 292,110" fill="url(#gold)" opacity=".62"/>
+  <polygon points="560,18 646,56 578,134" fill="url(#cyan)" opacity=".72"/>
+  <polygon points="646,56 710,30 690,142" fill="url(#gold)" opacity=".64"/>
+
+  <polygon points="26,188 104,144 82,254" fill="url(#green)" opacity=".52"/>
+  <polygon points="602,166 700,148 660,272" fill="url(#violet)" opacity=".58"/>
+  <polygon points="628,276 708,246 672,362" fill="url(#cyan)" opacity=".72"/>
+
+  <polygon points="18,390 88,344 72,460" fill="url(#gold)" opacity=".54"/>
+  <polygon points="94,420 166,368 138,500" fill="url(#cyan)" opacity=".46"/>
+  <polygon points="586,412 676,360 642,494" fill="url(#green)" opacity=".52"/>
+
+  <polygon points="24,600 112,542 88,674" fill="url(#violet)" opacity=".56"/>
+  <polygon points="620,570 706,534 668,662" fill="url(#gold)" opacity=".60"/>
+
+  <polygon points="34,790 126,738 88,868" fill="url(#cyan)" opacity=".56"/>
+  <polygon points="120,860 196,804 166,930" fill="url(#green)" opacity=".42"/>
+  <polygon points="570,804 652,744 628,884" fill="url(#violet)" opacity=".56"/>
+  <polygon points="646,902 714,850 692,976" fill="url(#cyan)" opacity=".62"/>
+
+  <polygon points="14,1010 102,944 76,1108" fill="url(#gold)" opacity=".56"/>
+  <polygon points="246,1032 324,974 298,1118" fill="url(#cyan)" opacity=".46"/>
+  <polygon points="506,1022 586,958 558,1118" fill="url(#green)" opacity=".52"/>
+  <polygon points="602,1018 700,946 674,1118" fill="url(#gold)" opacity=".62"/>
+</g>
+
+<!-- a few mid-field flashes, not a grid -->
+<g filter="url(#glow)">
+  <polygon points="210,176 246,152 234,202" fill="url(#white)" opacity=".44"/>
+  <polygon points="482,218 526,190 510,248" fill="url(#cyan)" opacity=".52"/>
+  <polygon points="180,516 222,486 210,548" fill="url(#gold)" opacity=".44"/>
+  <polygon points="516,552 558,524 544,582" fill="url(#violet)" opacity=".46"/>
+  <polygon points="234,744 272,720 258,772" fill="url(#green)" opacity=".42"/>
+  <polygon points="480,822 524,792 508,852" fill="url(#gold)" opacity=".48"/>
+</g>
+
+<!-- fine specular streak -->
+<path d="M-40 910 C130 720 230 690 350 560 C470 430 580 300 760 170" fill="none" stroke="url(#white)" stroke-width="18" opacity=".10"/>
+<path d="M-30 906 C138 724 236 694 354 564 C474 434 584 304 754 176" fill="none" stroke="#fff" stroke-width="2" opacity=".18"/>
+
+<!-- tiny sparkle points -->
+<g fill="#fff">
+  <circle cx="112" cy="18" r="2.2" opacity=".82"/>
+  <circle cx="646" cy="56" r="2.1" opacity=".78"/>
+  <circle cx="88" cy="344" r="1.8" opacity=".72"/>
+  <circle cx="676" cy="360" r="2.0" opacity=".76"/>
+  <circle cx="126" cy="738" r="1.8" opacity=".70"/>
+  <circle cx="652" cy="744" r="2.0" opacity=".72"/>
+</g>
+</svg>
