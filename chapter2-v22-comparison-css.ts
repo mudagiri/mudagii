@@ -115,11 +115,11 @@ export const V22COMPARISONCSS = `
 .c2v32-rpg .c2v32-after-ledger-action:focus-visible{
  outline:3px solid #7bdfee;outline-offset:2px;
 }
-.c2v32-rpg [data-section="POTENTIAL_TREASURE"],
-.c2v32-rpg [data-section="CANDIDATE_BREAKDOWN"],
-.c2v32-rpg [data-section="CATEGORY_COMPARISON_OVERVIEW"],
-.c2v32-rpg [data-section="CONSULTATION_CTA_TOP"],
-.c2v32-rpg [data-section="HOUSEHOLD_SHARE"]{scroll-margin-top:89px}
+.c2v32-rpg [data-section=POTENTIAL_TREASURE],
+.c2v32-rpg [data-section=CANDIDATE_BREAKDOWN],
+.c2v32-rpg [data-section=CATEGORY_COMPARISON_OVERVIEW],
+.c2v32-rpg [data-section=CONSULTATION_CTA_TOP],
+.c2v32-rpg [data-section=HOUSEHOLD_SHARE]{scroll-margin-top:89px}
 .c2v32-rpg .c2v22-comparison-row{padding:9px 0 10px}
 .c2v32-rpg .c2v22-comparison-head{min-height:49px;grid-template-columns:52px minmax(0,1fr) auto;gap:8px}
 .c2v32-rpg .c2v23-comparison-enemy,.c2v32-rpg .c2v23-comparison-enemy-fallback{width:52px;height:53px}
