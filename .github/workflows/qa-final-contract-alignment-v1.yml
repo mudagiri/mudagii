@@ -32,6 +32,7 @@ jobs:
           npm run qa:scope
           npm run qa:result-v5
           npm run qa:chapter2-v32
+          node scripts/qa-final-contract-canonical-owner-v1.mjs
           node qa-final-contract-release-readiness-v1.mjs
           npm run qa:result-v5-calibration
           npm run qa:10k
