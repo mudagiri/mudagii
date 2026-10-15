@@ -295,6 +295,37 @@ jobs:
           test -f site/pilot/chapter12-answercheck-v1/chapter12-answercheck.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter12-answercheck-v1/assets/*.js
 
+          # The nested Chapter 1 entry pages share the exact same compiled JS/images
+          # as each sibling chapter root. Reuse those parent assets rather than publishing
+          # four additional 100MB+ copies. Keep the nested URL/index/OG metadata.
+          for chapter in chapter2-v2 chapter2-v3 chapter2-v31 chapter2-v32; do
+            nested="site/pilot/$chapter/pilot/money-type"
+            test -f "$nested/index.html"
+            test -f "$nested/REVISION_SHA.txt"
+            for item in "$nested"/*; do
+              case "$item" in
+                "$nested/index.html"|"$nested/REVISION_SHA.txt") ;;
+                *) rm -rf "$item" ;;
+              esac
+            done
+            python3 - "$nested/index.html" <<'PY'
+import pathlib,sys
+page=pathlib.Path(sys.argv[1])
+html=page.read_text()
+assert '<head>' in html
+# Relative JS, CSS, images and canonical media now resolve to sibling root.
+page.write_text(html.replace('<head>','<head><base href="../../">',1))
+PY
+            test -d "site/pilot/$chapter/assets"
+            test "$(find "$nested" -mindepth 1 -maxdepth 1 | wc -l)" -eq 2
+          done
+
+          # Failing early is safer than a deceptive Pages success with truncated
+          # or absent pilot paths; deploy-pages has a 1GB artifact hard limit.
+          publish_bytes="$(du -sb site | cut -f1)"
+          echo "PAGES_ARTIFACT_BYTES=$publish_bytes"
+          test "$publish_bytes" -lt 990000000
+
           cmp production-site/dist/index.html site/index.html
           test -f site/pilot/money-type/index.html
           test -f site/pilot/chapter2-v2/index.html
