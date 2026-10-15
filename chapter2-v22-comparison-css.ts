@@ -128,7 +128,18 @@ export const V22COMPARISONCSS = `
 .c2v32-rpg .c2v22-comparison-source{margin-top:6px}
 .c2v32-rpg .c2v22-comparison-source.is-unavailable{margin:5px 2px 0;line-height:1.48;font-size:12px}
 .c2v32-rpg .c2v22-comparison-source.is-unavailable b{color:#365550}
-.c2v32-rpg .c2v22-comparison-source .c2v32-context-brief{margin:0;line-height:1.5;font-size:12px}
+/* The generic dark-card ".c2v2-card p" applies LIGHT text to all p elements.
+ * Explicitly restore dark contrast on parchment; the old browser screenshot
+ * made this essential comparison criterion nearly invisible.
+ */
+.c2v32-rpg .c2v31-encyclopedia .c2v22-comparison-source .c2v32-context-brief{
+ margin:0;line-height:1.55;font-size:13px;color:#28453f!important;font-weight:700;
+}
+.c2v32-rpg .c2v31-encyclopedia .c2v22-comparison-source .c2v32-context-brief b{color:#21534b!important}
+.c2v32-rpg .c2v31-encyclopedia .c2v32-comparison-evidence p{color:#28453f!important}
+.c2v32-rpg .c2v31-encyclopedia .c2v22-comparison-source.is-unavailable{
+ color:#40534d!important;font-size:13px;line-height:1.55;
+}
 .c2v32-rpg .c2v32-evidence-toggle{
  min-height:38px;display:flex;align-items:center;
  background:none;border:0;border-bottom:1px dashed #9da59b;
