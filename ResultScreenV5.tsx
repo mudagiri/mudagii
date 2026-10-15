@@ -451,7 +451,7 @@ const CSS=`
 .v51-comparison-criteria{margin:10px 0 0!important;color:#d4e4e7!important;font-size:13px!important;line-height:1.55!important}
 .v51-comparison-model,.v51-comparison-disclaimer{display:block;margin-top:6px;color:#f1d898!important;font-size:12px!important;line-height:1.5!important}
 .v51-comparison-scope{margin:7px 0 0!important;color:#f3d99c!important;font-size:12px!important;line-height:1.5!important}
-.v51-comparison-detail-button{width:100%;min-height:44px;margin-top:11px;border:1px solid #729daa;border-radius:9px;background:#284956;color:#f1fffc;font-size:13px;font-weight:850;cursor:pointer;touch-action:manipulation}
+.v51-comparison-detail-button{width:100%;min-height:48px;margin-top:11px;border:1px solid #729daa;border-radius:9px;background:#284956;color:#f1fffc;font-size:13px;font-weight:850;cursor:pointer;touch-action:manipulation}
 .v51-comparison-foot{margin:13px 0 0!important;color:#e1eef0!important;font-size:13px!important;line-height:1.6!important}
 @media(min-width:680px){.v51-comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
