@@ -30,10 +30,13 @@ assert.match(uncertain,/未来の戦利品<\/h2>/,'readable RPG heading stays cl
 assert.doesNotMatch(uncertain,/未来の戦利品（仮定）|未確定の仮定/,'stiff parenthetical should not return');
 assert.doesNotMatch(uncertain,/<span class="c2v31-quest-crest"/,'do not stack redundant quest crest next to clear heading');
 
-assert.ok(uncertain.indexOf('data-section="POTENTIAL_HERO"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
-assert.ok(uncertain.indexOf('data-section="POTENTIAL_TREASURE"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
-assert.ok(uncertain.indexOf('data-section="FUTURE_REWARDS"')<uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
-assert.ok(uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<uncertain.indexOf('data-section="CONSULTATION_CTA_TOP"'));
+// CSS selectors for sticky scroll offsets mention data-section names inside
+// <style>. Check DOM markup order, not earlier source text in the stylesheet.
+const markupOnly=uncertain.replace(/<style>[\s\S]*?<\/style>/,'');
+assert.ok(markupOnly.indexOf('data-section="POTENTIAL_HERO"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(markupOnly.indexOf('data-section="POTENTIAL_TREASURE"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(markupOnly.indexOf('data-section="FUTURE_REWARDS"')<markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
+assert.ok(markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<markupOnly.indexOf('data-section="CONSULTATION_CTA_TOP"'));
 assert.ok(!uncertain.includes('確認済みの戦利品'),'do not claim confirmed positive saving when it is zero');
 const fractional=show(0,17853.6);
 assert.match(fractional,/月 最大 ¥17,854/);
