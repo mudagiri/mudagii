@@ -14,7 +14,7 @@ const examples:Record<Case,{label:string;desc:string;style:string;job:string;job
  tokyo_single:{label:'東京｜30代・単身・年収450万円',desc:'架空の入力と見直し意向をもとに、食費・日用品・スマホの未確定候補まで計算。比較差額は削減額ではありません',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  tokyo_family:{label:'東京｜40代・4人家族・世帯年収900万円',desc:'世帯人数に応じた比較。通信費は家族分なのでスマホ1回線の削減額を作りません',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
  regional_single:{label:'大阪｜30代・単身・年収450万円',desc:'東京単身と同額。住居費などの地域条件と、単身光熱費は年齢基準であることを比較',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
- tokyo_high_income:{label:'東京｜30代・単身・年収1,500万円',desc:'東京単身と同じ支出額。所得を使わないカテゴリに年収倍率を掛けない検証',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ tokyo_high_income:{label:'東京｜30代・単身・年収1,500万円',desc:'単身で同じ金額を使っていても、年収に対する負担割合は大きく違う。統計基準と削減候補額は不当な年収倍率で増減させない',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  no_uncertain:{label:'未確定候補0円｜金額を作らない',desc:'未確定候補が0円なら架空の内訳・累計を出さない確認用',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  v32_scale_uncertain:{label:'旧V3.2の未確定だけ｜月17,854円',desc:'確認済み改善機会0円・未確定の参考上限だけ月17,854円の架空ケース。節約できると確定した額ではありません。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
@@ -196,11 +196,17 @@ function makeFixture(example:Case){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
  }
  const caseRows=example==='partial'?rows.slice(0,11):rows;
+ const demoContext=profile?{
+  annualIncome:profile.annualIncome,
+  incomeLabel:profile.incomeLabel,
+  monthlyExpenses:rows.reduce((sum,r)=>sum+(r.known&&r.applicability==='applicable'?Math.max(0,Number(r.amount)||0):0),0),
+  monthlyFood:rows.find(r=>r.category==='food')?.amount??0
+ }:null;
  const reviewUpper=caseRows.reduce((sum,x)=>sum+x.cUpper,0);
  const confirmedA=caseRows.reduce((sum,x)=>sum+x.aAmount,0);
  const totals={cut:0,optimize:0,protect:0,inspect:0,ok:0,na:0};
  for(const r of caseRows){const k=r.v5Status as keyof typeof totals;if(k in totals)totals[k]++;}
- return {chapter1,anonymousUserId,
+ return {chapter1,anonymousUserId,demoContext,
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
    v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
@@ -229,7 +235,14 @@ function App(){
  const initialCase:Case=requestedCase&&Object.prototype.hasOwnProperty.call(examples,requestedCase)
   ?requestedCase as Case:'tokyo_single';
  const [selected,setSelected]=useState<Case>(initialCase);
- const {chapter1,anonymousUserId,vm}=makeFixture(selected);
+ const {chapter1,anonymousUserId,vm,demoContext}=makeFixture(selected);
+ const yen=(n:number)=>Math.round(n).toLocaleString('ja-JP');
+ const ratio=(n:number,annual:number)=>annual>0?(n/(annual/12)*100).toFixed(1):'—';
+ const pairSelected=selected==='tokyo_single'||selected==='tokyo_high_income';
+ const pairIncomes=[
+  {annual:4500000,label:'年収450万円',caseId:'tokyo_single'},
+  {annual:15000000,label:'年収1,500万円',caseId:'tokyo_high_income'}
+ ];
  return <div className={'c12preview'+(pilotMode?' c12preview--participant':'')}>
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
      <strong>家計クエスト｜調査用の画面見本</strong>
@@ -243,6 +256,29 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
+     {demoContext&&<section className="c12preview-income-lens" data-section="INCOME_CONTEXT" aria-labelledby="c12preview-income-heading">
+      <span className="c12preview-income-kicker">もうひとつの答え合わせ ／ 年収と負担</span>
+      <h2 id="c12preview-income-heading">同じ支出でも、家計への重さは違う。</h2>
+      {pairSelected?<p className="c12preview-income-lead">東京・35歳の単身者。<b>同じ12費目の支出・同じ比較目安・同じ見直し候補</b>でも、年収の月換算額に占める割合はこんなに変わる。</p>
+      :<p className="c12preview-income-lead">{demoContext.incomeLabel}の架空プロフィール。こちらは家計の負担割合で、統計との比較基準や削減額とは別の数字だよ。</p>}
+      <div className="c12preview-income-samples" data-income-monthly-total={demoContext.monthlyExpenses}>
+       <span>今回入力した12費目の合計（毎月）</span><strong>¥{yen(demoContext.monthlyExpenses)}</strong>
+      </div>
+      <div className="c12preview-income-grid">
+       {(pairSelected?pairIncomes:[{annual:demoContext.annualIncome,label:demoContext.incomeLabel,caseId:selected}]).map(income=>{
+        const share=Number(ratio(demoContext.monthlyExpenses,income.annual));
+        return <div className={'c12preview-income-card'+(income.caseId===selected?' is-selected':'')} data-income-annual={income.annual} key={income.annual}>
+         <div className="c12preview-income-card-head"><b>{income.label}</b>{income.caseId===selected&&<small>現在のケース</small>}</div>
+         <strong className="c12preview-income-rate">{share.toFixed(1)}<span>%</span></strong>
+         <div className="c12preview-income-track" aria-hidden="true"><span style={{width:Math.min(100,share)+'%'}}/></div>
+         <p>年収の月換算額に占める12費目の割合</p>
+         <div className="c12preview-income-food">うち食費：<b>{ratio(demoContext.monthlyFood,income.annual)}%</b></div>
+        </div>;
+       })}
+      </div>
+      <p className="c12preview-income-reading">{pairSelected?'見直し候補が同額でも、優先して確認すべきことは違う。450万円のケースでは手取り・固定費・貯蓄余力を、1,500万円のケースでは満足度・資産形成目標・契約の必要性をより丁寧に確認したい。':'負担割合を見たら、次は支出の中身・手取り・貯蓄目的を確認。割合だけで「ムダ」「余裕あり」と決めないよ。'}</p>
+      <p className="c12preview-income-caution">※年収は税引前。金額を12で割った参考計算で、手取り比率や可処分所得を示しません。12費目の入力が家計全体を網羅する保証もありません。所得階級別の統計と人数・年齢別の統計を掛け合わせた架空の平均は作りません。</p>
+     </section>
      <p className="c12preview-compare-instructions">まず東京・単身で食費・日用品・通信費の見直し候補を確認してみて。同じ支出の高所得単身では年収だけで候補額は増えない。家族ケースはスマホ代を家族分として扱い、住居費や保険の比較差額は自動で削減候補に足さないよ。</p>
 
      <div className="c12preview-disclaimer">この4比較ケースの「継続的に高い」「見直したい」等も架空の回答です。比較差額はそのまま削減可能額にならず、実際の節約額は確認・実行するまで分かりません。すべて架空のデータによる表示見本です。一部の目安は架空のプロフィールに正本比較ルールを適用した表示見本です。食費¥37,860のみ旧QA用の架空額です。未設定のカテゴリでも実際の条件によって比較値が出る場合があります。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
