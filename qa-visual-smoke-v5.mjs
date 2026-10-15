@@ -23,6 +23,7 @@ await page.addInitScript(()=>{
 page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
 const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
+const legacyResultUrl=new URL(base);legacyResultUrl.searchParams.set('mode','household');
 
 const report=[];
 async function metrics(name,{allowVertical=false}={}){
@@ -74,7 +75,7 @@ async function waitHeading(name){
   await h.waitFor({state:'visible'});
 }
 async function startPersonal(){
-  await page.goto(base,{waitUntil:'networkidle'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'networkidle'});
   await shot('01-opening');
   await clickButton(/無料で冒険をはじめる/);
   await waitHeading('今回チェックするのは？');
@@ -87,7 +88,7 @@ async function startPersonal(){
 }
 
 async function clearJourney(){
-  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'domcontentloaded'});
   await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();});
   await page.reload({waitUntil:'networkidle'});
 }
