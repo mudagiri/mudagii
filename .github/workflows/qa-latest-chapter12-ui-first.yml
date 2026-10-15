@@ -24,12 +24,16 @@ jobs:
       - name: Compile latest UI over frozen production benchmark
         run: |
           npm run build
+          npm run qa:public-chapter12-entry
+          npm run qa:chapter2-v2
           test -f dist/index.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
           test -f public/assets/mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp
           test -f public/assets/jobs/v1/JOB_04_FNP_turtle.webp
       - name: Prepare same-origin Chapter 1 to 2 static preview
         run: |
+          mkdir -p preview
+          cp -R dist/. preview/
           mkdir -p preview/pilot/chapter2-v32/pilot/money-type
           cp -R dist/. preview/pilot/chapter2-v32/
           cp -R dist/. preview/pilot/chapter2-v32/pilot/money-type/
@@ -45,6 +49,9 @@ jobs:
           done
           cat /tmp/mudagiri-latest-ui.log
           exit 1
+      - name: Public root and backward compatible route smoke
+        env: {PUBLIC_ROUTE_URL: "http://127.0.0.1:4173/"}
+        run: node qa-public-chapter12-browser.mjs
       - name: Chrome latest Chapter 1 → Chapter 2 integrated browser QA
         env: {BROWSER_ENGINE: chromium, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
         run: node qa-chapters-v32-browser.mjs
