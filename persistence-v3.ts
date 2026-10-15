@@ -10,7 +10,16 @@ export class LocalPersistenceV3 implements PersistenceV3{
    this.storage.setItem(k,JSON.stringify(xs));
  }
  async appendEvent(v:any){const k='mudagiri_events_v3',xs:any[]=safeParse(this.storage.getItem(k));xs.push(v);this.storage.setItem(k,JSON.stringify(xs))}
- async saveLead(v:any){const k='mudagiri_leads_v3',xs:any[]=safeParse(this.storage.getItem(k));const i=xs.findIndex(x=>x.diagnosisId===v.diagnosisId);if(i>=0)xs[i]=v;else xs.push(v);this.storage.setItem(k,JSON.stringify(xs))}
+ async saveLead(v:any){
+   const k='mudagiri_leads_v3',xs:any[]=safeParse(this.storage.getItem(k));
+   // The user can open both life-plan and coverage consultation from one
+   // diagnosis. Treat each CTA's handoff code/lane as a separate intent
+   // (same idempotent leadId on a retry), matching GAS V4's conversion key.
+   const id=typeof v.leadId==='string'&&v.leadId?v.leadId:'lead_'+String(v.diagnosisId??'');
+   const i=xs.findIndex(x=>(typeof x.leadId==='string'&&x.leadId?x.leadId:'lead_'+String(x.diagnosisId??''))===id);
+   if(i>=0)xs[i]=v;else xs.push(v);
+   this.storage.setItem(k,JSON.stringify(xs));
+ }
 }
 class GasPersistenceV3 implements PersistenceV3{
  constructor(private url:string,private fallback:PersistenceV3){}
