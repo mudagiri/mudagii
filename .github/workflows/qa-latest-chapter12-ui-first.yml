@@ -26,6 +26,7 @@ jobs:
           npm run build
           npm run qa:public-chapter12-entry
           npm run qa:chapter2-v2
+          npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
           test -f dist/index.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
           test -f public/assets/mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp
