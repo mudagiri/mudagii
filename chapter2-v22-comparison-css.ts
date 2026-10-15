@@ -89,6 +89,63 @@ export const V22COMPARISONCSS = `
 .c2v32-rpg .c2v31-encyclopedia [data-optional="enemy-atlas"]{
  margin-top:8px;border-top:1px solid rgba(210,189,139,.42);padding-top:9px;
 }
+
+/* V2.3 experience pass: all 12 values and criteria remain visible, while
+ * redundant source notes expand on demand. Shortcuts cut long-scroll friction.
+ * Scroll margin accounts for sticky navigation at 320–430px.
+ */
+.c2v32-rpg .c2v32-result-shortcuts{
+ position:sticky;top:0;z-index:35;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+ margin:0 12px 9px;padding:8px;
+ background:rgba(5,27,36,.97);border:1px solid rgba(234,202,133,.62);
+ border-radius:0 0 13px 13px;box-shadow:0 5px 16px rgba(0,0,0,.35);
+}
+.c2v32-rpg .c2v32-result-shortcuts button{
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;
+ min-height:52px;min-width:0;padding:6px 3px;
+ color:#fff0c5;background:linear-gradient(145deg,rgba(18,65,64,.95),rgba(8,45,53,.97));
+ border:1px solid rgba(233,200,128,.49);border-radius:9px;
+ font-weight:850;font-size:clamp(12px,3.4vw,14px);line-height:1.24;
+ cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-result-shortcuts button>span{font-size:15px}
+.c2v32-rpg .c2v32-result-shortcuts button:focus-visible,
+.c2v32-rpg .c2v32-evidence-toggle:focus-visible,
+.c2v32-rpg .c2v32-after-ledger-action:focus-visible{
+ outline:3px solid #7bdfee;outline-offset:2px;
+}
+.c2v32-rpg [data-section="POTENTIAL_TREASURE"],
+.c2v32-rpg [data-section="CANDIDATE_BREAKDOWN"],
+.c2v32-rpg [data-section="CATEGORY_COMPARISON_OVERVIEW"],
+.c2v32-rpg [data-section="CONSULTATION_CTA_TOP"],
+.c2v32-rpg [data-section="HOUSEHOLD_SHARE"]{scroll-margin-top:89px}
+.c2v32-rpg .c2v22-comparison-row{padding:9px 0 10px}
+.c2v32-rpg .c2v22-comparison-head{min-height:49px;grid-template-columns:52px minmax(0,1fr) auto;gap:8px}
+.c2v32-rpg .c2v23-comparison-enemy,.c2v32-rpg .c2v23-comparison-enemy-fallback{width:52px;height:53px}
+.c2v32-rpg .c2v22-comparison-values{margin-top:4px;gap:7px}
+.c2v32-rpg .c2v22-comparison-values>span{padding:6px 8px}
+.c2v32-rpg .c2v22-comparison-source{margin-top:6px}
+.c2v32-rpg .c2v22-comparison-source.is-unavailable{margin:5px 2px 0;line-height:1.48;font-size:12px}
+.c2v32-rpg .c2v22-comparison-source.is-unavailable b{color:#365550}
+.c2v32-rpg .c2v22-comparison-source .c2v32-context-brief{margin:0;line-height:1.5;font-size:12px}
+.c2v32-rpg .c2v32-evidence-toggle{
+ min-height:38px;display:flex;align-items:center;
+ background:none;border:0;border-bottom:1px dashed #9da59b;
+ color:#285e5c;font-size:12px;font-weight:900;cursor:pointer;
+ margin:2px 0 0;padding:6px 2px;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-comparison-evidence{margin-top:7px;padding:7px 10px;
+ background:#e8f0ea;border:1px solid #bfd0c7;border-radius:8px}
+.c2v32-rpg .c2v32-comparison-evidence[hidden]{display:none!important}
+.c2v32-rpg .c2v32-comparison-evidence p{font-size:13px;line-height:1.65;margin:3px 0}
+.c2v32-rpg .c2v32-after-ledger-action{
+ display:block;width:100%;min-height:48px;padding:10px;
+ margin:10px 0 11px;border:1px solid #f2d18c;border-radius:10px;
+ background:linear-gradient(130deg,#164844,#123940);color:#fff0c8;
+ font-size:14px;font-weight:900;cursor:pointer;touch-action:manipulation;
+}
+
 @media(max-width:350px){
  .c2v32-rpg .c2v22-comparison-ledger{padding:0 8px}
  .c2v32-rpg .c2v22-comparison-values{gap:5px}
