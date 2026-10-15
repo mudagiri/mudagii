@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - design/chapter12-personality-household-answercheck-v1-20261012
+      - fix/final-contract-benchmark-alignment-20261015
     paths:
       - ".github/workflows/deploy-chapter2-v31-hidden-preview.yml"
       - ".github/workflows/deploy-chapter12-answercheck-preview.yml"
@@ -123,7 +124,7 @@ jobs:
       - name: Checkout separate Chapter 1-2 answer-check visual pilot
         uses: actions/checkout@v4
         with:
-          ref: design/chapter12-personality-household-answercheck-v1-20261012
+          ref: fix/final-contract-benchmark-alignment-20261015
           path: answercheck-site
 
       - name: Capture source revisions
