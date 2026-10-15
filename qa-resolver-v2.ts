@@ -35,6 +35,13 @@ eq(r.rent?.value,null,'owned housing must not use private-rent benchmark');
 
 // Education stacks each child; benchmark gap is never interpreted here as saving.
 eq(educationBenchmarkV2([{stage:'publicElementary'},{stage:'privateJuniorHigh'}]),160580,'education child stack');
+eq(educationBenchmarkV2(undefined),null,'unknown child stages should remain AUDIT');
+eq(educationBenchmarkV2([]),null,'no recorded child stage means no average');
+eq(educationBenchmarkV2([{stage:'publicElementary'},{stage:'unknownStage' as never}]),null,'unknown second child cannot silently add zero');
+eq(educationBenchmarkV2([{stage:'unknownStage' as never}]),null,'invalid public/private stage never creates zero benchmark');
+const invalidSchool=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'東京都',month:2,housingType:'賃貸',educationChildren:[{stage:'publicElementary'},{stage:'unknownStage' as never}]});
+eq(invalidSchool.childEducation?.value,null,'resolver must reject partial education child cross');
+eq(invalidSchool.childEducation?.confidence,'AUDIT','unknown stage must trigger details rather than numerical comparison');
 
 // Insurance reference is scope-aware. Missing scope stays AUDIT; explicit scope activates a reference.
 eq(r.mobile?.value,null,'communication uses direct bands, not fake mean');
