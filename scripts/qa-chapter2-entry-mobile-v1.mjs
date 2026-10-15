@@ -38,7 +38,7 @@ for(const width of [375,390]){
  const page=await context.newPage();
  const outgoing=[];
  page.on('pageerror',e=>errors.push(engine+' '+width+' JS error: '+String(e)));
- page.on('request',req=>{if(/script\\.google\\.com|\\/exec\\b|lin\\.ee|line\\.me|posthog/i.test(req.url()))outgoing.push(req.url())});
+ page.on('request',req=>{const url=req.url();if(['script.google.com','/exec','lin.ee','line.me','posthog'].some(s=>url.includes(s)))outgoing.push(url)});
  await page.goto(root,{waitUntil:'domcontentloaded'});
  await page.locator('.pre-op-cta').waitFor({state:'visible'});
  await page.locator('.pre-op-cta').click();
