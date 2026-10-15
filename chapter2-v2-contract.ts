@@ -54,7 +54,12 @@ export function readChapter1HandoffV1(anonymousUserId:string,storage?:Pick<Stora
 /** Route all Chapter 2 quest shares to the Chapter 1 entry. The Chapter 1 release is a dependency. */
 export function chapter2V2ReferralUrl(currentUrl:string,platform:string){
  const root=new URL('./',currentUrl);
- const url=new URL('pilot/money-type/',root);
+ // The isolated same-origin demos preserve their own Chapter 1 handoff target.
+ // The public root now starts at Chapter 1, so never send shares to an obsolete
+ // /pilot/money-type/ page that may not be deployed.
+ const isolated=/\/pilot\/chapter2-v(?:2|3|31|32)\/?$/.test(root.pathname);
+ const url=isolated?new URL('pilot/money-type/',root):new URL(root.href);
+ if(!isolated)url.searchParams.set('mode','adaptive');
  url.searchParams.set('utm_source',platform);
  url.searchParams.set('utm_campaign','household_quest_clear');
  return url.toString();
