@@ -1,7 +1,7 @@
 name: Chapter 1-2 Answer Check UI Pilot QA
 on:
   push:
-    branches: [design/chapter12-personality-household-answercheck-v1-20261012]
+    branches: [design/chapter12-personality-household-answercheck-v1-20261012, fix/final-contract-benchmark-alignment-20261015]
     paths:
       - "Chapter12AnswerCheckCard.tsx"
       - "CoverageAwarenessCard.tsx"
