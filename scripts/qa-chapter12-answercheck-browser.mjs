@@ -19,6 +19,17 @@ for(const width of [320,375,390,430]){
   const demo=await ctx.newPage();
   await demo.goto(base,{waitUntil:'networkidle'});
   check(await demo.locator('#case-change').inputValue()==='tokyo_single',width+' default is human-readable Tokyo single demo');
+  const incomeLens=demo.locator('[data-section="INCOME_CONTEXT"]');
+  check(await incomeLens.count()===1,width+' separately labeled income burden lens exists');
+  check(await incomeLens.locator('[data-income-monthly-total]').getAttribute('data-income-monthly-total')==='245600',width+' exact fictional monthly expense sum for matched single cases');
+  const burdenRows=incomeLens.locator('[data-income-annual]');
+  check(await burdenRows.count()===2,width+' same-spend comparison has two income denominators');
+  const lowBurden=await incomeLens.locator('[data-income-annual="4500000"]').innerText();
+  const highBurden=await incomeLens.locator('[data-income-annual="15000000"]').innerText();
+  check(lowBurden.includes('65.5%')&&lowBurden.includes('17.3%'),width+' 450 income shares are based on gross monthly equivalent');
+  check(highBurden.includes('19.6%')&&highBurden.includes('5.2%'),width+' 1500 income shares are lower despite unchanged spend');
+  check((await incomeLens.innerText()).includes('税引前')&&(await incomeLens.innerText()).includes('可処分所得'),width+' income lens does not claim spendable income or achievable savings');
+  check(await incomeLens.locator('.c12preview-income-card.is-selected').getAttribute('data-income-annual')==='4500000',width+' default income card follows selected case');
   const reference=async category=>({
    price:await demo.locator('[data-comparison-category="'+category+'"] .c2v22-comparison-values').innerText(),
    basis:await demo.locator('[data-comparison-category="'+category+'"] .c2v32-context-brief').innerText()
@@ -42,6 +53,7 @@ for(const width of [320,375,390,430]){
 
   check(singleEnergy.basis.includes('35歳')&&!singleEnergy.basis.includes('東京都'),width+' single energy uses age not fabricated region cross');
   await demo.locator('#case-change').selectOption('tokyo_high_income');
+  check(await demo.locator('.c12preview-income-card.is-selected').getAttribute('data-income-annual')==='15000000',width+' higher income card becomes current without changing spending data');
   const highEnergy=await reference('energy'),highFood=await reference('food');
   check(singleEnergy.price===highEnergy.price&&singleFood.price===highFood.price,width+' single income change does not multiply base comparators');
   check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' higher income alone never changes review upper');
@@ -50,6 +62,8 @@ for(const width of [320,375,390,430]){
   check(regionalEnergy.price===singleEnergy.price,width+' Osaka single energy follows the same age basis');
   check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' regional rent gap does not inflate the conditional candidate upper');
   await demo.locator('#case-change').selectOption('tokyo_family');
+  check(await demo.locator('[data-section="INCOME_CONTEXT"] [data-income-monthly-total]').getAttribute('data-income-monthly-total')==='401800',width+' family monthly spending scope recalculated');
+  check((await demo.locator('.c12preview-income-card.is-selected').innerText()).includes('53.6%'),width+' family gross burden indicator is separately recalculated');
   const familyEnergy=await reference('energy');
   check(familyEnergy.basis.includes('4人世帯')&&familyEnergy.basis.includes('東京都')&&familyEnergy.basis.includes('10月'),width+' family energy uses size × region × season model');
   check(familyEnergy.price!==singleEnergy.price,width+' household difference actually visible in the demo');
@@ -59,6 +73,8 @@ for(const width of [320,375,390,430]){
   check(familyCandidates.rent===undefined,width+' large rent reference gap is never added to maximum C');
   check((await monthlyHero()).includes('16,682'),width+' family hero derives from two guarded candidates');
   check(!(await monthlyHero()).includes('1,800'),width+' family total is not hard-coded mobile amount');
+  const incomeScroll=await demo.locator('[data-section="INCOME_CONTEXT"]').evaluate(el=>({width:el.scrollWidth,client:el.clientWidth}));
+  check(incomeScroll.width<=incomeScroll.client+2,width+' income lens is readable without horizontal scrolling');
   await demo.close();
  }
 
