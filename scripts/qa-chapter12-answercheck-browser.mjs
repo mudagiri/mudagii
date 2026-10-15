@@ -11,8 +11,33 @@ for(const width of [320,375,390,430]){
  const page=await ctx.newPage(),outside=[];
  page.on('pageerror',e=>errors.push(width+' runtime '+String(e)));
  page.on('request',r=>{if(/script\.google\.com|\/exec\b|lin\.ee|line\.me|analytics/i.test(r.url()))outside.push(r.url());});
- await page.goto(base,{waitUntil:'networkidle'});
+ await page.goto(base+'?case=v32_scale',{waitUntil:'networkidle'});
  const selector=page.locator('#case-change');
+ // The default developer-facing demo is now an understandable single-person comparison.
+ // Keep the original V3.2 snapshot as an explicit legacy fixture for regression.
+ if(width===390){
+  const demo=await ctx.newPage();
+  await demo.goto(base,{waitUntil:'networkidle'});
+  check(await demo.locator('#case-change').inputValue()==='tokyo_single',width+' default is human-readable Tokyo single demo');
+  const reference=async category=>({
+   price:await demo.locator('[data-comparison-category="'+category+'"] .c2v22-comparison-values').innerText(),
+   basis:await demo.locator('[data-comparison-category="'+category+'"] .c2v32-context-brief').innerText()
+  });
+  const singleEnergy=await reference('energy'),singleFood=await reference('food');
+  check(singleEnergy.basis.includes('35歳')&&!singleEnergy.basis.includes('東京都'),width+' single energy uses age not fabricated region cross');
+  await demo.locator('#case-change').selectOption('tokyo_high_income');
+  const highEnergy=await reference('energy'),highFood=await reference('food');
+  check(singleEnergy.price===highEnergy.price&&singleFood.price===highFood.price,width+' single income change does not multiply base comparators');
+  await demo.locator('#case-change').selectOption('regional_single');
+  const regionalEnergy=await reference('energy');
+  check(regionalEnergy.price===singleEnergy.price,width+' Osaka single energy follows the same age basis');
+  await demo.locator('#case-change').selectOption('tokyo_family');
+  const familyEnergy=await reference('energy');
+  check(familyEnergy.basis.includes('4人世帯')&&familyEnergy.basis.includes('東京都')&&familyEnergy.basis.includes('10月'),width+' family energy uses size × region × season model');
+  check(familyEnergy.price!==singleEnergy.price,width+' household difference actually visible in the demo');
+  await demo.close();
+ }
+
  const card=page.locator('[data-section="CHAPTER12_ANSWER_CHECK"]');
  await card.waitFor();
  check(await card.count()===1,width+' initial card');
@@ -388,7 +413,7 @@ for(const width of [320,375,390,430]){
    writeText:async text=>{if(window.__clipboardFail)throw new Error('clipboard denied');window.__copiedCoverage=text;}
   }});
  });
- await dry.goto(base+'?qaCoverageHandoff=1',{waitUntil:'networkidle'});
+ await dry.goto(base+'?case=v32_scale&qaCoverageHandoff=1',{waitUntil:'networkidle'});
  const dryButton=dry.locator('[data-cta="COVERAGE_LINE_CONSULT"]');
  check(await dryButton.count()===1,width+' dry run has coverage CTA');
  await dryButton.click();
@@ -424,7 +449,7 @@ for(const width of [320,375,390,430]){
  const participant=await ctx.newPage(),participantOut=[];
  participant.on('pageerror',e=>errors.push(width+' participant runtime '+String(e)));
  participant.on('request',r=>{if(/twitter\.com|line\.me|lin\.ee|script\.google\.com|\/exec\b/i.test(r.url()))participantOut.push(r.url());});
- await participant.goto(base+'?pilot=1',{waitUntil:'networkidle'});
+ await participant.goto(base+'?case=v32_scale&pilot=1',{waitUntil:'networkidle'});
  check(await participant.locator('[data-pilot-role="participant"]').count()===1,width+' distinct neutral participant header');
  check(await participant.locator('#case-change').count()===0,width+' participant cannot see or switch developer cases');
  check(await participant.locator('.c12preview-top').count()===0,width+' developer instructions removed');
