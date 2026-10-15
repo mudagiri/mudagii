@@ -48,6 +48,7 @@ jobs:
       - run: npm run qa:consult-routing
       - run: npm run qa:result-polish
       - run: npm run qa:result-visual
+      - run: npm run qa:income-burden
       - run: npm run qa:result-v5
       - run: npm run qa:result-v5-calibration
       - run: npm run qa:line-handoff
