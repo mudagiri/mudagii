@@ -162,12 +162,12 @@ function resolveComparableV2WithPolicy(a:ComparableArgsV2,policy:IncomePolicyV2)
    :{value:SINGLE.beautyFashion[ai],confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025',meta:{sexFallback:'all',requestedSex:a.beautySex??'unanswered',fallbackReason:a.beautySex==='female'&&ai===2?'FEMALE_60PLUS_CROSS_UNAVAILABLE':a.beautySex==='preferNot'?'PREFER_NOT_TO_ANSWER':'SEX_NOT_ASKED'}};
  }else{
   const si=sizeBand(a.householdSize??2);
-  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month,...(incomeCrossMeta??{})}};
+  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{modelEstimate:true,modelMethod:'HOUSEHOLD_SIZE_REGION_SEASON',crossTableObserved:false,householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month,...(incomeCrossMeta??{})}};
   out.food={value:Math.round(MULTI.food[si]*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_MULTI_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   out.daily={value:Math.round(MULTI.daily[si]*incomeFactor('daily')),confidence:'DIRECT',sourceVersion:'DAILY_V1.0_MULTI_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   out.fun={value:Math.round(MULTI.fun[si]*incomeFactor('fun')),confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_MULTI_CORE_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   const mbi=multiBeautyAgeBand(a.age);
-  out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
+  out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{modelEstimate:true,modelMethod:'MULTI_HOUSEHOLD_AGE_BAND_REFERENCE',crossTableObserved:false,ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
  }
  const edu=educationBenchmarkV2(a.educationChildren);
  out.childEducation={value:edu,confidence:edu===null?'AUDIT':'DIRECT',sourceVersion:'CHILD_EDUCATION_V1.1_CORRECTED'};
@@ -183,7 +183,7 @@ function resolveComparableV2WithPolicy(a:ComparableArgsV2,policy:IncomePolicyV2)
   }else{
    const safeIndex=ii as 0|1|2|3|4|5;
    const ageLabels=['20s','30s','40s','50s','60s','70s'] as const;
-   out.insurance={value:INSURANCE_PERSONAL_MONTHLY_2025[safeIndex],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{scope:'personal',ageBand:ageLabels[safeIndex],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}};
+   out.insurance={value:INSURANCE_PERSONAL_MONTHLY_2025[safeIndex],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{modelEstimate:true,modelMethod:'PERSONAL_INSURANCE_AGE_SEX_N_WEIGHTED',crossTableObserved:false,scope:'personal',ageBand:ageLabels[safeIndex],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}};
   }
  }else if(a.insuranceScope==='household'){
   const v=a.household==='single'?INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024:INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024;
