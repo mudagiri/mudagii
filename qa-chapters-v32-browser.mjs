@@ -281,15 +281,16 @@ await clickButton(/診断結果を見る/);
   const job=document.querySelector('.c2v31-job-card img');
   const mascot=document.querySelector('.c2v31-hero-mascot');
   const talk=[...document.querySelectorAll('[data-section="MUDAGIRI_TALK"]')];
+  const heroDialogue=!!document.querySelector('.c2v31-dialogue');
   const flow=['POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONFIRMED_REWARD','CONSULTATION_CTA_TOP'].map(k=>document.querySelector('[data-section="'+k+'"]'));
   return {heroBackground:hero?getComputedStyle(hero).backgroundImage:'',jobReady:!!job&&job.complete&&job.naturalWidth>0,
-   mascotReady:!!mascot&&mascot.complete&&mascot.naturalWidth>0,talkCount:talk.length,
+   mascotReady:!!mascot&&mascot.complete&&mascot.naturalWidth>0,talkCount:talk.length,heroDialogue,
    sequence:flow.every((x,i,a)=>!!x&&(i===0||!!(a[i-1].compareDocumentPosition(x)&Node.DOCUMENT_POSITION_FOLLOWING))),
    overflow:document.documentElement.scrollWidth>innerWidth+2};
  });
  assert.ok(visuals.jobReady&&visuals.mascotReady,'Official JOB and Mudagiri art must load');
  assert.ok(visuals.heroBackground.includes('MP_BG_01_GUILD_HALL'),'RPG guild hall backdrop must render');
- assert.ok(visuals.talkCount>=3,'Mudagiri dialogues must recur in Chapter 2');
+ assert.ok(visuals.talkCount>=2&&visuals.heroDialogue,'Hero conversation and two guide dialogues must recur throughout Chapter 2');
  assert.ok(visuals.sequence,'Treasures, compounding, comparisons, confirmed reward and CTA in proper order');
  assert.ok(!visuals.overflow,'No horizontal overflow at 390px');
  await screenshot('13-result-entry-before-assert');
