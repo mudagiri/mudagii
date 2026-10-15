@@ -590,7 +590,11 @@ export default function RpgBlock1({
     const completed=finalizeProfileV4(activeDraft);
     setProfileV4(completed);
     syncLegacyProfileFromV4(completed);
-    if(shouldOfferAnnualIncomeCalibrationV4(completed)){
+    // Chapter 2 uses the FINAL 12-category contract: annual income does not
+    // adjust household-size benchmarks. Asking for it would add friction
+    // while falsely promising greater statistical precision.
+    // Preserve the frozen legacy V1 flow independently of Chapter 2.
+    if(!chapter2V2&&shouldOfferAnnualIncomeCalibrationV4(completed)){
       setScene('incomeCalibration');
       return;
     }
@@ -691,7 +695,7 @@ export default function RpgBlock1({
                 setExpenseRecordsV4(prev=>({...prev,car:{...prev.car,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
               }:undefined}
               onDone={()=>maybeAdvanceScanCategory(currentScan.category)}
-              onBack={()=>{if(scanIndex>0)setScanIndex(i=>Math.max(0,i-1));else setScene('incomeCalibration')}}
+              onBack={()=>{if(scanIndex>0)setScanIndex(i=>Math.max(0,i-1));else{if(chapter2V2){setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene('profile');}else setScene('incomeCalibration');}}}
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
