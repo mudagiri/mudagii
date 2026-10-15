@@ -3,6 +3,7 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
 import {buildSafeFunnelEvent,buildPostHogCaptureBody} from './src/product-funnel-analytics-v1';
+import {externalLineContext} from './scripts/coverage-consult-handoff-v1.mjs';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
  version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'v32-qa-synthetic',
@@ -290,6 +291,30 @@ assert.equal(post?.properties?.placement,'coverage_review');
 assert.ok(!JSON.stringify(post).includes('9999999')&&!JSON.stringify(post).includes('private'),'PostHog only receives allowlisted non-sensitive funnel properties');
 assert.equal(buildSafeFunnelEvent('chapter2','line_friend_added'),null,'friend-add can only be measured at LINE provider, not guessed from click');
 assert.equal(buildSafeFunnelEvent('chapter2','appointment_booked'),null,'booking is an independently verified downstream stage');
+
+const privateLead={
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',anonymousUserId:'sensitive_anonymous_id',
+ rawExpenses:{food:95000},monthlyIncome:700000,confirmedMonthly:9999,potentialUpper:150000,
+ insurancePurpose:'private',healthInformation:'private',chapter1Link:{primaryStyle:'ENJOY'}
+};
+const lifeExternal=externalLineContext({
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',
+ firstQuest:'food',goal:'home',confirmedMonthly:9999,anonymousUserId:'sensitive_anonymous_id'
+},privateLead);
+assert.deepEqual(lifeExternal,{
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',
+ firstQuest:'food',goal:'home',consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan'
+},'external life-plan callback is allowlisted and cannot include household values');
+assert.ok(!JSON.stringify(lifeExternal).includes('95000')&&!JSON.stringify(lifeExternal).includes('sensitive'),'no private amounts or Chapter1 data forwarded externally');
+assert.deepEqual(externalLineContext({
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-INS',placement:'coverage_review',
+ healthInformation:'private'
+},privateLead),{
+ diagnosisId:'diagnosis_synthetic',firstQuest:null,placement:'coverage_review',
+ handoffCode:'MG-INS',goal:null,consultPrimary:'lifeplan',consultSelectedTopic:'insurance',insuranceReview:true
+},'dedicated coverage intent stays minimal and identifiable');
+assert.equal(externalLineContext({placement:'consult_route'},{diagnosisId:'synthetic'}),null,'no handoff code -> fail closed');
+assert.equal(externalLineContext({diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',goal:'medical_history'},privateLead)?.goal,null,'unapproved goal strings never reach callbacks');
 
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-resolver-v2');
