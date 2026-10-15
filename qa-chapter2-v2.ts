@@ -16,6 +16,12 @@ assert.equal(chapter2V2ResumeScene('typeQuiz',true),'battleIntro');
 assert.equal(chapter2V2ResumeScene('typeComplete',true),'battleIntro');
 assert.equal(chapter2V2ResumeScene('appraisal',true),'appraisal');
 assert.equal(chapter2V2ResumeScene('typeQuiz',false),'typeQuiz');
+assert.equal(chapter2V2ResumeScene('incomeCalibration',true),'profile','new chapter2 cannot resume a removed annual-income question');
+assert.equal(chapter2V2ResumeScene('incomeCalibration',false),'incomeCalibration','legacy V1 flow is unchanged');
+
+const flow=readFileSync('./RpgBlock1.tsx','utf8');
+assert.ok(flow.includes('if(!chapter2V2&&shouldOfferAnnualIncomeCalibrationV4(completed))'),'contract-based chapter2 never asks unsupported income calibration');
+assert.ok(flow.includes('if(chapter2V2){setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene(\'profile\');}else setScene(\'incomeCalibration\');'),'back navigation returns to the final profile question instead of an obsolete income step');
 
 const raw=JSON.stringify({
  version:'MUDAGIRI_MONEY_TYPE_HANDOFF_V1',sessionId:'chapter1-session',
