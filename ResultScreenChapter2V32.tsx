@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
@@ -260,7 +261,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   return ()=>{mounted=false};
  },[chapter1?.jobCode]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
- const incomeBurden=vm.incomeBurden?.available===true&&vm.incomeBurden.denominatorSource==='USER_INPUT_MONTHLY_TAKE_HOME'?vm.incomeBurden:null;
+ const incomeBurdenInput=buildIncomeBurdenLensV1(vm.profile,Array.isArray(vm.rows)?vm.rows:[]);
+ const incomeBurden=incomeBurdenInput.available?incomeBurdenInput:null;
  const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
