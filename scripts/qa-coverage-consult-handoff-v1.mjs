@@ -16,6 +16,14 @@ const augmented={...good,confirmedMonthly:99000,rawExpenses:{insurance:{amount:1
 assert.deepEqual(externalLineContext(augmented,augmented),good,'coverage external callback contains only safe handoff fields');
 assert.equal(Object.keys(externalLineContext(augmented,augmented)).length,8,'no sensitive extra fields survive');
 assert.equal(externalLineContext({placement:'coverage_review',diagnosisId:'',handoffCode:'x'},augmented),null,'invalid coverage context does not leak fallback payload');
-assert.strictEqual(externalLineContext({placement:'consult_route'},augmented),augmented,'general lifeplan route is unchanged');
-assert.equal(externalLineContext(null,augmented),augmented,'noncoverage behavior unchanged');
+const safeLifeplan={
+ diagnosisId:'diag-privacy-safe',handoffCode:'MG-TEST123',placement:'consult_route',
+ firstQuest:null,goal:null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan'
+};
+assert.deepEqual(externalLineContext({placement:'consult_route'},augmented),safeLifeplan,'general lifeplan callback is limited to approved context fields');
+assert.deepEqual(externalLineContext(null,augmented),safeLifeplan,'missing context cannot forward private snapshot');
+for(const ctx of [externalLineContext({placement:'consult_route'},augmented),externalLineContext(null,augmented)]){
+ const t=JSON.stringify(ctx);
+ for(const secret of ['99000','11000','medicalHistory','private','rawExpenses','profile','confirmedMonthly'])assert.ok(!t.includes(secret),'no sensitive field leaked: '+secret);
+}
 console.log(JSON.stringify({status:'PASS',checks:13,coverageLINE:{placement:good.placement,consultSelectedTopic:good.consultSelectedTopic,insuranceReview:good.insuranceReview},note:'CTA intent, not appointment booking'}));
