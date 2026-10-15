@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import {buildSafeFunnelEvent,buildPostHogCaptureBody} from './src/product-funnel-analytics-v1';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
  version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'v32-qa-synthetic',
@@ -262,6 +263,33 @@ const modeledIncome=renderToStaticMarkup(React.createElement(ResultScreenChapter
 assert.match(modeledIncome,/統計を組み合わせた推計値/,'modeled income x size is never represented as directly measured mean');
 assert.match(modeledIncome,/人数別基準×年収帯の推計（直接集計ではない）/,'display explicit lack of direct cross table');
 assert.doesNotMatch(modeledIncome,/今回の支出は.*節約済み/,'no claimed savings based on model');
+
+// Marketing / privacy / buzz: insurance and life-plan LINE funnels must be
+// distinguishable without transporting health data, actual premiums or names.
+const safeCoverage=buildSafeFunnelEvent('chapter2','chapter2_v32_coverage_line_message_outbound',{
+ placement:'coverage_review',insurancePremium:85000,diagnosisId:'private',
+ insuranceDiagnosis:'private',medicalHistory:'private'
+});
+assert.deepEqual(safeCoverage,{
+ event:'mudagiri_chapter2_coverage_line_outbound_clicked',
+ properties:{chapter:'chapter2',placement:'coverage_review'},
+});
+for(const [name,expected] of [
+ ['chapter2_v32_coverage_consultation_clicked','mudagiri_chapter2_coverage_consultation_opened'],
+ ['chapter2_v32_coverage_line_copy_success','mudagiri_chapter2_coverage_message_copied'],
+ ['chapter2_v32_coverage_line_copy_failed','mudagiri_chapter2_coverage_message_copy_failed'],
+] as const){
+ assert.equal(buildSafeFunnelEvent('chapter2',name,{placement:'coverage_review'})?.event,expected);
+}
+const safeLifeplan=buildSafeFunnelEvent('chapter2','chapter2_v31_consultation_line_outbound',{placement:'consult_route',householdSalary:500000});
+assert.equal(safeLifeplan?.properties.placement,'consult_route','lifeplan and coverage remain distinct');
+assert.notEqual(safeLifeplan?.event,safeCoverage?.event,'insurance conversion intent must not be merged into general lifeplan');
+const post=buildPostHogCaptureBody('phc_TestKey123','mg_12345678-1234-1234-1234-123456789012','chapter2','chapter2_v32_coverage_line_message_outbound',{placement:'coverage_review',confirmedMonthly:9999999,condition:'private'});
+assert.ok(post);
+assert.equal(post?.properties?.placement,'coverage_review');
+assert.ok(!JSON.stringify(post).includes('9999999')&&!JSON.stringify(post).includes('private'),'PostHog only receives allowlisted non-sensitive funnel properties');
+assert.equal(buildSafeFunnelEvent('chapter2','line_friend_added'),null,'friend-add can only be measured at LINE provider, not guessed from click');
+assert.equal(buildSafeFunnelEvent('chapter2','appointment_booked'),null,'booking is an independently verified downstream stage');
 
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-resolver-v2');
