@@ -643,9 +643,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {incomeBurden?<section className="c2v32-income-burden" data-section="INCOME_BURDEN_CONTEXT" aria-label="入力した月手取りに対する支出負担の確認">
     <div className="c2v32-income-burden-head"><span>もうひとつのものさし</span><strong>手取りから見た家計負担</strong></div>
     <div className="c2v32-income-burden-grid">
-     <div><small>{incomeBurden.scope==='household'?'家全体の月手取り':'本人の月手取り'}</small><strong>{money(incomeBurden.monthlyTakeHome)}</strong></div>
+     <div><small>{incomeBurden.scope==='household'?'家全体の月手取り':'本人の月手取り'}</small><strong>{money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
      <div><small>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出</small><strong>{money(incomeBurden.knownMonthlyExpenses)}</strong></div>
-     <div><small>手取りに占める割合</small><strong>{incomeBurden.expenseShareOfTakeHomePct.toFixed(1)}%</strong></div>
+     <div><small>手取りに占める割合</small><strong>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</strong></div>
     </div>
     <p>あなたの回答から計算した割合だよ。統計上の平均負担率でも、ムダ・削減可能額でもない。下の12カテゴリにも費目別の割合を表示するぞ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
