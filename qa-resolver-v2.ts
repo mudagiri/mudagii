@@ -18,7 +18,13 @@ eq(r.daily?.value,7469,'4-person daily');
 eq(r.fun?.value,11067,'4-person entertainment core');
 eq(r.beautyFashion?.value,21244,'multi beauty age model 40s');
 eq(r.beautyFashion?.confidence,'MODEL','multi beauty must stay model/reference');
+eq(r.beautyFashion?.meta?.modelEstimate,true,'G12 beauty requires model_estimate=true');
+eq(r.beautyFashion?.meta?.incomeAdjusted,undefined,'beauty age model must not be mislabeled as income cross');
+eq(r.beautyFashion?.meta?.crossTableObserved,false,'age model must never claim direct size x age observation');
 eq(r.energy?.confidence,'MODEL','multi utility model flag');
+eq(r.energy?.meta?.modelEstimate,true,'G12 region-season composite requires model_estimate=true');
+eq(r.energy?.meta?.incomeAdjusted,undefined,'energy region-season composite is not an income model');
+eq(r.energy?.meta?.crossTableObserved,false,'region-season composite is not a directly observed cross');
 eq(r.energy?.value,Math.round(25942*0.9689537157757496*1.2985757210518276),'multi utility model');
 
 // Housing distribution is private-rent only.
@@ -36,6 +42,8 @@ eq(r.insurance?.value,null,'insurance without scope stays audit');
 const insPersonal=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'personal'});
 eq(insPersonal.insurance?.value,15830,'personal insurance 40s reference');
 eq(insPersonal.insurance?.confidence,'MODEL','personal insurance combined-age reference is model');
+eq(insPersonal.insurance?.meta?.modelEstimate,true,'G12 N-weighted insurance reference is a model');
+eq(insPersonal.insurance?.meta?.incomeAdjusted,undefined,'personal insurance age aggregation must not be income model');
 const insHousehold=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'household'});
 eq(insHousehold.insurance?.value,29417,'multi household insurance average');
 eq(insHousehold.insurance?.confidence,'DIRECT','household insurance published mean');
@@ -59,6 +67,8 @@ eq(historical.food?.value,103397,'exact archived FROZEN 9/30 income model remain
 eq(historical.daily?.value,7543,'archived DAILY 9/30 value');
 eq(historical.fun?.value,10469,'archived FUN 9/30 value');
 eq(historical.energy?.value,32678,'archived ENERGY 9/30 value');
+eq(historical.energy?.meta?.modelEstimate,true,'archived energy is modeled');
+eq(historical.energy?.meta?.incomeAdjusted,true,'archived energy used historical income factor');
 const baseSingle=resolveComparableV2({household:'single',age:30,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
 const incSingle=resolveComparableV2({household:'single',age:30,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
 eq(incSingle.food?.value,baseSingle.food?.value,'single income correction must stay disabled');
