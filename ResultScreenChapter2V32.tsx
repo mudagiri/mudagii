@@ -260,6 +260,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   return ()=>{mounted=false};
  },[chapter1?.jobCode]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
+ const incomeBurden=vm.incomeBurden?.available===true&&vm.incomeBurden.denominatorSource==='USER_INPUT_MONTHLY_TAKE_HOME'?vm.incomeBurden:null;
+ const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -636,6 +638,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
    <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
+   {incomeBurden?<section className="c2v32-income-burden" data-section="INCOME_BURDEN_CONTEXT" aria-label="入力した月手取りに対する支出負担の確認">
+    <div className="c2v32-income-burden-head"><span>もうひとつのものさし</span><strong>手取りから見た家計負担</strong></div>
+    <div className="c2v32-income-burden-grid">
+     <div><small>{incomeBurden.scope==='household'?'家全体の月手取り':'本人の月手取り'}</small><strong>{money(incomeBurden.monthlyTakeHome)}</strong></div>
+     <div><small>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出</small><strong>{money(incomeBurden.knownMonthlyExpenses)}</strong></div>
+     <div><small>手取りに占める割合</small><strong>{incomeBurden.expenseShareOfTakeHomePct.toFixed(1)}%</strong></div>
+    </div>
+    <p>あなたの回答から計算した割合だよ。統計上の平均負担率でも、ムダ・削減可能額でもない。下の12カテゴリにも費目別の割合を表示するぞ。</p>
+    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
+   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力のため、手取り負担率は推測で作っていないよ。入力済みの金額と統計の比較はこのまま確認できる。</p>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
@@ -671,6 +683,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
        </div>
       </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
+      {burdenByCategory.has(x.category)&&<p className="c2v32-category-burden" data-burden-category={x.category}>手取りに対する負担割合：<strong>{burdenByCategory.get(x.category)?.toFixed(1)}%</strong><small>本人入力の月手取りで計算／統計平均ではありません</small></p>}
       {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
      </div>;
     })}
