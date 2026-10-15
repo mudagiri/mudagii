@@ -140,4 +140,22 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-cover-why summary:focus-visible{outline:3px solid #abf0e2;outline-offset:2px}
 .c2v32-rpg .c2v32-cover-why p{font-size:12px!important;line-height:1.67!important;color:#d5eee7!important;margin:5px 0!important}
 @media(max-width:350px){.c2v32-rpg .c2v32-cover-awareness{margin-inline:9px;padding-inline:9px}.c2v32-rpg .c2v32-cover-content img{width:42px;height:54px;flex-basis:42px}.c2v32-rpg .c2v32-cover-next span{flex-basis:67px}}
+
+/* Matched-scope take-home burden lens: participant data only, never an official average. */
+.c2v32-rpg .c2v32-income-burden{margin:13px 0 15px;padding:14px 12px;border:1px solid #a5c9b5;border-radius:13px;background:linear-gradient(145deg,#123b3b,#122b39)}
+.c2v32-rpg .c2v32-income-burden-head>span{display:block;font-size:12px;color:#f5d78f;font-weight:900}
+.c2v32-rpg .c2v32-income-burden-head>strong{display:block;margin:5px 0 12px;font-size:19px;line-height:1.35;color:#fff}
+.c2v32-rpg .c2v32-income-burden-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.c2v32-rpg .c2v32-income-burden-grid>div{min-width:0;border:1px solid #4d8582;border-radius:10px;padding:9px 7px;background:#0d2936}
+.c2v32-rpg .c2v32-income-burden-grid>div:last-child{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;border-color:#c0a25f;background:#193d39}
+.c2v32-rpg .c2v32-income-burden-grid small{display:block;font-size:12px!important;line-height:1.35!important;color:#d3eae7}
+.c2v32-rpg .c2v32-income-burden-grid strong{display:block;margin-top:6px;font-size:clamp(18px,5.7vw,23px);color:#fff0af;font-weight:900;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-income-burden-grid>div:last-child strong{font-size:28px;margin:0}
+.c2v32-rpg .c2v32-income-burden>p{font-size:13px!important;color:#e2efec!important;line-height:1.7!important;margin:10px 0 5px!important}
+.c2v32-rpg .c2v32-income-burden>small{display:block;font-size:11px!important;line-height:1.6;color:#e1d2a7}
+.c2v32-rpg .c2v32-income-burden-unavailable{font-size:12px!important;line-height:1.6!important;border:1px solid #547381;border-radius:10px;background:#0b2938;padding:10px;color:#d6e4e7!important}
+.c2v32-rpg .c2v32-category-burden{margin:8px 0 0!important;padding:9px 10px;border-radius:9px;border:1px solid #628a85;background:#102f33;color:#def4ec!important;font-size:13px!important;line-height:1.5!important}
+.c2v32-rpg .c2v32-category-burden strong{font-size:17px;color:#fff0b5;font-weight:900}
+.c2v32-rpg .c2v32-category-burden small{display:block;margin-top:3px;font-size:11px;color:#bed5d3}
+@media(max-width:350px){.c2v32-rpg .c2v32-income-burden-grid strong{font-size:18px}.c2v32-rpg .c2v32-income-burden-grid>div:last-child strong{font-size:23px}}
 `;
