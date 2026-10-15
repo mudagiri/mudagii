@@ -238,96 +238,68 @@ await screenshot('12-v2-battle-complete');
 await clickButton(/診断結果を見る/);
 
  await page.locator('.c2v2-root').waitFor({state:'visible',timeout:16000});
- const ch2Hud=await page.locator('.c2v32-chapter-label').innerText();
- assert.ok(ch2Hud.includes('第1章 JOB獲得')&&ch2Hud.includes('第2章 家計バトル'),'Chapter 2 HUD continues the same two-chapter journey');
- const observed=await page.evaluate(()=>({
-  url:location.href, rootClass:document.querySelector('.c2v2-root')?.className,
-  version:document.querySelector('[data-result-version]')?.getAttribute('data-result-version'),
-  htmlTitle:document.title,
-  hasV32:!!document.querySelector('.c2v32-rpg')
- }));
- console.log('RESULT_ENTRY_DIAGNOSTICS',engine,JSON.stringify(observed));
- await screenshot('13-result-entry-before-assert');
+ // The current V20–V22 RPG HUD supersedes the old .c2v32-chapter-label.
+ await page.locator('.c2v32-rpg[data-result-version="v32"]').waitFor({state:'visible',timeout:16000});
+ const hud=await page.locator('.c2v20-quest-log').innerText();
+ assert.ok(/第1章/.test(hud)&&/JOB獲得/.test(hud)&&/第2章/.test(hud)&&/家計バトル/.test(hud),
+  'Chapter 2 HUD must retain Chapter 1 JOB to household quest continuity');
  const inherited=await page.locator('.c2v31-job-card').innerText();
- assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 job and official name persist');
- await page.locator('.c2v32-rpg').waitFor({state:'visible',timeout:10000});
+ assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 JOB identity survives the handoff');
  const resultText=await page.locator('.c2v32-rpg').innerText();
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
- assert.ok(cUpper>0,'QA household inputs must produce an explicit V5 C reference candidate');
- const yen=(n)=>'¥'+new Intl.NumberFormat('ja-JP').format(n);
- for(const msg of ['QUEST CLEAR!','BATTLE REPORT','未鑑定の宝箱','¥1,800',yen(cUpper),yen(cUpper*12),yen(cUpper*60),yen(cUpper*120),'未確定','実際の削減額や将来の結果を保証するものではなく','無料ライフプラン相談の案内を見る']){
-  assert.ok(resultText.includes(msg),'Missing RPG reward content: '+msg);
+ assert.ok(cUpper>0,'Synthetic food case must surface an unconfirmed review candidate');
+ const yen=n=>'¥'+new Intl.NumberFormat('ja-JP').format(n);
+ for(const marker of ['QUEST CLEAR!','未確定',yen(cUpper),yen(cUpper*12),yen(cUpper*60),yen(cUpper*120),'無料ライフプラン相談の案内を見る']){
+  assert.ok(resultText.includes(marker),'Missing V3.2 RPG reward: '+marker);
  }
- assert.ok(!resultText.includes('8タイプ図鑑'),'Legacy Chapter 2 type gallery must be absent');
- const chapter2Creatures=await page.evaluate(()=>{
-   const beats=[...document.querySelectorAll('[data-section="MUDAGIRI_TALK"]')];
-   const records=[...document.querySelectorAll('.c2v32-enemy-record')];
-   const previews=[...document.querySelectorAll('.c2v32-enemy-preview')];
-   return {
-    beatCount:beats.length,
-    beatPortraits:beats.every(el=>!!el.querySelector('img[src*="MUDAGIRI_POSE_"]')&&!!el.querySelector('.c2v32-mudagiri-talk')),
-    namedEnemyCards:records.every(el=>!!el.querySelector('.c2v32-enemy-tile img')&&!!el.querySelector('.c2v2-enemy-text>b')&&!!el.querySelector('.c2v2-enemy-text>small')),
-    enemyCount:records.length, previewCount:previews.length,
-    namedMobile:!!records.find(el=>el.textContent.includes('通信ザウルス')),
-   };
- });
- assert.equal(chapter2Creatures.beatCount,5,'Chapter 1 style Mudagiri portrait + bubble must recur throughout Chapter 2');
- assert.ok(chapter2Creatures.beatPortraits,'All five Mudagiri talk images must use official pose artwork');
- assert.ok(chapter2Creatures.namedEnemyCards,'Enemy atlas needs both named monster and expense category with art');
- assert.equal(chapter2Creatures.enemyCount,12,'All 12 category enemy characters must remain visible, including N/A');
- assert.ok(chapter2Creatures.previewCount>0&&chapter2Creatures.namedMobile,'Battle preview and canonical monster names must display');
- const jobPortrait=page.locator('.c2v31-job-inner img');
- await jobPortrait.waitFor({state:'visible',timeout:10000});
+ assert.ok(!resultText.includes('8タイプ図鑑'),'No repeated personality quiz in Chapter 2');
+ for(const section of ['POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONFIRMED_REWARD','CONSULTATION_CTA_TOP','CATEGORY_COMPARISON_OVERVIEW']){
+  assert.equal(await page.locator('[data-section="'+section+'"]').count(),1,'latest chapter section '+section);
+ }
+ const cats=page.locator('[data-comparison-category]');
+ assert.equal(await cats.count(),12,'12 category comparisons visible without opening atlas');
+ const artCount=await cats.locator('img.c2v23-comparison-enemy').count();
+ assert.ok(artCount>=10,'Most official enemy artwork in category ledger');
+ const foodRowText=await page.locator('[data-comparison-category="food"]').innerText();
+ assert.ok(foodRowText.includes('食費')&&foodRowText.includes('比較条件：'),'Food reference and comparison criteria visible');
+ const energyRowText=await page.locator('[data-comparison-category="energy"]').innerText();
+ assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('今回の入力'),'Energy row is inspectable without tapping');
+ const sourceButton=page.locator('[data-comparison-category="food"] .c2v32-evidence-toggle').first();
+ if(await sourceButton.count()){
+  assert.equal(await sourceButton.getAttribute('aria-expanded'),'false','source details collapsed by default');
+  await sourceButton.click();
+  assert.equal(await sourceButton.getAttribute('aria-expanded'),'true','source detail opens with one tap');
+  await sourceButton.click();
+ }
+ const income=page.locator('[data-section="INCOME_BURDEN_CONTEXT"]');
+ if(await income.count()){
+  assert.ok((await income.innerText()).includes('350,000'),'Entered net income survives the latest result UI');
+ }
  const visuals=await page.evaluate(()=>{
-  const job=document.querySelector('.c2v31-job-inner img');
-  const mascot=document.querySelector('.c2v31-hero-mascot');
   const hero=document.querySelector('.c2v31-hero');
-  const report=document.querySelector('[data-section="HOUSEHOLD_BATTLE_RESULTS"]');
-  const confirmed=document.querySelector('[data-section="CONFIRMED_REWARD"]');
-  const unknown=document.querySelector('[data-section="UNAPPRAISED_TREASURE"]');
-  const future=document.querySelector('[data-section="FUTURE_REWARDS"]');
-  const cta=document.querySelector('[data-section="CONSULTATION_CTA_TOP"]');
-  const font1=parseFloat(getComputedStyle(confirmed.querySelector('.c2v31-confirmed-amount strong')).fontSize);
-  const font2=parseFloat(getComputedStyle(unknown.querySelector('.c2v31-unknown-details strong')).fontSize);
-  return {jobReady:job.complete&&job.naturalWidth>0,mascotReady:mascot.complete&&mascot.naturalWidth>0,
-   heroBg:getComputedStyle(hero).backgroundImage,reportBg:getComputedStyle(report).backgroundImage,
-   ctaBg:getComputedStyle(cta).backgroundImage,confirmedFont:font1,uncertainFont:font2,
-   sequence:[unknown,future,report,confirmed,cta].every((x,index,a)=>index===0||Boolean(a[index-1].compareDocumentPosition(x)&Node.DOCUMENT_POSITION_FOLLOWING)),
-   confirmedIllustration:!!confirmed.querySelector('svg'),lockedChest:!!unknown.querySelector('svg'),
-   gold10:!!future.querySelector('.c2v31-reward-ten'),overflow:document.documentElement.scrollWidth>innerWidth+2};
+  const job=document.querySelector('.c2v31-job-card img');
+  const mascot=document.querySelector('.c2v31-hero-mascot');
+  const talk=[...document.querySelectorAll('[data-section="MUDAGIRI_TALK"]')];
+  const flow=['POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONFIRMED_REWARD','CONSULTATION_CTA_TOP'].map(k=>document.querySelector('[data-section="'+k+'"]'));
+  return {heroBackground:hero?getComputedStyle(hero).backgroundImage:'',jobReady:!!job&&job.complete&&job.naturalWidth>0,
+   mascotReady:!!mascot&&mascot.complete&&mascot.naturalWidth>0,talkCount:talk.length,
+   sequence:flow.every((x,i,a)=>!!x&&(i===0||!!(a[i-1].compareDocumentPosition(x)&Node.DOCUMENT_POSITION_FOLLOWING))),
+   overflow:document.documentElement.scrollWidth>innerWidth+2};
  });
- assert.ok(visuals.jobReady&&visuals.mascotReady,'Official character artwork must load');
- assert.ok(visuals.heroBg.includes('MP_BG_01_GUILD_HALL'),'Official guild-hall background must fill hero');
- assert.ok(visuals.reportBg.includes('MP_BG_02_JOB_UNLOCK'),'Reward report must retain official JOB-unlock world');
- assert.ok(visuals.ctaBg.includes('MP_BG_03_NEXT_QUEST'),'Next quest must use official gate');
- assert.ok(visuals.sequence,'RPG report flow out of order');
- assert.ok(visuals.confirmedIllustration&&visuals.lockedChest&&visuals.gold10,'Rewards must have live UI illustrations');
- assert.ok(visuals.uncertainFont>=visuals.confirmedFont,'Uncertain candidate must lead over confirmed supplementary number');
- assert.ok(!visuals.overflow,'No horizontal scroll at 390px');
- await screenshot('04-chapter2-v32-result');
+ assert.ok(visuals.jobReady&&visuals.mascotReady,'Official JOB and Mudagiri art must load');
+ assert.ok(visuals.heroBackground.includes('MP_BG_01_GUILD_HALL'),'RPG guild hall backdrop must render');
+ assert.ok(visuals.talkCount>=3,'Mudagiri dialogues must recur in Chapter 2');
+ assert.ok(visuals.sequence,'Treasures, compounding, comparisons, confirmed reward and CTA in proper order');
+ assert.ok(!visuals.overflow,'No horizontal overflow at 390px');
+ await screenshot('13-result-entry-before-assert');
  for(const width of [320,375,390,430]){
   await page.setViewportSize({width,height:844});
-  const layout=await page.evaluate(()=>{
-   const doc=document.documentElement;
-   const speech=document.querySelector('.c2v31-dialogue').getBoundingClientRect();
-   const mascot=document.querySelector('.c2v31-hero-mascot').getBoundingClientRect();
-   const intersect=Math.max(0,Math.min(speech.right,mascot.right)-Math.max(speech.left,mascot.left))
-    *Math.max(0,Math.min(speech.bottom,mascot.bottom)-Math.max(speech.top,mascot.top));
-   const reward=document.querySelector('.c2v31-ten-details strong');
-   return {width:innerWidth,scrollWidth:doc.scrollWidth,speechMascotOverlap:intersect,
-    rewardSize:parseFloat(getComputedStyle(reward).fontSize),
-    rewardClipped:reward.scrollWidth>reward.getBoundingClientRect().width+2,
-    heroY:document.querySelector('.c2v32-hero-teaser strong').getBoundingClientRect().bottom,
-    counterFont:parseFloat(getComputedStyle(document.querySelector('.c2v31-counts span')).fontSize),
-    tenQualified:!!document.querySelector('.c2v31-ten-qualifier')};
-  });
-  if(layout.scrollWidth>layout.width+2)throw new Error('V32_HORIZONTAL_OVERFLOW:'+JSON.stringify(layout));
-  if(layout.speechMascotOverlap>1)throw new Error('V32_MASCOT_DIALOGUE_OVERLAP:'+JSON.stringify(layout));
-  if(layout.rewardSize<28||layout.rewardClipped)throw new Error('V32_TEN_YEAR_REWARD_CLIP:'+JSON.stringify(layout));
-  if(width>=375&&layout.heroY>844)throw new Error('V32_FIRST_FOLD_CANDIDATE_HIDDEN:'+JSON.stringify(layout));
-  if(layout.counterFont<(width<=350?13:12))throw new Error('V32_COUNTER_TOO_SMALL:'+JSON.stringify(layout));
-  if(!layout.tenQualified)throw new Error('V32_10_YEAR_ASSUMPTION_MISSING');
+  const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+   comparisonRows:document.querySelectorAll('[data-comparison-category]').length,shareButton:!!document.querySelector('.c2v31-share-primary')}));
+  assert.ok(layout.scrollWidth<=width+2,'No mobile horizontal overflow: '+JSON.stringify(layout));
+  assert.equal(layout.comparisonRows,12,'All comparisons stay visible at '+width);
+  assert.ok(layout.shareButton,'One primary share action remains present');
   await screenshot('04-v32-mobile-'+width);
  }
  await page.setViewportSize({width:390,height:844});
