@@ -492,8 +492,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   <nav className="c2v32-result-shortcuts" aria-label="結果画面の見たい場所へ移動" data-section="RESULT_SHORTCUTS">
-   <button type="button" onClick={()=>jumpToSection('CANDIDATE_BREAKDOWN')} disabled={!candidates.length}>
-    <span aria-hidden="true">⚔</span>見直し候補
+   <button type="button" onClick={()=>jumpToSection(candidates.length?'CANDIDATE_BREAKDOWN':'POTENTIAL_TREASURE')}>
+    <span aria-hidden="true">⚔</span>{candidates.length?'見直し候補':'宝箱'}
    </button>
    <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>
     <span aria-hidden="true">📖</span>12カテゴリ比較
