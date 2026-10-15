@@ -40,7 +40,12 @@ const BIPOLAR_PUBLIC_LABELS=['Aにかなり近い','ややAに近い','半々','
 const blankState=():StoredState=>({version:PUBLIC_MONEY_TYPE_VERSION,sessionId:newPublicSessionId(),startedAt:'',answers:{},separators:{},history:[],screenCount:0});
 function loadState():StoredState{try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(x&&x.version===PUBLIC_MONEY_TYPE_VERSION&&x.answers&&x.separators)return {...blankState(),...x,history:Array.isArray(x.history)?x.history:[]} as StoredState}catch{}return blankState()}
 function saveState(x:StoredState){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(x))}catch{}}
-function householdUrl(){const path=window.location.pathname.replace(/\/(?:pilot\/money-type|money-type)\/?$/,'/');return path||'/'}
+function householdUrl(){
+ const path=window.location.pathname.replace(/\/(?:pilot\/money-type|money-type)\/?$/,'/');
+ const target=new URL(path||'/',window.location.origin);
+ target.searchParams.set('chapter2v32','1');
+ return target.pathname+target.search;
+}
 const BOOK_JOBS=new Set<JobCode>(['FDM','FDP','FNM','FNP','IDM','IDP','INM','INP']);
 const BOOK_STYLES=new Set<StyleId>(['DRIVE','ENJOY','SECURE','OPTIMIZE']);
 function moneyTypeBookUrl(job:JobCode,style:StyleId){
