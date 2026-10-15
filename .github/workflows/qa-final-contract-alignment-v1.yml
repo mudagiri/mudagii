@@ -40,6 +40,8 @@ jobs:
           npm run qa:resume
           npm run qa:result-safety
           npm run qa:line-handoff
+          npx --yes tsx@4.20.6 qa-line-gas-order-v1.ts
+          npm run qa:chapter2-v2
       - name: Install browser testing dependencies
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Start isolated pilot without production endpoints
