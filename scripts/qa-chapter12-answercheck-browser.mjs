@@ -290,6 +290,18 @@ for(const width of [320,375,390,430]){
  const foodRow=overview.locator('[data-comparison-category="food"]');
  check((await foodRow.innerText()).includes('¥54,000')&&(await foodRow.innerText()).includes('¥37,860'),width+' pilot food actual and transparent synthetic comparator visible');
  check((await foodRow.innerText()).includes('架空デモの比較条件'),width+' comparison condition always visible without detail tap');
+ // Contrast is checked against the actual light ledger background. Generic
+ // dark-card paragraph styling used to wash out the criteria on iOS screenshots.
+ const contrast=await foodRow.locator('.c2v32-context-brief').evaluate(el=>{
+  const color=getComputedStyle(el).color;
+  const m=color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const y=(v)=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4};
+  if(!m)return {color,ratio:0};
+  const foreground=0.2126*y(+m[1])+0.7152*y(+m[2])+0.0722*y(+m[3]);
+  const background=0.2126*y(247)+0.7152*y(242)+0.0722*y(232);
+  return {color,ratio:(Math.max(foreground,background)+0.05)/(Math.min(foreground,background)+0.05)};
+ });
+ check(contrast.ratio>=4.5,width+' comparison criterion must meet WCAG AA legibility on pale ledger '+JSON.stringify(contrast));
  const evidence=foodRow.locator('.c2v32-comparison-evidence');
  const evidenceButton=foodRow.locator('.c2v32-evidence-toggle');
  check(await evidenceButton.count()===1&&await evidenceButton.getAttribute('aria-expanded')==='false',width+' reference provenance starts collapsed, not the criterion/benchmark');
