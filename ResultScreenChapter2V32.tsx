@@ -176,7 +176,12 @@ function nonNumericBasis(x:any):{title:string;detail:string}{
   case 'car':return {title:'維持費と使い方を確認',detail:'購入費と維持費の範囲・車の利用状況を確認するよ。'};
   case 'rent':return {title:'住まいの条件で判断',detail:'住居形態や契約内容に合わせて確認するよ。'};
   case 'childEducation':return {title:'学校段階に合わせて確認',detail:'子どもの学校段階・公私立などを確認するよ。'};
-  default:return {title:'入力条件で確認',detail:'今回の条件では、金額を並べた比較は表示していないよ。'};
+  case 'food':return {title:'食費の使い方で判断',detail:'外食・自炊の内訳と、使い方への満足度を確かめよう。'};
+  case 'energy':return {title:'季節・人数で判断',detail:'季節・住まい・世帯人数の条件を確認しよう。'};
+  case 'daily':return {title:'日用品の内訳で判断',detail:'普段使う消耗品と、一度きりの買い物を分けて確認しよう。'};
+  case 'fun':return {title:'楽しさを大切に判断',detail:'使う価値や満足度を優先。好きなことを無理に減らさなくていい。'};
+  case 'beautyFashion':return {title:'目的と満足度で判断',detail:'美容・服への満足度と、日用品との重複を確かめよう。'};
+  default:return {title:'使い方で判断',detail:'本人の回答と費目の内訳から判断しよう。'};
  }
 }
 function noBenchmarkReason(x:any):string{return nonNumericBasis(x).detail;}
@@ -234,6 +239,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
+ const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
  const [showCoverageLine,setShowCoverageLine]=useState(false);
@@ -280,6 +286,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const jobStyleColor=chapter1?JOB_STYLE_COLORS[chapter1.primaryStyle]??'#f5c84c':null;
  const continuityStyle=jobAsset?{'--c2-job-accent':jobAsset.accent,'--c2-style-accent':jobStyleColor} as React.CSSProperties:undefined;
 
+ function jumpToSection(target:string){
+  const el=document.querySelector('[data-section="'+target+'"]');
+  if(el instanceof HTMLElement){
+   el.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  }
+ }
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
   onEvent?.('chapter2_v31_consultation_modal_opened',{placement,goal:goal??null});
@@ -479,6 +491,17 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {candidates.length?'✦ まず、見直し候補の理由を見る ↓':'✦ 見直し候補を確認する ↓'}
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
+  <nav className="c2v32-result-shortcuts" aria-label="結果画面の見たい場所へ移動" data-section="RESULT_SHORTCUTS">
+   <button type="button" onClick={()=>jumpToSection('CANDIDATE_BREAKDOWN')} disabled={!candidates.length}>
+    <span aria-hidden="true">⚔</span>見直し候補
+   </button>
+   <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>
+    <span aria-hidden="true">📖</span>12カテゴリ比較
+   </button>
+   <button type="button" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>
+    <span aria-hidden="true">⚑</span>相談する
+   </button>
+  </nav>
   <section className="c2v32-treasure-lead" data-section="POTENTIAL_TREASURE">
    <div className="c2v31-section-heading"><span>🔑 TREASURE REPORT</span><small>今回の見直し候補</small></div>
    <h2>宝箱に眠っていたお金</h2>
@@ -612,7 +635,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
-   <p className="c2v22-ledger-intro">あなたの入力額と、比較できる項目の目安を並べたよ。基準との差は、そのままムダ額・節約額ではない。比較できない項目には平均を作っていないよ。</p>
+   <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
@@ -632,15 +655,28 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <span><small>今回の入力</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b></span>
        <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'近い条件の目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b></span>
       </div>
-      {comparable?<div className="c2v22-comparison-source">
-       {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
-       <p><b>比較条件：</b>{comparisonBasis(x)}</p><p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
-      </div>:<p className="c2v22-comparison-source is-unavailable">{noNumber.detail}</p>}
+      {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
+       <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
+       <button type="button" className="c2v32-evidence-toggle"
+        aria-expanded={comparisonEvidence===x.category}
+        aria-controls={'c2v32-evidence-'+x.category}
+        onClick={()=>{setComparisonEvidence(comparisonEvidence===x.category?null:x.category);
+         onEvent?.('chapter2_v32_comparison_evidence_toggled',{category:x.category});}}>
+        {comparisonEvidence===x.category?'出典を閉じる ↑':'出典と比較の注意点を見る ↓'}
+       </button>
+       <div id={'c2v32-evidence-'+x.category} hidden={comparisonEvidence!==x.category} className="c2v32-comparison-evidence">
+        {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
+        <p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
+        <p>比較の目安との差は、そのままムダ額・節約額ではありません。</p>
+        {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
+       </div>
+      </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
       {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※比較額はカテゴリごとに対象・条件が異なります。平均より高い／低いだけでは無駄や改善額は決まりません。回答に基づく判定や見直し候補は別の情報です。</p>
+   <p className="c2v22-ledger-footnote">※平均より高い・低いだけではムダや節約額は決まりません。根拠と判定は別です。</p>
+   <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>
     <p>上の比較一覧が結果の基本だよ。ここからは12体のキャラと回答の理由を、好きなものだけ詳しく見られるぞ。</p>
