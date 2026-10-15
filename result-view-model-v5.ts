@@ -138,7 +138,10 @@ function v5StatusFor(x:FinalCategoryV4,p:ReturnType<typeof positionFor>):V5Statu
  return x.status==='protect'?'protect':x.status==='review'?'inspect':x.status==='cut'?'cut':'ok';
 }
 
-function cUpperFor(x:FinalCategoryV4,p:ReturnType<typeof positionFor>){
+/** The same guarded, conditional review upper bound used by production V5.
+ * Exported for synthetic Chapter 1→2 preview parity; does not treat benchmark gaps as savings.
+ */
+export function cUpperFor(x:FinalCategoryV4){
  const actual=x.record.diagnosisAmount;
  if(actual===null||actual<=0)return {amount:0,eligible:false,detailReview:false,method:null as null|'standard'|'wide'|'mobile'};
  const a=x.appraisal;
@@ -254,7 +257,7 @@ export function buildResultViewModelV5(a:{
   const x:FinalCategoryV4=canOverlay?{...original,comparison:{...original.comparison,amount:overlayAmount,benchmark:referenceMonthly,quality:'reference',amountScope:original.comparison.amountScope,sourceVersion:displayRef!.sourceVersion,difference:overlayAmount!-referenceMonthly!,engineComparableAllowed:false,autoSavingAllowed:false,benchmarkMeta:null,reason:overlayReason}}:original;
   const position=positionFor(x);
   const v5Status=v5StatusFor(x,position);
-  const c=cUpperFor(x,position);
+  const c=cUpperFor(x);
   const aAmount=x.category==='sub'?Math.max(0,x.confirmedSaving):0;
   return {
    ...row,
