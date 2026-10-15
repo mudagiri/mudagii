@@ -212,6 +212,17 @@ await shot('14-battle-complete');
 await clickButton(/診断結果を見る/);
 
 await page.getByText(/家計クエスト/).first().waitFor();
+// All 12 results must remain scannable without opening the enemy atlas.
+const comparisonOverview=page.locator('#v51-comparison-overview');
+await comparisonOverview.waitFor({state:'visible'});
+const overviewRows=comparisonOverview.locator('[data-category]');
+if(await overviewRows.count()!==12)throw new Error('COMPARISON_OVERVIEW_12_CATEGORIES_REQUIRED');
+const energyOverview=overviewRows.locator('[data-category="energy"]').first();
+await energyOverview.waitFor({state:'visible'});
+const energyLabels=(await energyOverview.innerText()).replace(/\\s+/g,'');
+if(!energyLabels.includes('光熱')||!energyLabels.includes('入力額')||!energyLabels.includes('比較目安'))throw new Error('ENERGY_COMPARISON_NOT_VISIBLE:'+energyLabels);
+const comparisonButtons=comparisonOverview.getByRole('button',{name:/敵図鑑で理由を見る/});
+if(await comparisonButtons.count()<1)throw new Error('COMPARISON_DETAIL_NAV_MISSING');
 await page.waitForTimeout(260);
 await shot('15-result-top',{allowVertical:true});
 for(const label of ['𝕏','Instagram','Threads','LINE']){const btn=page.locator('.v51-type-share button',{hasText:label}).first();await btn.waitFor({state:'visible'})}
@@ -273,7 +284,7 @@ await page.getByRole('dialog').waitFor({state:'visible'});await page.getByRole('
 await shot('16-result-full',{fullPage:true,allowVertical:true});
 
 // Cross-width Result regression: narrow and wide phones.
-for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,name:'430x932'}]){
+for(const vp of [{width:320,height:720,name:'320x720'},{width:375,height:812,name:'375x812'},{width:430,height:932,name:'430x932'}]){
   await page.setViewportSize({width:vp.width,height:vp.height});
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.waitForTimeout(120);
@@ -292,7 +303,13 @@ for(const vp of [{width:375,height:812,name:'375x812'},{width:430,height:932,nam
   await shot(`17-result-${vp.name}`,{fullPage:true,allowVertical:true});
 }
 await page.setViewportSize({width:390,height:844});
-
+const energyDetailButton=page.locator('#v51-comparison-overview [data-category="energy"]').getByRole('button',{name:/敵図鑑で理由を見る/}).first();
+if(await energyDetailButton.count()){
+ await energyDetailButton.click();
+ const detail=page.locator('#enemy-energy .v51-atlas-detail');
+ await detail.waitFor({state:'visible'});
+ if(!((await detail.innerText()).includes('あなた：')))throw new Error('COMPARISON_DETAIL_NAV_TARGET_INCOMPLETE');
+}
 
 // Scenario B: common multi-adult PERSONAL flow + household-total follow-up.
 await clearJourney();
