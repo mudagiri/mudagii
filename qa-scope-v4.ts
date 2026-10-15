@@ -279,9 +279,16 @@ console.log('SCOPE_V4_QA PASS');
   relationships:['partner','children'],annualIncomeBand:'800_999'});
  const records=emptyExpenseRecordsV4();
  amount(records,'food',120000,{personalBurden:null});
+ amount(records,'energy',42000,{personalBurden:null});
+ amount(records,'beautyFashion',23000,{personalBurden:null});
  const facts=buildComparisonFactsV4({profile,records,month:2});
  A.equal(facts.food.benchmark,103384,'four-person food uses the contract household-size baseline');
  A.notEqual(facts.food.benchmarkMeta?.meta?.modelEstimate,true,'contract candidate does not synthesize an income x size cross');
+ for(const c of ['energy','beautyFashion'] as const){
+  A.equal(facts[c].benchmarkMeta?.meta?.modelEstimate,true,'G12 modeled source provenance: '+c);
+  A.notEqual(facts[c].benchmarkMeta?.meta?.incomeAdjusted,true,'regional/age model is not an income multiplier: '+c);
+  A.equal(facts[c].quality,'reference','models are not direct observed means: '+c);
+ }
  const dx=runDiagnosisAdapterV4({profile,records,comparisons:facts});
  const final=buildFinalJudgementsV4({records,comparisons:facts,
   diagnosis:dx.diagnosis,categoryResults:dx.categoryResults,
@@ -292,8 +299,17 @@ console.log('SCOPE_V4_QA PASS');
  A.equal(foodRow.comparisonQuality,'exact','published household-size table qualifies as direct comparison');
  A.equal(foodRow.comparisonContext.quality,'exact','comparison context matches direct table provenance');
  A.ok(!foodRow.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'income-model note cannot appear on contract-aligned comparison');
+ for(const c of ['energy','beautyFashion'] as const){
+  const row=vm.rows.find(x=>x.category===c)!;
+  A.equal(row.comparisonModelEstimate,false,'not historical income model: '+c);
+  A.equal(row.comparisonMethodologyModelEstimate,true,'display G12 model evidence: '+c);
+  A.ok(row.comparisonContext.criteria.includes('属性や調査表を組み合わせた推計（直接集計ではない）'),'explain the model estimate: '+c);
+  A.ok(!row.comparisonContext.criteria.includes('人数別基準×年収帯の推計（直接集計ではない）'),'never claim income model: '+c);
+ }
  const stored=buildPersistencePayloadV4({diagnosisId:'policy_provenance_QA',anonymousUserId:'anon_QA',profile,finalCategories:final.categories});
  A.equal(stored.categories.find(x=>x.category==='food')?.benchmarkMethod,'direct_reference','persist direct household-size comparison provenance');
+ for(const c of ['energy','beautyFashion'] as const)
+  A.equal(stored.categories.find(x=>x.category===c)?.benchmarkMethod,'modeled_reference','persist G12 model provenance: '+c);
  A.equal(stored.benchmarkResolverVersion,'MUDAGIRI_COMPARABLE_RESOLVER_V2_3_CONTRACT_CANDIDATE','persist effective resolver version');
  A.equal(stored.benchmarkPolicySource,'MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0_20260928','persist chosen master contract');
  A.equal(stored.categories.find(x=>x.category==='sub')?.benchmarkMethod,'none','audit-only must not fabricate a mean');
