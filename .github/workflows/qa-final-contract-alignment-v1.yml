@@ -59,11 +59,19 @@ jobs:
       - name: WebKit 320 375 390 430
         env: {BROWSER_ENGINE: webkit, CHAPTER12_URL: "http://127.0.0.1:4173/chapter12-answercheck.html"}
         run: node scripts/qa-chapter12-answercheck-browser.mjs
+      - name: Chromium Chapter 2 real entry and resume
+        env: {BROWSER_ENGINE: chromium, MUDAGIRI_ENTRY_URL: "http://127.0.0.1:4173/index.html?chapter2v32=1"}
+        run: node scripts/qa-chapter2-entry-mobile-v1.mjs
+      - name: WebKit Chapter 2 real entry and resume
+        env: {BROWSER_ENGINE: webkit, MUDAGIRI_ENTRY_URL: "http://127.0.0.1:4173/index.html?chapter2v32=1"}
+        run: node scripts/qa-chapter2-entry-mobile-v1.mjs
       - name: Attach privacy-safe synthetic screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: final-contract-candidate-synthetic-screens
-          path: chapter12-answercheck-qa/
+          path: |
+            chapter12-answercheck-qa/
+            chapter2-entry-qa/
           if-no-files-found: warn
           retention-days: 14
