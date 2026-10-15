@@ -4,6 +4,7 @@ import ResultScreenChapter2V32 from '../ResultScreenChapter2V32';
 import {CATEGORY_IDS} from '../scripts/chapter12-answercheck-experiment-v1.mjs';
 import {resolveComparableV2} from '../comparable-resolver-v2';
 import {cUpperFor} from '../result-view-model-v5';
+import {buildIncomeBurdenLensV1} from '../income-burden-lens-v1';
 import type {FinalCategoryV4} from '../final-judgement-v4';
 import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
@@ -53,11 +54,11 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
- const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string;annualIncome:number}>>={
-  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000},
-  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円',annualIncome:9000000},
-  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000},
-  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円',annualIncome:15000000}
+ const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string;annualIncome:number;monthlyTakeHome:number}>>={
+  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000,monthlyTakeHome:300000},
+  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円',annualIncome:9000000,monthlyTakeHome:600000},
+  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000,monthlyTakeHome:300000},
+  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円',annualIncome:15000000,monthlyTakeHome:900000}
  };
  const profile=profileCases[example];
  if(profile){
@@ -199,9 +200,16 @@ function makeFixture(example:Case){
  const demoContext=profile?{
   annualIncome:profile.annualIncome,
   incomeLabel:profile.incomeLabel,
+  monthlyTakeHome:profile.monthlyTakeHome,
   monthlyExpenses:rows.reduce((sum,r)=>sum+(r.known&&r.applicability==='applicable'?Math.max(0,Number(r.amount)||0):0),0),
   monthlyFood:rows.find(r=>r.category==='food')?.amount??0
  }:null;
+ const incomeBurden=profile?buildIncomeBurdenLensV1({
+  diagnosisScope:profile.household==='single'?'personal':'household',
+  monthlyTakeHome:profile.monthlyTakeHome,
+  householdContributionMode:null,
+  bundledContributionAmount:null
+ },caseRows):null;
  const reviewUpper=caseRows.reduce((sum,x)=>sum+x.cUpper,0);
  const confirmedA=caseRows.reduce((sum,x)=>sum+x.aAmount,0);
  const totals={cut:0,optimize:0,protect:0,inspect:0,ok:0,na:0};
@@ -209,7 +217,7 @@ function makeFixture(example:Case){
  return {chapter1,anonymousUserId,demoContext,
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
-   v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
+   v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,incomeBurden,
    // Anonymous, fictitious Chapter 1 lineage for displaying continuity in
    // the isolated pilot. No income, spend or participant data is copied.
    chapter1Link:{schemaVersion:'MUDAGIRI_CHAPTER1_LINKAGE_V1',
@@ -237,11 +245,11 @@ function App(){
  const [selected,setSelected]=useState<Case>(initialCase);
  const {chapter1,anonymousUserId,vm,demoContext}=makeFixture(selected);
  const yen=(n:number)=>Math.round(n).toLocaleString('ja-JP');
- const ratio=(n:number,annual:number)=>annual>0?(n/(annual/12)*100).toFixed(1):'—';
+ const ratio=(n:number,takeHome:number)=>takeHome>0?(n/takeHome*100).toFixed(1):'—';
  const pairSelected=selected==='tokyo_single'||selected==='tokyo_high_income';
  const pairIncomes=[
-  {annual:4500000,label:'年収450万円',caseId:'tokyo_single'},
-  {annual:15000000,label:'年収1,500万円',caseId:'tokyo_high_income'}
+  {annual:4500000,takeHome:300000,label:'年収450万円',caseId:'tokyo_single'},
+  {annual:15000000,takeHome:900000,label:'年収1,500万円',caseId:'tokyo_high_income'}
  ];
  return <div className={'c12preview'+(pilotMode?' c12preview--participant':'')}>
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
@@ -257,27 +265,27 @@ function App(){
      </select>
      <p>{examples[selected].desc}</p>
      {demoContext&&<section className="c12preview-income-lens" data-section="INCOME_CONTEXT" aria-labelledby="c12preview-income-heading">
-      <span className="c12preview-income-kicker">もうひとつの答え合わせ ／ 年収と負担</span>
+      <span className="c12preview-income-kicker">もうひとつの答え合わせ ／ 月手取りと負担</span>
       <h2 id="c12preview-income-heading">同じ支出でも、家計への重さは違う。</h2>
-      {pairSelected?<p className="c12preview-income-lead">東京・35歳の単身者。<b>同じ12費目の支出・同じ比較目安・同じ見直し候補</b>でも、年収の月換算額に占める割合はこんなに変わる。</p>
+      {pairSelected?<p className="c12preview-income-lead">東京・35歳の単身者。<b>同じ12費目の支出・同じ比較目安・同じ見直し候補</b>でも、仮の月手取りに占める割合はこんなに変わる。</p>
       :<p className="c12preview-income-lead">{demoContext.incomeLabel}の架空プロフィール。こちらは家計の負担割合で、統計との比較基準や削減額とは別の数字だよ。</p>}
       <div className="c12preview-income-samples" data-income-monthly-total={demoContext.monthlyExpenses}>
        <span>今回入力した12費目の合計（毎月）</span><strong>¥{yen(demoContext.monthlyExpenses)}</strong>
       </div>
       <div className="c12preview-income-grid">
-       {(pairSelected?pairIncomes:[{annual:demoContext.annualIncome,label:demoContext.incomeLabel,caseId:selected}]).map(income=>{
-        const share=Number(ratio(demoContext.monthlyExpenses,income.annual));
+       {(pairSelected?pairIncomes:[{annual:demoContext.annualIncome,takeHome:demoContext.monthlyTakeHome,label:demoContext.incomeLabel,caseId:selected}]).map(income=>{
+        const share=Number(ratio(demoContext.monthlyExpenses,income.takeHome));
         return <div className={'c12preview-income-card'+(income.caseId===selected?' is-selected':'')} data-income-annual={income.annual} key={income.annual}>
          <div className="c12preview-income-card-head"><b>{income.label}</b>{income.caseId===selected&&<small>現在のケース</small>}</div>
          <strong className="c12preview-income-rate">{share.toFixed(1)}<span>%</span></strong>
          <div className="c12preview-income-track" aria-hidden="true"><span style={{width:Math.min(100,share)+'%'}}/></div>
-         <p>年収の月換算額に占める12費目の割合</p>
-         <div className="c12preview-income-food">うち食費：<b>{ratio(demoContext.monthlyFood,income.annual)}%</b></div>
+         <p>仮の月手取り ¥{yen(income.takeHome)}に対する割合</p>
+         <div className="c12preview-income-food">うち食費：<b>{ratio(demoContext.monthlyFood,income.takeHome)}%</b></div>
         </div>;
        })}
       </div>
       <p className="c12preview-income-reading">{pairSelected?'見直し候補が同額でも、優先して確認すべきことは違う。450万円のケースでは手取り・固定費・貯蓄余力を、1,500万円のケースでは満足度・資産形成目標・契約の必要性をより丁寧に確認したい。':'負担割合を見たら、次は支出の中身・手取り・貯蓄目的を確認。割合だけで「ムダ」「余裕あり」と決めないよ。'}</p>
-      <p className="c12preview-income-caution">※年収は税引前。金額を12で割った参考計算で、手取り比率や可処分所得を示しません。12費目の入力が家計全体を網羅する保証もありません。所得階級別の統計と人数・年齢別の統計を掛け合わせた架空の平均は作りません。</p>
+      <p className="c12preview-income-caution">※手取り月30万円／90万円／家族60万円は画面検証用に置いた架空の入力で、年収から推定した数字でも全国平均でもありません。本物の診断では本人入力の月手取りを使います。12費目の入力が家計全体を網羅する保証もなく、統計の所得階級別平均負担率とは別です。</p>
      </section>}
      <p className="c12preview-compare-instructions">まず東京・単身で食費・日用品・通信費の見直し候補を確認してみて。同じ支出の高所得単身では年収だけで候補額は増えない。家族ケースはスマホ代を家族分として扱い、住居費や保険の比較差額は自動で削減候補に足さないよ。</p>
 
