@@ -110,8 +110,18 @@ const H:Record<string,HousingRow>={
 const HOUSING_FALLBACK:HousingRow={meanPaid:0,p50:'',p75:'',p90:''};
 
 export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
- if(!children?.length)return null;
- return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
+ if(!Array.isArray(children)||children.length===0)return null;
+ // MASTER_ENGINE #11 / G13: school stage and public/private must be known
+ // for EVERY included child. Zero-filling an unknown stage fabricates a
+ // lower comparison reference; ask for details instead.
+ let total=0;
+ for(const child of children){
+  const stage=child?.stage;
+  const monthly=stage&&Object.prototype.hasOwnProperty.call(EDU,stage)?EDU[stage]:null;
+  if(typeof monthly!=='number'||!Number.isFinite(monthly)||monthly<=0)return null;
+  total+=monthly;
+ }
+ return total;
 }
 
 export type ComparableArgsV2={household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'};
