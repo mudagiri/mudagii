@@ -112,17 +112,17 @@ type ScanCategoryConfig = {
 
 const SCAN_CATEGORIES: ScanCategoryConfig[] = [
   { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ ＋ 自宅インターネット' },
-  { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・水道' },
-  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・アプリなど' },
-  { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊をあわせた目安' },
-  { category: 'daily', question: '普段の月の日用品費はいくら？', helper: '消耗品・雑貨。家具・家電など一時的な購入は除く' },
-  { category: 'fun', question: '普段の月の娯楽・交際費はいくら？', helper: '旅行・宿泊など一時的な大きな出費は除く' },
-  { category: 'beautyFashion', question: '普段の月の美容・服飾費はいくら？', helper: '美容院・服・コスメ。特別な一時購入は除く' },
-  { category: 'car', question: '毎月の車関連費はいくら？', helper: 'ローン・ガソリン・保険・駐車場など' },
-  { category: 'rent', question: '毎月の家賃・住宅ローンはいくら？', helper: '住居費の月額' },
-  { category: 'insurance', question: '毎月の保険料はいくら？', helper: '生命保険・医療保険など' },
-  { category: 'childEducation', question: '毎月の子どもの教育費はいくら？', helper: '子どもあり世帯のみ出現' },
-  { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '学び・資格・トレーニング等' },
+  { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・灯油などの燃料・水道' },
+  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・ゲーム月額パス・ジム月会費など。美容院の月額会員は美容へ' },
+  { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊・デリバリーの食品代。配達会員費はサブスクへ' },
+  { category: 'daily', question: '普段の月の日用品費はいくら？', helper: '雑貨・洗剤・シャンプーなど。化粧品や家具・家電は含めない' },
+  { category: 'fun', question: '普段の月の娯楽・交際費はいくら？', helper: '趣味・買切ゲーム・都度利用料。月額契約はサブスク、旅行・宿泊の一時支出は別確認' },
+  { category: 'beautyFashion', question: '普段の月の美容・服飾費はいくら？', helper: '美容院・服・コスメ・美容院の月額会員。シャンプー等の日常衛生は日用品へ' },
+  { category: 'car', question: '毎月の車関連費はいくら？', helper: 'ローン・燃料・自動車保険・駐車場。生命・医療保険や家賃とは分ける' },
+  { category: 'rent', question: '毎月の家賃・住宅ローンはいくら？', helper: '家賃・住宅ローンの月額。駐車場代は車関連費へ' },
+  { category: 'insurance', question: '毎月の保険料はいくら？', helper: '生命・医療などの保険料。自動車保険は車関連費へ' },
+  { category: 'childEducation', question: '毎月の子どもの教育費はいくら？', helper: '子どもの学費・塾・習い事。大人本人の講座は自己投資へ' },
+  { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '成人本人の資格・講座・教材。ジム月会費はサブスク、子の塾は教育費へ' },
 ];
 
 
@@ -295,9 +295,9 @@ export default function RpgBlock1({
     if(profileV4?.householdContributionMode!=='bundled')return currentScan;
     const direct:Partial<Record<EnemyAssetCategory,{question:string;helper:string}>>={
       rent:{question:'家へのまとめ払いとは別に、住居費を直接払ってる？',helper:'別で払っている家賃・住宅費だけ。なければ0円'},
-      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'自分で直接払っている電気・ガス・水道だけ。なければ0円'},
+      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'別払いの電気・ガス・灯油等の燃料・水道だけ。なければ0円'},
       food:{question:'まとめ払いとは別に、食費を月いくら払ってる？',helper:'自分で直接払う外食・自炊など。家に入れる生活費は含めない'},
-      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'自分で直接買う日用品だけ。家に入れる生活費は含めない'},
+      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'別購入の日用品・洗剤・シャンプーだけ。化粧品・家へのまとめ払いは含めない'},
     };
     const copy=direct[currentScan.category];
     return copy?{...currentScan,...copy}:currentScan;
