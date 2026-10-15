@@ -65,10 +65,16 @@ jobs:
           node-version: 22
       - name: Install exact dependencies
         run: npm ci
-      - name: Build
+      - name: Build latest public Chapter 1 + Chapter 2
         env:
           VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
-        run: npm run build
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PUBLIC
+        run: |
+          # Prevent a silent PUBLIC launch whose personality records never reach
+          # the dedicated backend. No secret value is printed to the log.
+          test -n "$VITE_MONEY_PERSONALITY_GAS_URL" || { echo "::error::Dedicated Chapter 1 GAS endpoint is not configured"; exit 1; }
+          npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
