@@ -11,7 +11,7 @@ type Case='tokyo_single'|'tokyo_family'|'regional_single'|'tokyo_high_income'|'n
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
  tokyo_single:{label:'東京｜30代・単身・年収450万円',desc:'家計の金額は仮入力。東京都・単身・10月の比較条件を表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  tokyo_family:{label:'東京｜40代・4人家族・世帯年収900万円',desc:'世帯人数を変えると比較基準がどう変わるかを確認',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
- regional_single:{label:'地方｜30代・単身・年収450万円',desc:'東京単身と同じ支出額で地域条件だけ変えて比較',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ regional_single:{label:'大阪｜30代・単身・年収450万円',desc:'東京単身と同額。住居費などの地域条件と、単身光熱費は年齢基準であることを比較',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  tokyo_high_income:{label:'東京｜30代・単身・年収1,500万円',desc:'東京単身と同じ支出額。所得を使わないカテゴリに年収倍率を掛けない検証',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  no_uncertain:{label:'未確定候補0円｜金額を作らない',desc:'未確定候補が0円なら架空の内訳・累計を出さない確認用',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
@@ -51,17 +51,17 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
- const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string}>>={
-  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円'},
-  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円'},
+ const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string;annualIncome:number}>>={
+  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000},
+  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円',annualIncome:9000000},
   regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円'},
-  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円'}
+  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円',annualIncome:15000000}
  };
  const profile=profileCases[example];
  if(profile){
   const amounts=example==='tokyo_family'?{energy:22000,food:110000,rent:170000,daily:24000,mobile:15000,sub:4200,fun:30000}:{energy:12000,food:65000,rent:92000,daily:14000,mobile:7800,sub:4200,fun:24000};
   for(const r of rows){if(r.category in amounts){r.amount=amounts[r.category as keyof typeof amounts];r.diagnosisAmount=r.amount;}}
-  const references=resolveComparableV2({household:profile.household,householdSize:profile.householdSize,age:profile.age,prefecture:profile.prefecture,month:10,housingType:profile.housingType,insuranceScope:'household'});
+  const references=resolveComparableV2({household:profile.household,householdSize:profile.householdSize,age:profile.age,annualIncome:profile.annualIncome,prefecture:profile.prefecture,month:10,housingType:profile.housingType,insuranceScope:'household'});
   for(const r of rows){
    const reference=references[r.category as keyof typeof references];
    if(!reference||reference.value==null||reference.confidence==='AUDIT')continue;
@@ -70,7 +70,15 @@ function makeFixture(example:Case){
    r.comparisonDifference=r.amount-reference.value;
    r.comparisonQuality=reference.confidence==='MODEL'?'reference':'exact';
    r.comparisonSourceVersion=reference.sourceVersion;
-   r.comparisonContext={criteria:[profile.householdSize+'人世帯',profile.prefecture,'10月',profile.housingType]};
+   const criteria=(()=>{
+    if(r.category==='energy')return profile.household==='single'?[profile.age+'歳（単身年齢別）']:[profile.householdSize+'人世帯',profile.prefecture,'10月','推計'];
+    if(['food','daily','fun'].includes(r.category))return profile.household==='single'?[profile.age+'歳（単身年齢別）']:[profile.householdSize+'人世帯'];
+    if(r.category==='beautyFashion')return [profile.household==='single'?'単身の性別・年齢条件':'世帯年齢参考モデル'];
+    if(r.category==='rent')return [profile.prefecture,'民営賃貸'];
+    if(r.category==='insurance')return [profile.household==='single'?'単身世帯':'複数人世帯','保険料参考値'];
+    return ['契約・費目の個別条件を確認'];
+   })();
+   r.comparisonContext={criteria};
    r.evidenceLabel=reference.confidence==='MODEL'?'正本に基づく推計比較':'正本に基づく比較';
   }
  }
@@ -181,14 +189,14 @@ function App(){
  const coverageDryRun=!pilotMode&&new URLSearchParams(window.location.search).get('qaCoverageHandoff')==='1';
  const requestedCase=new URLSearchParams(window.location.search).get('case');
  const initialCase:Case=requestedCase&&Object.prototype.hasOwnProperty.call(examples,requestedCase)
-  ?requestedCase as Case:'v32_scale';
+  ?requestedCase as Case:'tokyo_single';
  const [selected,setSelected]=useState<Case>(initialCase);
  const {chapter1,anonymousUserId,vm}=makeFixture(selected);
  return <div className={'c12preview'+(pilotMode?' c12preview--participant':'')}>
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
      <strong>家計クエスト｜調査用の画面見本</strong>
      <p>架空の回答を使った結果です。実際の家計や個人情報は入力しません。スクロールして、普段どおりにご覧ください。</p>
-     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。架空プロフィールに正本の比較ルールを適用した目安を表示しています。食費の¥37,860だけは旧表示QA用の架空額です。実際の家計データではありません。</small>
+     <small>※相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。各カテゴリで参照できる年齢・人数・地域・季節などの条件だけを使用しています。旧V3.2の表示QAケースには架空の食費比較額を含むため、実際の診断には使いません。</small>
     </header>:<div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
      <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
@@ -197,6 +205,8 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
+     <p className="c12preview-compare-instructions">まず東京・単身と東京・高所得単身を切り替えてみて。支出額を揃えたまま、年収を勝手に掛け算しないことが確認できるぞ。続けて4人家族・大阪を比較すると、人数や地域を使うカテゴリの違いも分かる。</p>
+
      <div className="c12preview-disclaimer">すべて架空のデータによる表示見本です。一部の目安は架空のプロフィールに正本比較ルールを適用した表示見本です。食費¥37,860のみ旧QA用の架空額です。未設定のカテゴリでも実際の条件によって比較値が出る場合があります。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
      <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
      <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
