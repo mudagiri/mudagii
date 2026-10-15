@@ -46,7 +46,8 @@
     "qa:chapter2-v2": "npx --yes tsx@4.20.6 qa-chapter2-v2.ts",
     "qa:chapter2-v3": "npx --yes tsx@4.20.6 qa-chapter2-v3.ts",
     "qa:chapter2-v31": "npx --yes tsx@4.20.6 qa-chapter2-v31.ts",
-    "qa:chapter2-v32": "npx --yes tsx@4.20.6 qa-chapter2-v32.ts"
+    "qa:chapter2-v32": "npx --yes tsx@4.20.6 qa-chapter2-v32.ts",
+    "qa:income-burden": "npx --yes tsx@4.20.6 qa-income-burden-v1.ts"
   },
   "dependencies": {
     "react": "19.1.1",
