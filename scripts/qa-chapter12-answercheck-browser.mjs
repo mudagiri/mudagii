@@ -26,15 +26,20 @@ for(const width of [320,375,390,430]){
   check(await burdenRows.count()===2,width+' same-spend comparison has two income denominators');
   const lowBurden=await incomeLens.locator('[data-income-annual="4500000"]').innerText();
   const highBurden=await incomeLens.locator('[data-income-annual="15000000"]').innerText();
-  check(lowBurden.includes('65.5%')&&lowBurden.includes('17.3%'),width+' 450 income shares are based on gross monthly equivalent');
-  check(highBurden.includes('19.6%')&&highBurden.includes('5.2%'),width+' 1500 income shares are lower despite unchanged spend');
-  check((await incomeLens.innerText()).includes('税引前')&&(await incomeLens.innerText()).includes('可処分所得'),width+' income lens does not claim spendable income or achievable savings');
+  check(lowBurden.includes('81.9%')&&lowBurden.includes('21.7%'),width+' 450 sample shares use entered take-home only');
+  check(highBurden.includes('27.3%')&&highBurden.includes('7.2%'),width+' 1500 income shares are lower despite unchanged spend');
+  check((await incomeLens.innerText()).includes('手取り')&&(await incomeLens.innerText()).includes('全国平均'),width+' demo take-home is explicitly fictional, not an official mean');
   check(await incomeLens.locator('.c12preview-income-card.is-selected').getAttribute('data-income-annual')==='4500000',width+' default income card follows selected case');
   const reference=async category=>({
    price:await demo.locator('[data-comparison-category="'+category+'"] .c2v22-comparison-values').innerText(),
    basis:await demo.locator('[data-comparison-category="'+category+'"] .c2v32-context-brief').innerText()
   });
   const singleEnergy=await reference('energy'),singleFood=await reference('food');
+  const realBurden=demo.locator('[data-section="INCOME_BURDEN_CONTEXT"]');
+  check((await realBurden.innerText()).includes('81.9%'),width+' actual result V3.2 consumes V5 take-home lens');
+  check((await demo.locator('[data-burden-category="food"]').innerText()).includes('21.7%'),width+' food row shows personal spending share');
+  check((await demo.locator('[data-burden-category="energy"]').innerText()).includes('4.0%'),width+' utilities row shows take-home share');
+
 
   // Money preview must reuse the exact V5 C-policy, not retain the old ¥1,800-only
   // mobile fixture after new comparison references are switched in.
@@ -57,13 +62,16 @@ for(const width of [320,375,390,430]){
   const highEnergy=await reference('energy'),highFood=await reference('food');
   check(singleEnergy.price===highEnergy.price&&singleFood.price===highFood.price,width+' single income change does not multiply base comparators');
   check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' higher income alone never changes review upper');
+  check((await demo.locator('[data-section="INCOME_BURDEN_CONTEXT"]').innerText()).includes('27.3%'),width+' switched case changes take-home ratio even when market benchmark stays flat');
+  check((await demo.locator('[data-burden-category="food"]').innerText()).includes('7.2%'),width+' switched income updates category-level burden');
+
   await demo.locator('#case-change').selectOption('regional_single');
   const regionalEnergy=await reference('energy');
   check(regionalEnergy.price===singleEnergy.price,width+' Osaka single energy follows the same age basis');
   check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' regional rent gap does not inflate the conditional candidate upper');
   await demo.locator('#case-change').selectOption('tokyo_family');
   check(await demo.locator('[data-section="INCOME_CONTEXT"] [data-income-monthly-total]').getAttribute('data-income-monthly-total')==='401800',width+' family monthly spending scope recalculated');
-  check((await demo.locator('.c12preview-income-card.is-selected').innerText()).includes('53.6%'),width+' family gross burden indicator is separately recalculated');
+  check((await demo.locator('.c12preview-income-card.is-selected').innerText()).includes('67.0%'),width+' family entered take-home burden indicator is separately recalculated');
   const familyEnergy=await reference('energy');
   check(familyEnergy.basis.includes('4人世帯')&&familyEnergy.basis.includes('東京都')&&familyEnergy.basis.includes('10月'),width+' family energy uses size × region × season model');
   check(familyEnergy.price!==singleEnergy.price,width+' household difference actually visible in the demo');
