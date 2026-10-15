@@ -186,6 +186,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    <img className="v51-clear-mudagiri" src={ART.clear} alt="" aria-hidden="true"/>
    <div className="v51-clear-talk">ムダギリくん「おつかれ！ここから戦果を確認するぞ。」</div>
    <div className="v51-scroll-cue">戦果を見る <span>↓</span></div>
+   <a className="v51-compare-jump" href="#v51-comparison-overview">先に12カテゴリの比較を見る ↓</a>
   </section>
 
   <section className="v5-card v5-type v51-type" data-section="MONEY TYPE UNLOCKED">
@@ -217,6 +218,33 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    <div className="v51-type-grid">
     {TYPE_ORDER.map(code=>{const t=(TYPE_CONTENT_V31 as any)[code];return <button type="button" className={code===vm.type.code?'is-mine':''} key={code} onClick={()=>setSelectedTypeCode(code)}><span className="v51-type-thumb"><img src={TYPE_ART[code]} alt=""/></span><small>{code===vm.type.code?'YOU':'TYPE'}</small><b>{t.name}</b></button>})}
    </div>
+  </section>
+
+  <section className="v5-card v51-comparison-overview" id="v51-comparison-overview" data-section="12 CATEGORY COMPARISON" aria-labelledby="v51-comparison-heading">
+   <div className="v51-jp-kicker">12カテゴリの答え合わせ</div>
+   <h2 id="v51-comparison-heading">何と比べたか、一目でわかる。</h2>
+   <p className="v51-comparison-intro">入力した金額と、条件が合う参考値を並べたぞ。数字の差はそのままムダ額ではない。まずは自分の条件を確認しよう。</p>
+   <div className="v51-comparison-grid">
+    {vm.rows.map((x:any)=>{
+      const criteria=Array.isArray(x.comparisonContext?.criteria)?x.comparisonContext.criteria.filter((c:unknown)=>typeof c==='string'&&c.trim()!==''):[];
+      const legacyIncome=criteria.some((c:string)=>c.includes('年収帯補正'));
+      const hasComparable=!legacyIncome&&x.comparisonQuality!=='none'&&typeof x.comparable==='number'&&Number.isFinite(x.comparable)&&x.comparable>=0;
+      const amount=typeof x.amount==='number'&&Number.isFinite(x.amount)?x.amount:null;
+      const evidence=criteria.filter((c:string)=>!c.includes('年収帯補正')).join(' × ');
+      const isNa=x.applicability==='na'||x.v5Status==='na';
+      return <article className="v51-comparison-row" key={x.category} data-category={x.category}>
+       <div className="v51-comparison-row-head"><b>{x.label}</b><span>{STATUS_META[x.v5Status]?.mark??'🔍'} {x.v5StatusLabel??'見極める'}</span></div>
+       <div className="v51-comparison-numbers">
+        <div><small>入力額／月</small><strong>{isNa?'対象外':x.known&&amount!==null?'¥'+yen(amount):'未入力'}</strong></div>
+        <div><small>比較目安／月</small><strong>{hasComparable?'¥'+yen(x.comparable):legacyIncome?'要再照合':'—'}</strong></div>
+       </div>
+       <p className="v51-comparison-criteria">{legacyIncome?'旧所得補正を含む比較は最終契約との照合中':hasComparable?(evidence||x.evidenceLabel||'比較条件を確認中'):'金額の平均ではなく、利用状況や目的から確認'}</p>
+       {hasComparable&&x.comparisonQuality==='reference'&&<small className="v51-comparison-model">※推計・参考値</small>}
+       {hasComparable&&x.comparisonDifference!==null&&<small className="v51-comparison-disclaimer">基準との差 {signedYen(x.comparisonDifference)}／月（削減できる額ではありません）</small>}
+      </article>;
+    })}
+   </div>
+   <p className="v51-comparison-foot">比較がない費目に架空の平均は置いていません。より詳しい判定理由は下の敵図鑑で確認できます。</p>
   </section>
 
   <section className="v5-card v5-position v51-atlas" data-section="HOUSEHOLD POSITION">
@@ -402,6 +430,23 @@ const CSS=`
 .v51-type-share{position:relative;z-index:2;margin-top:14px;padding-top:12px;border-top:1px solid rgba(196,174,255,.22)}.v51-type-share>b{display:block;color:#f4d76b;font-size:11px;letter-spacing:.04em}.v51-type-share>div{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.v51-type-share button{min-height:48px;padding:0 4px;border:1px solid #665d98;border-radius:9px;background:#151d3b;color:#fff;font-size:10px;font-weight:900}.v51-type-share>small{display:block;margin-top:7px;color:#8f9ab5;font-size:8px}
 
 .v51-chapter-route{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0 13px;padding:10px;border:1px solid rgba(136,217,205,.22);border-radius:11px;background:rgba(5,24,31,.35)}.v51-chapter-route>div{min-width:0;padding:8px;border:1px solid #366474;border-radius:8px;background:#102a34}.v51-chapter-route>div.is-done{opacity:.75}.v51-chapter-route small,.v51-chapter-route b,.v51-chapter-route span{display:block}.v51-chapter-route small{color:#8fb5bd;font-size:7px;letter-spacing:.08em}.v51-chapter-route b{margin-top:3px;font-size:10px;line-height:1.35}.v51-chapter-route span{margin-top:4px;color:#78d9c7;font-size:7px;font-weight:1000}.v51-chapter-route>i{color:#76d8c7;font-style:normal;font-weight:1000}
+.v51-compare-jump{display:block;width:max-content;max-width:94%;margin:12px auto 0;padding:11px 16px;border:1px solid #a4d8d0;border-radius:12px;background:#12353e;color:#effffb!important;text-align:center;text-decoration:none;font-size:14px;font-weight:850;touch-action:manipulation}
+.v51-comparison-overview{scroll-margin-top:14px;padding:18px 12px!important;background:#112631!important;border:1px solid #557a83!important;color:#f3f7f8!important}
+.v51-comparison-overview>h2{margin:8px 0;font-size:clamp(22px,6vw,27px)!important;line-height:1.24!important;color:#fff!important}
+.v51-comparison-intro{margin:8px 0 16px!important;color:#d5e4e8!important;font-size:14px!important;line-height:1.65!important}
+.v51-comparison-grid{display:grid;gap:9px;grid-template-columns:1fr}
+.v51-comparison-row{min-width:0;border:1px solid #4b6a75;border-radius:12px;padding:13px 12px;background:#193744;color:#fff}
+.v51-comparison-row-head{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.v51-comparison-row-head>b{font-size:16px;font-weight:900}
+.v51-comparison-row-head>span{flex-shrink:0;color:#f2d985;font-size:12px;font-weight:800}
+.v51-comparison-numbers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.v51-comparison-numbers>div{min-width:0;padding:9px 7px;border-radius:9px;background:#09212e}
+.v51-comparison-numbers small{display:block;color:#bad2d9;font-size:12px!important;font-weight:700}
+.v51-comparison-numbers strong{display:block;margin-top:5px;font-size:clamp(16px,5vw,21px)!important;color:#fff!important;font-weight:900;overflow-wrap:anywhere}
+.v51-comparison-criteria{margin:10px 0 0!important;color:#d4e4e7!important;font-size:13px!important;line-height:1.55!important}
+.v51-comparison-model,.v51-comparison-disclaimer{display:block;margin-top:6px;color:#f1d898!important;font-size:12px!important;line-height:1.5!important}
+.v51-comparison-foot{margin:13px 0 0!important;color:#e1eef0!important;font-size:13px!important;line-height:1.6!important}
+@media(min-width:680px){.v51-comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
 @media(max-width:380px){.v5 section{margin-left:8px;margin-right:8px}.v5 h2{font-size:22px}.v5-counts{gap:4px}.v5-counts b{font-size:13px}.v51-impact-num{font-size:22px}.v51-impact-unit{font-size:10px}.v51-impact-wave{margin:0 2px;font-size:13px}.v51-impact-approx{font-size:9px}.v51-impact .v5-impact-grid .is-10 .v51-impact-num{font-size:42px}.v51-impact .v5-impact-grid .is-10 .v51-impact-unit{font-size:16px}.v5-type h2{font-size:30px}}
 `;
