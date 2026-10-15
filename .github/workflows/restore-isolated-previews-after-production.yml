@@ -309,13 +309,13 @@ jobs:
               esac
             done
             python3 - "$nested/index.html" <<'PY'
-import pathlib,sys
-page=pathlib.Path(sys.argv[1])
-html=page.read_text()
-assert '<head>' in html
-# Relative JS, CSS, images and canonical media now resolve to sibling root.
-page.write_text(html.replace('<head>','<head><base href="../../">',1))
-PY
+          import pathlib,sys
+          page=pathlib.Path(sys.argv[1])
+          html=page.read_text()
+          assert '<head>' in html
+          # Relative JS, CSS, images and canonical media now resolve to sibling root.
+          page.write_text(html.replace('<head>','<head><base href="../../">',1))
+          PY
             test -d "site/pilot/$chapter/assets"
             test "$(find "$nested" -mindepth 1 -maxdepth 1 | wc -l)" -eq 2
           done
