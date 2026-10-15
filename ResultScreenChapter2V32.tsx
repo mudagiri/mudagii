@@ -119,6 +119,7 @@ function comparisonReferenceType(x:any):string{
  // Published household-size data and separate income tables were multiplied in
  // the V2 frozen runtime. Never label the derived cell as a direct official mean.
  if(x?.comparisonModelEstimate===true)return '統計を組み合わせた推計値';
+ if(x?.comparisonMethodologyModelEstimate===true)return '属性等を使った推計値';
  return x?.comparisonQuality==='reference'?'参考値':'近い条件との比較';
 }
 function comparisonTargetAmount(x:any):number|null{
