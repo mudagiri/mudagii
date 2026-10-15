@@ -54,7 +54,7 @@ function makeFixture(example:Case){
  const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string;annualIncome:number}>>={
   tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000},
   tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円',annualIncome:9000000},
-  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円'},
+  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000},
   tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円',annualIncome:15000000}
  };
  const profile=profileCases[example];
