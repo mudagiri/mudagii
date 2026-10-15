@@ -30,26 +30,26 @@ jobs:
           test -f public/assets/jobs/v1/JOB_04_FNP_turtle.webp
       - name: Prepare same-origin Chapter 1 to 2 static preview
         run: |
-          mkdir -p preview/pilot/chapter2-v2/pilot/money-type
-          cp -R dist/. preview/pilot/chapter2-v2/
-          cp -R dist/. preview/pilot/chapter2-v2/pilot/money-type/
-          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' preview/pilot/chapter2-v2/assets/*.js
+          mkdir -p preview/pilot/chapter2-v32/pilot/money-type
+          cp -R dist/. preview/pilot/chapter2-v32/
+          cp -R dist/. preview/pilot/chapter2-v32/pilot/money-type/
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' preview/pilot/chapter2-v32/assets/*.js
       - name: Install browser test runner
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Launch local preview
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/mudagiri-latest-ui.log 2>&1 &
           for i in $(seq 1 45); do
-            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v2/pilot/money-type/ >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v32/pilot/money-type/ >/dev/null; then exit 0; fi
             sleep 0.4
           done
           cat /tmp/mudagiri-latest-ui.log
           exit 1
       - name: Chrome latest Chapter 1 → Chapter 2 integrated browser QA
-        env: {BROWSER_ENGINE: chromium, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v2/"}
+        env: {BROWSER_ENGINE: chromium, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
         run: node qa-chapters-v32-browser.mjs
       - name: iPhone WebKit latest Chapter 1 → Chapter 2 integrated browser QA
-        env: {BROWSER_ENGINE: webkit, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v2/"}
+        env: {BROWSER_ENGINE: webkit, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
         run: node qa-chapters-v32-browser.mjs
       - name: Upload synthetic-only screen artifacts
         if: always()
