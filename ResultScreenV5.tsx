@@ -1,3 +1,5 @@
+import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
+import './income-burden-v5.css';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {TYPE_CONTENT_V31} from './type-content-v3.1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
@@ -141,6 +143,8 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
   onBeforeExternal?.();onLine?.({diagnosisId:vm.diagnosisId,firstQuest:vm.firstQuest?.category??null,placement:linePrompt,handoffCode:code,goal:goal??null,consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan',insuranceReview:!!vm.consultRoute?.insuranceReview});
  }
  const positionRows=vm.positionRows.filter((x:any)=>x.known&&Number(x.amount)>0);
+ const incomeBurden=buildIncomeBurdenLensV1(vm.profile,vm.rows);
+ const burdenByCategory=new Map(incomeBurden.categories.map(x=>[x.category,x.shareOfTakeHomePct]));
  const atlasSourceRows=vm.rows.filter((x:any)=>x.known&&Number(x.amount)>0);
  const positionRank=(label:string|null)=>label==='かなり高め'?5:label==='やや高め'?4:label==='標準圏'?3:label==='やや低め'?2:label==='かなり低め'?1:0;
  const atlasRows=[...atlasSourceRows].map((x:any,i:number)=>({...x,_displayIndex:i})).sort((a:any,b:any)=>{
@@ -224,6 +228,17 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
    <div className="v51-jp-kicker">12カテゴリの答え合わせ</div>
    <h2 id="v51-comparison-heading">何と比べたか、一目でわかる。</h2>
    <p className="v51-comparison-intro">入力した金額と、条件が合う参考値を並べたぞ。数字の差はそのままムダ額ではない。まずは自分の条件を確認しよう。</p>
+   {incomeBurden.available?<aside className="v51-net-burden" data-section="INCOME_BURDEN_CONTEXT" aria-label="入力した月手取りに対する支出負担">
+     <span>もうひとつの家計のものさし</span>
+     <h3>同じ支出でも、手取りへの負担は違う。</h3>
+     <div className="v51-net-burden-grid">
+      <div><small>{incomeBurden.scope==='household'?'家全体の月手取り':'あなたの月手取り'}</small><strong>¥{yen(incomeBurden.monthlyTakeHome!)}</strong></div>
+      <div><small>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出</small><strong>¥{yen(incomeBurden.knownMonthlyExpenses)}</strong></div>
+      <div><small>手取りに占める割合</small><strong>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)}%</strong></div>
+     </div>
+     <p>この割合は本人入力から計算したもの。下の費目別の手取り負担も見てみよう。統計上の平均やムダ額、節約可能額とは別だよ。</p>
+     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いの推定配分なし':''}。全生活費が判明した割合ではありません。</small>}
+    </aside>:<p className="v51-net-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが不明のため、負担率は推測で作っていないよ。統計との金額比較はこのまま確認できる。</p>}
    <div className="v51-comparison-grid">
     {vm.rows.map((x:any)=>{
       const criteria=Array.isArray(x.comparisonContext?.criteria)?x.comparisonContext.criteria.filter((c:unknown)=>typeof c==='string'&&c.trim()!==''):[];
@@ -245,6 +260,7 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
        <p className="v51-comparison-criteria">{legacyIncome?'旧所得補正を含む比較は最終契約との照合中':hasComparable?(evidence||x.evidenceLabel||'比較条件を確認中'):'金額の平均ではなく、利用状況や目的から確認'}</p>
        {hasComparable&&x.comparisonQuality==='reference'&&<small className="v51-comparison-model">※推計・参考値</small>}
        {hasComparable&&x.comparisonDifference!==null&&<small className="v51-comparison-disclaimer">{differentScope?"比較対象額と基準との差":"基準との差"} {signedYen(x.comparisonDifference)}／月（削減できる額ではありません）</small>}
+       {burdenByCategory.has(x.category)&&<p className="v51-category-net-share" data-net-share-category={x.category}>手取り負担率 <strong>{burdenByCategory.get(x.category)?.toFixed(1)}%</strong><small>本人入力から計算／統計平均ではありません</small></p>}
        {hasEnemyDetail&&<button type="button" className="v51-comparison-detail-button" onClick={()=>openEnemyDetail(x.category)}>敵図鑑で理由を見る →</button>}
       </article>;
     })}
