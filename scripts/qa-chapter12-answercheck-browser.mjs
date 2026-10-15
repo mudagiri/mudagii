@@ -275,7 +275,16 @@ for(const width of [320,375,390,430]){
  check(portraitLoaded,width+' official food enemy PNG actually loads in visible comparison row');
  const foodRow=overview.locator('[data-comparison-category="food"]');
  check((await foodRow.innerText()).includes('¥54,000')&&(await foodRow.innerText()).includes('¥37,860'),width+' pilot food actual and transparent synthetic comparator visible');
- check((await foodRow.innerText()).includes('架空デモの比較条件')&&(await foodRow.innerText()).includes('画面確認用の架空の比較基準'),width+' pilot comparison criterion/provenance explicit and never passed off as official statistics');
+ check((await foodRow.innerText()).includes('架空デモの比較条件'),width+' comparison condition always visible without detail tap');
+ const evidence=foodRow.locator('.c2v32-comparison-evidence');
+ const evidenceButton=foodRow.locator('.c2v32-evidence-toggle');
+ check(await evidenceButton.count()===1&&await evidenceButton.getAttribute('aria-expanded')==='false',width+' reference provenance starts collapsed, not the criterion/benchmark');
+ check(!(await evidence.isVisible()),width+' only secondary source detail is collapsed');
+ await evidenceButton.click();
+ check(await evidence.isVisible()&&(await evidence.innerText()).includes('画面確認用の架空の比較基準'),width+' explicitly synthetic source accessible by one tap');
+ check(await evidenceButton.getAttribute('aria-expanded')==='true',width+' evidence expansion accessible state');
+ await evidenceButton.click();
+ check(!(await evidence.isVisible()),width+' expanded source can close again');
  check(await foodRow.getAttribute('data-comparison-available')==='true',width+' comparable status is grounded in source and scope');
  const mobileRow=overview.locator('[data-comparison-category="mobile"]');
  check(await mobileRow.getAttribute('data-comparison-available')==='false',width+' AUDIT mobile has no invented categorical average');
@@ -286,6 +295,38 @@ for(const width of [320,375,390,430]){
  check(!(await overview.innerText()).includes('数値比較なし'),width+' no exaggerated absent-benchmark label in 12 rows');
  check(await overview.locator('[data-comparison-available="true"]').count()>=5,width+' pilot populated with real frozen comparable rules, not ten fake missing baselines');
  check(await overview.evaluate(el=>![...el.closest('section').querySelectorAll('details')].some(d=>d.contains(el))),width+' 12 criteria cannot be inside a collapsed detail');
+ const unavailableRows=overview.locator('[data-comparison-available="false"]');
+ check((await unavailableRows.allInnerTexts()).every(t=>!t.includes('今回の条件では、金額を並べた比較は表示していないよ。')),width+' no repetitive generic no-mean wording');
+ check((await overview.locator('[data-comparison-category="fun"]').innerText()).includes('楽しさを大切に判断')||
+       (await overview.locator('[data-comparison-category="fun"]').getAttribute('data-comparison-available'))==='true',
+  width+' discretionary entertainment uses value-specific comparison basis');
+ check((await overview.locator('[data-comparison-category="beautyFashion"]').innerText()).includes('目的と満足度で判断')||
+       (await overview.locator('[data-comparison-category="beautyFashion"]').getAttribute('data-comparison-available'))==='true',
+  width+' beauty uses personal satisfaction rather than invented average');
+ const shortcuts=page.locator('[data-section="RESULT_SHORTCUTS"]');
+ check(await shortcuts.count()===1&&await shortcuts.locator('button').count()===3,width+' one high-level three-path navigation');
+ check((await shortcuts.innerText()).includes('12カテゴリ比較')&&(await shortcuts.innerText()).includes('相談する'),width+' explicit navigation labels');
+ await shortcuts.getByRole('button',{name:/12カテゴリ比較/}).click();
+ const navLanding=await overview.evaluate(el=>el.getBoundingClientRect().top);
+ check(navLanding>=70&&navLanding<195,width+' jump lands below sticky controls '+navLanding);
+ const sticky=await shortcuts.evaluate(el=>getComputedStyle(el).position);
+ check(sticky==='sticky',width+' shortcuts stay discoverable on long result screens');
+ const evidenceImage=await page.evaluate(async()=>{
+   const el=document.querySelector('.c2v31-page');
+   const bg=el?getComputedStyle(el).backgroundImage:'';
+   const matches=[...bg.matchAll(/url\(["']?([^"')]+)["']?\)/g)];
+   const list=matches.map(x=>x[1]).filter(Boolean);
+   const checks=await Promise.all(list.map(async url=>{
+    const im=new Image();im.src=url;
+    try{await im.decode();return im.naturalWidth>0&&im.naturalHeight>0}catch{return false}
+   }));
+   return {list,checks};
+ });
+ check(evidenceImage.list.some(x=>x.includes('MP_BG_01_GUILD_HALL'))&&evidenceImage.checks.every(Boolean),width+' actual scenic background files load; not just CSS declarations '+JSON.stringify(evidenceImage));
+ if(width===390){
+  await overview.screenshot({path:path.join(out,engine+'-390-compact-comparison.png')});
+  await shortcuts.screenshot({path:path.join(out,engine+'-390-shortcuts.png')});
+ }
  const overviewJump=page.locator('[data-section="COMPARISON_OVERVIEW_JUMP"]');
  check(await overviewJump.count()===1&&await overviewJump.isVisible(),width+' direct comparison jump beside battle results');
  await overviewJump.click();
