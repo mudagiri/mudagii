@@ -51,7 +51,7 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
- const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:string;incomeLabel:string}>>={
+ const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string}>>={
   tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円'},
   tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円'},
   regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円'},
