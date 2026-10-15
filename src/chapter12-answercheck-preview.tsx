@@ -7,8 +7,12 @@ import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='no_uncertain'|'v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='tokyo_single'|'tokyo_family'|'regional_single'|'tokyo_high_income'|'no_uncertain'|'v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
+ tokyo_single:{label:'東京｜30代・単身・年収450万円',desc:'家計の金額は仮入力。東京都・単身・10月の比較条件を表示',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ tokyo_family:{label:'東京｜40代・4人家族・世帯年収900万円',desc:'世帯人数を変えると比較基準がどう変わるかを確認',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
+ regional_single:{label:'地方｜30代・単身・年収450万円',desc:'東京単身と同じ支出額で地域条件だけ変えて比較',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ tokyo_high_income:{label:'東京｜30代・単身・年収1,500万円',desc:'東京単身と同じ支出額。所得を使わないカテゴリに年収倍率を掛けない検証',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  no_uncertain:{label:'未確定候補0円｜金額を作らない',desc:'未確定候補が0円なら架空の内訳・累計を出さない確認用',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  v32_scale_uncertain:{label:'旧V3.2の未確定だけ｜月17,854円',desc:'確認済み改善機会0円・未確定の参考上限だけ月17,854円の架空ケース。節約できると確定した額ではありません。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
@@ -47,6 +51,30 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
+ const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:string;incomeLabel:string}>>={
+  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円'},
+  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円'},
+  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円'},
+  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円'}
+ };
+ const profile=profileCases[example];
+ if(profile){
+  const amounts=example==='tokyo_family'?{energy:22000,food:110000,rent:170000,daily:24000,mobile:15000,sub:4200,fun:30000}:{energy:12000,food:65000,rent:92000,daily:14000,mobile:7800,sub:4200,fun:24000};
+  for(const r of rows){if(r.category in amounts){r.amount=amounts[r.category as keyof typeof amounts];r.diagnosisAmount=r.amount;}}
+  const references=resolveComparableV2({household:profile.household,householdSize:profile.householdSize,age:profile.age,prefecture:profile.prefecture,month:10,housingType:profile.housingType,insuranceScope:'household'});
+  for(const r of rows){
+   const reference=references[r.category as keyof typeof references];
+   if(!reference||reference.value==null||reference.confidence==='AUDIT')continue;
+   r.comparable=reference.value;
+   r.comparisonAmount=r.amount;
+   r.comparisonDifference=r.amount-reference.value;
+   r.comparisonQuality=reference.confidence==='MODEL'?'reference':'exact';
+   r.comparisonSourceVersion=reference.sourceVersion;
+   r.comparisonContext={criteria:[profile.householdSize+'人世帯',profile.prefecture,'10月',profile.housingType]};
+   r.evidenceLabel=reference.confidence==='MODEL'?'正本に基づく推計比較':'正本に基づく比較';
+  }
+ }
+
  // Reproduce the REAL V5 mobile candidate rule: major-carrier single line
  // with monthly input ¥7,800 has review-only upper bound 7,800 − 6,000 = ¥1,800.
  // Demo values are invented for visual testing, not statistical averages or savings.
