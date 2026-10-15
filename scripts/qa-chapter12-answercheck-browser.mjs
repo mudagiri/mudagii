@@ -268,6 +268,20 @@ for(const width of [320,375,390,430]){
  check(await officialIcons.count()===12,width+' all 12 official enemy illustrations appear inside the comparison ledger');
  const uniqueIconUrls=await officialIcons.evaluateAll(images=>[...new Set(images.map(img=>img.getAttribute('src')))]);
  check(uniqueIconUrls.length===12&&uniqueIconUrls.every(u=>u?.includes('assets/enemies/')&&u.endsWith('/normal.png')),width+' each category uses unique accepted normal portrait, not placeholders');
+ // Full-page screenshots do NOT by themselves load below-the-fold lazy
+ // images. Scroll each canonical portrait into view and decode it before
+ // taking a visual audit screenshot; this distinguishes a loading artifact
+ // from a real missing/broken enemy icon on iPhone.
+ let portraitsLoaded=0;
+ for(const img of await officialIcons.all()){
+  await img.scrollIntoViewIfNeeded();
+  const ready=await img.evaluate(async el=>{
+   try{await el.decode();return el.naturalWidth>0&&el.naturalHeight>0}
+   catch{return false}
+  });
+  if(ready)portraitsLoaded++;
+ }
+ check(portraitsLoaded===12,width+' all 12 individual enemy portraits actually decode before screenshot: '+portraitsLoaded+'/12');
  const header=overview.locator('[data-comparison-category="food"] .c2v22-comparison-head');
  await header.scrollIntoViewIfNeeded();
  const portrait=header.locator('img.c2v23-comparison-enemy');
