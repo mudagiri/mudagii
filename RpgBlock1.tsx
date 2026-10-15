@@ -8,7 +8,7 @@ import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, scoreTypeAnswersV31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
-import type { EducationStageV2 } from './comparable-resolver-v2';
+import { RESOLVER_V2_VERSION, type EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
 import {chapter2V2ResumeScene} from './chapter2-v2-contract';
 import ProfileV4Scene from './ProfileV4Scene';
@@ -633,7 +633,7 @@ export default function RpgBlock1({
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
       annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers:chapter2V2?{}:typeAnswers,appraisal:appraisalAnswers,finalJudgements,
-      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:chapter2V2?RESOLVER_V2_VERSION:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
       scopeV4:profileV4&&comparisonsV4&&finalV4?{profile:profileV4,expenseRecords:resolvedExpenseRecordsV4,comparisons:comparisonsV4,finalJudgements:finalV4.categories,confirmedMonthly:finalV4.confirmedMonthly,diagnosisMethodology:diagnosisV4?.diagnosis?.methodologyVersion??null}:undefined
     });
   };
