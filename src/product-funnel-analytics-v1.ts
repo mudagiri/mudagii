@@ -26,9 +26,13 @@ const CHAPTER2_EVENTS:Record<string,string>={
  chapter2_v31_share_cancelled:'chapter2_share_cancelled',
  chapter2_v31_consultation_modal_opened:'chapter2_consultation_modal_opened',
  chapter2_v31_consultation_line_outbound:'chapter2_line_outbound_clicked',
+ chapter2_v32_coverage_consultation_clicked:'chapter2_coverage_consultation_opened',
+ chapter2_v32_coverage_line_copy_success:'chapter2_coverage_message_copied',
+ chapter2_v32_coverage_line_copy_failed:'chapter2_coverage_message_copy_failed',
+ chapter2_v32_coverage_line_message_outbound:'chapter2_coverage_line_outbound_clicked',
 };
 const SAFE_METHODS=new Set(['native_image','native_sheet_returned','download','copy_link','x_text','line_text']);
-const SAFE_PLACEMENTS=new Set(['after_rewards','goal_quest','consult_route']);
+const SAFE_PLACEMENTS=new Set(['after_rewards','goal_quest','consult_route','coverage_review']);
 const SAFE_PLATFORMS=new Set(['native','x','line','threads','instagram']);
 function allowedConfig(env:Record<string,unknown>,pathname:string){
  if(env.VITE_MUDAGIRI_ANALYTICS_ENABLED!=='1')return null;

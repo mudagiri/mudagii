@@ -1,4 +1,4 @@
-import {resolveComparableV2,educationBenchmarkV2,__resolverV2Audit} from './comparable-resolver-v2';
+import {resolveComparableV2,resolveComparableV2LegacyIncome0930,educationBenchmarkV2,__resolverV2Audit} from './comparable-resolver-v2';
 
 const eq=(a:unknown,b:unknown,m:string)=>{if(a!==b)throw new Error(m+': '+String(a)+' !== '+String(b))};
 const ok=(x:unknown,m:string)=>{if(!x)throw new Error(m)};
@@ -18,7 +18,13 @@ eq(r.daily?.value,7469,'4-person daily');
 eq(r.fun?.value,11067,'4-person entertainment core');
 eq(r.beautyFashion?.value,21244,'multi beauty age model 40s');
 eq(r.beautyFashion?.confidence,'MODEL','multi beauty must stay model/reference');
+eq(r.beautyFashion?.meta?.modelEstimate,true,'G12 beauty requires model_estimate=true');
+eq(r.beautyFashion?.meta?.incomeAdjusted,undefined,'beauty age model must not be mislabeled as income cross');
+eq(r.beautyFashion?.meta?.crossTableObserved,false,'age model must never claim direct size x age observation');
 eq(r.energy?.confidence,'MODEL','multi utility model flag');
+eq(r.energy?.meta?.modelEstimate,true,'G12 region-season composite requires model_estimate=true');
+eq(r.energy?.meta?.incomeAdjusted,undefined,'energy region-season composite is not an income model');
+eq(r.energy?.meta?.crossTableObserved,false,'region-season composite is not a directly observed cross');
 eq(r.energy?.value,Math.round(25942*0.9689537157757496*1.2985757210518276),'multi utility model');
 
 // Housing distribution is private-rent only.
@@ -29,6 +35,13 @@ eq(r.rent?.value,null,'owned housing must not use private-rent benchmark');
 
 // Education stacks each child; benchmark gap is never interpreted here as saving.
 eq(educationBenchmarkV2([{stage:'publicElementary'},{stage:'privateJuniorHigh'}]),160580,'education child stack');
+eq(educationBenchmarkV2(undefined),null,'unknown child stages should remain AUDIT');
+eq(educationBenchmarkV2([]),null,'no recorded child stage means no average');
+eq(educationBenchmarkV2([{stage:'publicElementary'},{stage:'unknownStage' as never}]),null,'unknown second child cannot silently add zero');
+eq(educationBenchmarkV2([{stage:'unknownStage' as never}]),null,'invalid public/private stage never creates zero benchmark');
+const invalidSchool=resolveComparableV2({household:'multi',householdSize:4,age:40,prefecture:'東京都',month:2,housingType:'賃貸',educationChildren:[{stage:'publicElementary'},{stage:'unknownStage' as never}]});
+eq(invalidSchool.childEducation?.value,null,'resolver must reject partial education child cross');
+eq(invalidSchool.childEducation?.confidence,'AUDIT','unknown stage must trigger details rather than numerical comparison');
 
 // Insurance reference is scope-aware. Missing scope stays AUDIT; explicit scope activates a reference.
 eq(r.mobile?.value,null,'communication uses direct bands, not fake mean');
@@ -36,6 +49,8 @@ eq(r.insurance?.value,null,'insurance without scope stays audit');
 const insPersonal=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'personal'});
 eq(insPersonal.insurance?.value,15830,'personal insurance 40s reference');
 eq(insPersonal.insurance?.confidence,'MODEL','personal insurance combined-age reference is model');
+eq(insPersonal.insurance?.meta?.modelEstimate,true,'G12 N-weighted insurance reference is a model');
+eq(insPersonal.insurance?.meta?.incomeAdjusted,undefined,'personal insurance age aggregation must not be income model');
 const insHousehold=resolveComparableV2({household:'multi',householdSize:2,age:42,prefecture:'東京都',month:2,housingType:'賃貸',insuranceScope:'household'});
 eq(insHousehold.insurance?.value,29417,'multi household insurance average');
 eq(insHousehold.insurance?.confidence,'DIRECT','household insurance published mean');
@@ -48,11 +63,19 @@ eq(r.selfDevelopment?.value,null,'self-development audit only');
 eq(Object.keys(__resolverV2Audit.H).length,47,'housing must contain 47 prefectures');
 ok(__resolverV2Audit.MONTH.length===12,'utility must contain 12 month indices');
 
-// Income correction: only multi-person ¥5m+; single remains unchanged.
+// Final contract: no invented household-size x income correction, regardless of income.
 const baseMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
 const incMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
-ok(incMulti.food?.value!==baseMulti.food?.value,'multi 8m income must affect food comparable');
-ok(incMulti.daily?.value!==baseMulti.daily?.value,'multi 8m income must affect daily comparable');
+for(const c of ['energy','food','daily','fun'] as const)
+ eq(incMulti[c]?.value,baseMulti[c]?.value,'contract prohibits synthesized household-size × income ratio: '+c);
+eq(incMulti.food?.meta?.modelEstimate,undefined,'income cross must not appear as a direct official comparator');
+const historical=resolveComparableV2LegacyIncome0930({household:'multi',householdSize:4,age:40,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
+eq(historical.food?.value,103397,'exact archived FROZEN 9/30 income model remains available');
+eq(historical.daily?.value,7543,'archived DAILY 9/30 value');
+eq(historical.fun?.value,10469,'archived FUN 9/30 value');
+eq(historical.energy?.value,32678,'archived ENERGY 9/30 value');
+eq(historical.energy?.meta?.modelEstimate,true,'archived energy is modeled');
+eq(historical.energy?.meta?.incomeAdjusted,true,'archived energy used historical income factor');
 const baseSingle=resolveComparableV2({household:'single',age:30,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
 const incSingle=resolveComparableV2({household:'single',age:30,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
 eq(incSingle.food?.value,baseSingle.food?.value,'single income correction must stay disabled');
@@ -67,10 +90,13 @@ ok(age35.food?.value!==age34.food?.value,'age 35 must enter 35-59 bucket');
 eq(age59.food?.value,age35.food?.value,'age 59 must stay 35-59 bucket');
 ok(age60.food?.value!==age59.food?.value,'age 60 must enter 60+ bucket');
 
-// Income boundary: under ¥5m must remain neutral; ¥5m+ may apply only to intended multi categories.
+// Income boundary must not change any of the final-contract reference categories.
 const inc499=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:4_999_999,prefecture:'東京都',month:2,housingType:'賃貸'});
 const inc500=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:5_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
-for(const c of ['energy','food','daily','fun'] as const)eq(inc499[c]?.value,baseMulti[c]?.value,'under 5m must stay neutral: '+c);
+for(const c of ['energy','food','daily','fun'] as const){
+ eq(inc499[c]?.value,baseMulti[c]?.value,'below 5m stays baseline: '+c);
+ eq(inc500[c]?.value,baseMulti[c]?.value,'at 5m stays baseline by final contract: '+c);
+}
 for(const c of ['rent','mobile','insurance','sub','car','selfDevelopment','beautyFashion'] as const)eq(inc500[c]?.value,baseMulti[c]?.value,'income must not affect '+c);
 
 // Region/month isolation: only utility should move among core household-size comparables.

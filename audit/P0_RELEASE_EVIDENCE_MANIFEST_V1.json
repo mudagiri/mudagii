@@ -1,0 +1,70 @@
+{
+  "schema": "MUDAGIRI_P0_RELEASE_EVIDENCE_V1",
+  "recordedAt": "2026-10-15",
+  "policy": "Final 2026-09-28 12-category master is the working authority; 2026-09-29 GitHub audit reaffirmed no unsupported income multipliers.",
+  "frozen100": {
+    "sourceWorkbook": "MUDAGIRI_FINAL_100CASE_VALIDATION_V2_0_FROZEN.xlsx",
+    "claimTotalResults": 1200,
+    "recoveredResultRows": 1000,
+    "fixture": "audit/FROZEN100_V2_0_SOURCE_1200_RESULTS_FIRST1000.csv",
+    "recoveredFullyObservedCases": 83,
+    "partialCase": 84,
+    "remainingMissingResults": 200,
+    "originalPerPersonInputProfiles": "NOT_AVAILABLE",
+    "fullOriginal100CaseReplay": false
+  },
+  "finalDataContract": {
+    "initial": "MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0.xlsx",
+    "indexedTextReviewed": true,
+    "september29Copies": [
+      {
+        "name": "MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0(1).xlsx",
+        "rawAccessible": false,
+        "sha256": null,
+        "cellByCellCompared": false
+      },
+      {
+        "name": "MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0(2).xlsx",
+        "rawAccessible": false,
+        "sha256": null,
+        "cellByCellCompared": false
+      }
+    ],
+    "laterCopySupersessionProven": false,
+    "uploadedV1": {
+      "provenance": "User-shared file attached directly to this conversation on 2026-10-15",
+      "suppliedFilename": "'MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0' をあなたと共有します",
+      "sha256": "6d22bfdaae592609d0fbe56757cd86cbd329735f4d445996d022917b10234801",
+      "byteSize": 16673,
+      "actualFormat": "xlsx / Microsoft Excel 2007+",
+      "workbookTitle": "12カテゴリ 診断基準・最終統合データ契約 V1.0",
+      "declaredVersion": "V1.0 / 2026-09-28",
+      "sheets": [
+        "MASTER_ENGINE",
+        "GLOBAL_RULES",
+        "CANONICAL_OWNER",
+        "FINAL_AUDIT",
+        "README"
+      ],
+      "masterCategories": 12,
+      "globalRules": 13,
+      "canonicalOwnershipRules": 13,
+      "frozenAuditCategories": 12,
+      "readCellByCell": true,
+      "directOriginalBinaryVerified": true,
+      "note": "This verifies THIS user-provided V1 file only. It does NOT establish byte equality with Sep29 (1)/(2), nor does it contain 12 category statistical raw source tables."
+    }
+  },
+  "verification": {
+    "contractCandidateAutomatedQA": "PASS",
+    "originalFrozenWorkbookFullReplay": "NOT_RUN",
+    "liveGAS": "NOT_RUN",
+    "liveLINE": "NOT_RUN",
+    "realPersonCognitivePilot": "NOT_RUN"
+  },
+  "release": {
+    "approved": false,
+    "reason": "P0_EVIDENCE_INCOMPLETE",
+    "mergePermitted": false
+  }
+}

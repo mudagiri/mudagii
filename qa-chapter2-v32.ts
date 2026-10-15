@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import {buildSafeFunnelEvent,buildPostHogCaptureBody} from './src/product-funnel-analytics-v1';
+import {externalLineContext} from './scripts/coverage-consult-handoff-v1.mjs';
 
 const makeVm=(confirmedA:number,cUpper:number)=>({
  version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'v32-qa-synthetic',
@@ -28,10 +30,13 @@ assert.match(uncertain,/未来の戦利品<\/h2>/,'readable RPG heading stays cl
 assert.doesNotMatch(uncertain,/未来の戦利品（仮定）|未確定の仮定/,'stiff parenthetical should not return');
 assert.doesNotMatch(uncertain,/<span class="c2v31-quest-crest"/,'do not stack redundant quest crest next to clear heading');
 
-assert.ok(uncertain.indexOf('data-section="POTENTIAL_HERO"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
-assert.ok(uncertain.indexOf('data-section="POTENTIAL_TREASURE"')<uncertain.indexOf('data-section="FUTURE_REWARDS"'));
-assert.ok(uncertain.indexOf('data-section="FUTURE_REWARDS"')<uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
-assert.ok(uncertain.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<uncertain.indexOf('data-section="CONSULTATION_CTA_TOP"'));
+// CSS selectors for sticky scroll offsets mention data-section names inside
+// <style>. Check DOM markup order, not earlier source text in the stylesheet.
+const markupOnly=uncertain.replace(/<style>[\s\S]*?<\/style>/,'');
+assert.ok(markupOnly.indexOf('data-section="POTENTIAL_HERO"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(markupOnly.indexOf('data-section="POTENTIAL_TREASURE"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(markupOnly.indexOf('data-section="FUTURE_REWARDS"')<markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
+assert.ok(markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<markupOnly.indexOf('data-section="CONSULTATION_CTA_TOP"'));
 assert.ok(!uncertain.includes('確認済みの戦利品'),'do not claim confirmed positive saving when it is zero');
 const fractional=show(0,17853.6);
 assert.match(fractional,/月 最大 ¥17,854/);
@@ -263,9 +268,63 @@ assert.match(modeledIncome,/統計を組み合わせた推計値/,'modeled incom
 assert.match(modeledIncome,/人数別基準×年収帯の推計（直接集計ではない）/,'display explicit lack of direct cross table');
 assert.doesNotMatch(modeledIncome,/今回の支出は.*節約済み/,'no claimed savings based on model');
 
+// Marketing / privacy / buzz: insurance and life-plan LINE funnels must be
+// distinguishable without transporting health data, actual premiums or names.
+const safeCoverage=buildSafeFunnelEvent('chapter2','chapter2_v32_coverage_line_message_outbound',{
+ placement:'coverage_review',insurancePremium:85000,diagnosisId:'private',
+ insuranceDiagnosis:'private',medicalHistory:'private'
+});
+assert.deepEqual(safeCoverage,{
+ event:'mudagiri_chapter2_coverage_line_outbound_clicked',
+ properties:{chapter:'chapter2',placement:'coverage_review'},
+});
+for(const [name,expected] of [
+ ['chapter2_v32_coverage_consultation_clicked','mudagiri_chapter2_coverage_consultation_opened'],
+ ['chapter2_v32_coverage_line_copy_success','mudagiri_chapter2_coverage_message_copied'],
+ ['chapter2_v32_coverage_line_copy_failed','mudagiri_chapter2_coverage_message_copy_failed'],
+] as const){
+ assert.equal(buildSafeFunnelEvent('chapter2',name,{placement:'coverage_review'})?.event,expected);
+}
+const safeLifeplan=buildSafeFunnelEvent('chapter2','chapter2_v31_consultation_line_outbound',{placement:'consult_route',householdSalary:500000});
+assert.equal(safeLifeplan?.properties.placement,'consult_route','lifeplan and coverage remain distinct');
+assert.notEqual(safeLifeplan?.event,safeCoverage?.event,'insurance conversion intent must not be merged into general lifeplan');
+const post=buildPostHogCaptureBody('phc_TestKey123','mg_12345678-1234-1234-1234-123456789012','chapter2','chapter2_v32_coverage_line_message_outbound',{placement:'coverage_review',confirmedMonthly:9999999,condition:'private'});
+assert.ok(post);
+assert.equal(post?.properties?.placement,'coverage_review');
+assert.ok(!JSON.stringify(post).includes('9999999')&&!JSON.stringify(post).includes('private'),'PostHog only receives allowlisted non-sensitive funnel properties');
+assert.equal(buildSafeFunnelEvent('chapter2','line_friend_added'),null,'friend-add can only be measured at LINE provider, not guessed from click');
+assert.equal(buildSafeFunnelEvent('chapter2','appointment_booked'),null,'booking is an independently verified downstream stage');
+
+const privateLead={
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',anonymousUserId:'sensitive_anonymous_id',
+ rawExpenses:{food:95000},monthlyIncome:700000,confirmedMonthly:9999,potentialUpper:150000,
+ insurancePurpose:'private',healthInformation:'private',chapter1Link:{primaryStyle:'ENJOY'}
+};
+const lifeExternal=externalLineContext({
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',
+ firstQuest:'food',goal:'home',confirmedMonthly:9999,anonymousUserId:'sensitive_anonymous_id'
+},privateLead);
+assert.deepEqual(lifeExternal,{
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',
+ firstQuest:'food',goal:'home',consultPrimary:'lifeplan',consultSelectedTopic:'lifeplan'
+},'external life-plan callback is allowlisted and cannot include household values');
+assert.ok(!JSON.stringify(lifeExternal).includes('95000')&&!JSON.stringify(lifeExternal).includes('sensitive'),'no private amounts or Chapter1 data forwarded externally');
+assert.deepEqual(externalLineContext({
+ diagnosisId:'diagnosis_synthetic',handoffCode:'MG-INS',placement:'coverage_review',
+ healthInformation:'private'
+},privateLead),{
+ diagnosisId:'diagnosis_synthetic',firstQuest:null,placement:'coverage_review',
+ handoffCode:'MG-INS',goal:null,consultPrimary:'lifeplan',consultSelectedTopic:'insurance',insuranceReview:true
+},'dedicated coverage intent stays minimal and identifiable');
+assert.equal(externalLineContext({placement:'consult_route'},{diagnosisId:'synthetic'}),null,'no handoff code -> fail closed');
+assert.equal(externalLineContext({diagnosisId:'diagnosis_synthetic',handoffCode:'MG-TEST',placement:'consult_route',goal:'medical_history'},privateLead)?.goal,null,'unapproved goal strings never reach callbacks');
+
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-resolver-v2');
 await import('./qa-final-contract-projection-v1');
+await import('./qa-final-contract-100case-v1');
+await import('./qa-frozen100-original-evidence-v1');
+await import('./qa-frozen100-source1000-v1');
 await import('./qa-scope-v4');
 await import('./qa-result-v5');
 await import('./qa-chapter1-linkage-v1');

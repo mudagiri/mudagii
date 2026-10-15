@@ -11,8 +11,81 @@ for(const width of [320,375,390,430]){
  const page=await ctx.newPage(),outside=[];
  page.on('pageerror',e=>errors.push(width+' runtime '+String(e)));
  page.on('request',r=>{if(/script\.google\.com|\/exec\b|lin\.ee|line\.me|analytics/i.test(r.url()))outside.push(r.url());});
- await page.goto(base,{waitUntil:'networkidle'});
+ await page.goto(base+'?case=v32_scale',{waitUntil:'networkidle'});
  const selector=page.locator('#case-change');
+ // The default developer-facing demo is now an understandable single-person comparison.
+ // Keep the original V3.2 snapshot as an explicit legacy fixture for regression.
+ if(width===390){
+  const demo=await ctx.newPage();
+  await demo.goto(base,{waitUntil:'networkidle'});
+  check(await demo.locator('#case-change').inputValue()==='tokyo_single',width+' default is human-readable Tokyo single demo');
+  const incomeLens=demo.locator('[data-section="INCOME_CONTEXT"]');
+  check(await incomeLens.count()===1,width+' separately labeled income burden lens exists');
+  check(await incomeLens.locator('[data-income-monthly-total]').getAttribute('data-income-monthly-total')==='245600',width+' exact fictional monthly expense sum for matched single cases');
+  const burdenRows=incomeLens.locator('[data-income-annual]');
+  check(await burdenRows.count()===2,width+' same-spend comparison has two income denominators');
+  const lowBurden=await incomeLens.locator('[data-income-annual="4500000"]').innerText();
+  const highBurden=await incomeLens.locator('[data-income-annual="15000000"]').innerText();
+  check(lowBurden.includes('81.9%')&&lowBurden.includes('21.7%'),width+' 450 sample shares use entered take-home only');
+  check(highBurden.includes('27.3%')&&highBurden.includes('7.2%'),width+' 1500 income shares are lower despite unchanged spend');
+  check((await incomeLens.innerText()).includes('手取り')&&(await incomeLens.innerText()).includes('全国平均'),width+' demo take-home is explicitly fictional, not an official mean');
+  check(await incomeLens.locator('.c12preview-income-card.is-selected').getAttribute('data-income-annual')==='4500000',width+' default income card follows selected case');
+  const reference=async category=>({
+   price:await demo.locator('[data-comparison-category="'+category+'"] .c2v22-comparison-values').innerText(),
+   basis:await demo.locator('[data-comparison-category="'+category+'"] .c2v32-context-brief').innerText()
+  });
+  const singleEnergy=await reference('energy'),singleFood=await reference('food');
+  const realBurden=demo.locator('[data-section="INCOME_BURDEN_CONTEXT"]');
+  check((await realBurden.innerText()).includes('81.9%'),width+' actual result V3.2 consumes V5 take-home lens');
+  check((await demo.locator('[data-burden-category="food"]').innerText()).includes('21.7%'),width+' food row shows personal spending share');
+  check((await demo.locator('[data-burden-category="energy"]').innerText()).includes('4.0%'),width+' utilities row shows take-home share');
+
+
+  // Money preview must reuse the exact V5 C-policy, not retain the old ¥1,800-only
+  // mobile fixture after new comparison references are switched in.
+  const candidates=async()=>Object.fromEntries(await demo.locator('[data-section="CANDIDATE_BREAKDOWN"] [data-candidate-category]').evaluateAll(els=>els.map(el=>{
+   const yen=(el.querySelector('.c2v32-breakdown-amount strong')?.textContent||'').replace(/[^0-9]/g,'');
+   return [el.getAttribute('data-candidate-category'),Number(yen)];
+  })));
+  const monthlyHero=async()=>await demo.locator('[data-section="POTENTIAL_HERO"]').innerText();
+  const singleCandidates=await candidates();
+  check(singleCandidates.mobile===1800,width+' single-line mobile C remains ¥1,800');
+  check(Math.abs((singleCandidates.food||0)-12855)<=1,width+' food C uses 10% buffer, not full comparison gap');
+  check(Math.abs((singleCandidates.daily||0)-2857)<=1,width+' daily C respects two-times benchmark cap');
+  check(singleCandidates.energy===undefined,width+' lower-than-reference energy creates no C');
+  check(singleCandidates.rent===undefined&&singleCandidates.insurance===undefined,width+' structural benchmark gaps do not create automatic savings');
+  check((await monthlyHero()).includes('17,511'),width+' default hero includes valid conditional candidates beyond mobile');
+
+  check(singleEnergy.basis.includes('35歳')&&!singleEnergy.basis.includes('東京都'),width+' single energy uses age not fabricated region cross');
+  await demo.locator('#case-change').selectOption('tokyo_high_income');
+  check(await demo.locator('.c12preview-income-card.is-selected').getAttribute('data-income-annual')==='15000000',width+' higher income card becomes current without changing spending data');
+  const highEnergy=await reference('energy'),highFood=await reference('food');
+  check(singleEnergy.price===highEnergy.price&&singleFood.price===highFood.price,width+' single income change does not multiply base comparators');
+  check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' higher income alone never changes review upper');
+  check((await demo.locator('[data-section="INCOME_BURDEN_CONTEXT"]').innerText()).includes('27.3%'),width+' switched case changes take-home ratio even when market benchmark stays flat');
+  check((await demo.locator('[data-burden-category="food"]').innerText()).includes('7.2%'),width+' switched income updates category-level burden');
+
+  await demo.locator('#case-change').selectOption('regional_single');
+  const regionalEnergy=await reference('energy');
+  check(regionalEnergy.price===singleEnergy.price,width+' Osaka single energy follows the same age basis');
+  check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' regional rent gap does not inflate the conditional candidate upper');
+  await demo.locator('#case-change').selectOption('tokyo_family');
+  check(await demo.locator('[data-section="INCOME_CONTEXT"] [data-income-monthly-total]').getAttribute('data-income-monthly-total')==='401800',width+' family monthly spending scope recalculated');
+  check((await demo.locator('.c12preview-income-card.is-selected').innerText()).includes('67.0%'),width+' family entered take-home burden indicator is separately recalculated');
+  const familyEnergy=await reference('energy');
+  check(familyEnergy.basis.includes('4人世帯')&&familyEnergy.basis.includes('東京都')&&familyEnergy.basis.includes('10月'),width+' family energy uses size × region × season model');
+  check(familyEnergy.price!==singleEnergy.price,width+' household difference actually visible in the demo');
+  const familyCandidates=await candidates();
+  check(familyCandidates.mobile===undefined,width+' family telecom bundle cannot use single-line mobile saving');
+  check(familyCandidates.daily>0&&familyCandidates.fun>0,width+' family case recalculates both eligible day-to-day candidates');
+  check(familyCandidates.rent===undefined,width+' large rent reference gap is never added to maximum C');
+  check((await monthlyHero()).includes('16,682'),width+' family hero derives from two guarded candidates');
+  check(!(await monthlyHero()).includes('1,800'),width+' family total is not hard-coded mobile amount');
+  const incomeScroll=await demo.locator('[data-section="INCOME_CONTEXT"]').evaluate(el=>({width:el.scrollWidth,client:el.clientWidth}));
+  check(incomeScroll.width<=incomeScroll.client+2,width+' income lens is readable without horizontal scrolling');
+  await demo.close();
+ }
+
  const card=page.locator('[data-section="CHAPTER12_ANSWER_CHECK"]');
  await card.waitFor();
  check(await card.count()===1,width+' initial card');
@@ -268,6 +341,20 @@ for(const width of [320,375,390,430]){
  check(await officialIcons.count()===12,width+' all 12 official enemy illustrations appear inside the comparison ledger');
  const uniqueIconUrls=await officialIcons.evaluateAll(images=>[...new Set(images.map(img=>img.getAttribute('src')))]);
  check(uniqueIconUrls.length===12&&uniqueIconUrls.every(u=>u?.includes('assets/enemies/')&&u.endsWith('/normal.png')),width+' each category uses unique accepted normal portrait, not placeholders');
+ // Full-page screenshots do NOT by themselves load below-the-fold lazy
+ // images. Scroll each canonical portrait into view and decode it before
+ // taking a visual audit screenshot; this distinguishes a loading artifact
+ // from a real missing/broken enemy icon on iPhone.
+ let portraitsLoaded=0;
+ for(const img of await officialIcons.all()){
+  await img.scrollIntoViewIfNeeded();
+  const ready=await img.evaluate(async el=>{
+   try{await el.decode();return el.naturalWidth>0&&el.naturalHeight>0}
+   catch{return false}
+  });
+  if(ready)portraitsLoaded++;
+ }
+ check(portraitsLoaded===12,width+' all 12 individual enemy portraits actually decode before screenshot: '+portraitsLoaded+'/12');
  const header=overview.locator('[data-comparison-category="food"] .c2v22-comparison-head');
  await header.scrollIntoViewIfNeeded();
  const portrait=header.locator('img.c2v23-comparison-enemy');
@@ -275,7 +362,28 @@ for(const width of [320,375,390,430]){
  check(portraitLoaded,width+' official food enemy PNG actually loads in visible comparison row');
  const foodRow=overview.locator('[data-comparison-category="food"]');
  check((await foodRow.innerText()).includes('¥54,000')&&(await foodRow.innerText()).includes('¥37,860'),width+' pilot food actual and transparent synthetic comparator visible');
- check((await foodRow.innerText()).includes('架空デモの比較条件')&&(await foodRow.innerText()).includes('画面確認用の架空の比較基準'),width+' pilot comparison criterion/provenance explicit and never passed off as official statistics');
+ check((await foodRow.innerText()).includes('架空デモの比較条件'),width+' comparison condition always visible without detail tap');
+ // Contrast is checked against the actual light ledger background. Generic
+ // dark-card paragraph styling used to wash out the criteria on iOS screenshots.
+ const contrast=await foodRow.locator('.c2v32-context-brief').evaluate(el=>{
+  const color=getComputedStyle(el).color;
+  const m=color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const y=(v)=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4};
+  if(!m)return {color,ratio:0};
+  const foreground=0.2126*y(+m[1])+0.7152*y(+m[2])+0.0722*y(+m[3]);
+  const background=0.2126*y(247)+0.7152*y(242)+0.0722*y(232);
+  return {color,ratio:(Math.max(foreground,background)+0.05)/(Math.min(foreground,background)+0.05)};
+ });
+ check(contrast.ratio>=4.5,width+' comparison criterion must meet WCAG AA legibility on pale ledger '+JSON.stringify(contrast));
+ const evidence=foodRow.locator('.c2v32-comparison-evidence');
+ const evidenceButton=foodRow.locator('.c2v32-evidence-toggle');
+ check(await evidenceButton.count()===1&&await evidenceButton.getAttribute('aria-expanded')==='false',width+' reference provenance starts collapsed, not the criterion/benchmark');
+ check(!(await evidence.isVisible()),width+' only secondary source detail is collapsed');
+ await evidenceButton.click();
+ check(await evidence.isVisible()&&(await evidence.innerText()).includes('画面確認用の架空の比較基準'),width+' explicitly synthetic source accessible by one tap');
+ check(await evidenceButton.getAttribute('aria-expanded')==='true',width+' evidence expansion accessible state');
+ await evidenceButton.click();
+ check(!(await evidence.isVisible()),width+' expanded source can close again');
  check(await foodRow.getAttribute('data-comparison-available')==='true',width+' comparable status is grounded in source and scope');
  const mobileRow=overview.locator('[data-comparison-category="mobile"]');
  check(await mobileRow.getAttribute('data-comparison-available')==='false',width+' AUDIT mobile has no invented categorical average');
@@ -286,6 +394,38 @@ for(const width of [320,375,390,430]){
  check(!(await overview.innerText()).includes('数値比較なし'),width+' no exaggerated absent-benchmark label in 12 rows');
  check(await overview.locator('[data-comparison-available="true"]').count()>=5,width+' pilot populated with real frozen comparable rules, not ten fake missing baselines');
  check(await overview.evaluate(el=>![...el.closest('section').querySelectorAll('details')].some(d=>d.contains(el))),width+' 12 criteria cannot be inside a collapsed detail');
+ const unavailableRows=overview.locator('[data-comparison-available="false"]');
+ check((await unavailableRows.allInnerTexts()).every(t=>!t.includes('今回の条件では、金額を並べた比較は表示していないよ。')),width+' no repetitive generic no-mean wording');
+ check((await overview.locator('[data-comparison-category="fun"]').innerText()).includes('楽しさを大切に判断')||
+       (await overview.locator('[data-comparison-category="fun"]').getAttribute('data-comparison-available'))==='true',
+  width+' discretionary entertainment uses value-specific comparison basis');
+ check((await overview.locator('[data-comparison-category="beautyFashion"]').innerText()).includes('目的と満足度で判断')||
+       (await overview.locator('[data-comparison-category="beautyFashion"]').getAttribute('data-comparison-available'))==='true',
+  width+' beauty uses personal satisfaction rather than invented average');
+ const shortcuts=page.locator('[data-section="RESULT_SHORTCUTS"]');
+ check(await shortcuts.count()===1&&await shortcuts.locator('button').count()===3,width+' one high-level three-path navigation');
+ check((await shortcuts.innerText()).includes('12カテゴリ比較')&&(await shortcuts.innerText()).includes('相談する'),width+' explicit navigation labels');
+ await shortcuts.getByRole('button',{name:/12カテゴリ比較/}).click();
+ const navLanding=await overview.evaluate(el=>el.getBoundingClientRect().top);
+ check(navLanding>=70&&navLanding<195,width+' jump lands below sticky controls '+navLanding);
+ const sticky=await shortcuts.evaluate(el=>getComputedStyle(el).position);
+ check(sticky==='sticky',width+' shortcuts stay discoverable on long result screens');
+ const evidenceImage=await page.evaluate(async()=>{
+   const el=document.querySelector('.c2v31-page');
+   const bg=el?getComputedStyle(el).backgroundImage:'';
+   const matches=[...bg.matchAll(/url\(["']?([^"')]+)["']?\)/g)];
+   const list=matches.map(x=>x[1]).filter(Boolean);
+   const checks=await Promise.all(list.map(async url=>{
+    const im=new Image();im.src=url;
+    try{await im.decode();return im.naturalWidth>0&&im.naturalHeight>0}catch{return false}
+   }));
+   return {list,checks};
+ });
+ check(evidenceImage.list.some(x=>x.includes('MP_BG_01_GUILD_HALL'))&&evidenceImage.checks.every(Boolean),width+' actual scenic background files load; not just CSS declarations '+JSON.stringify(evidenceImage));
+ if(width===390){
+  await overview.screenshot({path:path.join(out,engine+'-390-compact-comparison.png')});
+  await shortcuts.screenshot({path:path.join(out,engine+'-390-shortcuts.png')});
+ }
  const overviewJump=page.locator('[data-section="COMPARISON_OVERVIEW_JUMP"]');
  check(await overviewJump.count()===1&&await overviewJump.isVisible(),width+' direct comparison jump beside battle results');
  await overviewJump.click();
@@ -321,7 +461,7 @@ for(const width of [320,375,390,430]){
    writeText:async text=>{if(window.__clipboardFail)throw new Error('clipboard denied');window.__copiedCoverage=text;}
   }});
  });
- await dry.goto(base+'?qaCoverageHandoff=1',{waitUntil:'networkidle'});
+ await dry.goto(base+'?case=v32_scale&qaCoverageHandoff=1',{waitUntil:'networkidle'});
  const dryButton=dry.locator('[data-cta="COVERAGE_LINE_CONSULT"]');
  check(await dryButton.count()===1,width+' dry run has coverage CTA');
  await dryButton.click();
@@ -357,7 +497,7 @@ for(const width of [320,375,390,430]){
  const participant=await ctx.newPage(),participantOut=[];
  participant.on('pageerror',e=>errors.push(width+' participant runtime '+String(e)));
  participant.on('request',r=>{if(/twitter\.com|line\.me|lin\.ee|script\.google\.com|\/exec\b/i.test(r.url()))participantOut.push(r.url());});
- await participant.goto(base+'?pilot=1',{waitUntil:'networkidle'});
+ await participant.goto(base+'?case=v32_scale&pilot=1',{waitUntil:'networkidle'});
  check(await participant.locator('[data-pilot-role="participant"]').count()===1,width+' distinct neutral participant header');
  check(await participant.locator('#case-change').count()===0,width+' participant cannot see or switch developer cases');
  check(await participant.locator('.c12preview-top').count()===0,width+' developer instructions removed');

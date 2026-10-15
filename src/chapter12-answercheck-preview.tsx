@@ -3,12 +3,19 @@ import {createRoot} from 'react-dom/client';
 import ResultScreenChapter2V32 from '../ResultScreenChapter2V32';
 import {CATEGORY_IDS} from '../scripts/chapter12-answercheck-experiment-v1.mjs';
 import {resolveComparableV2} from '../comparable-resolver-v2';
+import {cUpperFor} from '../result-view-model-v5';
+import {buildIncomeBurdenLensV1} from '../income-burden-lens-v1';
+import type {FinalCategoryV4} from '../final-judgement-v4';
 import type {Chapter1HandoffV1} from '../chapter2-v2-contract';
 import './chapter12-answercheck-preview.css';
 import '../chapter12-answercheck-card.css';
 
-type Case='no_uncertain'|'v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
+type Case='tokyo_single'|'tokyo_family'|'regional_single'|'tokyo_high_income'|'no_uncertain'|'v32_scale'|'v32_scale_uncertain'|'uncertain_only'|'enjoy_dual'|'enjoy_good'|'enjoy_question'|'drive_dual'|'drive_good'|'drive_inertia'|'optimize_dual'|'optimize_question'|'secure_check'|'secure_recent'|'coverage_zero'|'secure_no_link'|'identity_mismatch'|'partial';
 const examples:Record<Case,{label:string;desc:string;style:string;job:string;jobName:string}>={
+ tokyo_single:{label:'東京｜30代・単身・年収450万円',desc:'架空の入力と見直し意向をもとに、食費・日用品・スマホの未確定候補まで計算。比較差額は削減額ではありません',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ tokyo_family:{label:'東京｜40代・4人家族・世帯年収900万円',desc:'世帯人数に応じた比較。通信費は家族分なのでスマホ1回線の削減額を作りません',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
+ regional_single:{label:'大阪｜30代・単身・年収450万円',desc:'東京単身と同額。住居費などの地域条件と、単身光熱費は年齢基準であることを比較',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
+ tokyo_high_income:{label:'東京｜30代・単身・年収1,500万円',desc:'単身で同じ金額を使っていても、年収に対する負担割合は大きく違う。統計基準と削減候補額は不当な年収倍率で増減させない',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  no_uncertain:{label:'未確定候補0円｜金額を作らない',desc:'未確定候補が0円なら架空の内訳・累計を出さない確認用',style:'OPTIMIZE',job:'IDM',jobName:'メリハリ賢者'},
  v32_scale:{label:'旧V3.2の戦果スケール｜月17,854円',desc:'V3.2既存QAの未確定候補（月17,854円）を再現する画面検証用の架空ケース。確定改善機会とは別です。',style:'ENJOY',job:'INM',jobName:'直感魔導士'},
  v32_scale_uncertain:{label:'旧V3.2の未確定だけ｜月17,854円',desc:'確認済み改善機会0円・未確定の参考上限だけ月17,854円の架空ケース。節約できると確定した額ではありません。',style:'SECURE',job:'FNM',jobName:'兆しの占星術師'},
@@ -37,7 +44,7 @@ const row=(category:string)=>({
  diagnosisAmountLabel:'診断で入力した月額',
  status:'review',v5Status:['mobile','sub','insurance','selfDevelopment'].includes(category)?'inspect':'ok',
  v5StatusLabel:'見極める',
- diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null as number|null,comparable:null as number|null,comparisonQuality:'none',comparisonDifference:null as number|null,
+ diagnosisAmount:FIXTURE_AMOUNTS[category]??0,comparisonAmount:null as number|null,comparable:null as number|null,comparisonQuality:'none',comparisonModelEstimate:false,comparisonDifference:null as number|null,
  comparisonSourceVersion:null as string|null,comparisonContext:{criteria:[] as string[]},evidenceLabel:'金額比較なし',
  reason:'架空の家計データです。実際の診断時は別途判定します。',nextAction:FIXTURE_NEXT_ACTION[category]||'今の支出内容を確認する',aAmount:0,cUpper:0,appraisal:{} as Record<string,string|number|boolean>
 });
@@ -47,14 +54,82 @@ function makeFixture(example:Case){
   anonymousUserId,sessionId:'chapter1-ui-synthetic',completedAt:'2026-10-12T00:00:00Z',
   primaryStyle:spec.style,jobCode:spec.job,jobName:spec.jobName};
  const rows=CATEGORY_IDS.map(category=>row(category));
- // Reproduce the REAL V5 mobile candidate rule: major-carrier single line
- // with monthly input ¥7,800 has review-only upper bound 7,800 − 6,000 = ¥1,800.
- // Demo values are invented for visual testing, not statistical averages or savings.
+ const profileCases:Partial<Record<Case,{household:'single'|'multi';householdSize:number;age:number;prefecture:string;housingType:'賃貸';incomeLabel:string;annualIncome:number;monthlyTakeHome:number}>>={
+  tokyo_single:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000,monthlyTakeHome:300000},
+  tokyo_family:{household:'multi',householdSize:4,age:42,prefecture:'東京都',housingType:'賃貸',incomeLabel:'世帯年収900万円',annualIncome:9000000,monthlyTakeHome:600000},
+  regional_single:{household:'single',householdSize:1,age:35,prefecture:'大阪府',housingType:'賃貸',incomeLabel:'年収450万円',annualIncome:4500000,monthlyTakeHome:300000},
+  tokyo_high_income:{household:'single',householdSize:1,age:35,prefecture:'東京都',housingType:'賃貸',incomeLabel:'年収1,500万円',annualIncome:15000000,monthlyTakeHome:900000}
+ };
+ const profile=profileCases[example];
+ if(profile){
+  const amounts=example==='tokyo_family'?{energy:22000,food:110000,rent:170000,daily:24000,mobile:15000,sub:4200,fun:30000}:{energy:12000,food:65000,rent:92000,daily:14000,mobile:7800,sub:4200,fun:24000};
+  for(const r of rows){if(r.category in amounts){r.amount=amounts[r.category as keyof typeof amounts];r.diagnosisAmount=r.amount;}}
+  const references=resolveComparableV2({household:profile.household,householdSize:profile.householdSize,age:profile.age,annualIncome:profile.annualIncome,prefecture:profile.prefecture,month:10,housingType:profile.housingType,insuranceScope:'household'});
+  for(const r of rows){
+   const reference=references[r.category as keyof typeof references];
+   if(!reference||reference.value==null||reference.confidence==='AUDIT')continue;
+   r.comparable=reference.value;
+   r.comparisonAmount=r.amount;
+   r.comparisonDifference=r.amount-reference.value;
+   r.comparisonQuality=reference.confidence==='MODEL'?'reference':'exact';
+   r.comparisonModelEstimate=reference.confidence==='MODEL';
+   r.comparisonSourceVersion=reference.sourceVersion;
+   const criteria=(()=>{
+    if(r.category==='energy')return profile.household==='single'?[profile.age+'歳（単身年齢別）']:[profile.householdSize+'人世帯',profile.prefecture,'10月','推計'];
+    if(['food','daily','fun'].includes(r.category))return profile.household==='single'?[profile.age+'歳（単身年齢別）']:[profile.householdSize+'人世帯'];
+    if(r.category==='beautyFashion')return [profile.household==='single'?'単身・年代別（性別未入力）':'世帯年齢参考モデル'];
+    if(r.category==='rent')return [profile.prefecture,'民営賃貸'];
+    if(r.category==='insurance')return [profile.household==='single'?'単身世帯':'複数人世帯','保険料参考値'];
+    return ['契約・費目の個別条件を確認'];
+   })();
+   r.comparisonContext={criteria};
+   r.evidenceLabel=reference.confidence==='MODEL'?'正本に基づく推計比較':'正本に基づく比較';
+  }
+ }
+
+ // Synthetic cases must recalculate review opportunities from the actual V5 policy
+ // whenever their statistical comparison or household profile changes.
+ // A benchmark difference is NOT automatically an achievable saving.
  const mobile=rows.find(r=>r.category==='mobile')!;
- mobile.appraisal={mobileScope:'mobileOnly',mobileCarrier:'major'};
- mobile.v5Status='optimize';
- mobile.cUpper=example==='no_uncertain'?0:1800;
- mobile.cMethod=example==='no_uncertain'?null:'mobile';
+ if(profile){
+  const statusLabels:Record<string,string>={cut:'斬る',optimize:'整える',protect:'守る',inspect:'見極める',ok:'今はそのままでOK',na:'対象外'};
+  // A 4-person household's mobile input is a family total, not a single line.
+  mobile.appraisal=profile.household==='single'
+   ?{mobileScope:'mobileOnly',mobileCarrier:'major'}
+   :{mobileScope:'familyOrMultiple'};
+  for(const r of rows){
+   // Explicit fictional answers: never infer these claims from a high bill.
+   if(r.category==='energy')r.appraisal={energyPersistence:'persistent'};
+   if(r.category==='daily')r.appraisal={dailyPersistence:'persistent'};
+   if(r.category==='food'||r.category==='fun'){
+    const over=typeof r.comparable==='number'&&r.amount>r.comparable*1.10;
+    r.appraisal={satisfaction:over?'inertia':'satisfied'};
+   }
+   if(r.category==='beautyFashion')r.appraisal={satisfaction:'satisfied'};
+   const allowed=typeof r.comparable==='number'&&r.comparable>0&&r.comparisonQuality!=='none';
+   // This is the exact guarded policy used by real buildResultViewModelV5.
+   const conditional=cUpperFor({
+    category:r.category,record:{diagnosisAmount:r.diagnosisAmount},
+    appraisal:r.appraisal,
+    comparison:{engineComparableAllowed:allowed,benchmark:r.comparable,quality:r.comparisonQuality}
+   } as unknown as FinalCategoryV4);
+   r.cUpper=conditional.amount;
+   r.cMethod=conditional.method;
+   if(r.category==='mobile'){
+    r.v5Status=profile.household==='single'&&r.cUpper>0?'optimize':'inspect';
+   }else if(r.cUpper>0){
+    r.v5Status='optimize';
+    r.reason='架空の回答で見直し意向・継続的な超過を確認し、比較値から参考上限を試算。差額＝削減額ではありません。';
+   }
+   r.v5StatusLabel=statusLabels[r.v5Status]||'見極める';
+  }
+ }else{
+  // Historical presentation fixtures remain unchanged for V3.2 regression.
+  mobile.appraisal={mobileScope:'mobileOnly',mobileCarrier:'major'};
+  mobile.v5Status='optimize';
+  mobile.cUpper=example==='no_uncertain'?0:1800;
+  mobile.cMethod=example==='no_uncertain'?null:'mobile';
+ }
  // The original V3.2 regression fixture uses monthly cUpper=17,854
  // (mobile: ¥5,500 + food: ¥12,354). These are PRESENTATION QA values,
  // not invented official benchmark averages or a user's verified savings.
@@ -122,14 +197,27 @@ function makeFixture(example:Case){
   sub.v5Status='cut';sub.appraisal={subUnusedAmount:1200,subCancellationConfirmed:true};sub.aAmount=1200;
  }
  const caseRows=example==='partial'?rows.slice(0,11):rows;
+ const demoContext=profile?{
+  annualIncome:profile.annualIncome,
+  incomeLabel:profile.incomeLabel,
+  monthlyTakeHome:profile.monthlyTakeHome,
+  monthlyExpenses:rows.reduce((sum,r)=>sum+(r.known&&r.applicability==='applicable'?Math.max(0,Number(r.amount)||0):0),0),
+  monthlyFood:rows.find(r=>r.category==='food')?.amount??0
+ }:null;
+ const incomeBurden=profile?buildIncomeBurdenLensV1({
+  diagnosisScope:profile.household==='single'?'personal':'household',
+  monthlyTakeHome:profile.monthlyTakeHome,
+  householdContributionMode:null,
+  bundledContributionAmount:null
+ },caseRows):null;
  const reviewUpper=caseRows.reduce((sum,x)=>sum+x.cUpper,0);
  const confirmedA=caseRows.reduce((sum,x)=>sum+x.aAmount,0);
  const totals={cut:0,optimize:0,protect:0,inspect:0,ok:0,na:0};
  for(const r of caseRows){const k=r.v5Status as keyof typeof totals;if(k in totals)totals[k]++;}
- return {chapter1,anonymousUserId,
+ return {chapter1,anonymousUserId,demoContext,
   vm:{
    version:'MUDAGIRI_RESULT_VM_V5_0',diagnosisId:'chapter2-ui-synthetic',
-   v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,
+   v5Counts:totals,rows:caseRows,firstQuest:null,consultRoute:null,incomeBurden,
    // Anonymous, fictitious Chapter 1 lineage for displaying continuity in
    // the isolated pilot. No income, spend or participant data is copied.
    chapter1Link:{schemaVersion:'MUDAGIRI_CHAPTER1_LINKAGE_V1',
@@ -153,14 +241,21 @@ function App(){
  const coverageDryRun=!pilotMode&&new URLSearchParams(window.location.search).get('qaCoverageHandoff')==='1';
  const requestedCase=new URLSearchParams(window.location.search).get('case');
  const initialCase:Case=requestedCase&&Object.prototype.hasOwnProperty.call(examples,requestedCase)
-  ?requestedCase as Case:'v32_scale';
+  ?requestedCase as Case:'tokyo_single';
  const [selected,setSelected]=useState<Case>(initialCase);
- const {chapter1,anonymousUserId,vm}=makeFixture(selected);
+ const {chapter1,anonymousUserId,vm,demoContext}=makeFixture(selected);
+ const yen=(n:number)=>Math.round(n).toLocaleString('ja-JP');
+ const ratio=(n:number,takeHome:number)=>takeHome>0?(n/takeHome*100).toFixed(1):'—';
+ const pairSelected=selected==='tokyo_single'||selected==='tokyo_high_income';
+ const pairIncomes=[
+  {annual:4500000,takeHome:300000,label:'年収450万円',caseId:'tokyo_single'},
+  {annual:15000000,takeHome:900000,label:'年収1,500万円',caseId:'tokyo_high_income'}
+ ];
  return <div className={'c12preview'+(pilotMode?' c12preview--participant':'')}>
    {pilotMode?<header className="c12preview-participant-banner" data-pilot-role="participant">
      <strong>家計クエスト｜調査用の画面見本</strong>
      <p>架空の回答を使った結果です。実際の家計や個人情報は入力しません。スクロールして、普段どおりにご覧ください。</p>
-     <small>※表示される相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。架空プロフィールに正本の比較ルールを適用した目安を表示しています。食費の¥37,860だけは旧表示QA用の架空額です。実際の家計データではありません。</small>
+     <small>※相談・共有は見本です。予約・SNS投稿・個人情報送信は行いません。各カテゴリで参照できる年齢・人数・地域・季節などの条件だけを使用しています。旧V3.2の表示QAケースには架空の食費比較額を含むため、実際の診断には使いません。</small>
     </header>:<div className="c12preview-top">
      <div><small>RESEARCH PREVIEW / CHAPTER 1 × 2</small><h1>お金の性格、答え合わせ。</h1></div>
      <p>架空の回答で第2章V3.2のリザルトを使った架空デモ。金額・JOBはすべて見本で、実際の診断結果ではありません。</p>
@@ -169,7 +264,32 @@ function App(){
       {(Object.keys(examples) as Case[]).map(key=><option key={key} value={key}>{examples[key].label}</option>)}
      </select>
      <p>{examples[selected].desc}</p>
-     <div className="c12preview-disclaimer">すべて架空のデータによる表示見本です。一部の目安は架空のプロフィールに正本比較ルールを適用した表示見本です。食費¥37,860のみ旧QA用の架空額です。未設定のカテゴリでも実際の条件によって比較値が出る場合があります。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
+     {demoContext&&<section className="c12preview-income-lens" data-section="INCOME_CONTEXT" aria-labelledby="c12preview-income-heading">
+      <span className="c12preview-income-kicker">もうひとつの答え合わせ ／ 月手取りと負担</span>
+      <h2 id="c12preview-income-heading">同じ支出でも、家計への重さは違う。</h2>
+      {pairSelected?<p className="c12preview-income-lead">東京・35歳の単身者。<b>同じ12費目の支出・同じ比較目安・同じ見直し候補</b>でも、仮の月手取りに占める割合はこんなに変わる。</p>
+      :<p className="c12preview-income-lead">{demoContext.incomeLabel}の架空プロフィール。こちらは家計の負担割合で、統計との比較基準や削減額とは別の数字だよ。</p>}
+      <div className="c12preview-income-samples" data-income-monthly-total={demoContext.monthlyExpenses}>
+       <span>今回入力した12費目の合計（毎月）</span><strong>¥{yen(demoContext.monthlyExpenses)}</strong>
+      </div>
+      <div className="c12preview-income-grid">
+       {(pairSelected?pairIncomes:[{annual:demoContext.annualIncome,takeHome:demoContext.monthlyTakeHome,label:demoContext.incomeLabel,caseId:selected}]).map(income=>{
+        const share=Number(ratio(demoContext.monthlyExpenses,income.takeHome));
+        return <div className={'c12preview-income-card'+(income.caseId===selected?' is-selected':'')} data-income-annual={income.annual} key={income.annual}>
+         <div className="c12preview-income-card-head"><b>{income.label}</b>{income.caseId===selected&&<small>現在のケース</small>}</div>
+         <strong className="c12preview-income-rate">{share.toFixed(1)}<span>%</span></strong>
+         <div className="c12preview-income-track" aria-hidden="true"><span style={{width:Math.min(100,share)+'%'}}/></div>
+         <p>仮の月手取り ¥{yen(income.takeHome)}に対する割合</p>
+         <div className="c12preview-income-food">うち食費：<b>{ratio(demoContext.monthlyFood,income.takeHome)}%</b></div>
+        </div>;
+       })}
+      </div>
+      <p className="c12preview-income-reading">{pairSelected?'見直し候補が同額でも、優先して確認すべきことは違う。450万円のケースでは手取り・固定費・貯蓄余力を、1,500万円のケースでは満足度・資産形成目標・契約の必要性をより丁寧に確認したい。':'負担割合を見たら、次は支出の中身・手取り・貯蓄目的を確認。割合だけで「ムダ」「余裕あり」と決めないよ。'}</p>
+      <p className="c12preview-income-caution">※手取り月30万円／90万円／家族60万円は画面検証用に置いた架空の入力で、年収から推定した数字でも全国平均でもありません。本物の診断では本人入力の月手取りを使います。12費目の入力が家計全体を網羅する保証もなく、統計の所得階級別平均負担率とは別です。</p>
+     </section>}
+     <p className="c12preview-compare-instructions">まず東京・単身で食費・日用品・通信費の見直し候補を確認してみて。同じ支出の高所得単身では年収だけで候補額は増えない。家族ケースはスマホ代を家族分として扱い、住居費や保険の比較差額は自動で削減候補に足さないよ。</p>
+
+     <div className="c12preview-disclaimer">この4比較ケースの「継続的に高い」「見直したい」等も架空の回答です。比較差額はそのまま削減可能額にならず、実際の節約額は確認・実行するまで分かりません。すべて架空のデータによる表示見本です。一部の目安は架空のプロフィールに正本比較ルールを適用した表示見本です。食費¥37,860のみ旧QA用の架空額です。未設定のカテゴリでも実際の条件によって比較値が出る場合があります。実際の金額は12カテゴリと属性に応じて算出します。未確定候補は節約済みではなく、GAS・予約・SNSへの送信はしません。</div>
      <button type="button" onClick={()=>document.querySelector('[data-section=FUTURE_REWARDS]')?.scrollIntoView({behavior:'smooth'})}>未確定の1年・5年・10年を見る ↓</button>
      <button type="button" onClick={()=>document.querySelector('[data-section=CHAPTER12_ANSWER_CHECK]')?.scrollIntoView({behavior:'smooth'})}>お金の性格の答え合わせを見る ↓</button>
    </div>}

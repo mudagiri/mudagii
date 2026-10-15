@@ -19,6 +19,10 @@ export function chapter2V2Enabled(search:string,buildValue?:string){
  return buildValue==='1'||new URLSearchParams(search).get('chapter2v2')==='1';
 }
 export function chapter2V2ResumeScene(scene:string,enabled:boolean){
+ // Old drafts may still be parked on the optional income question that
+ // the 12-category final contract no longer uses. Return to profile so the
+ // validated flow can proceed without treating income as a benchmark factor.
+ if(enabled&&scene==='incomeCalibration')return 'profile';
  return enabled&&(scene==='typeQuiz'||scene==='typeComplete')?'battleIntro':scene;
 }
 /**

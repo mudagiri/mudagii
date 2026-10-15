@@ -151,6 +151,10 @@ function saveDiagnosis_(b){
     '診断モード':b.toneMode||'','診断メソッド版':(b.methodology&&b.methodology.diagnosis)||''
   };
   upsertStore_(summary);
+  // A LINE handoff may arrive before diagnosis_v3 when the user navigates
+  // away quickly. Rebuild only its attribution fields from the deduped raw
+  // lead/event rows after the summary exists (idempotent, no CV claim).
+  reconcileLineHandoffAfterDiagnosis_(id);
   recalcQuality_(id,b);
 }
 
@@ -196,10 +200,70 @@ function saveLead_(b){
     conversion_id:convId,anonymous_user_id:b.anonymousUserId||'',diagnosis_id:id,created_at:now,stage:'line_handoff',source:b.source||'result_line_cta',
     product:'',revenue:'',gross_profit:'',data_json:json_(b)
   }));
-  patchStore_(id,{
+  const patch={
     'LINE遷移（コード発行）':'TRUE','引継ぎコード':b.handoffCode||'','相談テーマ':b.consultSelectedTopic||b.consultPrimary||'',
-    '未来目的':b.futureGoal||b.goal||'','最終更新':new Date().toISOString()
+    '最終更新':new Date().toISOString()
+  };
+  // A coverage consultation may have no goal. Never clear an earlier
+  // explicit goal just because the CTA didn't forward one.
+  if(b.futureGoal||b.goal)patch['未来目的']=b.futureGoal||b.goal;
+  patchStore_(id,patch);
+}
+
+
+/**
+ * Pure recovery plan: return only the observable handoff / click fields.
+ * The lead is a LINE outbound ATTEMPT, never friend-add, message received,
+ * consultation requested or appointment booked. No diagnosis amounts here.
+ *
+ * Inputs are existing _面談_raw / _イベント_raw row arrays. Keep the
+ * most recent handoff by timestamp + row order, so insurance and life-plan
+ * leads both remain in the raw log without being accidentally merged.
+ */
+function lineHandoffRecoveryPatchV1_(diagnosisId,leadRows,eventRows){
+ const id=String(diagnosisId||'');if(!id)return {};
+ const idx=(headers,key)=>headers.indexOf(key);
+ const eligible=[];
+ (leadRows||[]).forEach((row,order)=>{
+  if(!row||String(row[idx(CONV_HEADERS,'diagnosis_id')]||'')!==id||
+    String(row[idx(CONV_HEADERS,'stage')]||'')!=='line_handoff')return;
+  let raw=null;
+  try{raw=JSON.parse(String(row[idx(CONV_HEADERS,'data_json')]||'{}'))}catch(_){return}
+  if(!raw||raw.diagnosisId!==id)return;
+  eligible.push({
+   order,when:Date.parse(String(row[idx(CONV_HEADERS,'created_at')]||''))||0,
+   handoffCode:typeof raw.handoffCode==='string'?raw.handoffCode:'',
+   topic:typeof raw.consultSelectedTopic==='string'?raw.consultSelectedTopic:(typeof raw.consultPrimary==='string'?raw.consultPrimary:''),
+   goal:typeof raw.futureGoal==='string'?raw.futureGoal:(typeof raw.goal==='string'?raw.goal:'')
   });
+ });
+ const patch={};
+ if(eligible.length){
+  eligible.sort((a,b)=>a.when-b.when||a.order-b.order);
+  const newest=eligible[eligible.length-1];
+  patch['LINE遷移（コード発行）']='TRUE';
+  if(newest.handoffCode)patch['引継ぎコード']=newest.handoffCode;
+  if(newest.topic)patch['相談テーマ']=newest.topic;
+  if(newest.goal)patch['未来目的']=newest.goal;
+ }
+ const clicked=(eventRows||[]).some(row=>{
+  return !!row&&String(row[idx(EVENT_HEADERS,'diagnosis_id')]||'')===id&&
+   String(row[idx(EVENT_HEADERS,'name')]||'')==='line_clicked';
+ });
+ if(clicked)patch['LINEクリック']='TRUE';
+ return patch;
+}
+function reconcileLineHandoffAfterDiagnosis_(diagnosisId){
+ const ss=SpreadsheetApp.getActive();
+ const leadSheet=ss.getSheetByName(CFG.HIDDEN.CONV);
+ const eventSheet=ss.getSheetByName(CFG.HIDDEN.EVENT);
+ const rows=(sheet,headers)=>{
+  if(!sheet)return [];
+  return findCompositeRows_(sheet,headers.indexOf('diagnosis_id')+1,diagnosisId)
+   .map(i=>sheet.getRange(i,1,1,headers.length).getValues()[0]);
+ };
+ const patch=lineHandoffRecoveryPatchV1_(diagnosisId,rows(leadSheet,CONV_HEADERS),rows(eventSheet,EVENT_HEADERS));
+ if(Object.keys(patch).length)patchStore_(diagnosisId,patch);
 }
 
 function saveConversion_(b){

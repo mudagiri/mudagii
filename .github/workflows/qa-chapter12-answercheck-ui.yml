@@ -1,7 +1,7 @@
 name: Chapter 1-2 Answer Check UI Pilot QA
 on:
   push:
-    branches: [design/chapter12-personality-household-answercheck-v1-20261012]
+    branches: [design/chapter12-personality-household-answercheck-v1-20261012, fix/final-contract-benchmark-alignment-20261015]
     paths:
       - "Chapter12AnswerCheckCard.tsx"
       - "CoverageAwarenessCard.tsx"
@@ -16,6 +16,10 @@ on:
       - "vite.config.ts"
       - "MudagiriAppV2.tsx"
       - "ResultScreenChapter2V32.tsx"
+      - "chapter2-v32-rpg-css.ts"
+      - "income-burden-lens-v1.ts"
+      - "result-view-model-v5.ts"
+      - "qa-income-burden-v1.ts"
       - "chapter2-v19-scene-css.ts"
       - "chapter2-v20-bridge-css.ts"
       - "chapter2-v21-gateb-css.ts"
@@ -50,6 +54,7 @@ jobs:
           test -f dist/index.html
           test -f dist/chapter12-answercheck.html
           npm run qa:chapter2-v32
+          npm run qa:income-burden
           node scripts/qa-chapter12-answercheck-experiment-v1.mjs
           node scripts/qa-coverage-awareness-v1.mjs
           node scripts/qa-coverage-consult-handoff-v1.mjs

@@ -110,17 +110,41 @@ const H:Record<string,HousingRow>={
 const HOUSING_FALLBACK:HousingRow={meanPaid:0,p50:'',p75:'',p90:''};
 
 export function educationBenchmarkV2(children:EducationChildV2[]|undefined){
- if(!children?.length)return null;
- return children.reduce((s,c)=>s+(EDU[c.stage]??0),0);
+ if(!Array.isArray(children)||children.length===0)return null;
+ // MASTER_ENGINE #11 / G13: school stage and public/private must be known
+ // for EVERY included child. Zero-filling an unknown stage fabricates a
+ // lower comparison reference; ask for details instead.
+ let total=0;
+ for(const child of children){
+  const stage=child?.stage;
+  const monthly=stage&&Object.prototype.hasOwnProperty.call(EDU,stage)?EDU[stage]:null;
+  if(typeof monthly!=='number'||!Number.isFinite(monthly)||monthly<=0)return null;
+  total+=monthly;
+ }
+ return total;
 }
 
-export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'}):Partial<Record<Category,ComparableV2>>{
+export type ComparableArgsV2={household:HouseholdV2;householdSize?:number;age:number;annualIncome?:number|null;prefecture:string;month:number;housingType?:string;educationChildren?:EducationChildV2[];beautySex?:'male'|'female'|'preferNot';insuranceScope?:'personal'|'household'};
+type IncomePolicyV2='FINAL_CONTRACT_20260928'|'FROZEN_INCOME_20260930';
+
+/** Candidate contract-aligned default: MASTER_ENGINE and GLOBAL_RULES G03/G07
+ * prohibit income-factor multiplication on a household-size series.
+ * Keep the explicitly approved 2026-09-30 income model separately available
+ * for audits and snapshot reconciliation; never silently discard that work.
+ * This code is on an isolated Draft PR, not merged to production.
+ */
+export function resolveComparableV2(a:ComparableArgsV2):Partial<Record<Category,ComparableV2>>{
+ return resolveComparableV2WithPolicy(a,'FINAL_CONTRACT_20260928');
+}
+export function resolveComparableV2LegacyIncome0930(a:ComparableArgsV2):Partial<Record<Category,ComparableV2>>{
+ return resolveComparableV2WithPolicy(a,'FROZEN_INCOME_20260930');
+}
+function resolveComparableV2WithPolicy(a:ComparableArgsV2,policy:IncomePolicyV2):Partial<Record<Category,ComparableV2>>{
  const out:Partial<Record<Category,ComparableV2>>={};
  const ai=ageBand(a.age);
- // Restore the frozen V1 income correction only for multi-person households >= ¥5m.
- // V2 keeps its newer household-size / seasonality / direct-source bases, then applies
- // the V1 correction as a ratio so we do not regress those improvements.
- const incomeRef=a.annualIncome&&a.household==='multi'&&a.annualIncome>=5_000_000
+ // The 9/30 frozen income-ratio correction is archived for audit only.
+ // MASTER_ENGINE forbids the final contract's food size × income synthesis.
+ const incomeRef=policy==='FROZEN_INCOME_20260930'&&a.annualIncome&&a.household==='multi'&&a.annualIncome>=5_000_000
   ?resolveComparableV1({household:'multi',age:a.age,annualIncome:a.annualIncome,prefecture:undefined})
   :null;
  const neutralRef=incomeRef?resolveComparableV1({household:'multi',age:a.age,annualIncome:0,prefecture:undefined}):null;
@@ -133,7 +157,7 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   incomeAdjusted:true,
   methodology:'V1_INCOME_RATIO_ON_V2_HOUSEHOLD_SIZE_BASE',
   crossTableObserved:false,
-  contractStatus:'P0_FINAL_12_CATEGORY_CONTRACT_REVIEW'
+  contractStatus:'HISTORICAL_INCOME_RATIO_SNAPSHOT_ONLY'
  }:null;
  if(a.household==='single'){
   out.energy={value:Math.round((SINGLE.energy[ai])*incomeFactor('energy')),confidence:'DIRECT',sourceVersion:'UTILITY_V2.1_SINGLE_2025'};
@@ -148,12 +172,12 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
    :{value:SINGLE.beautyFashion[ai],confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025',meta:{sexFallback:'all',requestedSex:a.beautySex??'unanswered',fallbackReason:a.beautySex==='female'&&ai===2?'FEMALE_60PLUS_CROSS_UNAVAILABLE':a.beautySex==='preferNot'?'PREFER_NOT_TO_ANSWER':'SEX_NOT_ASKED'}};
  }else{
   const si=sizeBand(a.householdSize??2);
-  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month,...(incomeCrossMeta??{})}};
+  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{modelEstimate:true,modelMethod:'HOUSEHOLD_SIZE_REGION_SEASON',crossTableObserved:false,householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month,...(incomeCrossMeta??{})}};
   out.food={value:Math.round(MULTI.food[si]*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_MULTI_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   out.daily={value:Math.round(MULTI.daily[si]*incomeFactor('daily')),confidence:'DIRECT',sourceVersion:'DAILY_V1.0_MULTI_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   out.fun={value:Math.round(MULTI.fun[si]*incomeFactor('fun')),confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_MULTI_CORE_2025',...(incomeCrossMeta?{meta:incomeCrossMeta}:{})};
   const mbi=multiBeautyAgeBand(a.age);
-  out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
+  out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{modelEstimate:true,modelMethod:'MULTI_HOUSEHOLD_AGE_BAND_REFERENCE',crossTableObserved:false,ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
  }
  const edu=educationBenchmarkV2(a.educationChildren);
  out.childEducation={value:edu,confidence:edu===null?'AUDIT':'DIRECT',sourceVersion:'CHILD_EDUCATION_V1.1_CORRECTED'};
@@ -169,7 +193,7 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   }else{
    const safeIndex=ii as 0|1|2|3|4|5;
    const ageLabels=['20s','30s','40s','50s','60s','70s'] as const;
-   out.insurance={value:INSURANCE_PERSONAL_MONTHLY_2025[safeIndex],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{scope:'personal',ageBand:ageLabels[safeIndex],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}};
+   out.insurance={value:INSURANCE_PERSONAL_MONTHLY_2025[safeIndex],confidence:'MODEL',sourceVersion:'INSURANCE_V1.0_JILI_2025_PERSONAL_AGE',meta:{modelEstimate:true,modelMethod:'PERSONAL_INSURANCE_AGE_SEX_N_WEIGHTED',crossTableObserved:false,scope:'personal',ageBand:ageLabels[safeIndex],basis:'JILI_2025_SEX_AGE_N_WEIGHTED',includesIndividualAnnuity:true}};
   }
  }else if(a.insuranceScope==='household'){
   const v=a.household==='single'?INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024:INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024;
@@ -181,5 +205,6 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
  return out;
 }
 
-export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_2';
+export const RESOLVER_V2_VERSION='MUDAGIRI_COMPARABLE_RESOLVER_V2_3_CONTRACT_CANDIDATE';
+export const RESOLVER_V2_POLICY='MUDAGIRI_12CATEGORY_FINAL_DATA_CONTRACT_V1_0_20260928' as const;
 export const __resolverV2Audit={SINGLE,MULTI,MULTI_BEAUTY_AGE,INSURANCE_PERSONAL_MONTHLY_2025,INSURANCE_HOUSEHOLD_SINGLE_MONTHLY_2024,INSURANCE_HOUSEHOLD_MULTI_MONTHLY_2024,REGION,MONTH,EDU,H};

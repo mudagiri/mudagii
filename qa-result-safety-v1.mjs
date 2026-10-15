@@ -23,7 +23,7 @@ const guarded=directGuards.every(([_,start,end])=>{
 });
 
 const checks=[
- ['active result before completion render',(()=>{const complete=app.indexOf('const complete=async');const write=app.indexOf('writeActiveResultV1(',complete);const render=app.indexOf('setResult(vm);',complete);return complete>=0&&write>=0&&render>=0&&write<render})()],
+ ['active result before completion render',(()=>{const complete=app.indexOf('const complete=async');const write=app.indexOf('writeActiveResultV1(',complete);const render=Math.max(app.indexOf('setResult(vm);',complete),app.indexOf('setResult({...vm,chapter1Link});',complete));return complete>=0&&write>=0&&render>=0&&write<render})()],
  ['draft cleared on completion',app.includes('clearJourneyDraftV1();')],
  ['result restored on return',app.includes("emit('result_restored',{source:'reload_or_return'})")],
  ['external navigation guarded',app.includes("throw new Error('active result missing before external navigation')")],

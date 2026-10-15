@@ -81,7 +81,8 @@ const criteria=(profile:ProfileV4,x:FinalCategoryV4,annualIncomeBand?:string)=>{
  if(cat==='energy'&&!single){out.push(profile.prefecture);const m=x.comparison.benchmarkMeta?.meta?.month;if(typeof m==='number')out.push(`${m}月`);}
  if(cat==='rent'&&x.comparison.benchmark!==null)out.push(`${profile.prefecture}・民営賃貸`);
  if(cat==='childEducation'&&x.record.metadata.educationChildren?.length)out.push(`子ども${x.record.metadata.educationChildren.length}人・学校段階別`);
- if(x.comparison.benchmarkMeta?.meta?.modelEstimate===true)out.push('人数別基準×年収帯の推計（直接集計ではない）');
+ if(x.comparison.benchmarkMeta?.meta?.incomeAdjusted===true)out.push('人数別基準×年収帯の推計（直接集計ではない）');
+ else if(x.comparison.benchmarkMeta?.meta?.modelEstimate===true)out.push('属性や調査表を組み合わせた推計（直接集計ではない）');
  return out;
 };
 
@@ -105,11 +106,12 @@ export function buildResultViewModelV4(a:{
 }){
  const rows=a.finalCategories.map(x=>{
   const diagnosisAmountLabel=a.profile.diagnosisScope==='personal'?'あなたの負担':'家全体の支出';
-  const incomeModelEstimate=x.comparison.benchmarkMeta?.meta?.modelEstimate===true;
+  const incomeModelEstimate=x.comparison.benchmarkMeta?.meta?.incomeAdjusted===true;
+  const anyModelEstimate=x.comparison.benchmarkMeta?.meta?.modelEstimate===true;
   // Presentation quality reflects provenance without mutating the FROZEN
   // comparison/diagnosis record used for status and Potential.
   const displayQuality=incomeModelEstimate&&x.comparison.quality!=='none'?'reference':x.comparison.quality;
-  const compLabel=incomeModelEstimate?'統計を組み合わせた推計目安':displayQuality==='exact'?'近い条件との比較':displayQuality==='reference'?'参考値との比較':'金額比較なし';
+  const compLabel=incomeModelEstimate?'統計を組み合わせた推計目安':anyModelEstimate?'属性に合わせて算出した推計目安':displayQuality==='exact'?'近い条件との比較':displayQuality==='reference'?'参考値との比較':'金額比較なし';
   const encounterStrength=x.status==='cut'?'strong':x.status==='review'&&x.attentionFlag?'medium':'none';
   return {
    category:x.category,label:LABEL[x.category],status:x.status==='cut'?'battle':x.status,
@@ -120,6 +122,7 @@ export function buildResultViewModelV4(a:{
    comparable:x.comparison.benchmark,comparisonDifference:x.comparison.difference,
    comparisonQuality:displayQuality,comparisonSourceVersion:x.comparison.sourceVersion,
    comparisonModelEstimate:incomeModelEstimate,
+   comparisonMethodologyModelEstimate:anyModelEstimate,
    comparator:{kind:x.comparison.quality==='none'?'none':'scope_matched',label:compLabel},
    comparisonContext:{criteria:criteria(a.profile,x,a.annualIncomeBand),amountScope:x.comparison.amountScope,quality:displayQuality,sourceVersion:x.comparison.sourceVersion},
    evidenceLabel:compLabel,referenceDetail:null,

@@ -2,6 +2,7 @@ import type {Category} from './mudagiri-diagnosis-v2';
 import type {ProfileV4} from './mudagiri-profile-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildResultViewModelV4} from './result-view-model-v4';
+import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {insuranceReferenceV5,mortgageReferenceV5,carMaintenanceReferenceV5} from './result-reference-v5';
 
 export type PositionLabelV5='かなり低め'|'やや低め'|'標準圏'|'やや高め'|'かなり高め';
@@ -138,7 +139,10 @@ function v5StatusFor(x:FinalCategoryV4,p:ReturnType<typeof positionFor>):V5Statu
  return x.status==='protect'?'protect':x.status==='review'?'inspect':x.status==='cut'?'cut':'ok';
 }
 
-function cUpperFor(x:FinalCategoryV4,p:ReturnType<typeof positionFor>){
+/** The same guarded, conditional review upper bound used by production V5.
+ * Exported for synthetic Chapter 1→2 preview parity; does not treat benchmark gaps as savings.
+ */
+export function cUpperFor(x:FinalCategoryV4){
  const actual=x.record.diagnosisAmount;
  if(actual===null||actual<=0)return {amount:0,eligible:false,detailReview:false,method:null as null|'standard'|'wide'|'mobile'};
  const a=x.appraisal;
@@ -254,7 +258,7 @@ export function buildResultViewModelV5(a:{
   const x:FinalCategoryV4=canOverlay?{...original,comparison:{...original.comparison,amount:overlayAmount,benchmark:referenceMonthly,quality:'reference',amountScope:original.comparison.amountScope,sourceVersion:displayRef!.sourceVersion,difference:overlayAmount!-referenceMonthly!,engineComparableAllowed:false,autoSavingAllowed:false,benchmarkMeta:null,reason:overlayReason}}:original;
   const position=positionFor(x);
   const v5Status=v5StatusFor(x,position);
-  const c=cUpperFor(x,position);
+  const c=cUpperFor(x);
   const aAmount=x.category==='sub'?Math.max(0,x.confirmedSaving):0;
   return {
    ...row,
@@ -299,6 +303,7 @@ export function buildResultViewModelV5(a:{
  const cRows=rows.filter(x=>x.cUpper>0).sort((x,y)=>y.cUpper-x.cUpper);
  const precisionTarget=cRows.length>0&&totalC>0&&(lower===0||totalC/Math.max(1,upper)>=.60)?cRows[0]:null;
  const positionRows=rows.filter(x=>x.positionAvailable||x.comparisonDifference!==null);
+ const incomeBurden=buildIncomeBurdenLensV1(a.profile,rows);
 
  return {
   ...base,
@@ -307,6 +312,7 @@ export function buildResultViewModelV5(a:{
   rows,
   v5Counts,
   positionRows,
+  incomeBurden,
   potential,
   firstQuest,
   precisionTarget,
