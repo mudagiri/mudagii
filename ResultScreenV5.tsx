@@ -230,6 +230,9 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
       const legacyIncome=criteria.some((c:string)=>c.includes('年収帯補正'));
       const hasComparable=!legacyIncome&&x.comparisonQuality!=='none'&&typeof x.comparable==='number'&&Number.isFinite(x.comparable)&&x.comparable>=0;
       const amount=typeof x.amount==='number'&&Number.isFinite(x.amount)?x.amount:null;
+      const comparedAmount=typeof x.comparisonAmount==='number'&&Number.isFinite(x.comparisonAmount)?x.comparisonAmount:null;
+      const differentScope=hasComparable&&comparedAmount!==null&&amount!==null&&comparedAmount!==amount;
+      const hasEnemyDetail=atlasSourceRows.some((r:any)=>r.category===x.category);
       const evidence=criteria.filter((c:string)=>!c.includes('年収帯補正')).join(' × ');
       const isNa=x.applicability==='na'||x.v5Status==='na';
       return <article className="v51-comparison-row" key={x.category} data-category={x.category}>
@@ -238,9 +241,11 @@ export default function ResultScreenV5({vm,onLine,onEvent,onRestart,onBeforeExte
         <div><small>入力額／月</small><strong>{isNa?'対象外':x.known&&amount!==null?'¥'+yen(amount):'未入力'}</strong></div>
         <div><small>比較目安／月</small><strong>{hasComparable?'¥'+yen(x.comparable):legacyIncome?'要再照合':'—'}</strong></div>
        </div>
+       {differentScope&&<p className="v51-comparison-scope">※比較に用いた金額：¥{yen(comparedAmount)}/月（入力した本人負担額と対象範囲が異なります）</p>}
        <p className="v51-comparison-criteria">{legacyIncome?'旧所得補正を含む比較は最終契約との照合中':hasComparable?(evidence||x.evidenceLabel||'比較条件を確認中'):'金額の平均ではなく、利用状況や目的から確認'}</p>
        {hasComparable&&x.comparisonQuality==='reference'&&<small className="v51-comparison-model">※推計・参考値</small>}
-       {hasComparable&&x.comparisonDifference!==null&&<small className="v51-comparison-disclaimer">基準との差 {signedYen(x.comparisonDifference)}／月（削減できる額ではありません）</small>}
+       {hasComparable&&x.comparisonDifference!==null&&<small className="v51-comparison-disclaimer">{differentScope?"比較対象額と基準との差":"基準との差"} {signedYen(x.comparisonDifference)}／月（削減できる額ではありません）</small>}
+       {hasEnemyDetail&&<button type="button" className="v51-comparison-detail-button" onClick={()=>openEnemyDetail(x.category)}>敵図鑑で理由を見る →</button>}
       </article>;
     })}
    </div>
@@ -445,6 +450,8 @@ const CSS=`
 .v51-comparison-numbers strong{display:block;margin-top:5px;font-size:clamp(16px,5vw,21px)!important;color:#fff!important;font-weight:900;overflow-wrap:anywhere}
 .v51-comparison-criteria{margin:10px 0 0!important;color:#d4e4e7!important;font-size:13px!important;line-height:1.55!important}
 .v51-comparison-model,.v51-comparison-disclaimer{display:block;margin-top:6px;color:#f1d898!important;font-size:12px!important;line-height:1.5!important}
+.v51-comparison-scope{margin:7px 0 0!important;color:#f3d99c!important;font-size:12px!important;line-height:1.5!important}
+.v51-comparison-detail-button{width:100%;min-height:44px;margin-top:11px;border:1px solid #729daa;border-radius:9px;background:#284956;color:#f1fffc;font-size:13px;font-weight:850;cursor:pointer;touch-action:manipulation}
 .v51-comparison-foot{margin:13px 0 0!important;color:#e1eef0!important;font-size:13px!important;line-height:1.6!important}
 @media(min-width:680px){.v51-comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.v51-type-spark{animation:none}}
