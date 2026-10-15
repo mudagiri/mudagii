@@ -113,7 +113,7 @@ type ScanCategoryConfig = {
 const SCAN_CATEGORIES: ScanCategoryConfig[] = [
   { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ・自宅ネット・端末分割。動画・音楽などの月額サービスはサブスクへ' },
   { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・灯油などの燃料・水道' },
-  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・ゲーム月額パス・ジム月会費など。美容院の月額会員は美容へ' },
+  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・ゲーム月額パス・ジム月会費・配達会員費。美容院の月額会員は美容へ' },
   { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊・デリバリーの食品代。配達会員費はサブスクへ' },
   { category: 'daily', question: '普段の月の日用品費はいくら？', helper: '雑貨・洗剤・シャンプーなど。化粧品や家具・家電は含めない' },
   { category: 'fun', question: '普段の月の娯楽・交際費はいくら？', helper: '趣味・買切ゲーム・都度利用料。月額契約はサブスク、旅行・宿泊の一時支出は別確認' },
