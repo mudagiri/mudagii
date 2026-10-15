@@ -111,7 +111,7 @@ type ScanCategoryConfig = {
 };
 
 const SCAN_CATEGORIES: ScanCategoryConfig[] = [
-  { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ ＋ 自宅インターネット' },
+  { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ・自宅ネット・端末分割。動画・音楽などの月額サービスはサブスクへ' },
   { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・灯油などの燃料・水道' },
   { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・ゲーム月額パス・ジム月会費など。美容院の月額会員は美容へ' },
   { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊・デリバリーの食品代。配達会員費はサブスクへ' },
