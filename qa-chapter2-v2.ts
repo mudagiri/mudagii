@@ -43,7 +43,8 @@ assert.equal(chapter2V2SignedComparisonYen(1800),'+¥1,800');
 assert.equal(chapter2V2SignedComparisonYen(0),'±¥0');
 assert.equal(chapter2V2SignedComparisonYen(Number.NaN),'—');
 assert.match(text,/家計クエスト/);
-assert.equal(chapter2V2ReferralUrl('https://mudagiri.github.io/mudagii/?chapter2v2=1','x'),'https://mudagiri.github.io/mudagii/pilot/money-type/?utm_source=x&utm_campaign=household_quest_clear');
+assert.equal(chapter2V2ReferralUrl('https://mudagiri.github.io/mudagii/?chapter2v32=1','x'),'https://mudagiri.github.io/mudagii/?mode=adaptive&utm_source=x&utm_campaign=household_quest_clear');
+assert.equal(chapter2V2ReferralUrl('https://mudagiri.github.io/mudagii/pilot/chapter2-v32/?chapter2v32=1','line'),'https://mudagiri.github.io/mudagii/pilot/chapter2-v32/pilot/money-type/?utm_source=line&utm_campaign=household_quest_clear');
 assert.doesNotMatch(text,/TYPE MODEL|称号|\d+円|¥/);
 assert.match(text,/\n/,'share should have actual line breaks');
 
