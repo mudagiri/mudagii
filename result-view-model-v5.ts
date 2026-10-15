@@ -2,6 +2,7 @@ import type {Category} from './mudagiri-diagnosis-v2';
 import type {ProfileV4} from './mudagiri-profile-v4';
 import type {FinalCategoryV4} from './final-judgement-v4';
 import {buildResultViewModelV4} from './result-view-model-v4';
+import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {insuranceReferenceV5,mortgageReferenceV5,carMaintenanceReferenceV5} from './result-reference-v5';
 
 export type PositionLabelV5='かなり低め'|'やや低め'|'標準圏'|'やや高め'|'かなり高め';
@@ -302,6 +303,7 @@ export function buildResultViewModelV5(a:{
  const cRows=rows.filter(x=>x.cUpper>0).sort((x,y)=>y.cUpper-x.cUpper);
  const precisionTarget=cRows.length>0&&totalC>0&&(lower===0||totalC/Math.max(1,upper)>=.60)?cRows[0]:null;
  const positionRows=rows.filter(x=>x.positionAvailable||x.comparisonDifference!==null);
+ const incomeBurden=buildIncomeBurdenLensV1(a.profile,rows);
 
  return {
   ...base,
@@ -310,6 +312,7 @@ export function buildResultViewModelV5(a:{
   rows,
   v5Counts,
   positionRows,
+  incomeBurden,
   potential,
   firstQuest,
   precisionTarget,
