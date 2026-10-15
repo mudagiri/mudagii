@@ -24,17 +24,41 @@ for(const width of [320,375,390,430]){
    basis:await demo.locator('[data-comparison-category="'+category+'"] .c2v32-context-brief').innerText()
   });
   const singleEnergy=await reference('energy'),singleFood=await reference('food');
+
+  // Money preview must reuse the exact V5 C-policy, not retain the old ¥1,800-only
+  // mobile fixture after new comparison references are switched in.
+  const candidates=async()=>Object.fromEntries(await demo.locator('[data-section="CANDIDATE_BREAKDOWN"] [data-candidate-category]').evaluateAll(els=>els.map(el=>{
+   const yen=(el.querySelector('.c2v32-breakdown-amount strong')?.textContent||'').replace(/[^0-9]/g,'');
+   return [el.getAttribute('data-candidate-category'),Number(yen)];
+  })));
+  const monthlyHero=async()=>await demo.locator('[data-section="POTENTIAL_HERO"]').innerText();
+  const singleCandidates=await candidates();
+  check(singleCandidates.mobile===1800,width+' single-line mobile C remains ¥1,800');
+  check(Math.abs((singleCandidates.food||0)-12855)<=1,width+' food C uses 10% buffer, not full comparison gap');
+  check(Math.abs((singleCandidates.daily||0)-2857)<=1,width+' daily C respects two-times benchmark cap');
+  check(singleCandidates.energy===undefined,width+' lower-than-reference energy creates no C');
+  check(singleCandidates.rent===undefined&&singleCandidates.insurance===undefined,width+' structural benchmark gaps do not create automatic savings');
+  check((await monthlyHero()).includes('17,511'),width+' default hero includes valid conditional candidates beyond mobile');
+
   check(singleEnergy.basis.includes('35歳')&&!singleEnergy.basis.includes('東京都'),width+' single energy uses age not fabricated region cross');
   await demo.locator('#case-change').selectOption('tokyo_high_income');
   const highEnergy=await reference('energy'),highFood=await reference('food');
   check(singleEnergy.price===highEnergy.price&&singleFood.price===highFood.price,width+' single income change does not multiply base comparators');
+  check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' higher income alone never changes review upper');
   await demo.locator('#case-change').selectOption('regional_single');
   const regionalEnergy=await reference('energy');
   check(regionalEnergy.price===singleEnergy.price,width+' Osaka single energy follows the same age basis');
+  check(JSON.stringify(await candidates())===JSON.stringify(singleCandidates),width+' regional rent gap does not inflate the conditional candidate upper');
   await demo.locator('#case-change').selectOption('tokyo_family');
   const familyEnergy=await reference('energy');
   check(familyEnergy.basis.includes('4人世帯')&&familyEnergy.basis.includes('東京都')&&familyEnergy.basis.includes('10月'),width+' family energy uses size × region × season model');
   check(familyEnergy.price!==singleEnergy.price,width+' household difference actually visible in the demo');
+  const familyCandidates=await candidates();
+  check(familyCandidates.mobile===undefined,width+' family telecom bundle cannot use single-line mobile saving');
+  check(familyCandidates.daily>0&&familyCandidates.fun>0,width+' family case recalculates both eligible day-to-day candidates');
+  check(familyCandidates.rent===undefined,width+' large rent reference gap is never added to maximum C');
+  check((await monthlyHero()).includes('16,682'),width+' family hero derives from two guarded candidates');
+  check(!(await monthlyHero()).includes('1,800'),width+' family total is not hard-coded mobile amount');
   await demo.close();
  }
 
