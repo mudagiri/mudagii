@@ -143,7 +143,12 @@ jobs:
           assert.match(releaseBuild,/test "\$VITE_CHAPTER2_V32" = "1"/);
           assert.equal(config.framework,'vite');
           assert.equal(config.outputDirectory,'dist');
-          assert.deepEqual(config.rewrites,[{source:'/(.*)',destination:'/index.html'}]);
+          assert.deepEqual(config.rewrites,[
+            {source:'/pilot/chapter2-v32/pilot/money-type/assets/:path*',destination:'/assets/:path*'},
+            {source:'/pilot/chapter2-v32/assets/:path*',destination:'/assets/:path*'},
+            {source:'/pilot/money-type/assets/:path*',destination:'/assets/:path*'},
+            {source:'/(.*)',destination:'/index.html'},
+          ]);
           assert.match(config.buildCommand,/VITE_CHAPTER2_V32=1/);
           assert.match(config.buildCommand,/VITE_MUDAGIRI_GAS_URL=''/);
           assert.match(config.buildCommand,/VITE_MONEY_PERSONALITY_GAS_URL=''/);
