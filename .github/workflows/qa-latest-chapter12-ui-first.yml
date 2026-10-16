@@ -8,6 +8,18 @@ on:
 permissions:
   contents: read
 jobs:
+  pilot-gas-health:
+    name: Existing Pilot Chapter 1 GAS Health (GET-only)
+    runs-on: ubuntu-latest
+    environment: pilot-hidden-preview
+    env:
+      VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify read-only GAS health validation cannot write or leak secrets
+        run: node scripts/qa-money-personality-gas-health.mjs
+      - name: Confirm pilot GAS identity and separation (read-only GET)
+        run: node scripts/check-money-personality-gas-health.mjs
   release-config:
     name: Production GAS Configuration (no outbound traffic)
     runs-on: ubuntu-latest
