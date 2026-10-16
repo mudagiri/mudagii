@@ -22,7 +22,7 @@ export async function moneyPersonalityGasHealth(raw,request=fetch){
   if(issue)return {ok:false,code:issue};
   try{
     const response=await request(raw,{method:'GET',redirect:'follow',
-      headers:{'Accept':'application/json'},signal:AbortSignal.timeout(12000)});
+      headers:{'Accept':'application/json'},signal:AbortSignal.timeout(20000)});
     if(!response.ok)return {ok:false,code:'HTTP_NOT_OK'};
     const data=await response.json();
     if(data?.backend!=='money_personality'||
@@ -35,7 +35,14 @@ export async function moneyPersonalityGasHealth(raw,request=fetch){
 
 const runningDirectly=Boolean(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url);
 if(runningDirectly){
-  const status=await moneyPersonalityGasHealth(process.env.VITE_MONEY_PERSONALITY_GAS_URL);
-  console.log(JSON.stringify({suite:'MUDAGIRI_DEDICATED_GAS_RELEASE_HEALTH_V1',...status}));
+  let status={ok:false,code:'HEALTH_NOT_CHECKED'};
+  let attempts=0;
+  for(let i=0;i<3;i++){
+    attempts=i+1;
+    status=await moneyPersonalityGasHealth(process.env.VITE_MONEY_PERSONALITY_GAS_URL);
+    if(status.ok||['MISSING_ENDPOINT','INVALID_ENDPOINT_SHAPE','WRONG_BACKEND_OR_VERSION'].includes(status.code))break;
+    if(i<2)await new Promise(resolve=>setTimeout(resolve,1300*(i+1)));
+  }
+  console.log(JSON.stringify({suite:'MUDAGIRI_DEDICATED_GAS_RELEASE_HEALTH_V1',...status,attempts}));
   if(!status.ok)process.exitCode=1;
 }
