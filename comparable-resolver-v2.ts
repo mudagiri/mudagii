@@ -125,6 +125,14 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
   :null;
  const neutralRef=incomeRef?resolveComparableV1({household:'multi',age:a.age,annualIncome:0,prefecture:undefined}):null;
  const incomeFactor=(c:Category)=>{const x=incomeRef?.[c],n=neutralRef?.[c];return typeof x==='number'&&typeof n==='number'&&n>0?x/n:1};
+ // A reference multiplied by an income-class factor from a separate marginal table
+ // is a modeled composite, never a directly observed household-size × income cell.
+ const incomeProvenance=(c:Category)=>{
+  const factor=incomeFactor(c);
+  return Math.abs(factor-1)>0.000001
+   ?{confidence:'MODEL' as const,meta:{incomeFactor:factor,incomeModel:'FROZEN_V1_MARGINAL_RATIO',jointCrossTab:false,benchmarkInterpretation:'MODELED_REFERENCE_NOT_DIRECT_CROSS'}}
+   :{confidence:'DIRECT' as const,meta:{incomeFactor:1,incomeModel:'NOT_APPLIED'}};
+ };
  if(a.household==='single'){
   out.energy={value:Math.round((SINGLE.energy[ai])*incomeFactor('energy')),confidence:'DIRECT',sourceVersion:'UTILITY_V2.1_SINGLE_2025'};
   out.food={value:Math.round((SINGLE.food[ai])*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_SINGLE_2025'};
@@ -138,10 +146,10 @@ export function resolveComparableV2(a:{household:HouseholdV2;householdSize?:numb
    :{value:SINGLE.beautyFashion[ai],confidence:'DIRECT',sourceVersion:'BEAUTY_FASHION_V1.0_SINGLE_2025',meta:{sexFallback:'all',requestedSex:a.beautySex??'unanswered',fallbackReason:a.beautySex==='female'&&ai===2?'FEMALE_60PLUS_CROSS_UNAVAILABLE':a.beautySex==='preferNot'?'PREFER_NOT_TO_ANSWER':'SEX_NOT_ASKED'}};
  }else{
   const si=sizeBand(a.householdSize??2);
-  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month}};
-  out.food={value:Math.round(MULTI.food[si]*incomeFactor('food')),confidence:'DIRECT',sourceVersion:'FOOD_V1.1_MULTI_2025'};
-  out.daily={value:Math.round(MULTI.daily[si]*incomeFactor('daily')),confidence:'DIRECT',sourceVersion:'DAILY_V1.0_MULTI_2025'};
-  out.fun={value:Math.round(MULTI.fun[si]*incomeFactor('fun')),confidence:'DIRECT',sourceVersion:'ENTERTAINMENT_V1.0_MULTI_CORE_2025'};
+  out.energy={value:Math.round(MULTI.energy[si]*(REGION[a.prefecture]??1)*(MONTH[Math.max(1,Math.min(12,a.month))-1]??1)*incomeFactor('energy')),confidence:'MODEL',sourceVersion:'UTILITY_V2.1_MULTI_2025',meta:{householdSize:a.householdSize??2,regionFactor:REGION[a.prefecture]??1,month:a.month,...incomeProvenance('energy').meta}};
+  out.food={value:Math.round(MULTI.food[si]*incomeFactor('food')),confidence:incomeProvenance('food').confidence,sourceVersion:'FOOD_V1.1_MULTI_2025',meta:incomeProvenance('food').meta};
+  out.daily={value:Math.round(MULTI.daily[si]*incomeFactor('daily')),confidence:incomeProvenance('daily').confidence,sourceVersion:'DAILY_V1.0_MULTI_2025',meta:incomeProvenance('daily').meta};
+  out.fun={value:Math.round(MULTI.fun[si]*incomeFactor('fun')),confidence:incomeProvenance('fun').confidence,sourceVersion:'ENTERTAINMENT_V1.0_MULTI_CORE_2025',meta:incomeProvenance('fun').meta};
   const mbi=multiBeautyAgeBand(a.age);
   out.beautyFashion={value:MULTI_BEAUTY_AGE[mbi],confidence:'MODEL',sourceVersion:'BEAUTY_FASHION_V1.1_MULTI_AGE_MODEL_2025',meta:{ageBand:['<=29','30-39','40-49','50-59','60-69','70+'][mbi],basis:'FROZEN_MULTI_AGE_LINEAGE',scope:'CLOTHING_FOOTWEAR_BEAUTY_SERVICES_COSMETICS',excludesDailyConsumableHygiene:true}};
  }
