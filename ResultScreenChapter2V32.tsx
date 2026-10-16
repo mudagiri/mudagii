@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
-import {resolveFoodIncomeReferenceForProfileV1} from './income-class-food-reference-v1';
+import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
@@ -242,6 +242,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
+ const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(null);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
  const [showCoverageLine,setShowCoverageLine]=useState(false);
@@ -266,7 +267,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const incomeBurden=incomeBurdenInput.available?incomeBurdenInput:null;
  // Official income-class view is separate from the frozen primary household-size
  // comparator. No synthetic income factor and never a savings estimate.
- const incomeFoodReference=resolveFoodIncomeReferenceForProfileV1(vm.profile);
+ const incomeFoodReference=vm.profile?.householdSize===1
+  ?(singleGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
+  :resolveFoodIncomeReferenceForProfileV1(vm.profile);
  const familyFoodRow=rows.find((x:any)=>x?.category==='food'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
@@ -655,6 +658,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>あなたの回答から計算した割合だよ。統計上の平均負担率でも、ムダ・削減可能額でもない。下の12カテゴリにも費目別の割合を表示するぞ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力のため、手取り負担率は推測で作っていないよ。入力済みの金額と統計の比較はこのまま確認できる。</p>}
+   {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
+    <summary>年収別の食費参考も見てみる（任意）</summary>
+    <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
+    <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
+     const next=e.target.value;
+     setSingleGrossBand(SINGLE_INCOME_FOOD_OPTIONS.some(x=>x.value===next)?next as SingleIncomeFoodOptionV1:null);
+    }}>
+     <option value="">選ばずに進む</option>
+     {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
+    </select>
+    <p>月手取りから年収を推定しないよ。ここで選んだ年収帯は、この画面の比較表示だけに使い、診断結果やLINEへ保存・送信しません。</p>
+   </details>}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
     <section className="c2v32-income-food-context" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="所得階級別の独立した食費参考値">
      <span className="c2v2-kicker">ANOTHER REFERENCE ／ もうひとつの参考</span>
