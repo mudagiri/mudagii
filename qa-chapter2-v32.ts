@@ -349,10 +349,14 @@ assert.equal(externalLineContext({diagnosisId:'diagnosis_synthetic',handoffCode:
 
 // Chapter 2 UI cannot pass while underlying benchmark/scope/confirmed-saving regressions fail.
 await import('./qa-resolver-v2');
-await import('./qa-final-contract-projection-v1');
-await import('./qa-final-contract-100case-v1');
-await import('./qa-frozen100-original-evidence-v1');
-await import('./qa-frozen100-source1000-v1');
+// Production-baseline contract invariants + verified 2025 income table; old
+// candidate-only legacy income projection tests are intentionally excluded.
+await import('./qa-comparable-income-matrix-v1');
+await import('./qa-income-class-food-reference-v1');
+
+
+
+
 await import('./qa-scope-v4');
 await import('./qa-result-v5');
 await import('./qa-chapter1-linkage-v1');
