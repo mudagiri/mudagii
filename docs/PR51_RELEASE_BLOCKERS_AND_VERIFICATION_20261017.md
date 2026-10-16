@@ -37,3 +37,14 @@
 - [ ] iOS/Android実機UI/LINE/シェア/CTAを承認
 - [ ] mainへのマージと本番GitHub Pages Deployの成功確認
 - [ ] 配信後のリビジョン、旧データ復元、ロールバック検証
+
+## 2026-10-17 最新HEADでの追跡確認（追加監査）
+- 検証対象HEAD: `2cc0371c5647ab5a6481998f275826eb846f51e7`（追跡時点）。
+- `Validate Diagnosis V2.1`: PASS（run 38942083967）。
+- `V5 Visual Smoke`: PASS（run 38942083936）。
+- `Latest Chapter 1 × Chapter 2 V3.2 UI First Gate`: 全体FAIL（run 38942083966）。内訳: `latest-ui` PASS、`Existing Pilot Chapter 1 GAS Health (GET-only)` PASS、`Production GAS Configuration` FAIL。
+- 旧run 38941623051のPilot GETは `HEALTH_UNREACHABLE_OR_INVALID_JSON` だったが、最新runでGET成功。旧失敗を現在も恒常的なGAS障害だと断定しない。一方、GET成功はPOST保存成功の証拠ではない。
+- production設定失敗の直接原因: `CHAPTER1_GAS_URL` が空。第2章用は存在。公開用buildジョブはpilot環境を参照しないため、repository scopeの `VITE_MONEY_PERSONALITY_GAS_URL` 登録が必要。
+- GAS /exec URLは利用者向けの報告、issue、CIログへ転記しない。既存ログの環境変数表示を含め公開範囲・取り扱いを確認する。
+- 本番デプロイ前の残件: ①repo secret登録後の同一HEAD全ゲート再PASS、②匿名隔離テストでGAS POSTとSheet行確認（重複・PII含む）、③rootを変更しない実URLプレビュー、④iOS/AndroidのLINE・保険/ライフプランCTA・復元・シェア実機確認。
+- この追跡監査はGAS値・本番サイト・データを変更していない。PRはDraftのまま保護する。
