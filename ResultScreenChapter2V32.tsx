@@ -685,7 +685,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <details className="c2v32-income-food-sources">
       <summary>統計の出典・対象範囲を確認する</summary>
       <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
-      {incomeFoodReference.source&&<a href={incomeFoodReference.source.sourceUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表を開く ↗</a>}
+      {incomeFoodReference.source&&<a href={incomeFoodReference.source.downloadUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表Excelを開く ↗</a>}
      </details>
     </section>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
