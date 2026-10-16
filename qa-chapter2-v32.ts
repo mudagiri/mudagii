@@ -353,6 +353,7 @@ await import('./qa-resolver-v2');
 // candidate-only legacy income projection tests are intentionally excluded.
 await import('./qa-comparable-income-matrix-v1');
 await import('./qa-income-class-food-reference-v1');
+await import('./qa-income-class-energy-reference-v1');
 
 
 
