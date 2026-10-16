@@ -685,7 +685,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <div><small>全国・世帯年収 {incomeFoodReference.profileBandLabel} ／ 食費の平均額</small>
        <strong>{money(incomeFoodReference.monthlyMeanLowYen)}{incomeFoodReference.monthlyMeanHighYen!==incomeFoodReference.monthlyMeanLowYen?' ～ '+money(incomeFoodReference.monthlyMeanHighYen):''}/月</strong></div>
      </div>
-     {incomeEnergyReference&&<div className="c2v32-income-energy-grid" data-section="INCOME_CLASS_ENERGY_ROW">
+     {incomeEnergyReference&&<div className="c2v32-income-food-grid c2v32-income-energy-grid" data-section="INCOME_CLASS_ENERGY_ROW">
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの光熱費':'今回入力した家全体の光熱費'}</small><strong>{familyEnergyRow?money(Number(familyEnergyRow.amount)):'未入力'}{familyEnergyRow&&'/月'}</strong></div>
       <div><small>全国・年収帯別 ／ 光熱・水道の平均額</small><strong>{money(incomeEnergyReference.monthlyLowYen)}{incomeEnergyReference.monthlyHighYen!==incomeEnergyReference.monthlyLowYen?' ～ '+money(incomeEnergyReference.monthlyHighYen):''}/月</strong></div>
      </div>}
