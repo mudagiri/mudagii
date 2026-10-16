@@ -246,6 +246,25 @@ await clickButton(/診断結果を見る/);
  const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 JOB identity survives the handoff');
  const resultText=await page.locator('.c2v32-rpg').innerText();
+ // Optional income-class lens must not add a required question to Chapter 1/2.
+ // Single-person results can inspect the actual official 2025 table without
+ // guessing annual gross salary from net take-home.
+ const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
+ assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
+ assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'No peer income reference before explicit user choice');
+ await singleIncomeOpt.locator('summary').click();
+ await page.locator('#c2v32-single-income').selectOption('400_499');
+ await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
+ const official40=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
+ assert.ok(official40.includes('¥53,430')&&official40.includes('今回入力したあなたの食費'),'Single official income mean and user amount separated');
+ assert.ok(official40.includes('ムダ額・削減額・見直し候補額に加えない'),'No conversion of statistical difference into savings');
+ await page.locator('#c2v32-single-income').selectOption('600plus');
+ const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
+ assert.ok(official600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
+ await page.locator('#c2v32-single-income').selectOption('');
+ assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
+ await singleIncomeOpt.locator('summary').click();
+
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
  assert.ok(cUpper>0,'Synthetic food case must surface an unconfirmed review candidate');
