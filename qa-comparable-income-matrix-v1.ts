@@ -22,6 +22,15 @@ for(const id of ['multi_450','multi_900','multi_1500']){
   if(x?.confidence==='AUDIT')assert.equal(x.value,null,'AUDIT may not invent an average: '+id+'/'+c);
  }
 }
+for(const id of ['multi_900','multi_1500']){
+ for(const c of ['energy','food','daily','fun'] as const){
+  const item=read(id,c);
+  if(typeof item?.meta?.incomeFactor==='number'&&Math.abs(item.meta.incomeFactor-1)>0.000001){
+   assert.equal(item.confidence,'MODEL','Income-corrected reference must be MODEL: '+id+'/'+c);
+   assert.equal(item.meta.jointCrossTab,false,'Cannot imply observed joint income × household average: '+id+'/'+c);
+  }
+ }
+}
 const changed=categories.filter(c=>read('multi_450',c)?.value!==read('multi_900',c)?.value);
 console.log('COMPARABLE_INCOME_MATRIX_V1',JSON.stringify({
  scenarios:results.map(x=>({id:x.id,rows:Object.fromEntries(categories.map(c=>[c,{value:x.rows[c]?.value??null,confidence:x.rows[c]?.confidence??'MISSING',sourceVersion:x.rows[c]?.sourceVersion??'MISSING'}]))})),
