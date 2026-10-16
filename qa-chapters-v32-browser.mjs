@@ -261,7 +261,10 @@ await clickButton(/診断結果を見る/);
  assert.ok(official40.includes('¥3,575')&&official40.includes('今回入力したあなたの日用品費'),'Houseware+household-consumables from one published table must be displayed separately');
  assert.ok(official40.includes('ムダ額・削減額・見直し候補額に加えない'),'No conversion of statistical difference into savings');
  if(engine==='chromium'){
-  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').scrollIntoViewIfNeeded();
+  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
+  await page.waitForTimeout(150);
+  const incomeHeading=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"] h3').evaluate(el=>el.getBoundingClientRect().top);
+  assert.ok(incomeHeading>=63,'Sticky navigation must not hide the income reference heading: '+incomeHeading);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
  await page.locator('#c2v32-single-income').selectOption('600plus');
