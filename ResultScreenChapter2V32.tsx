@@ -1,5 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
+import {resolveFoodIncomeReferenceForProfileV1} from './income-class-food-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
@@ -263,6 +264,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const rows=Array.isArray(vm.rows)?vm.rows:[];
  const incomeBurdenInput=buildIncomeBurdenLensV1(vm.profile,Array.isArray(vm.rows)?vm.rows:[]);
  const incomeBurden=incomeBurdenInput.available?incomeBurdenInput:null;
+ // Official income-class view is separate from the frozen primary household-size
+ // comparator. No synthetic income factor and never a savings estimate.
+ const incomeFoodReference=resolveFoodIncomeReferenceForProfileV1(vm.profile);
+ const familyFoodRow=rows.find((x:any)=>x?.category==='food'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
@@ -650,6 +655,24 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>あなたの回答から計算した割合だよ。統計上の平均負担率でも、ムダ・削減可能額でもない。下の12カテゴリにも費目別の割合を表示するぞ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力のため、手取り負担率は推測で作っていないよ。入力済みの金額と統計の比較はこのまま確認できる。</p>}
+   {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
+    <section className="c2v32-income-food-context" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="所得階級別の独立した食費参考値">
+     <span className="c2v2-kicker">ANOTHER REFERENCE ／ もうひとつの参考</span>
+     <h3>年収帯から見た食費の目安</h3>
+     <p>同じ年収帯の全国世帯は、食費にどれくらい使っている？ 公式統計を別の角度から見てみよう。</p>
+     <div className="c2v32-income-food-grid">
+      <div><small>今回入力した家全体の食費</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
+      <div><small>全国・世帯年収 {incomeFoodReference.profileBandLabel} ／ 食費の平均額</small>
+       <strong>{money(incomeFoodReference.monthlyMeanLowYen)}{incomeFoodReference.monthlyMeanHighYen!==incomeFoodReference.monthlyMeanLowYen?' ～ '+money(incomeFoodReference.monthlyMeanHighYen):''}/月</strong></div>
+     </div>
+     <p className="c2v32-income-food-disclaimer">これは{incomeFoodReference.source?.year}年の{incomeFoodReference.source?.population}を、年収階級別に見た別の統計参考だよ。複数の公表所得階級にまたがる場合は各階級の食費平均の最小～最大を表示。支出分布の上下限ではない。</p>
+     <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} 年収帯・世帯人数・年齢・地域を掛け合わせて作った数字ではないし、この差はムダ額・削減額・見直し候補額に加えない。</p>
+     <details className="c2v32-income-food-sources">
+      <summary>統計の出典・対象範囲を確認する</summary>
+      <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
+      {incomeFoodReference.source&&<a href={incomeFoodReference.source.sourceUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表を開く ↗</a>}
+     </details>
+    </section>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
