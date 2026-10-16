@@ -12,6 +12,34 @@ const makeVm=(confirmedA:number,cUpper:number)=>({
 });
 const show=(a:number,c:number)=>renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(a,c)}));
 const uncertain=show(0,17854);
+// 2025 e-Stat's income class is an independent reference. It must never
+// overwrite the age/size primary comparison, cUpper, or confirmed saving.
+const incomeProfile={diagnosisScope:'household',householdSize:4,annualIncomeBand:'500_599'};
+const officialIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),
+ profile:incomeProfile,
+ rows:[{category:'food',label:'食費',known:true,amount:64000,diagnosisAmount:64000,
+  comparable:103384,comparisonAmount:64000,comparisonQuality:'exact',v5Status:'protect',
+  aAmount:0,cUpper:0,applicability:'applicable'}]
+}}));
+assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
+assert.match(officialIncomeHTML,/500～599万円/);
+assert.match(officialIncomeHTML,/¥89,676/);
+assert.match(officialIncomeHTML,/¥90,249/);
+assert.match(officialIncomeHTML,/2025年/);
+assert.match(officialIncomeHTML,/世帯人数・年齢・地域を掛け合わせた平均ではありません/);
+assert.match(officialIncomeHTML,/この差はムダ額・削減額・見直し候補額に加えない/);
+assert.doesNotMatch(officialIncomeHTML,/data-section="CANDIDATE_BREAKDOWN"/);
+const noGrossBandHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,annualIncomeBand:'unknown'}
+}}));
+assert.doesNotMatch(noGrossBandHtml,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
+const differentIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,annualIncomeBand:'1000plus'}
+}}));
+assert.match(differentIncomeHTML,/¥116,235/);
+assert.match(differentIncomeHTML,/¥144,294/);
+
 for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','NEXT_QUEST','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
  assert.ok(uncertain.includes(marker),'missing section or asset '+marker);
 }
