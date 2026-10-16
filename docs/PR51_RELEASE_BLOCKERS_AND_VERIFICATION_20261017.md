@@ -57,3 +57,5 @@
 - **プレビューURLの現状:** ホスティング接続・配信作業未了のためURL未発行。存在しないURLは案内しない。VercelでPRブランチを独立プレビューデプロイした後、実URL・デプロイcommitを照合し、モバイルブラウザ実機の画像・フォント・LINE導線を検証する。
 - **公開ブロッカー継続:** 第1章専用の `VITE_MONEY_PERSONALITY_GAS_URL` をrepository secretへ登録、同一SHAで完全CI、匿名のPOST/Sheet到達確認、実機QA、ロールバック手順の確認。登録前にpublishしない。
 - **セキュリティ留意:** pilot環境のGAS URLを値がマスクされないGithub Actions variableで指定した場合、ワークフローログに出る可能性あり。可能ならenvironment secretとして保存し、変数のjob-level echo/露出を回避する。公開済みログにある情報の取り扱いは別途監査する。フロントエンドに渡すGAS /exec URLはAPI認証手段ではないため、サーバー側の認証・入力制限・レート制限も独立に必要。
+
+- **公開ワークフローのゲート強化:** `deploy-pages.yml` に `chapter12-v32-gate` を追加。mainへの正式マージ後は、GitHub Pages deployの `build` ジョブが旧V5 Visual SmokeとV3.2のChrome/WebKit通しQAの**両方**にPASSしなければ始まらない。なおこの新しいdeployワークフロー自体はまだmainへマージしていないため、実本番deployでの検証は未実施。
