@@ -8,6 +8,36 @@ on:
 permissions:
   contents: read
 jobs:
+  release-config:
+    name: Production GAS Configuration (no outbound traffic)
+    runs-on: ubuntu-latest
+    env:
+      CHAPTER2_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+      CHAPTER1_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+    steps:
+      - name: Verify dedicated GAS endpoints are configured and correctly shaped
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$CHAPTER1_GAS_URL" ]; then
+            echo "::error::Chapter 1 dedicated GAS endpoint is missing (VITE_MONEY_PERSONALITY_GAS_URL)"
+            exit 1
+          fi
+          if [ -z "$CHAPTER2_GAS_URL" ]; then
+            echo "::error::Chapter 2 GAS endpoint is missing (VITE_MUDAGIRI_GAS_URL)"
+            exit 1
+          fi
+          for required in "$CHAPTER1_GAS_URL" "$CHAPTER2_GAS_URL"; do
+            case "$required" in
+              https://script.google.com/macros/s/*/exec) ;;
+              *) echo "::error::Expected HTTPS /macros/s/.../exec format for GAS URL"; exit 1 ;;
+            esac
+          done
+          if [ "$CHAPTER1_GAS_URL" = "$CHAPTER2_GAS_URL" ]; then
+            echo "::error::Separate Chapter 1 GAS must not reuse Chapter 2 data endpoint"
+            exit 1
+          fi
+          echo "GAS_CONFIGURED_SEPARATE_ENDPOINTS_PASS (values intentionally omitted)"
   latest-ui:
     runs-on: ubuntu-latest
     timeout-minutes: 35
