@@ -48,3 +48,12 @@
 - GAS /exec URLは利用者向けの報告、issue、CIログへ転記しない。既存ログの環境変数表示を含め公開範囲・取り扱いを確認する。
 - 本番デプロイ前の残件: ①repo secret登録後の同一HEAD全ゲート再PASS、②匿名隔離テストでGAS POSTとSheet行確認（重複・PII含む）、③rootを変更しない実URLプレビュー、④iOS/AndroidのLINE・保険/ライフプランCTA・復元・シェア実機確認。
 - この追跡監査はGAS値・本番サイト・データを変更していない。PRはDraftのまま保護する。
+
+## 2026-10-17 続行：V3.2本番フラグと独立プレビュー
+- **公開前に検出・修正:** QAワークフローは `VITE_CHAPTER2_V32=1` を指定していたが、旧deploy-pages.yml の本番buildジョブには未指定。これでは本番でV3.2の結果画面が選ばれない可能性があるため、releaseブランチの本番buildジョブに `VITE_CHAPTER2_V32: "1"` と値の明示的チェックを追加。mainへのマージ・デプロイは未実施。
+- **旧版の保護:** 既存 GitHub Pages root、main、GAS、ローカルデータの仕様は変更していない。GitHub Pagesのrelease visual-gateはV5レガシー回帰テストとして維持し、V3.2は独立UI gateで追加検証する。
+- **別ホストのプレビュー準備:** `vercel.json` をreleaseブランチに追加。Viteの絶対ベース `/` とSPA deep-link rewriteを使用し、公開・第1章・第2章の任意URLを直接開ける構成。プレビューbuildでは第1章/第2章の両GASを明示的に空にし、cohort=PILOT、V3.2=ON。実データ書き込みの確認には使用しない。
+- **プレビューのゲート:** `isolated-preview-build` をCIに追加。ビルド出力の絶対asset path、rewrite設定、GAS未設定、V3.2フラグ、およびproductionとのフラグ一致を監査。CIがPASSしても**Web配信URLでの動作確認済みを意味しない**。
+- **プレビューURLの現状:** ホスティング接続・配信作業未了のためURL未発行。存在しないURLは案内しない。VercelでPRブランチを独立プレビューデプロイした後、実URL・デプロイcommitを照合し、モバイルブラウザ実機の画像・フォント・LINE導線を検証する。
+- **公開ブロッカー継続:** 第1章専用の `VITE_MONEY_PERSONALITY_GAS_URL` をrepository secretへ登録、同一SHAで完全CI、匿名のPOST/Sheet到達確認、実機QA、ロールバック手順の確認。登録前にpublishしない。
+- **セキュリティ留意:** pilot環境のGAS URLを値がマスクされないGithub Actions variableで指定した場合、ワークフローログに出る可能性あり。可能ならenvironment secretとして保存し、変数のjob-level echo/露出を回避する。公開済みログにある情報の取り扱いは別途監査する。フロントエンドに渡すGAS /exec URLはAPI認証手段ではないため、サーバー側の認証・入力制限・レート制限も独立に必要。
