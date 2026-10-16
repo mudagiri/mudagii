@@ -22,21 +22,25 @@ for(const id of ['multi_450','multi_900','multi_1500']){
   if(x?.confidence==='AUDIT')assert.equal(x.value,null,'AUDIT may not invent an average: '+id+'/'+c);
  }
 }
+// FROZEN G03: no observed household-size × income cell may be synthesized.
 for(const id of ['multi_900','multi_1500']){
- for(const c of ['energy','food','daily','fun'] as const){
-  const item=read(id,c);
-  if(typeof item?.meta?.incomeFactor==='number'&&Math.abs(item.meta.incomeFactor-1)>0.000001){
-   assert.equal(item.confidence,'MODEL','Income-corrected reference must be MODEL: '+id+'/'+c);
-   assert.equal(item.meta.jointCrossTab,false,'Cannot imply observed joint income × household average: '+id+'/'+c);
-  }
+ for(const c of categories){
+  assert.equal(read(id,c)?.value,read('multi_450',c)?.value,'Unverified income correction applied to primary benchmark '+id+'/'+c);
  }
+ for(const c of ['food','daily','fun'] as const){
+  assert.equal(read(id,c)?.confidence,'DIRECT','Household-size mean must be direct: '+c);
+  assert.equal(read(id,c)?.meta?.incomeNotApplied,true,'No income factor allowed: '+c);
+ }
+ assert.equal(read(id,'energy')?.confidence,'MODEL');
+ assert.equal(read(id,'energy')?.meta?.model_estimate,true);
 }
 const changed=categories.filter(c=>read('multi_450',c)?.value!==read('multi_900',c)?.value);
+assert.equal(changed.length,0,'Income-only profile variation cannot alter the primary comparable');
 console.log('COMPARABLE_INCOME_MATRIX_V1',JSON.stringify({
  scenarios:results.map(x=>({id:x.id,rows:Object.fromEntries(categories.map(c=>[c,{value:x.rows[c]?.value??null,confidence:x.rows[c]?.confidence??'MISSING',sourceVersion:x.rows[c]?.sourceVersion??'MISSING'}]))})),
  multiIncomeChangedCategories:changed,
- multiIncomeFactorUsesFrozenV1:true,
- warning:'Multi-income ratio is applied to 2025 household-size/region/month reference despite absent joint source lineage; treat as MODEL pending provenance review; do not interpret as savings.'
+ multiIncomeFactorUsesFrozenV1:false,
+ warning:'The canonical contract forbids combining marginal income with household-size statistics. An income-class reference needs its own source and population label; user take-home ratio is not a peer average.'
 },null,2));
-assert.ok(changed.length>0,'Legacy income factor must be explicitly tracked and audited rather than silently lost');
+assert.equal(changed.length,0,'No synthetic cross-tab income factor is allowed');
 console.log('COMPARABLE_INCOME_MATRIX_V1_QA_PASS');
