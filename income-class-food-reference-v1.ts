@@ -48,6 +48,16 @@ const SINGLE_ALL:readonly SourceBand[]=[
  {minAnnualIncomeYen:5_000_000,maxAnnualIncomeYen:6_000_000,label:'500～600万円',foodAnnualYen:655075,sampleHouseholds:32},
  {minAnnualIncomeYen:6_000_000,maxAnnualIncomeYen:null,label:'600万円以上',foodAnnualYen:832953,sampleHouseholds:49},
 ];
+export const SINGLE_INCOME_FOOD_OPTIONS=[
+ {value:'under100',label:'100万円未満'},
+ {value:'100_199',label:'100～199万円'},
+ {value:'200_299',label:'200～299万円'},
+ {value:'300_399',label:'300～399万円'},
+ {value:'400_499',label:'400～499万円'},
+ {value:'500_599',label:'500～599万円'},
+ {value:'600plus',label:'600万円以上'},
+] as const;
+export type SingleIncomeFoodOptionV1=typeof SINGLE_INCOME_FOOD_OPTIONS[number]['value'];
 export const FOOD_INCOME_SOURCE={
   multi_all:{year:2025,table:'第4-2表',population:'全国・二人以上の世帯（就業状態を限定しない）',
     sheet:'二人',category:'食料',annualIncomeSource:'年間収入',annualFoodYen:true,
@@ -118,6 +128,22 @@ export function foodIncomeBandFromOfficial2025(population:FoodIncomePopulation,b
   scopeWarning:sourceBroader
    ?'公表区分が入力の年収帯より広いため、さらに粗い目安です。年齢・地域・世帯人数は一致しません。'
    :'同じ年収帯に含まれる公表サブ階級の平均額の範囲です。世帯人数・年齢・地域を掛け合わせた平均ではありません。',
+ };
+}
+/** Optional single-person UI only: direct table 12 official bracket, not imputed from net pay.
+ * This local choice is not part of the frozen diagnosis or persistent profile.
+ */
+export function singleFoodReferenceForExplicitAnnualBracketV1(key:SingleIncomeFoodOptionV1):IncomeClassFoodReferenceV1|null{
+ const i=SINGLE_INCOME_FOOD_OPTIONS.findIndex(x=>x.value===key);
+ if(i<0)return null;
+ const b=SINGLE_ALL[i],base=foodIncomeBandFromOfficial2025('single_all','unknown');
+ const monthly=yenMonthly(b.foodAnnualYen);
+ return {
+  ...base,available:true,reason:'OK',
+  profileBandLabel:b.label,monthlyMeanLowYen:monthly,monthlyMeanHighYen:monthly,
+  matchedIncomeCells:1,minCellSampleHouseholds:b.sampleHouseholds,incomeBandLabels:[b.label],
+  scopeWarning:'2025年の全国単身世帯の年収階級別平均。年齢・都道府県を重ねた平均ではありません。'
+   +(key==='600plus'?' 「600万円以上」は高所得者をすべて含む広い階級で、1,000万円以上に固有の平均ではありません。':''),
  };
 }
 /** Never infer annual gross household income from user-entered net pay. */
