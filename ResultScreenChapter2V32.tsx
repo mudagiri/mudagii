@@ -699,13 +699,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <div><small>全国・年収帯別 ／ 日用品の同一表2項目合算</small><strong>{money(incomeDailyReference.monthlyLowYen)}{incomeDailyReference.monthlyHighYen!==incomeDailyReference.monthlyLowYen?' ～ '+money(incomeDailyReference.monthlyHighYen):''}/月</strong></div>
      </div>}
      <p className="c2v32-income-energy-footnote">光熱・水道は2025年の所得階級別公表値。日用品は同じ表の「家事雑貨」と「家事用消耗品」を合算。いずれも年額÷12の参考値で、請求月・地域・年齢・世帯人数を揃えた平均ではないよ。</p>
-     <p className="c2v32-income-food-disclaimer">これは{incomeFoodReference.source?.year}年の{incomeFoodReference.source?.population}を、年収階級別に見た別の統計参考だよ。複数の公表所得階級にまたがる場合は各階級の食費平均の最小～最大を表示。支出分布の上下限ではない。</p>
+     <p className="c2v32-income-food-disclaimer">これは{incomeFoodReference.source?.year}年の{incomeFoodReference.source?.population}を、年収階級別に見た別の統計参考だよ。複数の公表所得階級にまたがる場合は、それぞれの項目で各階級の平均額の最小～最大を表示。支出分布の上下限ではない。</p>
      <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} 年収帯・世帯人数・年齢・地域を掛け合わせて作った数字ではないし、この差はムダ額・削減額・見直し候補額に加えない。</p>
      <details className="c2v32-income-food-sources">
       <summary>統計の出典・対象範囲を確認する</summary>
       <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
       {incomeEnergyReference&&<p>同じ公表原表の「光熱・水道」行も参照。対象の年収階級：{incomeEnergyReference.coveredPublishedBrackets.join('、')}。{incomeEnergyReference.matchedCells}区分／最小の集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯。</p>}
-      {incomeDailyReference&&<p>同じ年・同じ年収階級・同じ世帯群の「家事雑貨（4.4）」＋「家事用消耗品（4.5）」を年額段階で合算後、月額に換算。対象：{incomeDailyReference.coveredPublishedBrackets.join('、')}。${incomeDailyReference.matchedCells}区分／最小の集計世帯数 ${incomeDailyReference.minSampleHouseholds}世帯。全国で「日用品」という単独項目が公表されているとは主張しない。</p>}
+      {incomeDailyReference&&<p>同じ年・同じ年収階級・同じ世帯群の「家事雑貨（4.4）」＋「家事用消耗品（4.5）」を年額段階で合算後、月額に換算。対象：{incomeDailyReference.coveredPublishedBrackets.join('、')}。{incomeDailyReference.matchedCells}区分／最小の集計世帯数 {incomeDailyReference.minSampleHouseholds}世帯。全国で「日用品」という単独項目が公表されているとは主張しない。</p>}
       {incomeFoodReference.source&&<a href={incomeFoodReference.source.downloadUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表Excelを開く ↗</a>}
      </details>
     </section>}
