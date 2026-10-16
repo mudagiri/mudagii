@@ -2,6 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
+import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
@@ -275,6 +276,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
   :energyIncomeReferenceForProfileV1(vm.profile);
  const familyEnergyRow=rows.find((x:any)=>x?.category==='energy'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
+ const incomeDailyReference=vm.profile?.householdSize===1
+  ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
+  :dailyIncomeReferenceForProfileV1(vm.profile);
+ const familyDailyRow=rows.find((x:any)=>x?.category==='daily'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const familyFoodRow=rows.find((x:any)=>x?.category==='food'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
@@ -664,7 +669,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力のため、手取り負担率は推測で作っていないよ。入力済みの金額と統計の比較はこのまま確認できる。</p>}
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>年収別の食費・光熱費参考も見てみる（任意）</summary>
+    <summary>年収別の支出参考も見てみる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
@@ -678,8 +683,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
     <section className="c2v32-income-food-context" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="所得階級別の独立した食費・光熱費参考値">
      <span className="c2v2-kicker">ANOTHER REFERENCE ／ もうひとつの参考</span>
-     <h3>年収帯から見た食費・光熱費の目安</h3>
-     <p>同じ年収帯の全国世帯は、食費や光熱・水道にどれくらい使っている？ 年齢や地域の比較とは別の公式統計だよ。</p>
+     <h3>年収帯から見た3つの支出参考</h3>
+     <p>同じ年収帯の全国世帯では、食費・光熱費・日用品をどれくらい使っている？ 既存の年齢・人数比較とは別の統計参考だよ。</p>
      <div className="c2v32-income-food-grid">
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの食費':'今回入力した家全体の食費'}</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
       <div><small>全国・世帯年収 {incomeFoodReference.profileBandLabel} ／ 食費の平均額</small>
@@ -689,13 +694,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの光熱費':'今回入力した家全体の光熱費'}</small><strong>{familyEnergyRow?money(Number(familyEnergyRow.amount)):'未入力'}{familyEnergyRow&&'/月'}</strong></div>
       <div><small>全国・年収帯別 ／ 光熱・水道の平均額</small><strong>{money(incomeEnergyReference.monthlyLowYen)}{incomeEnergyReference.monthlyHighYen!==incomeEnergyReference.monthlyLowYen?' ～ '+money(incomeEnergyReference.monthlyHighYen):''}/月</strong></div>
      </div>}
-     <p className="c2v32-income-energy-footnote">光熱・水道の参考値も2025年の同じ年収階級の公式平均。年額÷12で月換算した値なので、請求月や地域の条件を揃えた数字ではないよ。</p>
+     {incomeDailyReference&&<div className="c2v32-income-food-grid c2v32-income-daily-grid" data-section="INCOME_CLASS_DAILY_ROW">
+      <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの日用品費':'今回入力した家全体の日用品費'}</small><strong>{familyDailyRow?money(Number(familyDailyRow.amount)):'未入力'}{familyDailyRow&&'/月'}</strong></div>
+      <div><small>全国・年収帯別 ／ 日用品の同一表2項目合算</small><strong>{money(incomeDailyReference.monthlyLowYen)}{incomeDailyReference.monthlyHighYen!==incomeDailyReference.monthlyLowYen?' ～ '+money(incomeDailyReference.monthlyHighYen):''}/月</strong></div>
+     </div>}
+     <p className="c2v32-income-energy-footnote">光熱・水道は2025年の所得階級別公表値。日用品は同じ表の「家事雑貨」と「家事用消耗品」を合算。いずれも年額÷12の参考値で、請求月・地域・年齢・世帯人数を揃えた平均ではないよ。</p>
      <p className="c2v32-income-food-disclaimer">これは{incomeFoodReference.source?.year}年の{incomeFoodReference.source?.population}を、年収階級別に見た別の統計参考だよ。複数の公表所得階級にまたがる場合は各階級の食費平均の最小～最大を表示。支出分布の上下限ではない。</p>
      <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} 年収帯・世帯人数・年齢・地域を掛け合わせて作った数字ではないし、この差はムダ額・削減額・見直し候補額に加えない。</p>
      <details className="c2v32-income-food-sources">
       <summary>統計の出典・対象範囲を確認する</summary>
       <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
       {incomeEnergyReference&&<p>同じ公表原表の「光熱・水道」行も参照。対象の年収階級：{incomeEnergyReference.coveredPublishedBrackets.join('、')}。{incomeEnergyReference.matchedCells}区分／最小の集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯。</p>}
+      {incomeDailyReference&&<p>同じ年・同じ年収階級・同じ世帯群の「家事雑貨（4.4）」＋「家事用消耗品（4.5）」を年額段階で合算後、月額に換算。対象：{incomeDailyReference.coveredPublishedBrackets.join('、')}。${incomeDailyReference.matchedCells}区分／最小の集計世帯数 ${incomeDailyReference.minSampleHouseholds}世帯。全国で「日用品」という単独項目が公表されているとは主張しない。</p>}
       {incomeFoodReference.source&&<a href={incomeFoodReference.source.downloadUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表Excelを開く ↗</a>}
      </details>
     </section>}
