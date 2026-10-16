@@ -684,23 +684,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <section className="c2v32-income-food-context" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="所得階級別の独立した食費・光熱費参考値">
      <span className="c2v2-kicker">ANOTHER REFERENCE ／ もうひとつの参考</span>
      <h3>年収帯から見た3つの支出参考</h3>
-     <p>同じ年収帯の全国世帯では、食費・光熱費・日用品をどれくらい使っている？ 既存の年齢・人数比較とは別の統計参考だよ。</p>
+     <p>あなたが選んだ年収帯の、全国の家計データだよ。いつもの年齢・人数別比較とは違う、もう一つの参考。</p>
      <div className="c2v32-income-food-grid">
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの食費':'今回入力した家全体の食費'}</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
-      <div><small>全国・世帯年収 {incomeFoodReference.profileBandLabel} ／ 食費の平均額</small>
+      <div><small>年収 {incomeFoodReference.profileBandLabel} ／ 食費の参考</small>
        <strong>{money(incomeFoodReference.monthlyMeanLowYen)}{incomeFoodReference.monthlyMeanHighYen!==incomeFoodReference.monthlyMeanLowYen?' ～ '+money(incomeFoodReference.monthlyMeanHighYen):''}/月</strong></div>
      </div>
      {incomeEnergyReference&&<div className="c2v32-income-food-grid c2v32-income-energy-grid" data-section="INCOME_CLASS_ENERGY_ROW">
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの光熱費':'今回入力した家全体の光熱費'}</small><strong>{familyEnergyRow?money(Number(familyEnergyRow.amount)):'未入力'}{familyEnergyRow&&'/月'}</strong></div>
-      <div><small>全国・年収帯別 ／ 光熱・水道の平均額</small><strong>{money(incomeEnergyReference.monthlyLowYen)}{incomeEnergyReference.monthlyHighYen!==incomeEnergyReference.monthlyLowYen?' ～ '+money(incomeEnergyReference.monthlyHighYen):''}/月</strong></div>
+      <div><small>年収帯別 ／ 光熱・水道の参考</small><strong>{money(incomeEnergyReference.monthlyLowYen)}{incomeEnergyReference.monthlyHighYen!==incomeEnergyReference.monthlyLowYen?' ～ '+money(incomeEnergyReference.monthlyHighYen):''}/月</strong></div>
      </div>}
      {incomeDailyReference&&<div className="c2v32-income-food-grid c2v32-income-daily-grid" data-section="INCOME_CLASS_DAILY_ROW">
       <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの日用品費':'今回入力した家全体の日用品費'}</small><strong>{familyDailyRow?money(Number(familyDailyRow.amount)):'未入力'}{familyDailyRow&&'/月'}</strong></div>
-      <div><small>全国・年収帯別 ／ 日用品の同一表2項目合算</small><strong>{money(incomeDailyReference.monthlyLowYen)}{incomeDailyReference.monthlyHighYen!==incomeDailyReference.monthlyLowYen?' ～ '+money(incomeDailyReference.monthlyHighYen):''}/月</strong></div>
+      <div><small>年収帯別 ／ 日用品の参考</small><strong>{money(incomeDailyReference.monthlyLowYen)}{incomeDailyReference.monthlyHighYen!==incomeDailyReference.monthlyLowYen?' ～ '+money(incomeDailyReference.monthlyHighYen):''}/月</strong></div>
      </div>}
-     <p className="c2v32-income-energy-footnote">光熱・水道は2025年の所得階級別公表値。日用品は同じ表の「家事雑貨」と「家事用消耗品」を合算。いずれも年額÷12の参考値で、請求月・地域・年齢・世帯人数を揃えた平均ではないよ。</p>
-     <p className="c2v32-income-food-disclaimer">これは{incomeFoodReference.source?.year}年の{incomeFoodReference.source?.population}を、年収階級別に見た別の統計参考だよ。複数の公表所得階級にまたがる場合は、それぞれの項目で各階級の平均額の最小～最大を表示。支出分布の上下限ではない。</p>
-     <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} 年収帯・世帯人数・年齢・地域を掛け合わせて作った数字ではないし、この差はムダ額・削減額・見直し候補額に加えない。</p>
+     <p className="c2v32-income-energy-footnote">総務省「家計調査」（2025年）。日用品は「家事雑貨＋家事用消耗品」、光熱費は電気・ガス・水道など。各年収階級の年額を12で割った参考値だよ。</p>
+     <p className="c2v32-income-food-disclaimer">※年収帯の幅が広いときは、複数の公表階級の平均額の最小～最大を表示。個々の世帯の支出幅ではないよ。</p>
+     <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} この差はムダ額・削減額・見直し候補額に加えない。</p>
      <details className="c2v32-income-food-sources">
       <summary>統計の出典・対象範囲を確認する</summary>
       <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
