@@ -5,6 +5,18 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/pilot/chapter2-v32/pilot/money-type/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/pilot/chapter2-v32/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/pilot/money-type/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
