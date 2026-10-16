@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
  foodIncomeBandFromOfficial2025,resolveFoodIncomeReferenceForProfileV1,
+ singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,
  INCOME_CLASS_FOOD_SOURCE_VERSION,FOOD_INCOME_SOURCE
 } from './income-class-food-reference-v1';
 
@@ -39,6 +40,17 @@ assert.deepEqual(singleOver.incomeBandLabels,['600万円以上'],
  '2025 single income table must not invent ¥10m+ income cells');
 assert.equal(foodIncomeBandFromOfficial2025('multi_all','unknown').available,false);
 
+const explicitSingle=singleFoodReferenceForExplicitAnnualBracketV1('400_499');
+assert.equal(explicitSingle?.available,true);
+assert.equal(explicitSingle?.monthlyMeanLowYen,53430);
+assert.equal(explicitSingle?.monthlyMeanHighYen,53430);
+assert.equal(explicitSingle?.profileBandLabel,'400～500万円');
+assert.equal(explicitSingle?.matchedIncomeCells,1);
+assert.equal(explicitSingle?.minCellSampleHouseholds,49);
+const broadSingle=singleFoodReferenceForExplicitAnnualBracketV1('600plus');
+assert.equal(broadSingle?.monthlyMeanLowYen,69413);
+assert.match(broadSingle?.scopeWarning??'',/高所得者をすべて含む広い階級/);
+assert.equal(SINGLE_INCOME_FOOD_OPTIONS.length,7);
 const multiProfile={
  diagnosisScope:'household' as const,householdSize:4,annualIncomeBand:'500_599' as const
 };
