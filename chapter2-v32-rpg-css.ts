@@ -159,6 +159,13 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-category-burden small{display:block;margin-top:3px;font-size:11px;color:#bed5d3}
 @media(max-width:350px){.c2v32-rpg .c2v32-income-burden-grid strong{font-size:18px}.c2v32-rpg .c2v32-income-burden-grid>div:last-child strong{font-size:23px}}
 
+/* Optional single-person bracket: no new required questions or storage. */
+.c2v32-rpg .c2v32-income-food-single-optin{margin:12px 0 12px;border:1px solid #6b8f8d;border-radius:11px;padding:1px 12px 11px;background:#102d36}
+.c2v32-rpg .c2v32-income-food-single-optin summary{font-size:14px;font-weight:850;min-height:48px;cursor:pointer;display:flex;align-items:center;color:#f9deb0;touch-action:manipulation}
+.c2v32-rpg .c2v32-income-food-single-optin label{display:block;font-size:14px;line-height:1.6;color:#eaf5f4;margin:7px 0}
+.c2v32-rpg .c2v32-income-food-single-optin select{width:100%;min-height:48px;padding:10px 11px;border:2px solid #8db9b0;border-radius:8px;background:#e8f2ed;color:#102f37;font-size:16px}
+.c2v32-rpg .c2v32-income-food-single-optin select:focus-visible{outline:3px solid #f9dc84;outline-offset:2px}
+.c2v32-rpg .c2v32-income-food-single-optin p{font-size:12px!important;line-height:1.6!important;color:#cbdedb!important;margin:7px 0 0!important}
 /* FIES 2025 annual-income food table: independent marginal reference, NEVER savings. */
 .c2v32-rpg .c2v32-income-food-context{margin:12px 0 17px;padding:15px 12px;border:1px solid #b99f69;border-radius:13px;background:linear-gradient(138deg,#2a323d,#102d3b 65%,#0f3940);box-shadow:0 6px 18px #0003}
 .c2v32-rpg .c2v32-income-food-context .c2v2-kicker{font-size:12px;letter-spacing:.04em}
