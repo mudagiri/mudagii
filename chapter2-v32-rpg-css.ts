@@ -158,4 +158,23 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-category-burden strong{font-size:17px;color:#fff0b5;font-weight:900}
 .c2v32-rpg .c2v32-category-burden small{display:block;margin-top:3px;font-size:11px;color:#bed5d3}
 @media(max-width:350px){.c2v32-rpg .c2v32-income-burden-grid strong{font-size:18px}.c2v32-rpg .c2v32-income-burden-grid>div:last-child strong{font-size:23px}}
+
+/* FIES 2025 annual-income food table: independent marginal reference, NEVER savings. */
+.c2v32-rpg .c2v32-income-food-context{margin:12px 0 17px;padding:15px 12px;border:1px solid #b99f69;border-radius:13px;background:linear-gradient(138deg,#2a323d,#102d3b 65%,#0f3940);box-shadow:0 6px 18px #0003}
+.c2v32-rpg .c2v32-income-food-context .c2v2-kicker{font-size:12px;letter-spacing:.04em}
+.c2v32-rpg .c2v32-income-food-context h3{font-size:21px;line-height:1.4;color:#ffedb5;margin:6px 0 8px}
+.c2v32-rpg .c2v32-income-food-context>p{font-size:14px!important;line-height:1.65!important;margin:7px 0 12px!important;color:#e5f2ec!important}
+.c2v32-rpg .c2v32-income-food-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.c2v32-rpg .c2v32-income-food-grid>div{min-width:0;padding:11px 9px;background:#0b2935;border:1px solid #6f8989;border-radius:10px}
+.c2v32-rpg .c2v32-income-food-grid>div:last-child{border-color:#d8bc7b;background:#183842}
+.c2v32-rpg .c2v32-income-food-grid small{font-size:13px!important;line-height:1.5;color:#d3e1e7;display:block}
+.c2v32-rpg .c2v32-income-food-grid strong{font-size:clamp(17px,4.5vw,21px);line-height:1.5;font-weight:900;color:#ffecb0;display:block;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;margin-top:7px}
+.c2v32-rpg .c2v32-income-food-context .c2v32-income-food-disclaimer{font-size:13px!important;color:#e8f0e8!important}
+.c2v32-rpg .c2v32-income-food-context .c2v32-income-food-note{font-size:13px!important;color:#f3dca7!important}
+.c2v32-rpg .c2v32-income-food-sources{margin:10px 0 0;border-top:1px solid #718a86}
+.c2v32-rpg .c2v32-income-food-sources summary{cursor:pointer;display:flex;align-items:center;min-height:48px;color:#e6f5ec;font-size:14px;font-weight:850;touch-action:manipulation}
+.c2v32-rpg .c2v32-income-food-sources summary:focus-visible,.c2v32-rpg .c2v32-income-food-sources a:focus-visible{outline:3px solid #98f1df;outline-offset:2px}
+.c2v32-rpg .c2v32-income-food-sources p{font-size:13px!important;color:#e4ede7!important;line-height:1.7}
+.c2v32-rpg .c2v32-income-food-sources a{display:inline-block;padding:10px 0;font-size:14px;color:#ffe19b;text-decoration:underline}
+@media(max-width:375px){.c2v32-rpg .c2v32-income-food-grid{grid-template-columns:minmax(0,1fr)}.c2v32-rpg .c2v32-income-food-grid strong{font-size:22px}}
 `;
