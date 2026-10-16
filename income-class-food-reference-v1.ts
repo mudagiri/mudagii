@@ -124,7 +124,7 @@ export function foodIncomeBandFromOfficial2025(population:FoodIncomePopulation,b
 export function resolveFoodIncomeReferenceForProfileV1(profile:Pick<ProfileV4,'diagnosisScope'|'householdSize'|'annualIncomeBand'>|null|undefined):IncomeClassFoodReferenceV1|null{
  if(!profile)return null;
  const population=profile.householdSize===1?'single_all':'multi_all';
- if(profile.diagnosisScope!=='household' && profile.householdSize!==1)return {...foodIncomeBandFromOfficial2025(population,'unknown'),reason:'SCOPE_MISMATCH'};
+ if(profile.diagnosisScope!=='household' && profile.householdSize!==1)return null;
  // The V4 single-person flow does NOT ask annual gross income. Do not repurpose
  // household income band, net monthly pay, or lifetime earnings in its place.
  if(profile.householdSize===1 && profile.annualIncomeBand==='unknown')return null;
