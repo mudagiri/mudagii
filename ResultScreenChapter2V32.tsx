@@ -676,7 +676,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <h3>年収帯から見た食費の目安</h3>
      <p>同じ年収帯の全国世帯は、食費にどれくらい使っている？ 公式統計を別の角度から見てみよう。</p>
      <div className="c2v32-income-food-grid">
-      <div><small>今回入力した家全体の食費</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
+      <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの食費':'今回入力した家全体の食費'}</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
       <div><small>全国・世帯年収 {incomeFoodReference.profileBandLabel} ／ 食費の平均額</small>
        <strong>{money(incomeFoodReference.monthlyMeanLowYen)}{incomeFoodReference.monthlyMeanHighYen!==incomeFoodReference.monthlyMeanLowYen?' ～ '+money(incomeFoodReference.monthlyMeanHighYen):''}/月</strong></div>
      </div>
