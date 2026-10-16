@@ -32,6 +32,6 @@ assert.equal(single?.source.population,'全国・単身世帯（就業状態を�
 const singleHigh=singleEnergyReferenceForExplicitAnnualBracketV1('600plus');
 assert.equal(singleHigh?.monthlyLowYen,12342);
 assert.equal(singleHigh?.matchedCells,1);
-assert.equal(singleEnergyReferenceForExplicitAnnualBracketV1('under100'),null,'Unknown choice cannot create fabricated reference');
+assert.equal(singleEnergyReferenceForExplicitAnnualBracketV1('unknown' as any),null,'Unknown choice cannot create fabricated reference');
 assert.match(INCOME_CLASS_ENERGY_SOURCE_VERSION,/FIES_2025/);
 console.log('OFFICIAL_2025_INCOME_ENERGY_REFERENCE_QA_PASS');
