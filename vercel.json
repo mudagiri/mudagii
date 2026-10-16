@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "VITE_CHAPTER2_V32=1 VITE_MUDAGIRI_GAS_URL='' VITE_MONEY_PERSONALITY_GAS_URL='' VITE_MONEY_PERSONALITY_DATA_COHORT=PILOT npm run build -- --base=/",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
