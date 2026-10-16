@@ -14,10 +14,11 @@ export type JobCharacterAsset={
   motifReason:string;
 };
 
-// Vite is built with base:'./'. Keeping the public JOB assets relative makes
-// them resolve correctly both at the production root and inside the hidden
-// /pilot/money-type/ preview without requiring ImportMeta env typings.
-const BASE='./assets/jobs/v1';
+// Respect Vite's build base: GitHub Pages uses './' while the isolated
+// SPA preview uses '/'. Deep links must load the same official JOB artwork.
+const VITE_BASE=((import.meta as any).env?.BASE_URL as string|undefined)||'./';
+const NORMALIZED_BASE=VITE_BASE.endsWith('/')?VITE_BASE:`${VITE_BASE}/`;
+const BASE=`${NORMALIZED_BASE}assets/jobs/v1`;
 
 /**
  * Shared canonical JOB character assets used across Chapter 1 SSR reveal,
