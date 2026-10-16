@@ -258,6 +258,7 @@ await clickButton(/診断結果を見る/);
  const official40=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
  assert.ok(official40.includes('¥53,430')&&official40.includes('今回入力したあなたの食費'),'Single official income mean and user amount separated');
  assert.ok(official40.includes('¥12,354')&&official40.includes('今回入力したあなたの光熱費'),'Official single-person energy income reference is a separate category without saving impact');
+ assert.ok(official40.includes('¥3,575')&&official40.includes('今回入力したあなたの日用品費'),'Houseware+household-consumables from one published table must be displayed separately');
  assert.ok(official40.includes('ムダ額・削減額・見直し候補額に加えない'),'No conversion of statistical difference into savings');
  if(engine==='chromium'){
   await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').scrollIntoViewIfNeeded();
