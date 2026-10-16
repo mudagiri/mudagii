@@ -137,6 +137,10 @@ jobs:
           import {readFileSync} from 'node:fs';
           const config=JSON.parse(readFileSync('vercel.json','utf8'));
           const html=readFileSync('dist/index.html','utf8');
+          const releaseYaml=readFileSync('.github/workflows/deploy-pages.yml','utf8');
+          const releaseBuild=releaseYaml.split('- name: Build latest public Chapter 1 + Chapter 2')[1]||'';
+          assert.match(releaseBuild,/VITE_CHAPTER2_V32: "1"/);
+          assert.match(releaseBuild,/test "\$VITE_CHAPTER2_V32" = "1"/);
           assert.equal(config.framework,'vite');
           assert.equal(config.outputDirectory,'dist');
           assert.deepEqual(config.rewrites,[{source:'/(.*)',destination:'/index.html'}]);
