@@ -354,6 +354,7 @@ await import('./qa-resolver-v2');
 await import('./qa-comparable-income-matrix-v1');
 await import('./qa-income-class-food-reference-v1');
 await import('./qa-income-class-energy-reference-v1');
+await import('./qa-income-class-daily-reference-v1');
 
 
 
