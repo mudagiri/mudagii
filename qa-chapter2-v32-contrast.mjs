@@ -80,7 +80,7 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
    const color=cssColors(getComputedStyle(el).color);
    const background=surfaceFor(el);
    return {label,selector,text:(el.textContent||'').trim().slice(0,100),
-    color:getComputedStyle(el).color,background:background?\`rgb(\${background.r},\${background.g},\${background.b})\`:null,
+    color:getComputedStyle(el).color,background:background?`rgb(${background.r},${background.g},${background.b})`:null,
     contrast:color&&background?Math.round(contrast(color,background)*100)/100:null,
     pass:color!==null&&background!==null&&contrast(color,background)>=4.5};
   });
