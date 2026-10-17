@@ -4,6 +4,7 @@ on:
     branches: [preview/github-pages-v32-20261017]
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -83,11 +84,64 @@ jobs:
             cmp -s "site/$file" /tmp/live-public-image || { echo "::error::Public assets drifted; deployment blocked"; exit 1; }
           done
           echo "LIVE_PAGES_EXACT_HTML_JS_CSS_AND_MAIN_PUBLIC_SHA_VERIFIED"
-      - name: Guard existing Chapter 1/2 preview
+      - name: Guard previous previews, permitting verified attach-workflow wipe only
+        env:
+          PREVIOUS_CH12_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
         run: |
           set -euo pipefail
-          curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter2-v32/" | grep -q "$CANDIDATE_SHA" || { echo "::error::C1/C2 preview has changed, no overwrite allowed"; exit 1; }
-          curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter123-unified/" | grep -q "$UNIFIED_SHA" || { echo "::error::Existing preview has changed, no overwrite allowed"; exit 1; }
+          # Attach Money Personality Pilot Preview run 39020780988 redeployed
+          # the root+Pilot, dropping Chapter 1/2 and unified subdirectories.
+          # A missing path is recoverable when the existing root+Pilot are
+          # preserved byte-for-byte. Unknown published SHAs are not.
+          for entry in "pilot/chapter2-v32/:$PREVIOUS_CH12_SHA" "pilot/chapter123-unified/:$UNIFIED_SHA"; do
+            prefix="${entry%%:*}"
+            expected="${entry#*:}"
+            code="$(curl --silent --show-error --location -H 'Cache-Control: no-cache'               -o /tmp/previous-preview-check -w '%{http_code}' "$LIVE_ROOT""$prefix")"
+            if [ "$code" = 200 ]; then
+              grep -Fq "$expected" /tmp/previous-preview-check || { echo "::error::Unknown published preview at $prefix; refusing replacement"; exit 1; }
+            elif [ "$code" = 404 ]; then
+              echo "KNOWN_PILOT_ATTACH_DROPPED_PREVIEW_PATH $prefix"
+            else
+              echo "::error::Unable to establish current preview status $prefix: $code"; exit 1
+            fi
+          done
+      - name: Retrieve exact already published production plus original Pilot
+        uses: actions/download-artifact@v4
+        with:
+          repository: mudagiri/mudagii
+          run-id: 39020780988
+          name: github-pages-money-preview-39020780988-1
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./published-pilot-site
+      - name: Preserve byte-for-byte current published production and standalone Pilot
+        run: |
+          set -euo pipefail
+          test -s published-pilot-site/artifact.tar || { echo "::error::Expected pinned published Pilot artifact unavailable"; exit 1; }
+          rm -rf site
+          mkdir site
+          tar -xf published-pilot-site/artifact.tar -C site
+          test -s site/index.html
+          test -s site/pilot/money-type/index.html
+          curl -fsSL --retry 3 -H 'Cache-Control: no-cache' "$LIVE_ROOT" -o /tmp/current-root-index
+          cmp -s /tmp/current-root-index site/index.html || { echo "::error::Pinned production HTML differs from current live site"; exit 1; }
+          curl -fsSL --retry 3 -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/money-type/" -o /tmp/current-pilot-index
+          cmp -s /tmp/current-pilot-index site/pilot/money-type/index.html || { echo "::error::Pinned Pilot differs from current live Pilot"; exit 1; }
+          # Compare the actual Pilot app's entry JS/CSS byte-for-byte, not just HTML.
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html=fs.readFileSync('site/pilot/money-type/index.html','utf8');
+          const paths=[...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map(x=>x[1]);
+          if(paths.length<1)throw new Error('Missing Pilot published JS/CSS assets');
+          fs.writeFileSync('/tmp/pilot-current-entry-assets',paths.join('\n')+'\n');
+          NODE
+          while IFS= read -r asset; do
+            clean="${asset#./}"
+            clean="${clean#/}"
+            test -f "site/pilot/money-type/$clean" || { echo "::error::Pilot entry missing from preserved artifact: $clean"; exit 1; }
+            curl -fsSL --retry 3 -H 'Cache-Control: no-cache'               "$LIVE_ROOT""pilot/money-type/$clean" -o /tmp/current-pilot-asset
+            cmp -s /tmp/current-pilot-asset "site/pilot/money-type/$clean" || { echo "::error::Published Pilot JS/CSS differs: $clean"; exit 1; }
+          done </tmp/pilot-current-entry-assets
+          echo "EXACT_PUBLISHED_PRODUCTION_AND_PILOT_PRESERVED_PASS"
       - name: Build Chapter 1/2 V3.2 preview, no GAS writes
         working-directory: candidate
         env:
