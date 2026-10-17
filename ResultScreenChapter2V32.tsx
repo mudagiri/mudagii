@@ -693,7 +693,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>年収別の支出参考も見てみる（任意）</summary>
+    <summary>同年代×年収帯の参考負担率を比べる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
@@ -774,13 +774,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
        </span>
        <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'属性別の比較目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
-        {!scopedWorkerCategory(x.category)&&lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">あなたの手取り換算（平均負担率ではない） <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+        {!sameAgeIncomePeer?.available&&!scopedWorkerCategory(x.category)&&lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">あなたの手取り換算（平均負担率ではない） <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
        </span>
       </div>
       {incomeRange&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
-       {!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
+       {!sameAgeIncomePeer?.available&&!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
         <small>あなたの手取り換算（公式平均負担率ではない） <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
       </div>}
       {sameAgeIncomePeer?.available&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income" data-age-income-worker-peer-category={x.category}>
@@ -790,7 +790,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <div><small>あなたの支出割合</small><b>{peerUserShare.toFixed(1)}%</b></div>
         <div><small>同年代・年収帯の参考</small><b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b></div>
        </div>}
-       <p>世帯主の年齢 {ageBandForObserved2024V1(Number(vm.profile?.age))?.split('（')[0]}、額面年収 {singleGrossBand==='400_499'?'400～499万円':'500～599万円'}の<strong>同時集計</strong>を照合。公表年収階級2区分の平均負担率の幅で、個々の世帯の分布幅ではありません。</p>
+       <p>あなたの{String(x.label||x.category)}は手取りの <b>{peerUserShare===null?'―':peerUserShare.toFixed(1)+'%'}</b>。同年代×同年収帯の勤労者単身世帯の参考は <b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b>。
+        {peerUserShare!==null&&(sameAgeIncomePeer.ratePctHigh??0)<peerUserShare?' 公表参考の上限を上回っています。':peerUserShare!==null&&(sameAgeIncomePeer.ratePctLow??0)>peerUserShare?' 公表参考の下限を下回っています。':peerUserShare!==null?' 公表された参考の幅の中です。':''}
+       </p>
+       <p>世帯主の年齢 {ageBandForObserved2024V1(Number(vm.profile?.age))?.split('（')[0]}、額面年収 {singleGrossBand==='400_499'?'400～499万円':'500～599万円'}の<strong>同時集計</strong>を照合。原表の2年収階級の平均負担率の幅で、個々の世帯の分布幅ではありません。</p>
        <small>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。平均費目支出 ÷ 同一交差セルの平均可処分所得。各原表セルの概数標本数は50世帯以上。ただし本人の就労状態の一致は未確認。平均との差を月額の削減額としては扱いません。</small>
       </div>}
       {workerCategory&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
