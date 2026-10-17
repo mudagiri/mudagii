@@ -9,7 +9,7 @@ const BG=ART+"mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp
 const HALL=ART+"mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp";
 const $=document.getElementById("chapter3-stage");
 const newAnswers=()=>({goal:null,horizon:null,forces:{capital:null,time:null,credit:null},concern:null,topics:[]});
-let answers=newAnswers(),screen="intro",step=0,dialogue=null;
+let answers=newAnswers(),screen="intro",step=0,dialogue=null,demoOpen=false;
 const demoCases=[
  {name:"生活費・返済が不安",goal:"stability",horizon:"over10",forces:{capital:"notNow",time:"notNow",credit:"interested"},concern:"debt",topics:["budget","consult"]},
  {name:"3年以内 × 運用中",goal:"future",horizon:"under3",forces:{capital:"notNow",time:"active",credit:"unknown"},concern:"loss",topics:["investBasics"]},
@@ -80,7 +80,7 @@ function chapterNav(active){const nav=node("div","chapter-rail");nav.setAttribut
 }
 function heroCopy(text,pose){const box=node("div","speech-stage");append(box,image(pose||MASCOT,"speech-mascot","ムダギリくん"),append(node("div","speech-text"),node("small","","ムダギリくん"),paragraph(text)));return box;}
 function stageHead(tag,title,sub){const head=node("header","area-heading");append(head,node("div","heading-over",tag),node("h1","",title),paragraph(sub,"heading-desc"));return head;}
-function reset(){answers=newAnswers();step=0;screen="intro";dialogue=null;render();scrollTop();}
+function reset(){answers=newAnswers();step=0;screen="intro";dialogue=null;demoOpen=false;render();scrollTop();}
 function begin(){screen="quest";step=0;render();scrollTop();}
 function areaIntro(){
  const shell=cardBody();
@@ -229,8 +229,8 @@ function resultScreen(){
  shell.append(nextStage);
  const final=sectionClass("result-footer");append(final,
   btn("もう一度、未来を探索する","quiet-back",reset),
-  btn("結果パターンを試す（デモ）","test-toggle",()=>{const controls=document.getElementById("demo-choices");controls.hidden=!controls.hidden;}));
- const dev=node("div","demo-choices");dev.id="demo-choices";dev.hidden=true;
+  btn("結果パターンを試す（デモ）","test-toggle",()=>{demoOpen=!demoOpen;document.getElementById("demo-choices").hidden=!demoOpen;}));
+ const dev=node("div","demo-choices");dev.id="demo-choices";dev.hidden=!demoOpen;
  dev.append(paragraph("8つの合成回答で、表示の違いを確認できます。個人データではありません。","caution"));
  const select=node("select","demo-select");select.setAttribute("aria-label","デモケース");
  const blank=node("option","","デモケースを選ぶ");blank.value="";select.append(blank);
