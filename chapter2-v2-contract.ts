@@ -57,7 +57,7 @@ export function chapter2V2ReferralUrl(currentUrl:string,platform:string){
  // The isolated same-origin demos preserve their own Chapter 1 handoff target.
  // The public root now starts at Chapter 1, so never send shares to an obsolete
  // /pilot/money-type/ page that may not be deployed.
- const isolated=/\/pilot\/chapter2-v(?:2|3|31|32)\/?$/.test(root.pathname);
+ const isolated=/\/pilot\/(?:chapter2-v(?:2|3|31|32)|chapter123-unified)\/?$/.test(root.pathname);
  const url=isolated?new URL('pilot/money-type/',root):new URL(root.href);
  if(!isolated)url.searchParams.set('mode','adaptive');
  url.searchParams.set('utm_source',platform);
