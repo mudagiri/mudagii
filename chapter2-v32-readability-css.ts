@@ -158,9 +158,11 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v22-comparison-ledger .c2v22-comparison-review span{
  color:#3d463e!important;
 }
-.c2v32-rpg .c2v22-comparison-ledger .c2v22-ledger-footnote{
- color:#354a48!important;font-size:13px!important;font-weight:650;
- line-height:1.7!important;
+.c2v32-rpg .c2v31-encyclopedia>.c2v22-ledger-footnote{
+ color:#e6f0e9!important;font-size:13px!important;font-weight:650;
+ line-height:1.7!important;background:#153845;
+ border:1px solid #638382;border-radius:9px;
+ padding:11px 12px;margin:11px 0 12px;
 }
 /* Deep quest panels retain their distinct dark theme but gain opaque text bases. */
 .c2v32-rpg .c2v32-statistical-buffer{
