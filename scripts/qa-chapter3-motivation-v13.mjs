@@ -10,6 +10,8 @@ for(const goal of goals)for(const concern of concerns)for(const horizon of horiz
  a(m.version==="CH3_MOTIVATION_V1_3","correct version");
  a(typeof m.goal.label==="string"&&m.goal.label.length>10,"real goal copy");
  a(typeof m.gain.lifeChange==="string"&&m.gain.lifeChange.length>10,"gain tied to life");
+ a(typeof m.aha.question==="string"&&m.aha.question.length>26,"derived missing-piece aha");
+ a(m.aha.selfReportedPremiseOnly===true,"no generated fake financial personal facts");
  a(typeof m.benefit.therefore==="string"&&m.benefit.therefore.length>10,"first because");
  a(typeof m.benefit.life==="string"&&m.benefit.life.length>10,"second because");
  a(m.pain.selfReported===(concern!=="none"&&concern!=="skip"),"pain only if self reported");
