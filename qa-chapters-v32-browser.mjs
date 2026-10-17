@@ -297,7 +297,7 @@ await clickButton(/診断結果を見る/);
  const foodRowText=await page.locator('[data-comparison-category="food"]').innerText();
  assert.ok(foodRowText.includes('食費')&&foodRowText.includes('比較条件：'),'Food reference and comparison criteria visible');
  const energyRowText=await page.locator('[data-comparison-category="energy"]').innerText();
- assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('今回の入力'),'Energy row is inspectable without tapping');
+ assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('あなたの支出'),'Energy row is inspectable without tapping');
  const sourceButton=page.locator('[data-comparison-category="food"] .c2v32-evidence-toggle').first();
  if(await sourceButton.count()){
   assert.equal(await sourceButton.getAttribute('aria-expanded'),'false','source details collapsed by default');
