@@ -32,19 +32,19 @@ assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参�
 assert.match(officialIncomeHTML,/あなたの支出/);
 assert.match(officialIncomeHTML,/あなたの手取りの <b>16.0%<\/b>/,'user expense / own takehome');
 assert.doesNotMatch(officialIncomeHTML,/同じ手取り換算 <b>25.8%<\/b>/,'do not confuse pseudo denominator rate with official worker burden rate');
-assert.match(officialIncomeHTML,/この参考率を<strong>あなたの手取りに当てはめると/,'genuine worker reference ratio is projected onto participant takehome with clear caveat');
+assert.doesNotMatch(officialIncomeHTML,/この参考率を<strong>あなたの手取りに当てはめると/,'income-only reference is not a same-age peer ratio');
 assert.match(officialIncomeHTML,/あなたの「光熱・水道費」は/);
 assert.match(officialIncomeHTML,/data-worker-rate-category="daily"/,'daily worker reference must be independently sourced');
 assert.match(officialIncomeHTML,/data-worker-rate-category="food"/);
 assert.match(officialIncomeHTML,/data-worker-rate-category="energy"/);
-assert.match(officialIncomeHTML,/勤労者世帯の参考負担率/);
+assert.match(officialIncomeHTML,/年収帯のみの負担率参考/);
 assert.match(officialIncomeHTML,/20\.6 ～ 21\.2%/,'observed worker food rates across the 500-599m subcells');
-assert.match(officialIncomeHTML,/data-section="REFERENCE_RECHECK_BUFFER"/,'two sources must lead to a separate check-only summary');
+assert.doesNotMatch(officialIncomeHTML,/data-section="REFERENCE_RECHECK_BUFFER"/,'unverified age×income cells must never create a monthly buffer');
 assert.doesNotMatch(officialIncomeHTML,/data-dual-clue-category="energy"/,'same food/energy/daily category must not stack worker and all-pop reference buffer');
-assert.match(officialIncomeHTML,/属性別＋勤労者の負担率/);
-assert.match(officialIncomeHTML,/月 <b>¥9,000<\/b>/,'display-only reference gap caps each category by its primary and income-worker rate separately');
+assert.doesNotMatch(officialIncomeHTML,/属性別＋勤労者の負担率/);
+assert.doesNotMatch(officialIncomeHTML,/月 <b>¥9,000<\/b>/,'age-unmatched gap must never appear');
 assert.doesNotMatch(officialIncomeHTML,/月 最大 ¥9,000/,'statistical gap must never replace frozen cUpper');
-assert.match(officialIncomeHTML,/上の金額には加えません/,'no addition to confirmed or uncertain possible saving');
+assert.match(officialIncomeHTML,/2024年全国家計構造調査/,'true cross-tab peer rates require 2024 table 1-29');
 assert.match(officialIncomeHTML,/月 ¥/);
 assert.doesNotMatch(officialIncomeHTML,/原表Excelを開く|e-Statの原表Excelを開く|\.xlsx<\/a>/,'UI must cite source without Excel links');
 assert.match(officialIncomeHTML,/500～599万円/);
@@ -59,9 +59,9 @@ assert.match(officialIncomeHTML,/2025年/);
 assert.match(officialIncomeHTML,/世帯人数・年齢・地域を掛け合わせた平均ではありません/);
 assert.match(officialIncomeHTML,/参考差をムダ額・削減額・見直し候補額に加えない/);
 assert.match(officialIncomeHTML,/平均支出 ÷ 平均可処分所得/,'same-cell ratio must be labelled as a ratio of means, not a mean of household ratios');
-assert.match(officialIncomeHTML,/費目平均と可処分所得平均を同じ年収階級で計算/);
+assert.match(officialIncomeHTML,/同じ所得階級の平均支出 ÷ 平均可処分所得/);
 assert.match(officialIncomeHTML,/勤労者世帯の参考/);
-assert.match(officialIncomeHTML,/賞与|就労状況・賞与/);
+assert.match(officialIncomeHTML,/年齢は未反映/);
 assert.doesNotMatch(officialIncomeHTML,/href="[^"]*e-stat/,'result never sends user to raw government spreadsheet');
 assert.doesNotMatch(officialIncomeHTML,/data-section="CANDIDATE_BREAKDOWN"/);
 const noGrossBandHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
@@ -81,7 +81,7 @@ const smallWorkers=renderToStaticMarkup(React.createElement(ResultScreenChapter2
  rows:[{category:'food',label:'食費',known:true,amount:95000,diagnosisAmount:95000,comparisonAmount:95000,
   comparable:75000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}]
 }}));
-assert.match(smallWorkers,/この年収帯は調査対象が少ない/);
+assert.match(smallWorkers,/同世代×同年収帯の平均負担率/);
 assert.doesNotMatch(smallWorkers,/data-worker-rate-category="food"/);
 const noWorkerScope=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,monthlyTakeHome:null},
@@ -89,7 +89,7 @@ const noWorkerScope=renderToStaticMarkup(React.createElement(ResultScreenChapter
   comparable:75000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}]
 }}));
 assert.match(noWorkerScope,/data-worker-rate-category="food"/,'official worker population rate can still be shown independently');
-assert.doesNotMatch(noWorkerScope,/属性別＋勤労者の負担率/,'worker-rate buffer cannot be calculated without participant take-home');
+assert.doesNotMatch(noWorkerScope,/data-section="REFERENCE_RECHECK_BUFFER"/,'never show a reference buffer without verified age×income cells');
 
 for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','NEXT_QUEST','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
  assert.ok(uncertain.includes(marker),'missing section or asset '+marker);
