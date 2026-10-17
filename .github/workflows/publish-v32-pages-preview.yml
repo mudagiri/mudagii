@@ -24,7 +24,7 @@ jobs:
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
       CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
-      CHAPTER3_SHA: "bad8f51f707ded3340f512b85fd8fab6425666f3"
+      CHAPTER3_SHA: "735968b700eda7bc00a50bc280e06d7be3ad82a1"
     steps:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout ONLY standalone Chapter 3
         with:
-          ref: bad8f51f707ded3340f512b85fd8fab6425666f3
+          ref: 735968b700eda7bc00a50bc280e06d7be3ad82a1
           path: chapter3
           persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
@@ -325,7 +325,7 @@ jobs:
                   echo "PUBLIC_CHAPTER123_UNIFIED_VERIFIED"
                   echo "URL: $LIVE_ROOT""pilot/chapter123-unified/"
                   for k in $(seq 1 15); do
-                    if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v12/" | grep -q "bad8f51f707ded3340f512b85fd8fab6425666f3"; then
+                    if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v12/" | grep -q "735968b700eda7bc00a50bc280e06d7be3ad82a1"; then
                       curl -fsSL "$LIVE_ROOT""pilot/chapter3-v12/stage.mjs" | grep -q 'evaluateChapter3'
                       echo "PUBLIC_CHAPTER3_V12_NEW_STAGE_VERIFIED"
                       echo "URL: $LIVE_ROOT""pilot/chapter3-v12/"
