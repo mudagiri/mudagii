@@ -276,12 +276,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const incomeEnergyReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
   :energyIncomeReferenceForProfileV1(vm.profile);
- const familyEnergyRow=rows.find((x:any)=>x?.category==='energy'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const incomeDailyReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
   :dailyIncomeReferenceForProfileV1(vm.profile);
- const familyDailyRow=rows.find((x:any)=>x?.category==='daily'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
- const familyFoodRow=rows.find((x:any)=>x?.category==='food'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -700,7 +697,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      const noNumber=nonNumericBasis(x);
      const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
      // Income-class references remain independent of the primary comparable.
-     const incomeRange=x.category==='food'&&incomeFoodReference?.available
+     const incomeRange=x.category==='food'&&incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null
       ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
       :x.category==='energy'&&incomeEnergyReference
        ?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
