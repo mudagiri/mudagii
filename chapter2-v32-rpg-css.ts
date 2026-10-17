@@ -215,4 +215,16 @@ export const V32CSS = `
  .c2v32-rpg .c2v32-income-inline>small{margin-top:5px}
  .c2v32-rpg .c2v32-merged-values>span>b{font-size:17px}
 }
+
+/* Secondary diagnostic clue: statistical overlap is NOT the savings upper. */
+.c2v32-rpg .c2v32-statistical-buffer{margin:12px 3px 5px;padding:13px 12px;background:linear-gradient(145deg,#163842,#182e38);border:1px solid #c6a563;border-radius:13px;color:#eff8f2;box-shadow:inset 0 0 0 1px #ffffff12}
+.c2v32-rpg .c2v32-statistical-buffer>span{display:block;font-size:12px;color:#ffe3a5;font-weight:900;letter-spacing:.02em}
+.c2v32-rpg .c2v32-statistical-buffer>strong{display:block;margin-top:5px;font-size:19px;line-height:1.45}
+.c2v32-rpg .c2v32-statistical-buffer .c2v32-statistical-gap{margin:8px 0!important;font-size:14px!important;line-height:1.6!important;color:#edf6ef!important}
+.c2v32-rpg .c2v32-statistical-gap b{color:#ffe2a4;font-size:21px;white-space:nowrap}
+.c2v32-rpg .c2v32-statistical-gap-items{display:flex;flex-wrap:wrap;gap:6px}
+.c2v32-rpg .c2v32-statistical-gap-items span{padding:6px 9px;border:1px solid #668d8e;background:#10313b;border-radius:7px;color:#e3f4ef;font-size:12px}
+.c2v32-rpg .c2v32-statistical-gap-items b{font-variant-numeric:tabular-nums;color:#ffe1a6}
+.c2v32-rpg .c2v32-statistical-buffer>small{display:block;margin-top:9px;font-size:12px;line-height:1.6;color:#c8deda}
+.c2v32-rpg .c2v32-statistical-buffer button{width:100%;min-height:48px;margin-top:10px;border:1px solid #9baeb4;border-radius:9px;background:#163941;color:#f8ecc6;font-size:14px;font-weight:850;cursor:pointer}
 `;
