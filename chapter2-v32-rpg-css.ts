@@ -227,4 +227,8 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-statistical-gap-items b{font-variant-numeric:tabular-nums;color:#ffe1a6}
 .c2v32-rpg .c2v32-statistical-buffer>small{display:block;margin-top:9px;font-size:12px;line-height:1.6;color:#c8deda}
 .c2v32-rpg .c2v32-statistical-buffer button{width:100%;min-height:48px;margin-top:10px;border:1px solid #9baeb4;border-radius:9px;background:#163941;color:#f8ecc6;font-size:14px;font-weight:850;cursor:pointer}
+
+/* Only when VITE_CHAPTER3_PREVIEW=1: an opt-in continuation, not a replacement of the consultation CTA. */
+.c2v32-rpg .c2v32-ch3-preview-link{display:block;max-width:100%;min-height:48px;margin:12px 0 8px;padding:12px 9px;border:1px solid #d9ba76;border-radius:10px;background:#143d44;color:#fff0b4;text-align:center;text-decoration:none;font-size:14px;line-height:1.65;font-weight:900;box-shadow:0 4px 9px #0005}
+.c2v32-rpg .c2v32-ch3-preview-link:focus-visible{outline:3px solid #8ef0dd;outline-offset:3px}
 `;
