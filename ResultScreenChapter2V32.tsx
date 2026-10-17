@@ -1,5 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
+import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
@@ -281,7 +282,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   :dailyIncomeReferenceForProfileV1(vm.profile);
  const familyDailyRow=rows.find((x:any)=>x?.category==='daily'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
  const familyFoodRow=rows.find((x:any)=>x?.category==='food'&&x.known===true&&typeof x.amount==='number'&&Number.isFinite(x.amount))??null;
- const burdenByCategory=new Map<string,number>((incomeBurden?.categories??[]).map((x:any)=>[String(x.category),Number(x.shareOfTakeHomePct)]));
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -658,16 +658,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
    <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
-   {incomeBurden?<section className="c2v32-income-burden" data-section="INCOME_BURDEN_CONTEXT" aria-label="入力した月手取りに対する支出負担の確認">
-    <div className="c2v32-income-burden-head"><span>もうひとつのものさし</span><strong>手取りから見た家計負担</strong></div>
-    <div className="c2v32-income-burden-grid">
-     <div><small>{incomeBurden.scope==='household'?'家全体の月手取り':'本人の月手取り'}</small><strong>{money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
-     <div><small>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出</small><strong>{money(incomeBurden.knownMonthlyExpenses)}</strong></div>
-     <div><small>手取りに占める割合</small><strong>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</strong></div>
-    </div>
-    <p>あなたの回答から計算した割合だよ。統計上の平均負担率でも、ムダ・削減可能額でもない。下の12カテゴリにも費目別の割合を表示するぞ。</p>
-    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※入力未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'・家に入れている生活費のまとめ払いは推定配分せず別扱い':''}。家計支出の全体比率とは限りません。</small>}
-   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力のため、手取り負担率は推測で作っていないよ。入力済みの金額と統計の比較はこのまま確認できる。</p>}
+   {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
+    <div className="c2v32-income-burden-head"><span>比較するときの共通の分母</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
+    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出は {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。下の各カテゴリで、支出額・比較の目安・手取り比率をまとめて見られるよ。</p>
+    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
+   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
     <summary>年収別の支出参考も見てみる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
@@ -681,32 +676,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>月手取りから年収を推定しないよ。ここで選んだ年収帯は、この画面の比較表示だけに使い、診断結果やLINEへ保存・送信しません。</p>
    </details>}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
-    <section className="c2v32-income-food-context" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="所得階級別の独立した食費・光熱費参考値">
-     <span className="c2v2-kicker">ANOTHER REFERENCE ／ もうひとつの参考</span>
-     <h3>年収帯から見た3つの支出参考</h3>
-     <p>あなたが選んだ年収帯の、全国の家計データだよ。いつもの年齢・人数別比較とは違う、もう一つの参考。</p>
-     <div className="c2v32-income-food-grid">
-      <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの食費':'今回入力した家全体の食費'}</small><strong>{familyFoodRow?money(Number(familyFoodRow.amount)):'未入力'}{familyFoodRow&&'/月'}</strong></div>
-      <div><small>年収 {incomeFoodReference.profileBandLabel} ／ 食費の参考</small>
-       <strong>{money(incomeFoodReference.monthlyMeanLowYen)}{incomeFoodReference.monthlyMeanHighYen!==incomeFoodReference.monthlyMeanLowYen?' ～ '+money(incomeFoodReference.monthlyMeanHighYen):''}/月</strong></div>
-     </div>
-     {incomeEnergyReference&&<div className="c2v32-income-food-grid c2v32-income-energy-grid" data-section="INCOME_CLASS_ENERGY_ROW">
-      <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの光熱費':'今回入力した家全体の光熱費'}</small><strong>{familyEnergyRow?money(Number(familyEnergyRow.amount)):'未入力'}{familyEnergyRow&&'/月'}</strong></div>
-      <div><small>年収帯別 ／ 光熱・水道の参考</small><strong>{money(incomeEnergyReference.monthlyLowYen)}{incomeEnergyReference.monthlyHighYen!==incomeEnergyReference.monthlyLowYen?' ～ '+money(incomeEnergyReference.monthlyHighYen):''}/月</strong></div>
-     </div>}
-     {incomeDailyReference&&<div className="c2v32-income-food-grid c2v32-income-daily-grid" data-section="INCOME_CLASS_DAILY_ROW">
-      <div><small>{vm.profile?.householdSize===1?'今回入力したあなたの日用品費':'今回入力した家全体の日用品費'}</small><strong>{familyDailyRow?money(Number(familyDailyRow.amount)):'未入力'}{familyDailyRow&&'/月'}</strong></div>
-      <div><small>年収帯別 ／ 日用品の参考</small><strong>{money(incomeDailyReference.monthlyLowYen)}{incomeDailyReference.monthlyHighYen!==incomeDailyReference.monthlyLowYen?' ～ '+money(incomeDailyReference.monthlyHighYen):''}/月</strong></div>
-     </div>}
-     <p className="c2v32-income-energy-footnote">総務省「家計調査」（2025年）。日用品は「家事雑貨＋家事用消耗品」、光熱費は電気・ガス・水道など。各年収階級の年額を12で割った参考値だよ。</p>
-     <p className="c2v32-income-food-disclaimer">※年収帯の幅が広いときは、複数の公表階級の平均額の最小～最大を表示。個々の世帯の支出幅ではないよ。</p>
-     <p className="c2v32-income-food-note">{incomeFoodReference.scopeWarning} この差はムダ額・削減額・見直し候補額に加えない。</p>
+    <section className="c2v32-income-food-context c2v32-income-food-context--merged" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
+     <span className="c2v2-kicker">2つの比較基準</span>
+     <h3>年齢・世帯の目安と、年収帯の参考を一緒に見る</h3>
+     <p>年収 {incomeFoodReference.profileBandLabel}の全国参考を、下の「食費・光熱費・日用品」の各カードに追加したよ。自分の支出・手取り割合と横に並べて、どちらの基準より多いか少ないか確認できる。</p>
+     <p className="c2v32-income-food-note">※年代・世帯などの比較と、年収帯の平均は別々の統計。両方を満たす人の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。</p>
      <details className="c2v32-income-food-sources">
-      <summary>統計の出典・対象範囲を確認する</summary>
-      <p>総務省 家計調査（{incomeFoodReference.source?.year}年）・{incomeFoodReference.source?.table}「食料」。対象の公表年収帯：{incomeFoodReference.incomeBandLabels.join('、')}。{incomeFoodReference.matchedIncomeCells}区分／最小の集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯。年間の平均支出を12で割り、円単位に丸めた数字。</p>
-      {incomeEnergyReference&&<p>同じ公表原表の「光熱・水道」行も参照。対象の年収階級：{incomeEnergyReference.coveredPublishedBrackets.join('、')}。{incomeEnergyReference.matchedCells}区分／最小の集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯。</p>}
-      {incomeDailyReference&&<p>同じ年・同じ年収階級・同じ世帯群の「家事雑貨（4.4）」＋「家事用消耗品（4.5）」を年額段階で合算後、月額に換算。対象：{incomeDailyReference.coveredPublishedBrackets.join('、')}。{incomeDailyReference.matchedCells}区分／最小の集計世帯数 {incomeDailyReference.minSampleHouseholds}世帯。全国で「日用品」という単独項目が公表されているとは主張しない。</p>}
-      {incomeFoodReference.source&&<a href={incomeFoodReference.source.downloadUrl} target="_blank" rel="noopener noreferrer">政府統計（e-Stat）の原表Excelを開く ↗</a>}
+      <summary>使っている統計と対象範囲</summary>
+      <p>出典：総務省「家計調査」（{incomeFoodReference.source?.year}年）、{incomeFoodReference.source?.table}。全国・{incomeFoodReference.source?.population}。食費は「食料」、光熱費は「光熱・水道」、日用品は「家事雑貨（4.4）＋家事用消耗品（4.5）」から作成。</p>
+      <p>{incomeFoodReference.scopeWarning} 年収帯の幅が広い場合の範囲は、異なる公表所得階級の平均支出の最小～最大であり、個人差の分布幅ではありません。</p>
+      <p>食費：対象の年収階級 {incomeFoodReference.incomeBandLabels.join('、')}（{incomeFoodReference.matchedIncomeCells}区分・最小集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯）。年額を12で割り円単位に丸めています。</p>
+      {incomeEnergyReference&&<p>光熱費：対象の年収階級 {incomeEnergyReference.coveredPublishedBrackets.join('、')}（{incomeEnergyReference.matchedCells}区分・最小集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯）。</p>}
+      {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
      </details>
     </section>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
@@ -718,16 +699,60 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      const compareAmount=comparable?comparisonTargetAmount(x):null;
      const noNumber=nonNumericBasis(x);
      const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
+     // Income-class references remain independent of the primary comparable.
+     const incomeRange=x.category==='food'&&incomeFoodReference?.available
+      ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
+      :x.category==='energy'&&incomeEnergyReference
+       ?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
+       :x.category==='daily'&&incomeDailyReference
+        ?{low:incomeDailyReference.monthlyLowYen,high:incomeDailyReference.monthlyHighYen}
+        :null;
+     const burdenRow=incomeBurden?.categories?.find((a:any)=>a.category===x.category);
+     const ownScopeAmount=burdenRow?.monthlyAmount??null;
+     const sameScope=ownScopeAmount!==null&&Number.isFinite(Number(x?.amount))
+      &&x.known===true&&Math.abs(Number(ownScopeAmount)-Number(x.amount))<1
+      &&(!comparable||compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1);
+     const lens=twoReferenceLensV1({
+      currentAmountYen:x.known===true&&x.amount!==null&&Number.isFinite(Number(x.amount))?Number(x.amount):null,
+      primaryReferenceYen:comparable?referenceAmount:null,
+      incomeReferenceLowYen:incomeRange?.low??null,incomeReferenceHighYen:incomeRange?.high??null,
+      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
+     });
+     const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
+     const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
+     const deltaDescription=(delta:number|null,what:string)=>delta===null?''
+      :delta>0?`${what}より月 ${money(delta)} 多め`
+      :delta<0?`${what}より月 ${money(-delta)} 少なめ`
+      :`${what}と同程度`;
      return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
       <div className="c2v22-comparison-head">
        {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
        <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
        <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
       </div>
-      <div className="c2v22-comparison-values">
-       <span><small>今回の入力</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b></span>
-       <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'近い条件の目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b></span>
+      <div className="c2v22-comparison-values c2v32-merged-values">
+       <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
+        {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
+       </span>
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'属性別の比較目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
+        {lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">同じ手取り換算 <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+       </span>
       </div>
+      {incomeRange&&<div className="c2v32-income-inline" data-section={incomeMark}>
+       <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
+        <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
+       {lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
+        <small>あなたの手取りに置き換えると <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+      </div>}
+      {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
+      {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
+       <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
+      </p>}
+      {lens.dualPositiveClueYen!==null&&lens.dualPositiveClueYen>0&&
+       <div className="c2v32-dual-reference-clue" data-dual-clue-category={x.category}>
+        <strong>2つの参考で共に上回る部分：月 {money(lens.dualPositiveClueYen)}</strong>
+        <small>見直す優先順位を考える手がかり。小さい方の比較差を表示した参考バッファで、実際に削減できる金額ではありません。診断の見直し候補額には加算しません。</small>
+       </div>}
       {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
        <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
        <button type="button" className="c2v32-evidence-toggle"
@@ -744,12 +769,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
        </div>
       </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
-      {burdenByCategory.has(x.category)&&<p className="c2v32-category-burden" data-burden-category={x.category}>手取りに対する負担割合：<strong>{burdenByCategory.get(x.category)?.toFixed(1)}%</strong><small>本人入力の月手取りで計算／統計平均ではありません</small></p>}
+
       {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※平均より高い・低いだけではムダや節約額は決まりません。根拠と判定は別です。</p>
+   <p className="c2v22-ledger-footnote">※「同じ手取り換算」は参考額をあなたの手取りで割った割合であり、平均世帯の手取り負担率ではありません。年齢等と所得帯は別々の統計。比較で上回る部分は未確定の確認材料で、ムダ額・節約額・改善額にはなりません。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>
