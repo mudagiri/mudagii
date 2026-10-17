@@ -31,6 +31,7 @@
 .story-label{font-size:11px;letter-spacing:.09em;color:#e5c17b;font-weight:900;margin:0 0 7px}
 .intro-next h2{font-weight:900;color:#fff0c3;font-size:22px;line-height:1.5;margin:6px auto}
 .intro-next p:not(.story-label){font-size:14px;color:#dbe4de;line-height:1.8}
+.stage-entry-cta{display:block;position:relative;z-index:2;max-width:360px;margin:15px auto 0!important}
 .gold-cta{width:100%;border:2px solid #ffebba;border-radius:12px;min-height:56px;margin:15px 0 7px;padding:12px 15px;background:linear-gradient(180deg,#ffedb0 0%,#e9b953 58%,#ca923d 100%);color:#26342b;box-shadow:0 5px 0 #93612b,0 9px 16px #0006;font-size:16px;font-weight:950;line-height:1.5}
 .gold-cta:not(:disabled):active{transform:translateY(3px);box-shadow:0 2px 0 #93612b}
 .fineprint{display:block;font-size:11px;color:#b9d0cd;line-height:1.7}
