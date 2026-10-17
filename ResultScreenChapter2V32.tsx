@@ -709,6 +709,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p>年収 {incomeFoodReference.profileBandLabel}の全国参考を、下の「食費・光熱費・日用品」の各カードに追加したよ。自分の支出・手取り割合と横に並べて、どちらの基準より多いか少ないか確認できる。</p>
      <p className="c2v32-income-food-note">※年代・世帯などの比較と、年収帯の平均は別々の統計。両方を満たす人の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。</p>
      <p className="c2v32-income-scope-warning">{incomeFoodReference.scopeWarning}</p>
+     <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
      <details className="c2v32-income-food-sources">
       <summary>使っている統計と対象範囲</summary>
       <p>出典：総務省「家計調査」（{incomeFoodReference.source?.year}年）、{incomeFoodReference.source?.table}。全国・{incomeFoodReference.source?.population}。食費は「食料」、光熱費は「光熱・水道」、日用品は「家事雑貨（4.4）＋家事用消耗品（4.5）」から作成。</p>
