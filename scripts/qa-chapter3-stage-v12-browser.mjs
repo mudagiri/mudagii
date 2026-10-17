@@ -53,6 +53,12 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    await page.getByRole("button",{name:/作戦書をひらく/}).click();
    assert.ok(await page.locator(".reward-reveal").isVisible(),"stage clear reward");
    assert.ok((await page.locator(".result-scroll h2").innerText()).includes("稼ぐ"),"personalized earning insight");
+   assert.equal(await page.locator(".motivation-mirror").count(),1,"pain/gain is part of the actual Chapter 3 result");
+   assert.ok((await page.locator(".gain-card strong").innerText()).includes("お金の事情"),"goal gain expressed in visitor terms");
+   assert.ok((await page.locator(".pain-card strong").innerText()).includes("考える時間"),"pain from self-reported Q4");
+   assert.equal(await page.locator(".benefit-step").count(),3,"two-step benefit chain");
+   assert.ok((await page.locator(".gap-slot").innerText()).includes("算出できません"),"unknown gap not faked");
+   assert.ok(await page.locator(".share-quest").isVisible(),"opt-in viral moment available");
    assert.equal(await page.locator(".power-tile").count(),3);
    assert.ok(await page.locator(".earn-power").isVisible(),"earning power must appear");
    assert.equal(await page.locator(".idea-row").count(),2,"selected topics carry over");
@@ -67,6 +73,14 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    for(let i=0;i<8;i++){
     await page.locator(".demo-select").selectOption(String(i));
     assert.equal(await page.locator(".result-scroll h2").count(),1,"all results map to insight");
+    assert.equal(await page.locator(".benefit-step").count(),3,"every route must show visitor benefit");
+    if(i===2||i===3){
+      assert.ok((await page.locator(".pain-card .motivation-body").innerText()).includes("不安をつくって"),"no fake fear when no concern");
+    }else{
+      assert.ok((await page.locator(".pain-card .motivation-body").innerText()).includes("可能性")||(await page.locator(".pain-card .motivation-body").innerText()).includes("ことがある")||(await page.locator(".pain-card .motivation-body").innerText()).includes("かもしれない"),"conditional pain, no guarantees");
+    }
+    assert.ok((await page.locator(".gap-slot").innerText()).includes("算出できません"),"no fake finance");
+
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(overflow<=2,"mobile horizontal overflow width "+width+" case "+i+" delta "+overflow);
    }
