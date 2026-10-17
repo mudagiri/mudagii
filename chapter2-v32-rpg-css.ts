@@ -231,4 +231,6 @@ export const V32CSS = `
 /* Only when VITE_CHAPTER3_PREVIEW=1: an opt-in continuation, not a replacement of the consultation CTA. */
 .c2v32-rpg .c2v32-ch3-preview-link{display:block;max-width:100%;min-height:48px;margin:12px 0 8px;padding:12px 9px;border:1px solid #d9ba76;border-radius:10px;background:#143d44;color:#fff0b4;text-align:center;text-decoration:none;font-size:14px;line-height:1.65;font-weight:900;box-shadow:0 4px 9px #0005}
 .c2v32-rpg .c2v32-ch3-preview-link:focus-visible{outline:3px solid #8ef0dd;outline-offset:3px}
+
+.c2v32-rpg .c2v32-income-food-context--merged .c2v32-income-scope-warning{padding:7px 9px;margin:7px 0!important;border-left:3px solid #e2c280;background:#143e41;color:#ffe5b0!important;font-size:12px!important;line-height:1.6!important}
 `;
