@@ -798,14 +798,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
        </span>
        <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'属性別の比較目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
-        {lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">同じ手取り換算 <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+        {!scopedWorkerCategory(x.category)&&lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">あなたの手取り換算（平均負担率ではない） <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
        </span>
       </div>
       {incomeRange&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
-       {lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
-        <small>あなたの手取りに置き換えると <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+       {!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
+        <small>あなたの手取り換算（公式平均負担率ではない） <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
       </div>}
       {workerCategory&&<div className="c2v32-worker-rate-card" data-worker-rate-category={x.category}>
        <div className="c2v32-worker-rate-head"><span>同じ年収帯の<strong>勤労者世帯の参考負担率</strong></span>
@@ -820,7 +820,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
          :'今回の支出は参考率の上限以下です。'}</p>}
        {workerGap.available&&workerGap.overlapWithPrimaryYen!==null&&workerGap.overlapWithPrimaryYen>0&&
         <p className="c2v32-worker-rate-overlap">属性別の比較目安と負担率の両方から見た確認余地：<b>{money(workerGap.overlapWithPrimaryYen)}/月</b>（削減額ではありません）</p>}
-       <small>2025年家計調査・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。集計世帯数：最小 {workerBurdenReference.sampleMinimum}。参考率は公表階級ごとの平均支出 ÷ 平均可処分所得。実際の各世帯の割合の平均ではなく、就労状況・賞与・地域・年齢は一致とは限りません。</small>
+       <small>総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。最小集計数 {workerBurdenReference.sampleMinimum}世帯。費目別平均 ÷ 平均可処分所得。ご本人の働き方・賞与・地域・年齢との一致は未確認。</small>
       </div>}
       {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
       {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
