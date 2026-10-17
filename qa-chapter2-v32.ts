@@ -14,7 +14,7 @@ const show=(a:number,c:number)=>renderToStaticMarkup(React.createElement(ResultS
 const uncertain=show(0,17854);
 // 2025 e-Stat's income class is an independent reference. It must never
 // overwrite the age/size primary comparison, cUpper, or confirmed saving.
-const incomeProfile={diagnosisScope:'household',householdSize:4,annualIncomeBand:'500_599'};
+const incomeProfile={diagnosisScope:'household',householdSize:4,monthlyTakeHome:400000,annualIncomeBand:'500_599'};
 const officialIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),
  profile:incomeProfile,
@@ -30,6 +30,9 @@ assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
 assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_ROW"/);
 assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参考を一緒に見る/);
 assert.match(officialIncomeHTML,/あなたの支出/);
+assert.match(officialIncomeHTML,/あなたの手取りの <b>16.0%<\/b>/,'user expense / own takehome');
+assert.match(officialIncomeHTML,/同じ手取り換算 <b>25.8%<\/b>/,'statistical reference / SAME user denominator, not a peer average rate');
+assert.match(officialIncomeHTML,/あなたの手取りに置き換えると/,'income-class reference uses same user denominator');
 assert.match(officialIncomeHTML,/あなたの「光熱・水道費」は/);
 assert.match(officialIncomeHTML,/data-dual-clue-category="daily"/);
 assert.match(officialIncomeHTML,/data-section="REFERENCE_RECHECK_BUFFER"/,'two sources must lead to a separate check-only summary');
