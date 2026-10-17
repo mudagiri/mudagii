@@ -290,6 +290,17 @@ await clickButton(/診断結果を見る/);
  for(const section of ['POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONFIRMED_REWARD','CONSULTATION_CTA_TOP','CATEGORY_COMPARISON_OVERVIEW']){
   assert.equal(await page.locator('[data-section="'+section+'"]').count(),1,'latest chapter section '+section);
  }
+ const chapter3Link=page.locator('[data-section="OPTIONAL_CHAPTER3_DEMO"]');
+ assert.equal(await chapter3Link.count(),1,'Integrated preview must offer an optional Chapter 3 quest without replacing consultation');
+ const chapter3Expected=new URL('pilot/chapter3-v11/',preview).toString();
+ assert.equal(await chapter3Link.getAttribute('href'),chapter3Expected,'Chapter 3 link stays on the same review domain/path');
+ const chapter3Tab=await context.newPage();
+ try{
+  const response=await chapter3Tab.goto(chapter3Expected,{waitUntil:'networkidle'});
+  assert.equal(response?.status(),200,'Chapter 3 preview loads from real Chapter 2 link');
+  assert.ok(await chapter3Tab.locator('.quest-hero').isVisible(),'Chapter 3 has a visible RPG result');
+  assert.equal(await chapter3Tab.locator('#scenario option').count(),8,'Chapter 3 preserves eight test cases');
+ }finally{await chapter3Tab.close()}
  const cats=page.locator('[data-comparison-category]');
  assert.equal(await cats.count(),12,'12 category comparisons visible without opening atlas');
  const artCount=await cats.locator('img.c2v23-comparison-enemy').count();
