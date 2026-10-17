@@ -21,7 +21,10 @@ export const AGE_INCOME_JOINT_SOURCE_V1={
  denominator:'可処分所得',
  sampleVariable:'集計世帯数（概数）',
  } as const;
-export const AGE_INCOME_JOINT_MIN_SAMPLE=30;
+// Approximate sample counts are rounded to tens in this 2024 release.
+// Require >=50 approximate sampled households for each narrow original
+// age×income class; stricter than our previous 2025 income-only n>=30.
+export const AGE_INCOME_JOINT_MIN_SAMPLE=50;
 export type JointBurdenExpense='food'|'energy'|'daily';
 export type JointHouseholdType='single'|'multi';
 export type JointAgeIncomeRowV1={
@@ -83,5 +86,85 @@ export function resolveJointBurdenV1(input:JointBurdenInputV1,rows:readonly Join
   eligibleForReviewBuffer:true as const,
  };
 }
-/** Data-pipeline sentinel: there are ZERO approved cross-tab cells yet. */
-export const VERIFIED_2024_JOINT_BURDEN_CELLS_V1:readonly JointAgeIncomeRowV1[]=[];
+/**
+ * 2024 e-Stat 0004039867 table 1-29-1: independently read using the
+ * PUBLIC official DB grid (世帯の種類=単身世帯, 世帯区分=勤労者世帯,
+ * 10歳階級2: individual age, 2024年, 全国, published 50万円 income columns).
+ *
+ * Each row, strictly in order:
+ * [headAgeClass, annualGrossClass, sampleApprox, meanMonthlyDisposable,
+ *  meanMonthlyFood, meanMonthlyEnergy, meanMonthlyHousewares,
+ *  meanMonthlyHouseholdConsumables]
+ *
+ * Provenance: read official grid's category rows
+ * 集計世帯数（概数）/食料/光熱・水道/家事雑貨/家事用消耗品/可処分所得.
+ * No interpolation, redistribution or postulated values.
+ * "日用品" is a CONTRACT-DEFINED sum of published two household categories.
+ *
+ * For multi-family households, head age may not match respondent's age;
+ * those official cross cells are NOT in this dataset.
+ */
+const OBSERVED_2024_SINGLE_WORKER_CELLS:readonly (readonly [string,string,number,number,number,number,number,number])[]=[
+ ["30歳未満（10歳階級2）","400～450万円",120,233091,35816,8957,2484,952],
+ ["30歳未満（10歳階級2）","450～500万円",130,243596,37367,8700,1936,2583],
+ ["30歳未満（10歳階級2）","500～550万円",80,284441,40874,9376,3031,757],
+ ["30歳未満（10歳階級2）","550～600万円",70,309716,34099,5842,1195,778],
+ ["30～39（10歳階級2）","400～450万円",80,245650,62223,11445,1765,1133],
+ ["30～39（10歳階級2）","450～500万円",100,271421,40265,10448,1712,1135],
+ ["30～39（10歳階級2）","500～550万円",80,248002,44099,10635,1782,1136],
+ ["30～39（10歳階級2）","550～600万円",90,421635,51309,11733,1578,1315],
+ ["40～49（10歳階級2）","400～450万円",60,248914,29375,9582,2252,934],
+ ["40～49（10歳階級2）","450～500万円",70,247879,40524,12612,2002,1203],
+ ["40～49（10歳階級2）","500～550万円",60,292434,49170,10884,1581,1438],
+ ["40～49（10歳階級2）","550～600万円",70,299450,46262,10167,1371,754],
+ ["50～59（10歳階級2）","400～450万円",80,240423,46201,11547,1862,1544],
+ ["50～59（10歳階級2）","450～500万円",60,281980,48413,12292,1583,1131],
+ ["50～59（10歳階級2）","500～550万円",60,256815,44555,12989,3805,1407],
+ ["50～59（10歳階級2）","550～600万円",70,288926,53055,12761,2831,1418],
+ ["60～69（10歳階級2）","400～450万円",100,233822,46015,12185,1801,1560],
+ ["60～69（10歳階級2）","450～500万円",60,248716,59187,14556,1455,1143],
+ ["60～69（10歳階級2）","500～550万円",50,283323,52152,12300,6680,1289],
+ ["60～69（10歳階級2）","550～600万円",30,323212,58783,12491,1206,1395],
+] as const;
+export const VERIFIED_2024_JOINT_BURDEN_CELLS_V1:readonly JointAgeIncomeRowV1[]=
+ OBSERVED_2024_SINGLE_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
+   averageMonthlyDisposableYen,food,energy,houseware,consumables])=>({
+  household:'single',workStatus:'worker',ageBand,grossAnnualIncomeBand,
+  approximateSample,averageMonthlyDisposableYen,
+  expenseYen:{food,energy,daily:houseware+consumables},
+  sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
+  verifiedOfficialCell:true,
+ }));
+export const AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS={
+ '400_499':['400～450万円','450～500万円'],
+ '500_599':['500～550万円','550～600万円'],
+} as const;
+export function ageBandForObserved2024V1(age:number):string|null{
+ if(!Number.isInteger(age)||age<18||age>120)return null;
+ if(age<30)return '30歳未満（10歳階級2）';
+ if(age<40)return '30～39（10歳階級2）';
+ if(age<50)return '40～49（10歳階級2）';
+ if(age<60)return '50～59（10歳階級2）';
+ if(age<70)return '60～69（10歳階級2）';
+ return null;
+}
+export function resolve2024SingleWorkerPeerBurdenV1(
+ age:number|null|undefined,
+ grossBand:string|null|undefined,
+ expense:JointBurdenExpense
+){
+ const ageBand=typeof age==='number'?ageBandForObserved2024V1(age):null;
+ const incomeBands=grossBand==='400_499'||grossBand==='500_599'
+  ?AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS[grossBand]:null;
+ if(!ageBand||!incomeBands)return {
+  available:false as const,reason:!ageBand?'AGE_CLASS_UNSUPPORTED':'GROSS_INCOME_CLASS_UNSUPPORTED',
+  ratePctLow:null as number|null,ratePctHigh:null as number|null,
+  sourceStatsDataId:null as string|null,usedCells:0,eligibleForReviewBuffer:false as const,
+ };
+ return resolveJointBurdenV1({
+  household:'single',workStatus:'worker',ageBand,
+  publishedGrossIncomeBands:[...incomeBands],expense,
+  respondentAgeIsHouseholdHead:true,
+ },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
+}
+
