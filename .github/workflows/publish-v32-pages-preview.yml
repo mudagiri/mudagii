@@ -24,7 +24,7 @@ jobs:
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
       CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
-      CHAPTER3_SHA: "e01887ecf313b27d25ccd571bd45aee5d4be3661"
+      CHAPTER3_SHA: "49fbe2d3db9c43fc545f6ee44eed5fb1d102c969"
     steps:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout ONLY standalone Chapter 3
         with:
-          ref: e01887ecf313b27d25ccd571bd45aee5d4be3661
+          ref: 49fbe2d3db9c43fc545f6ee44eed5fb1d102c969
           path: chapter3
           persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
@@ -173,6 +173,9 @@ jobs:
           node --check public/pilot/chapter3-v12/stage.mjs
           npm run build -- --base=/mudagii/
           test -f dist/pilot/chapter3-v12/engine.mjs
+          test -f dist/pilot/chapter3-v12/story.mjs
+          test -f dist/pilot/chapter3-v12/story.css
+          test -f dist/pilot/chapter3-v12/motivation.mjs
       - name: Overlay Chapter 3 v12 as an entirely new directory
         run: |
           set -euo pipefail
@@ -182,6 +185,7 @@ jobs:
           # The live root and Chapters 1/2 asset directory remain byte-identical.
           for asset in \
             brand/favicon-32.png \
+            jobs/v1/JOB_01_FDM_elephant.webp \
             mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
             mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp \
             mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp \
@@ -201,7 +205,7 @@ jobs:
           import assert from 'node:assert/strict';
           const p='site/pilot/chapter3-v12/index.html',h=fs.readFileSync(p,'utf8');
           fs.writeFileSync(p,h.replace('<head>','<head><meta name="mudagiri-chapter3-sha" content="'+process.env.CHAPTER3_SHA+'">'));
-          for (const a of ['mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp'])assert.ok(fs.existsSync('site/pilot/chapter3-v12/assets/'+a),'Official Chapter 3 art missing');
+          for (const a of ['mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp','jobs/v1/JOB_01_FDM_elephant.webp'])assert.ok(fs.existsSync('site/pilot/chapter3-v12/assets/'+a),'Official Chapter 3 art missing');
           console.log('CHAPTER3_NEW_PATH_ONLY_PASS');
           NODE
       - name: Install browser runner and launch same-origin staging
@@ -325,7 +329,7 @@ jobs:
                   echo "PUBLIC_CHAPTER123_UNIFIED_VERIFIED"
                   echo "URL: $LIVE_ROOT""pilot/chapter123-unified/"
                   for k in $(seq 1 15); do
-                    if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v12/" | grep -q "e01887ecf313b27d25ccd571bd45aee5d4be3661"; then
+                    if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v12/" | grep -q "49fbe2d3db9c43fc545f6ee44eed5fb1d102c969"; then
                       curl -fsSL "$LIVE_ROOT""pilot/chapter3-v12/stage.mjs" | grep -q 'evaluateChapter3'
                       echo "PUBLIC_CHAPTER3_V12_NEW_STAGE_VERIFIED"
                       echo "URL: $LIVE_ROOT""pilot/chapter3-v12/"
