@@ -20,6 +20,7 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
      await selected.selectOption(String(i));
      assert.equal(await page.locator(".key-question").count(),1,"new insight should exist "+i);
      assert.ok((await page.locator(".key-question").innerText()).length>12,"insight copy "+i);
+     assert.ok((await page.locator(".hero-sub").innerText()).includes(await page.locator(".insight h2").innerText()),"first-view insight is personalized "+i);
      assert.equal(await page.locator(".force-card").count(),3,"3 powers "+i);
      assert.equal(await page.locator(".primary").count(),1,"single primary CTA "+i);
      assert.ok(await page.locator(".primary").isVisible(),"CTA visible "+i);
