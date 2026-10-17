@@ -271,6 +271,15 @@ await clickButton(/診断結果を見る/);
  assert.ok(worker40.includes('年齢を照合した参考負担率ではない'),'Must explicitly reject peer ratio claim');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No invented age×income monthly buffer');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('2024年全国家計構造調査'),'Official joint 2024 source is identified');
+ const sameAge40=page.locator('[data-age-income-worker-peer-category="food"]');
+ assert.equal(await sameAge40.count(),1,'30–39 age and 400–499 gross class must match OFFICIAL same-cell source');
+ const sameAgeFood40=await sameAge40.innerText();
+ assert.ok(sameAgeFood40.includes('14.8 ～ 25.3%'),'Real e-Stat 2024 30s x 400–499 worker food rate range');
+ assert.ok(sameAgeFood40.includes('あなたの支出割合')&&sameAgeFood40.includes('20.0%'),'User own takehome rate is shown next to same age+income worker reference');
+ assert.ok(sameAgeFood40.includes('就労状態の一致は未確認'),'No unsupported worker-status claim');
+ assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
+ assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
+
  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
  if(engine==='chromium'){
@@ -288,14 +297,19 @@ await clickButton(/診断結果を見る/);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
  await page.locator('#c2v32-single-income').selectOption('500_599');
- assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'Single income bracket with 27 sampled households must suppress the worker reference');
- assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('交差セルと標本数を検証するまで'),'Age-income peer ratio must remain gated');
+ assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
+ const age50=await page.locator('[data-age-income-worker-peer-category="food"]').innerText();
+ assert.ok(age50.includes('12.2 ～ 17.8%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
+ assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時に集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
+ assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No extra savings buffer before worker employment status and expense match');
  await page.locator('#c2v32-single-income').selectOption('600plus');
  await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
  const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
  const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
  assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'600+ broad-worker cell available with sample size 39 and warning');
+ assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,'600plus single gross is broader than approved 2024 age-income source rows');
+
 
  await page.locator('#c2v32-single-income').selectOption('');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
