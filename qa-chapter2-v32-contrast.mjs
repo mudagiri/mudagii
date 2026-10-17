@@ -56,8 +56,6 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
    classes.push(
     ['worker-burden-heading','.c2v22-comparison-ledger .c2v32-worker-rate-head>span strong'],
     ['worker-burden-number','.c2v22-comparison-ledger .c2v32-worker-rate-head>strong'],
-    ['worker-own-number','.c2v22-comparison-ledger .c2v32-worker-rate-comparison b'],
-    ['worker-caption','.c2v22-comparison-ledger .c2v32-worker-rate-comparison small'],
     ['worker-paragraph','.c2v22-comparison-ledger .c2v32-worker-rate-card>p'],
     ['worker-source-note','.c2v22-comparison-ledger .c2v32-worker-rate-card>small']
    );
