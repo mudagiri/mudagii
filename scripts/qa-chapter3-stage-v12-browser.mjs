@@ -3,7 +3,7 @@ import fs from "node:fs";
 import {chromium,webkit} from "playwright";
 
 const dir="public/pilot/chapter3-v12";
-for(const file of ["index.html","stage.mjs","stage.css","story.mjs","story.css","motivation.mjs","motivation.css"])assert.ok(fs.existsSync(dir+"/"+file),"missing "+file);
+for(const file of ["index.html","stage.mjs","stage.css","story.mjs","story.css","ux-v15.css","next-guide.mjs","motivation.mjs","motivation.css"])assert.ok(fs.existsSync(dir+"/"+file),"missing "+file);
 const html=fs.readFileSync(dir+"/index.html","utf8");
 const code=fs.readFileSync(dir+"/stage.mjs","utf8");
 const css=fs.readFileSync(dir+"/stage.css","utf8");
@@ -67,6 +67,13 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    assert.equal(await page.locator(".relic-archive").count(),1,"C1/C2 story lineage appears in result");
    assert.ok((await page.locator(".relic-archive").innerText()).includes("サンプル"),"sample marker persisted");
 
+   const resultOrder=await page.locator(".stage-shell > *").evaluateAll(xs=>xs.map(el=>el.className));
+   assert.ok(resultOrder.indexOf("instant-aha")<resultOrder.indexOf("mission-choice"),"personal aha precedes actions");
+   assert.ok(resultOrder.indexOf("mission-choice")<resultOrder.indexOf("story-evidence"),"first CTA precedes long evidence");
+   assert.equal(await page.locator(".story-evidence").getAttribute("open"),null,"long explanations collapsed by default");
+   assert.ok((await page.locator(".instant-aha-copy").innerText()).length>25,"personal moment visible outside accordion");
+   await page.locator(".story-evidence-trigger").click();
+   assert.ok(await page.locator(".benefit-bridge").isVisible(),"user may inspect rationale optionally");
    assert.ok((await page.locator(".result-scroll h2").innerText()).includes("稼ぐ"),"personalized earning insight");
    assert.equal(await page.locator(".motivation-mirror").count(),1,"pain/gain is part of the actual Chapter 3 result");
    assert.ok((await page.locator(".aha-card strong").innerText()).length>25,"cross-answer aha before the pain gain cards");
@@ -84,6 +91,10 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    assert.ok(!exposed.includes("円削減"),"not fabricate saving");
    await page.getByRole("button",{name:/選んだ2つの選択肢を見る/}).click();
    assert.ok(await page.locator("#action-panel").isVisible(),"CTA works locally");
+   assert.equal(await page.locator(".next-guide-card").count(),2,"selected interests produce two real learning guides");
+   assert.ok((await page.locator("#action-panel").innerText()).includes("転職"),"career guidance visible");
+   assert.ok((await page.locator("#action-panel").innerText()).includes("副業"),"side-work guidance visible");
+   assert.equal(await page.locator(".guide-checks li").count(),6,"each topic gives three check questions");
    await page.getByRole("button",{name:/結果パターンを試す/}).click();
    assert.ok(await page.locator("#demo-choices").isVisible(),"QA-only cases accessible");
    for(let i=0;i<8;i++){
@@ -91,9 +102,9 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
     assert.equal(await page.locator(".result-scroll h2").count(),1,"all results map to insight");
     assert.equal(await page.locator(".benefit-step").count(),3,"every route must show visitor benefit");
     if(i===2||i===3||i===5){
-      assert.ok((await page.locator(".pain-card .motivation-body").innerText()).includes("不安をつくって"),"no fake fear when no concern");
+      assert.ok((await page.locator(".pain-card .motivation-body").textContent()).includes("叶えたい未来"),"no fake fear when no concern");
     }else{
-      assert.ok((await page.locator(".pain-card .motivation-body").innerText()).length>20,"self-reported concern has a conditional explanation");
+      assert.ok((await page.locator(".pain-card .motivation-body").textContent()).length>20,"self-reported concern has a conditional explanation");
     }
     assert.ok((await page.locator(".gap-slot").innerText()).includes("算出できません"),"no fake finance");
 
