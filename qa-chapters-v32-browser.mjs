@@ -129,7 +129,7 @@ try{
  assert.ok(ch1Journey.job&&ch1Journey.share,'SSR JOB and viral share preview must remain intact');
  await screenshot('02-chapter1-result');
  await page.locator('.mpp17-unified-next-cta').click();
- await page.waitForURL(url=>url.pathname.endsWith('/pilot/chapter2-v32/'),{timeout:13000});
+ await page.waitForURL(url=>url.pathname===new URL(preview).pathname,{timeout:13000});
  assert.equal(new URL(page.url()).pathname,new URL(preview).pathname);
  const after=await page.evaluate(()=>({anonymousUserId:localStorage.getItem('mudagiri_anonymous_user_id_v1'),handoff:JSON.parse(localStorage.getItem('mudagiri_money_type_handoff_v1')||'null')}));
  assert.equal(after.anonymousUserId,before.anonymousUserId,'shared origin must retain anonymous join key');
