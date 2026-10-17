@@ -20,9 +20,20 @@ const officialIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenCh
  profile:incomeProfile,
  rows:[{category:'food',label:'食費',known:true,amount:64000,diagnosisAmount:64000,
   comparable:103384,comparisonAmount:64000,comparisonQuality:'exact',v5Status:'protect',
-  aAmount:0,cUpper:0,applicability:'applicable'}]
+  aAmount:0,cUpper:0,applicability:'applicable'},
+ {category:'energy',label:'光熱・水道費',known:true,amount:33000,diagnosisAmount:33000,comparisonAmount:33000,
+  comparable:26000,comparisonQuality:'exact',v5Status:'inspect',aAmount:0,cUpper:0,applicability:'applicable'},
+ {category:'daily',label:'日用品費',known:true,amount:10000,diagnosisAmount:10000,comparisonAmount:10000,
+  comparable:8000,comparisonQuality:'exact',v5Status:'inspect',aAmount:0,cUpper:0,applicability:'applicable'}]
 }}));
 assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
+assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_ROW"/);
+assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参考を一緒に見る/);
+assert.match(officialIncomeHTML,/あなたの支出/);
+assert.match(officialIncomeHTML,/あなたの「光熱・水道費」は/);
+assert.match(officialIncomeHTML,/data-dual-clue-category="daily"/);
+assert.match(officialIncomeHTML,/月 ¥/);
+assert.doesNotMatch(officialIncomeHTML,/原表Excelを開く|e-Statの原表Excelを開く|\.xlsx<\/a>/,'UI must cite source without Excel links');
 assert.match(officialIncomeHTML,/500～599万円/);
 assert.match(officialIncomeHTML,/¥89,676/);
 assert.match(officialIncomeHTML,/¥90,249/);
@@ -33,14 +44,17 @@ assert.match(officialIncomeHTML,/¥6,288/);
 assert.match(officialIncomeHTML,/家事雑貨（4.4）/);
 assert.match(officialIncomeHTML,/2025年/);
 assert.match(officialIncomeHTML,/世帯人数・年齢・地域を掛け合わせた平均ではありません/);
-assert.match(officialIncomeHTML,/この差はムダ額・削減額・見直し候補額に加えない/);
+assert.match(officialIncomeHTML,/参考差をムダ額・削減額・見直し候補額に加えない/);
+assert.match(officialIncomeHTML,/平均世帯の手取り負担率ではありません/);
 assert.doesNotMatch(officialIncomeHTML,/data-section="CANDIDATE_BREAKDOWN"/);
 const noGrossBandHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,annualIncomeBand:'unknown'}
 }}));
 assert.doesNotMatch(noGrossBandHtml,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
 const differentIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
- ...makeVm(0,0),profile:{...incomeProfile,annualIncomeBand:'1000plus'}
+ ...makeVm(0,0),profile:{...incomeProfile,annualIncomeBand:'1000plus'},
+ rows:[{category:'food',label:'食費',known:true,amount:64000,diagnosisAmount:64000,comparisonAmount:64000,
+  comparable:103384,comparisonQuality:'exact',v5Status:'protect',aAmount:0,cUpper:0}]
 }}));
 assert.match(differentIncomeHTML,/¥116,235/);
 assert.match(differentIncomeHTML,/¥144,294/);
