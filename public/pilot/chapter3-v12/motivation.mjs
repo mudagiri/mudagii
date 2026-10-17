@@ -35,6 +35,30 @@ const MEANS={
 };
 const HORIZONS={under3:"3年以内",threeTo10:"3〜10年",over10:"10年以上先",unknown:"未定"};
 function safeLookup(table,key,defaultKey){return table[key]??table[defaultKey];}
+function chooseAha(a,goal,concern){
+ const fs=a.forces??{};
+ const selected=Array.isArray(a.topics)?a.topics:[];
+ if(a.horizon==="under3"&&(fs.time==="active"||fs.capital==="active"))
+   return "3年以内に使いたいお金と、今運用しているお金。もし同じ財布になっていたら、先に分けて考えたい。";
+ if(concern==="debt"&&(fs.credit==="active"||fs.credit==="interested"))
+   return "借入に関心があって、返済も気になるなら。「借りられるか」より前に「返済を続けても暮らしを守れるか」を確認したい。";
+ if(concern==="busy"&&selected.some(x=>["career","sideWork","skills"].includes(x)))
+   return "収入の選択肢を増やしたくても、今は時間が足りない。だから先に、無理なく使える時間を見つける方が具体的かもしれない。";
+ if(concern==="loss"&&(fs.time==="active"||fs.capital==="active"))
+   return "すでに運用をしていても、損するのが不安なら自然なこと。利回りより先に、いつ使うお金でどこまで変動に耐えられるか確認したい。";
+ if(concern==="none"||concern==="skip")
+   return "急いで商品を選ぶ理由がないなら、今は選ばなくてもいい。まず「何のために、いつ使うか」を整理することが次の一歩になる。";
+ if(a.goal==="family"&&a.horizon==="under3")
+   return "家族のための支出が近いなら、増やす話より先に、必要な時期に現金が残るか確かめたい。";
+ if(concern==="living"||concern==="debt")
+   return "毎月の負担が気になるなら、方法を増やす前に、家計を維持したまま使える余裕を確かめたい。";
+ if(a.goal==="undecided"||a.horizon==="unknown")
+   return "まだ目的や時期が決まっていなくても、焦る必要はない。使う時期の近いお金だけ、先に見分けておこう。";
+ if(concern==="dontKnow")
+   return "何から始めればいいか分からないときは、商品を探すより先に、ゴール・時期・現在地を並べたほうが近道かもしれない。";
+ return "未来に必要なのは「一番良い商品」より、「自分の目標に合う順番」かもしれない。";
+}
+
 export function buildChapter3Motivation(answers){
  if(!answers||typeof answers!=="object")throw new Error("Missing Chapter 3 answers");
  const goal=safeLookup(GOALS,answers.goal,"undecided");
@@ -51,6 +75,7 @@ export function buildChapter3Motivation(answers){
   version:"CH3_MOTIVATION_V1_3",
   goal:{label:goal.wish,horizon},
   pain:{selfReported:concern.reported,label:concern.label,conditionalRisk:concern.cost,firstCheck:concern.discovery},
+  aha:{question:chooseAha(answers,answers.goal,answers.concern),selfReportedPremiseOnly:true},
   gain:{lifeChange:goal.benefit},
   benefit:{feature:means.feature,therefore:means.what,life:goal.benefit},
   timing:urgency,
