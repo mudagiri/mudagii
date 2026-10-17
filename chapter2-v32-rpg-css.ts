@@ -229,4 +229,24 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-statistical-buffer button{width:100%;min-height:48px;margin-top:10px;border:1px solid #9baeb4;border-radius:9px;background:#163941;color:#f8ecc6;font-size:14px;font-weight:850;cursor:pointer}
 
 .c2v32-rpg .c2v32-income-food-context--merged .c2v32-income-scope-warning{padding:7px 9px;margin:7px 0!important;border-left:3px solid #e2c280;background:#143e41;color:#ffe5b0!important;font-size:12px!important;line-height:1.6!important}
+
+/* Published 2025 worker-household expenditure / disposable-income ratios.
+   An empirical worker-only comparator, not the all-household income lens. */
+.c2v32-rpg .c2v32-worker-rate-card{margin:9px 0;padding:12px 11px;border-radius:12px;border:1px solid #98b5a1;background:linear-gradient(135deg,#132f3d,#174038);color:#f2f9f0}
+.c2v32-rpg .c2v32-worker-rate-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.c2v32-rpg .c2v32-worker-rate-head>span{font-size:12px;line-height:1.45;color:#e2eee6}
+.c2v32-rpg .c2v32-worker-rate-head>span strong{display:block;font-size:14px;color:#fef0c1}
+.c2v32-rpg .c2v32-worker-rate-head>strong{font-size:clamp(22px,6vw,29px);color:#ffdc8d;font-variant-numeric:tabular-nums;line-height:1.3}
+.c2v32-rpg .c2v32-worker-rate-comparison{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0 7px}
+.c2v32-rpg .c2v32-worker-rate-comparison>div{border:1px solid #69958e;border-radius:9px;background:#092d39;padding:10px}
+.c2v32-rpg .c2v32-worker-rate-comparison small{display:block;color:#dbede6;font-size:12px!important;line-height:1.4}
+.c2v32-rpg .c2v32-worker-rate-comparison b{display:block;color:#fff1b7;font-size:22px;font-variant-numeric:tabular-nums}
+.c2v32-rpg .c2v32-worker-rate-card>p{font-size:13px!important;line-height:1.7!important;margin:7px 0!important;color:#e5f2ea!important}
+.c2v32-rpg .c2v32-worker-rate-card>small{display:block;font-size:12px!important;line-height:1.55!important;color:#cbddd7!important;margin-top:9px}
+.c2v32-rpg .c2v32-worker-rate-card .c2v32-worker-rate-overlap{background:#324a3e;border:1px solid #c7ae72;border-radius:8px;padding:8px;color:#fff4ca!important}
+.c2v32-rpg .c2v32-worker-rate-overlap>b{font-size:18px;color:#ffe6a2}
+.c2v32-rpg .c2v32-worker-source-inline{font-size:12px!important;line-height:1.6!important;color:#cfeddc!important}
+.c2v32-rpg .c2v32-worker-sample-warning{padding:8px 10px;border-left:3px solid #e5b777;background:#334035;border-radius:0 7px 7px 0;font-size:13px!important;color:#fff0c2!important}
+.c2v32-rpg .c2v32-statistical-gap-items small{display:block;font-size:11px;line-height:1.4;color:#d9e3d7;margin-top:3px}
+@media(max-width:375px){.c2v32-rpg .c2v32-worker-rate-comparison b{font-size:19px}}
 `;
