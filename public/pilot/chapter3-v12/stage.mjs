@@ -1,4 +1,5 @@
 import {evaluateChapter3,validateChapter3Answers} from "./engine.mjs";
+import {buildChapter3Motivation} from "./motivation.mjs";
 
 /** CH3 ONLY. No C1/C2 source imports, no GAS, no storage, no referrals or analytics. */
 const ART="../../assets/";
@@ -152,11 +153,11 @@ function questionScreen(){
  const stage=sectionClass("question-arena");
  stage.style.setProperty("--world-bg","url("+HALL+")");
  const names=[
-  ["QUEST 01 · 未来の目的","これから、お金の面で叶えたいことは？","いちばん近いものを1つ。まだ決まっていなくても大丈夫。","ここでは正解も不正解もないよ。自分の気持ちに近いものを選んでね。"],
+  ["QUEST 01 · 叶えたい未来","お金の心配が減ったら、どんな暮らしがしたい？","いちばん近いものを1つ。まだ決まっていなくても大丈夫。","増やす方法の前に、君が叶えたいことを教えて。そこから作戦を考えよう。"],
   ["QUEST 02 · 時間の地図","それ、いつ頃までに叶えたい？","だいたいの時期でOK。","目標までの時間で、比べるべき選択肢が変わることもあるんだ。"],
-  ["QUEST 03 · 3つの力","今の自分は、どんな状態？","3つ全部使っている必要はないよ。","ここは得意・不得意の採点じゃない。やっていることと、興味があることを整理しよう。"],
-  ["QUEST 04 · 気になること","今、お金のことで一番気になるのは？","いちばん近いものを1つ選んでね。","心配を増やすためじゃないよ。先に確かめることを決めるためなんだ。"],
-  ["QUEST 05 · 次の行き先","次は、どんな選択肢を知ってみたい？","2つまで選択OK。結果だけ見たい場合も選べるよ。","どこへ進むかは自分で決めていい。気になるものを選んでみよう。"]
+  ["QUEST 03 · 今の手段","今は、どんな方法を使っている？","全部使う必要はないよ。","ここは採点じゃない。未来に向かうための手段を、まず整理してみよう。"],
+  ["QUEST 04 · 今の気がかり","その未来を考えるとき、何がいちばん気になる？","困っていないなら「特にない」でOK。","無理に不安を探さなくていい。今引っかかっていることだけ教えてね。"],
+  ["QUEST 05 · 次の一歩","何が分かれば、一歩進めそう？","気になるものを2つまで。結果だけでもOK。","商品を決める前に、今の君に役立つ情報を選ぼう。"]
  ];
  const [tag,title,sub,talk]=names[step];
  append(stage,stageHead(tag,title,sub),heroCopy(dialogue||talk,step===2?SCROLL:MASCOT));
@@ -188,6 +189,7 @@ function resultScreen(){
  const evaluated=evaluateChapter3({answers,chapter1:null,chapter2:null});
  if(!evaluated.ok){screen="quest";step=4;dialogue="結果を表示する前に確認が必要だよ。";return questionScreen();}
  const current=storyVisuals[evaluated.storyKey]||storyVisuals.start;
+ const motivation=buildChapter3Motivation(answers);
  const shell=cardBody();shell.append(chapterNav());
  const hero=sectionClass("reward-reveal");
  hero.style.setProperty("--world-bg","url("+BG+")");
@@ -196,12 +198,47 @@ function resultScreen(){
  const token=node("div","reward-token");append(token,node("span","reward-token-inner",current.crest),node("small","",current.tag));hero.append(token);
  hero.append(heroCopy("未来の地図がひらいたぞ！ここで分かったことを、一緒に確かめよう。",REWARD));
  shell.append(hero);
+ // Needs-first design: show the visitor's expressed gain and concern before offering any "three powers".
+ const mirror=sectionClass("motivation-mirror");
+ append(mirror,node("p","result-kicker","君が答えたことから見えてきた"),
+   node("h2","","未来のギャップを見つけよう"));
+ const gain=sectionClass("gain-card");
+ append(gain,node("span","motivation-head","✦ 叶えたい未来"),node("strong","",motivation.goal.label),
+   paragraph(motivation.goal.horizon+"を目安に考える","motivation-context"));
+ mirror.append(gain);
+ const pain=sectionClass("pain-card");
+ append(pain,node("span","motivation-head",motivation.pain.selfReported?"⚑ 君が選んだ気がかり":"◇ 今の気がかり"),
+   node("strong","",motivation.pain.label));
+ if(motivation.pain.selfReported)append(pain,paragraph("確認せずに進むと？","motivation-context"),
+   paragraph(motivation.pain.conditionalRisk,"motivation-body"));
+ else pain.append(paragraph("不安をつくって行動させる必要はないよ。","motivation-body"));
+ mirror.append(pain);
+ append(mirror,heroCopy(motivation.pain.selfReported
+   ?"「困るかもしれないこと」と「叶えたいこと」、両方が見えたね。次は、その差を整理してみよう。"
+   :"心配がなくてもいいんだ。これから選べる未来を、一緒に増やしていこう。",REWARD));
+ shell.append(mirror);
  const report=node("div","result-scroll");
  append(report,node("p","result-kicker","発見した未来のルート"),node("h2","",evaluated.insight.title),
   append(node("div","question-reveal"),node("small","","次に確かめたい問い"),paragraph(evaluated.insight.question)),
   paragraph(evaluated.insight.why,"result-why"),
   append(node("div","step-reward"),node("span","","今日できる一歩"),node("strong","",evaluated.insight.action)));
  shell.append(report);
+ const life=sectionClass("benefit-bridge");
+ append(life,node("p","result-kicker","だから、あなたに何がいい？"),node("h2","","手段の話より、暮らしの話をしよう"));
+ const detail=node("div","benefit-steps");
+ append(detail,
+   append(node("div","benefit-step"),node("small","","知ること・比べること"),node("strong","",motivation.benefit.feature)),
+   append(node("div","benefit-step"),node("small","","だから、何が変わる？"),node("strong","",motivation.benefit.therefore)),
+   append(node("div","benefit-step final"),node("small","","だから、暮らしには？"),node("strong","",motivation.benefit.life)));
+ life.append(detail);
+ life.append(paragraph(motivation.timing,"motivation-note"));
+ const gap=node("div","gap-slot");
+ append(gap,node("strong","","まだ数字で分かっていないこと"),
+   paragraph("必要なお金 − 現在地 ＝ 埋めたい差","gap-equation"),
+   paragraph(motivation.gap.reason,"gap-reason"));
+ life.append(gap);
+ life.append(heroCopy("何を買うか、の前に。君の目標を叶えるには、何がどれくらい必要なのか。ここが次の冒険だよ。",SCROLL));
+ shell.append(life);
  const cards=sectionClass("new-powers");
  append(cards,node("p","result-kicker","冒険者の現在地"),node("h2","","3つの力 ＋ 稼ぐ力"));
  const powerGrid=node("div","power-grid");
@@ -221,12 +258,21 @@ function resultScreen(){
  if(entries2.length===0)nextStage.append(paragraph("今日は作戦書を手に入れて、ここで冒険を終えるのもOK。","mission-topic"));
  else for(const t of entries2)nextStage.append(idea("✦",labels[t]||t));
  const action=btn(evaluated.primaryAction.label+"  →","gold-cta",()=>openAction(evaluated));
- const consult=btn("ライフプラン相談について知る","alt-cta",()=>openAction({primaryAction:{kind:"consult_interest"},topicIds:[]}));
+ const consult=btn("自分のギャップを数字で確かめる方法を見る","alt-cta",()=>openAction({primaryAction:{kind:"consult_interest"},topicIds:[]}));
  nextStage.append(action);
  if(evaluated.primaryAction.kind!=="consult_interest")nextStage.append(consult);
  const panel=node("div","action-panel");panel.id="action-panel";panel.hidden=true;nextStage.append(panel);
  nextStage.append(paragraph("この体験版では、提携先への紹介・予約・情報送信は行わないよ。","caution"));
  shell.append(nextStage);
+ const shareBox=sectionClass("share-quest");
+ append(shareBox,node("p","result-kicker","冒険を広げる"),node("h2","","君も、未来の大陸をクリア！"),
+   paragraph("金額や気がかりは共有しない。冒険の記録だけ、希望する人がシェアできる。"));
+ const shareText=node("p","share-confirm");shareText.id="share-confirm";shareText.setAttribute("aria-live","polite");
+ shareBox.append(btn("冒険クリアの文章をコピー","alt-cta",async()=>{
+   try{await navigator.clipboard.writeText(motivation.copy);shareText.textContent="コピーしたよ。投稿するかは自分で決めてね。";}
+   catch{shareText.textContent="コピーできなかったよ。必要なら文章を選んでね。";const fallback=node("p","share-fallback",motivation.copy);shareBox.append(fallback);}
+ }));
+ shareBox.append(shareText);shell.append(shareBox);
  const final=sectionClass("result-footer");append(final,
   btn("もう一度、未来を探索する","quiet-back",reset),
   btn("結果パターンを試す（デモ）","test-toggle",()=>{demoOpen=!demoOpen;document.getElementById("demo-choices").hidden=!demoOpen;}));
@@ -243,7 +289,7 @@ function openAction(res){
  const panel=document.getElementById("action-panel");panel.hidden=false;panel.replaceChildren();
  const action=res.primaryAction;
  if(action.kind==="save"){append(panel,node("strong","","作戦書を獲得！"),paragraph("このプレビューでは個人データは保存していません。必要なら最初から診断できます。"));}
- else if(action.kind==="consult_interest"){append(panel,node("strong","","ライフプラン相談で整理すること"),paragraph("目標や必要な時期、家計の現状、選択肢のリスクを一緒に確認するための入口だよ。正式な予約・LINE導線は未接続。"));}
+ else if(action.kind==="consult_interest"){append(panel,node("strong","","数字にできれば、選ぶ理由が見えてくる"),paragraph("叶えたい未来 → 必要額 → 今の家計と資産・負債 → 足りない部分 → 具体的な手段。この順番で自分の設計図を整理できるよ。商品を選ぶのはその後でいい。"),paragraph("このデモでは必要額や差額は未計算。相談予約・LINE・提携先には接続していないよ。"));}
  else{append(panel,node("strong","","まずは仕組みと条件を知ろう"),paragraph("費用・リスク・必要な時間・申込条件を確認してから選ぶことが大事。ここでは商品や紹介先の自動推薦はしないよ。"));}
  panel.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"nearest"});
 }
