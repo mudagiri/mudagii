@@ -279,6 +279,28 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const incomeDailyReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
   :dailyIncomeReferenceForProfileV1(vm.profile);
+ // Display-only statistical recheck clues. Do not change the frozen
+ // cUpper, confirmed A, diagnosis status, or the future-reward arithmetic.
+ // Count each category only once. Never multiply distinct income/age tables.
+ const independentReferenceClues=rows.flatMap((x:any)=>{
+  if(!['food','energy','daily'].includes(String(x?.category))
+   ||x?.known!==true||typeof x.amount!=='number'||!Number.isFinite(x.amount)||x.amount<0
+   ||!comparisonAvailable(x))return [];
+  const comparisonTarget=comparisonTargetAmount(x);
+  if(comparisonTarget===null||Math.abs(comparisonTarget-x.amount)>=1)return [];
+  const span=x.category==='food'&&incomeFoodReference?.available
+   &&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null
+   ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
+   :x.category==='energy'&&incomeEnergyReference?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
+   :x.category==='daily'&&incomeDailyReference?{low:incomeDailyReference.monthlyLowYen,high:incomeDailyReference.monthlyHighYen}:null;
+  if(!span)return [];
+  const clue=twoReferenceLensV1({currentAmountYen:x.amount,
+   primaryReferenceYen:comparisonReferenceAmount(x),
+   incomeReferenceLowYen:span.low,incomeReferenceHighYen:span.high,
+   ownMonthlyTakeHomeYen:null}).dualPositiveClueYen;
+  return clue!==null&&clue>0?[{category:x.category,label:x.label||x.category,gap:clue}]:[];
+ });
+ const independentReferenceGap=independentReferenceClues.reduce((total,x)=>total+x.gap,0);
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -536,6 +558,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </div>
     <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
    </section>
+   {independentReferenceClues.length>0&&<aside className="c2v32-statistical-buffer" data-section="REFERENCE_RECHECK_BUFFER">
+    <span>🔎 追加の見直しチェック ／ 統計の参考差</span>
+    <strong>{independentReferenceClues.length}カテゴリで比較の目安を両方上回る</strong>
+    <p className="c2v32-statistical-gap">その上振れ幅を小さい方で数えると、月 <b>{money(independentReferenceGap)}</b></p>
+    <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b></span>)}</div>
+    <small>これは「属性別の比較目安」と「年収帯の全国参考」の両方を上回る比較差を並べた確認材料です。削減できる額ではなく、既存の未確定見直し候補とも重複する可能性があるため、上の金額には加えません。</small>
+    <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
+   </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
     <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>月額の未確定候補／すべて表示</small></div>
     <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
@@ -711,7 +741,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       &&(!comparable||compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1);
      const lens=twoReferenceLensV1({
       currentAmountYen:x.known===true&&x.amount!==null&&Number.isFinite(Number(x.amount))?Number(x.amount):null,
-      primaryReferenceYen:comparable?referenceAmount:null,
+      primaryReferenceYen:comparable&&compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1?referenceAmount:null,
       incomeReferenceLowYen:incomeRange?.low??null,incomeReferenceHighYen:incomeRange?.high??null,
       ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
      });
