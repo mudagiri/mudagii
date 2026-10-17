@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     container: {image: "mcr.microsoft.com/playwright:v1.55.0-noble"}
+    defaults:
+      run:
+        shell: bash
     env:
       LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
