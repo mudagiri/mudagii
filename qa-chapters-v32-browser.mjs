@@ -256,10 +256,13 @@ await clickButton(/診断結果を見る/);
  await page.locator('#c2v32-single-income').selectOption('400_499');
  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
  const official40=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
- assert.ok(official40.includes('¥53,430')&&official40.includes('今回入力したあなたの食費'),'Single official income mean and user amount separated');
- assert.ok(official40.includes('¥12,354')&&official40.includes('今回入力したあなたの光熱費'),'Official single-person energy income reference is a separate category without saving impact');
- assert.ok(official40.includes('¥3,575')&&official40.includes('今回入力したあなたの日用品費'),'Houseware+household-consumables from one published table must be displayed separately');
- assert.ok(official40.includes('ムダ額・削減額・見直し候補額に加えない'),'No conversion of statistical difference into savings');
+ const merged40=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
+ assert.ok(official40.includes('年齢・世帯の目安と、年収帯の参考を一緒に見る'),'Two independent references share a compact explanation');
+ assert.ok(merged40.includes('¥53,430')&&merged40.includes('あなたの支出'),'Food income reference belongs to the same category card as user spending');
+ assert.ok(merged40.includes('¥12,354')&&await page.locator('[data-section="INCOME_CLASS_ENERGY_ROW"]').count()===1,'Energy national reference is inside its category');
+ assert.ok(merged40.includes('¥3,575')&&await page.locator('[data-section="INCOME_CLASS_DAILY_ROW"]').count()===1,'Daily necessities reference is inside its category');
+ assert.ok(official40.includes('参考差をムダ額・削減額・見直し候補額に加えない'),'Statistical difference cannot become confirmed or possible savings');
+ assert.equal(await page.locator('a:has-text("Excel")').count(),0,'No spreadsheet links on result');
  if(engine==='chromium'){
   await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
   await page.waitForTimeout(150);
@@ -269,7 +272,8 @@ await clickButton(/診断結果を見る/);
  }
  await page.locator('#c2v32-single-income').selectOption('600plus');
  const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
- assert.ok(official600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
+ const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
+ assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
  await page.locator('#c2v32-single-income').selectOption('');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
  await singleIncomeOpt.locator('summary').click();
