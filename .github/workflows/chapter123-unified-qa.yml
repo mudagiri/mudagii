@@ -54,8 +54,14 @@ jobs:
         run: |
           mkdir -p preview/mudagii/pilot/chapter123-unified
           cp -R dist/. preview/mudagii/pilot/chapter2-v32/
+          # Money personality uses ./assets/ in its standalone route.
+          # Existing C1->C2 regression fixture requires the full Vite files at both
+          # route locations; copying only index.html causes silent 404 image failures.
           mkdir -p preview/mudagii/pilot/chapter2-v32/pilot/money-type
-          cp dist/index.html preview/mudagii/pilot/chapter2-v32/pilot/money-type/index.html
+          cp -R dist/. preview/mudagii/pilot/chapter2-v32/pilot/money-type/
+          # C1/C2 official CSS also references /assets/ from the origin root.
+          mkdir -p preview/assets
+          cp -R dist/assets/. preview/assets/
           python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/chapter123.log 2>&1 &
           for i in $(seq 1 40); do
             if curl -fsS http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/pilot/chapter3-v11/ >/dev/null; then exit 0; fi
