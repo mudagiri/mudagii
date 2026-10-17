@@ -21,7 +21,7 @@ jobs:
     env:
       LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
-      CANDIDATE_SHA: "d411789f80822872f4876547bd79b212e37a6bfc"
+      CANDIDATE_SHA: "c90867b9f0181fecbe836a98edb5dfcd9b947a8f"
     steps:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
       - name: Checkout frozen PR 51 candidate
         uses: actions/checkout@v4
         with:
-          ref: d411789f80822872f4876547bd79b212e37a6bfc
+          ref: c90867b9f0181fecbe836a98edb5dfcd9b947a8f
           path: candidate
           persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
@@ -161,7 +161,7 @@ jobs:
       - name: Verify actual public review URL and exact commit
         env:
           LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
-          CANDIDATE_SHA: "d411789f80822872f4876547bd79b212e37a6bfc"
+          CANDIDATE_SHA: "c90867b9f0181fecbe836a98edb5dfcd9b947a8f"
         run: |
           set -euo pipefail
           for i in $(seq 1 15); do
