@@ -1,6 +1,7 @@
 import {evaluateChapter3,validateChapter3Answers} from "./engine.mjs";
 import {buildChapter3Motivation} from "./motivation.mjs";
 import {JOBS,STYLES,journeyView,journeyDialogue,chapter2StoryDescription,FOG_STAGES,MAP_REWARD} from "./story.mjs";
+import {getChosenGuides} from "./next-guide.mjs";
 
 /** CH3 ONLY. No C1/C2 source imports, no GAS, no storage, no referrals or analytics. */
 const ART="../../assets/";
@@ -273,7 +274,7 @@ function resultScreen(){
    node("strong","",motivation.pain.label));
  if(motivation.pain.selfReported)append(pain,paragraph("確認せずに進むと？","motivation-context"),
    paragraph(motivation.pain.conditionalRisk,"motivation-body"));
- else pain.append(paragraph("不安をつくって行動させる必要はないよ。","motivation-body"));
+ else pain.append(paragraph("今は大きな心配がないんだね。だったら、叶えたい未来の方から考えてみよう。","motivation-body"));
  mirror.append(pain);
  append(mirror,heroCopy(motivation.pain.selfReported
    ?"「困るかもしれないこと」と「叶えたいこと」、両方が見えたね。次は、その差を整理してみよう。"
@@ -345,6 +346,28 @@ function resultScreen(){
  demoCases.forEach((x,i)=>{const opt=node("option","",String(i+1)+". "+x.name);opt.value=String(i);select.append(opt);});
  select.addEventListener("change",()=>{if(select.value==="")return;const a=demoCases[Number(select.value)];answers={goal:a.goal,horizon:a.horizon,forces:{...a.forces},concern:a.concern,topics:[...a.topics]};screen="result";render();scrollTop();});
  dev.append(select);final.append(dev);shell.append(final);
+ // Reduce scroll fatigue: offer the user's insight and first meaningful action before optional evidence.
+ // All 4 explanatory panels remain reachable, but do not obstruct the next quest CTA.
+ const introAha=sectionClass("instant-aha");
+ append(introAha,node("p","instant-tag","✦ この冒険で見つかったこと"),
+   node("h2","","君の未来に、こんな問いが残った。"),
+   node("p","instant-aha-copy",motivation.aha.question));
+ const forward=btn("まず、次の一歩を確認する  →","gold-cta instant-action",()=>{
+   nextStage.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
+ });
+ introAha.append(forward);
+ const fragments=shell.querySelector(".map-fragments");
+ const extra=node("details","story-evidence");
+ extra.append(node("summary","story-evidence-trigger","判断の理由・前の冒険を詳しく見る  ＋"));
+ for(const selector of [".relic-archive",".motivation-mirror",".benefit-bridge",".new-powers"]){
+   const item=shell.querySelector(selector);
+   if(item)extra.append(item);
+ }
+ shell.insertBefore(introAha,fragments);
+ shell.insertBefore(report,fragments.nextSibling);
+ shell.insertBefore(nextStage,report.nextSibling);
+ shell.insertBefore(shareBox,nextStage.nextSibling);
+ shell.insertBefore(extra,shareBox.nextSibling);
  return shell;
 }
 function openAction(res){
@@ -352,7 +375,23 @@ function openAction(res){
  const action=res.primaryAction;
  if(action.kind==="save"){append(panel,node("strong","","作戦書を獲得！"),paragraph("このプレビューでは個人データは保存していません。必要なら最初から診断できます。"));}
  else if(action.kind==="consult_interest"){append(panel,node("strong","","数字にできれば、選ぶ理由が見えてくる"),paragraph("叶えたい未来 → 必要額 → 今の家計と資産・負債 → 足りない部分 → 具体的な手段。この順番で自分の設計図を整理できるよ。商品を選ぶのはその後でいい。"),paragraph("このデモでは必要額や差額は未計算。相談予約・LINE・提携先には接続していないよ。"));}
- else{append(panel,node("strong","","まずは仕組みと条件を知ろう"),paragraph("費用・リスク・必要な時間・申込条件を確認してから選ぶことが大事。ここでは商品や紹介先の自動推薦はしないよ。"));}
+ else{
+   const guides=getChosenGuides(res.topicIds);
+   if(res.safeEducationFirst)panel.append(paragraph("生活費や返済が気になると答えているから、運用・借入の前に、手元に残るお金を確認するところから始めよう。","guide-warning"));
+   append(panel,node("strong","","選んだテーマの、最初の確認クエスト"));
+   if(guides.length===0)panel.append(paragraph("今は結果を持ち帰っても大丈夫。","caution"));
+   for(const guide of guides){
+    const card=sectionClass("next-guide-card");
+    append(card,node("h3","",guide.title),node("p","guide-benefit",guide.benefit),
+     node("small","guide-label","まず確かめたい3つのこと"));
+    const ul=node("ul","guide-checks");
+    for(const q of guide.check)ul.append(node("li","",q));
+    append(card,ul,node("small","guide-label","今日の一歩"),node("p","guide-first",guide.first),
+      node("p","guide-caution",guide.caveat));
+    panel.append(card);
+   }
+   panel.append(paragraph("ここで紹介先の決定や商品申込は行わないよ。疑問を持ち帰って比較してみよう。","caution"));
+  }}
  panel.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"nearest"});
 }
 function render(){
