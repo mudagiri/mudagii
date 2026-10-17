@@ -1,0 +1,38 @@
+/* CH3 V1.4 story continuity layer. No C1/C2 CSS modifications. */
+.relic-archive{padding:15px 10px;margin:13px auto 16px;max-width:470px;border-radius:16px;border:1.5px solid #c5a569;background:linear-gradient(170deg,#082832,#0b2737);box-shadow:0 10px 24px #0007;text-align:left}
+.relic-eyebrow{color:#f2d991;font-size:11px;font-weight:900;letter-spacing:.09em;margin:0 0 4px}
+.relic-archive h2{font-size:18px;color:#fff3d4;line-height:1.45;margin:0 0 13px;text-align:left}
+.relic-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;position:relative}
+.relic-tile{min-width:0;text-align:center;padding:12px 8px;border:1px solid #7d9997;background:linear-gradient(150deg,#13404a,#092f3b);border-radius:11px;box-shadow:inset 0 0 12px #0003}
+.relic-tile small{display:block;font-size:10px;color:#d3c9a1;font-weight:900;margin:6px 0 3px}
+.relic-tile strong{display:block;color:#fff0c8;font-size:clamp(12px,3.8vw,15px);line-height:1.48;overflow-wrap:anywhere}
+.relic-tile .relic-foot{font-size:11px;line-height:1.6;color:#d3e1d9;margin:7px 0 0;overflow-wrap:anywhere}
+.relic-symbol{display:flex;justify-content:center;align-items:center;height:50px;color:#e6d18d;font-size:35px;font-family:Georgia,serif;text-shadow:0 0 10px #ffdda648}
+.relic-job-img{width:65px;height:65px;display:block;object-fit:contain;margin:-7px auto -8px;image-rendering:pixelated}
+.relic-new{grid-column:span 2;display:grid;grid-template-columns:65px minmax(0,1fr);grid-template-rows:auto auto auto;align-items:center;text-align:left;gap:0 10px;background:linear-gradient(120deg,#6a532a,#17443e);border:2px solid #e0bb70;box-shadow:0 0 20px #f5c96a33}
+.relic-new>.relic-symbol{grid-column:1;grid-row:1/4;font-size:40px}
+.relic-new>small,.relic-new>strong,.relic-new>.relic-foot{grid-column:2;margin:0}
+.relic-new>.relic-foot{margin-top:4px}
+.relic-disclosure{font-size:11px;line-height:1.7;color:#a8c5be;border-top:1px dashed #648c85;padding-top:10px;margin:13px 1px 0;text-align:left}
+.story-demo-toggle{width:100%;min-height:47px;font-size:12px;font-weight:800;padding:11px 8px;border:1.5px solid #a6b7a4;border-radius:10px;background:#0d3740;color:#f8eec8;margin:0 auto 16px}
+.fog-riddle{display:flex;gap:12px;align-items:center;margin:20px auto 0;padding:11px;background:linear-gradient(145deg,rgba(9,33,45,.96),rgba(27,41,53,.95));border:1px solid #b2a691;border-radius:12px;box-shadow:0 5px 17px #0008;text-align:left}
+.fog-emblem{flex:0 0 49px;display:flex;align-items:center;justify-content:center;height:51px;border-radius:13px;background:radial-gradient(ellipse,#e1d6b4a8,#526e78b6);font-size:29px;text-shadow:0 0 8px #fff9e5}
+.fog-copy{min-width:0}.fog-kicker{font-weight:900;font-size:11px;color:#f2d69d;margin:0 0 4px}
+.fog-copy strong{display:block;font-size:13px;line-height:1.58;color:#fff5d8}
+.fog-copy p:not(.fog-kicker){font-size:11px;color:#e0e2df;margin:5px 0 0;line-height:1.7}
+.fog-step-kicker{text-align:center;font-size:11px;font-weight:900;color:#c4e5df;line-height:1.5;border:1px solid #5b827c;border-radius:19px;padding:7px 12px;max-width:max-content;margin:0 auto 14px;background:#0b3540}
+.map-fragments{margin:18px 12px;padding:19px 12px 15px;background:linear-gradient(140deg,#203934,#132f33);border:2px solid #e0bd73;border-radius:15px;box-shadow:0 0 16px #cfae6038,0 9px 22px #0008;text-align:center}
+.map-fragments h2{font-size:18px;line-height:1.45;color:#fff0bc;font-weight:950;margin:0 0 13px}
+.fragment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fragment-tile{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0;min-height:152px;padding:13px 5px 12px;border-radius:11px;gap:7px;box-shadow:inset 0 0 10px #0003;position:relative}
+.fragment-tile .fragment-number{font-family:Georgia,serif;font-size:34px;line-height:1;color:#fff0ba;font-weight:900}
+.fragment-tile small{font-size:11px;font-weight:900}
+.fragment-tile strong{font-size:clamp(11px,3.4vw,13px);line-height:1.53;overflow-wrap:anywhere}
+.fragment-earned{background:linear-gradient(155deg,#8a652f,#385341);border:2px solid #ffe2a4;color:#fff4d3;box-shadow:0 0 15px #e8c17855}
+.fragment-earned::before{content:"✦";position:absolute;right:5px;top:3px;font-size:14px;color:#ffedb5}
+.fragment-locked{background:linear-gradient(160deg,#24343b,#1d2e3c);border:1px dashed #829099;color:#bbc9cb;filter:saturate(.65)}
+.fragment-locked .fragment-number{color:#a8b3b6}
+.fragment-note{color:#e6e9da;font-size:11px;line-height:1.75;margin:11px 0 0}
+.reward-reveal .world-title{max-width:420px}
+@media(max-width:355px){.relic-archive{padding:13px 7px}.relic-tile{padding:10px 5px}.relic-tile small{font-size:9px}.relic-tile .relic-foot{font-size:10px}.fragment-grid{gap:4px}.fragment-tile{padding:11px 4px}.fragment-tile small{font-size:10px}.fragment-tile strong{font-size:11px}.fog-riddle{padding:8px}.fog-emblem{flex-basis:38px;width:38px;font-size:25px}}
+@media(prefers-reduced-motion:reduce){.fragment-earned{transition:none}}
