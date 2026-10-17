@@ -282,7 +282,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  // Display-only statistical recheck clues. Do not change the frozen
  // cUpper, confirmed A, diagnosis status, or the future-reward arithmetic.
  // Count each category only once. Never multiply distinct income/age tables.
- const independentReferenceClues=rows.flatMap((x:any)=>{
+ const independentReferenceClues:{category:string;label:string;gap:number}[]=rows.flatMap((x:any):{category:string;label:string;gap:number}[]=>{
   if(!['food','energy','daily'].includes(String(x?.category))
    ||x?.known!==true||typeof x.amount!=='number'||!Number.isFinite(x.amount)||x.amount<0
    ||!comparisonAvailable(x))return [];
@@ -300,7 +300,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    ownMonthlyTakeHomeYen:null}).dualPositiveClueYen;
   return clue!==null&&clue>0?[{category:x.category,label:x.label||x.category,gap:clue}]:[];
  });
- const independentReferenceGap=independentReferenceClues.reduce((total,x)=>total+x.gap,0);
+ const independentReferenceGap=independentReferenceClues.reduce((total:number,x:{gap:number})=>total+x.gap,0);
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -562,7 +562,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span>🔎 追加の見直しチェック ／ 統計の参考差</span>
     <strong>{independentReferenceClues.length}カテゴリで比較の目安を両方上回る</strong>
     <p className="c2v32-statistical-gap">その上振れ幅を小さい方で数えると、月 <b>{money(independentReferenceGap)}</b></p>
-    <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b></span>)}</div>
+    <div className="c2v32-statistical-gap-items">{independentReferenceClues.map((x:{category:string;label:string;gap:number})=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b></span>)}</div>
     <small>これは「属性別の比較目安」と「年収帯の全国参考」の両方を上回る比較差を並べた確認材料です。削減できる額ではなく、既存の未確定見直し候補とも重複する可能性があるため、上の金額には加えません。</small>
     <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
    </aside>}
