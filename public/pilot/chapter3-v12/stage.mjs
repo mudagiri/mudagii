@@ -1,5 +1,6 @@
 import {evaluateChapter3,validateChapter3Answers} from "./engine.mjs";
 import {buildChapter3Motivation} from "./motivation.mjs";
+import {JOBS,STYLES,journeyView,journeyDialogue,chapter2StoryDescription,FOG_STAGES,MAP_REWARD} from "./story.mjs";
 
 /** CH3 ONLY. No C1/C2 source imports, no GAS, no storage, no referrals or analytics. */
 const ART="../../assets/";
@@ -10,7 +11,7 @@ const BG=ART+"mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp
 const HALL=ART+"mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp";
 const $=document.getElementById("chapter3-stage");
 const newAnswers=()=>({goal:null,horizon:null,forces:{capital:null,time:null,credit:null},concern:null,topics:[]});
-let answers=newAnswers(),screen="intro",step=0,dialogue=null,demoOpen=false;
+let answers=newAnswers(),screen="intro",step=0,dialogue=null,demoOpen=false,previewSample=false;
 const demoCases=[
  {name:"生活費・返済が不安",goal:"stability",horizon:"over10",forces:{capital:"notNow",time:"notNow",credit:"interested"},concern:"debt",topics:["budget","consult"]},
  {name:"3年以内 × 運用中",goal:"future",horizon:"under3",forces:{capital:"notNow",time:"active",credit:"unknown"},concern:"loss",topics:["investBasics"]},
@@ -81,6 +82,59 @@ function chapterNav(active){const nav=node("div","chapter-rail");nav.setAttribut
 }
 function heroCopy(text,pose){const box=node("div","speech-stage");append(box,image(pose||MASCOT,"speech-mascot","ムダギリくん"),append(node("div","speech-text"),node("small","","ムダギリくん"),paragraph(text)));return box;}
 function stageHead(tag,title,sub){const head=node("header","area-heading");append(head,node("div","heading-over",tag),node("h1","",title),paragraph(sub,"heading-desc"));return head;}
+function relicArchive(journey,finished=false){
+ const box=sectionClass("relic-archive");
+ box.setAttribute("data-story-phase",finished?"reward-legacy":"chapter-legacy");
+ append(box,node("p","relic-eyebrow","冒険の記録  ·  THE JOURNEY"),
+  node("h2","","ここまでの冒険は、未来へつながる"));
+ const line=node("div","relic-progress");
+ const c1=node("article","relic-tile");
+ const j=journey.chapter1?JOBS[journey.chapter1.job]:null;
+ if(j){c1.append(image(ART+"jobs/v1/"+j.file,"relic-job-img","サンプルJOBの公式画像："+j.name));}
+ else c1.append(node("span","relic-symbol","⚔"));
+ append(c1,node("small","","CHAPTER Ⅰ / 冒険者の覚醒"),
+  node("strong","",j?j.name:"お金の戦い方を知る"),
+  paragraph(j?"STYLE： "+STYLES[journey.chapter1.style]+"（サンプル）":"JOB・STYLEは未連携","relic-foot"));
+ const c2=node("article","relic-tile");
+ append(c2,node("span","relic-symbol","◆"),node("small","","CHAPTER Ⅱ / 家計の魔物"),
+  node("strong","",journey.chapter2?"戦果を見つける（サンプル）":"家計の現在地を知る"),
+  paragraph(chapter2StoryDescription(journey.chapter2),"relic-foot"));
+ append(line,c1,c2);
+ const c3=node("article","relic-tile relic-new");
+ append(c3,node("span","relic-symbol","✦"),node("small","","CHAPTER Ⅲ / 未来の大陸"),
+  node("strong","",finished?"未来の地図・第一片":"未来の目的地を探す"),
+  paragraph(finished?"最初の一片を獲得。地図の完成はこれから。":"これまで守ってきたお金を、何のために使う？","relic-foot"));
+ line.append(c3);box.append(line);
+ box.append(paragraph(journey.label,"relic-disclosure"));
+ return box;
+}
+function storyFog(){
+ const panel=sectionClass("fog-riddle");
+ append(panel,node("div","fog-emblem","☁"),
+  append(node("div","fog-copy"),node("p","fog-kicker","第3章の敵 · 未来の霧"),
+    node("strong","","未来が見えないまま、手段だけ選んでいない？"),
+    paragraph("目的・期限・必要なお金が見えないと、どの道を選べばいいか分かりにくい。5つの問いで、霧の向こうを見に行こう。")));
+ return panel;
+}
+function mapFragments(){
+ const fragment=sectionClass("map-fragments");
+ append(fragment,node("p","result-kicker","NEW ITEM · 地図の欠片"),
+  node("h2","","未来の地図は、まだ完成していない"));
+ const pieces=[
+  ["1","獲得！",MAP_REWARD.unlocked,true],
+  ["2","未解放",MAP_REWARD.lockedMoney,false],
+  ["3","未解放",MAP_REWARD.lockedGap,false]
+ ];
+ const row=node("div","fragment-grid");
+ for(const [n,state,info,ok] of pieces){
+  const c=node("div","fragment-tile"+(ok?" fragment-earned":" fragment-locked"));
+  append(c,node("span","fragment-number",n),node("small","",state),node("strong","",info));row.append(c);
+ }
+ fragment.append(row);
+ fragment.append(paragraph(MAP_REWARD.disclaimer,"fragment-note"));
+ return fragment;
+}
+
 function reset(){answers=newAnswers();step=0;screen="intro";dialogue=null;demoOpen=false;render();scrollTop();}
 function begin(){screen="quest";step=0;render();scrollTop();}
 function areaIntro(){
@@ -91,11 +145,12 @@ function areaIntro(){
   node("p","area-crest","✦  NEW AREA UNLOCKED  ✦"),
   node("div","chapter-letter","CHAPTER Ⅲ"),
   node("h1","world-title","未来の大陸"),
-  node("p","world-sub","守るだけじゃない。ここからは、未来をつくる冒険。")
+  node("p","world-sub","守った先に、どんな未来が待ってる？")
  );
  const map=node("div","stage-route");
  append(map,node("div","route-path"));
- [["Ⅰ","冒険者を知る","CLEAR"],["Ⅱ","家計を見極める","CLEAR"],["Ⅲ","未来をつくる","NEW!"]].forEach((x,i)=>{
+ const journey=journeyView(previewSample);
+ [["Ⅰ","自分の戦い方",journey.ready?"SAMPLE":"前章"],["Ⅱ","家計との戦い",journey.ready?"SAMPLE":"前章"],["Ⅲ","未来の目的地","NEW!"]].forEach((x,i)=>{
   const stop=node("div","map-stop"+(i===2?" is-new":""));
   append(stop,node("span","map-seal",x[0]),node("strong","",x[1]),node("small","",x[2]));map.append(stop);
  });
@@ -103,13 +158,17 @@ function areaIntro(){
  const gate=node("div","portal");
  append(gate,node("span","portal-rune","✧"),node("div","portal-inner","未来への扉が開いた"));
  scene.append(gate);
- scene.append(heroCopy("前のクエストでは家計を見極めたね。次は、何を育てるか。未来の作戦を一緒に考えよう！",MASCOT));
- scene.append(btn("第3章をはじめる  →","gold-cta stage-entry-cta",begin));
+ scene.append(heroCopy(journeyDialogue(previewSample),MASCOT));
+ scene.append(btn("未来の霧を晴らしに行く  →","gold-cta stage-entry-cta",begin));
+ scene.append(storyFog());
  const open=node("div","intro-next");
+ open.append(relicArchive(journey));
+ const demoToggle=btn(previewSample?"サンプル演出を閉じる":"前章を引き継ぐ演出を見る（架空サンプル）","story-demo-toggle",()=>{previewSample=!previewSample;render();scrollTop();});
+ open.append(demoToggle);
  append(open,
   node("p","story-label","新エリアの攻略目標"),
-  node("h2","","自分だけの未来の作戦書を手に入れよう"),
-  paragraph("5つの問いで、今のお金・時間・働き方を整理。あなたが次に確かめたいことが見つかる。"),
+  node("h2","","未来の地図・第一片を手に入れよう"),
+  paragraph("JOBと家計の戦果を、どんな未来につなぐ？ 5つの問いで「目的地」と「次に確かめたいこと」を探そう。"),
   node("small","fineprint","約1〜2分は設計目安。商品適性・融資可否を判定するものではありません。")
  );
  append(shell,scene,open);
@@ -117,7 +176,7 @@ function areaIntro(){
 }
 function progress(){
  const wrap=node("div","quest-progress");const label=node("div","progress-caption");
- append(label,node("span","","未来の地図を探索中"),node("b","",String(step+1)+" / 5"));wrap.append(label);
+ append(label,node("span","",FOG_STAGES[step].name),node("b","",String(step+1)+" / 5"));wrap.append(label);
  const spots=node("div","progress-spots");spots.setAttribute("aria-label","質問の進行状況");
  for(let i=0;i<5;i++){const spot=node("span","progress-spot"+(i<step?" done":i===step?" current":""));spot.textContent=i<step?"✓":String(i+1);spots.append(spot);}
  wrap.append(spots);return wrap;
@@ -153,14 +212,14 @@ function questionScreen(){
  const stage=sectionClass("question-arena");
  stage.style.setProperty("--world-bg","url("+HALL+")");
  const names=[
-  ["QUEST 01 · 叶えたい未来","お金の心配が減ったら、どんな暮らしがしたい？","いちばん近いものを1つ。まだ決まっていなくても大丈夫。","増やす方法の前に、君が叶えたいことを教えて。そこから作戦を考えよう。"],
-  ["QUEST 02 · 時間の地図","それ、いつ頃までに叶えたい？","だいたいの時期でOK。","目標までの時間で、比べるべき選択肢が変わることもあるんだ。"],
-  ["QUEST 03 · 今の手段","今は、どんな方法を使っている？","全部使う必要はないよ。","ここは採点じゃない。未来に向かうための手段を、まず整理してみよう。"],
-  ["QUEST 04 · 今の気がかり","その未来を考えるとき、何がいちばん気になる？","困っていないなら「特にない」でOK。","無理に不安を探さなくていい。今引っかかっていることだけ教えてね。"],
-  ["QUEST 05 · 次の一歩","何が分かれば、一歩進めそう？","気になるものを2つまで。結果だけでもOK。","商品を決める前に、今の君に役立つ情報を選ぼう。"]
+  ["QUEST 01 · 霧の向こうの目的地","お金の心配が減ったら、どんな暮らしがしたい？","いちばん近いものを1つ。まだ決まっていなくても大丈夫。","増やす方法の前に、君が叶えたいことを教えて。そこから作戦を考えよう。"],
+  ["QUEST 02 · 目的地までの距離","それ、いつ頃までに叶えたい？","だいたいの時期でOK。","目標までの時間で、比べるべき選択肢が変わることもあるんだ。"],
+  ["QUEST 03 · 冒険の装備","今は、どんな方法を使っている？","全部使う必要はないよ。","ここは採点じゃない。未来に向かうための手段を、まず整理してみよう。"],
+  ["QUEST 04 · 行く手を阻む霧","その未来を考えるとき、何がいちばん気になる？","困っていないなら「特にない」でOK。","無理に不安を探さなくていい。今引っかかっていることだけ教えてね。"],
+  ["QUEST 05 · 次の航路","何が分かれば、一歩進めそう？","気になるものを2つまで。結果だけでもOK。","商品を決める前に、今の君に役立つ情報を選ぼう。"]
  ];
  const [tag,title,sub,talk]=names[step];
- append(stage,stageHead(tag,title,sub),heroCopy(dialogue||talk,step===2?SCROLL:MASCOT));
+ append(stage,stageHead(tag,title,sub),paragraph("霧を晴らす手がかり · "+FOG_STAGES[step].quest,"fog-step-kicker"),heroCopy(dialogue||talk,step===2?SCROLL:MASCOT));
  const options=node("div","question-options"+(step===2?" multi-powers":""));
  if(step===0||step===1||step===3){const vals=step===0?goals:step===1?horizons:concerns;const field=step===0?"goal":step===1?"horizon":"concern";
   for(const v of vals)options.append(choice(v[1],v[2],answers[field]===v[0],()=>selectSingle(field,v[0])));
@@ -179,7 +238,7 @@ function questionScreen(){
  }
  stage.append(options);
  const actions=node("div","question-footer");
- const primary=btn(step===4?"作戦書をひらく  ✦":"次の問いへ  →","gold-cta",next);
+ const primary=btn(step===4?"地図の第一片を獲得する  ✦":"霧の向こうへ進む  →","gold-cta",next);
  primary.disabled=!picked();append(actions,primary,btn("←  戻る","quiet-back",previous));
  stage.append(actions);shell.append(stage);
  return shell;
@@ -194,14 +253,16 @@ function resultScreen(){
  const hero=sectionClass("reward-reveal");
  hero.style.setProperty("--world-bg","url("+BG+")");
  append(hero,node("p","area-crest","✦  QUEST CLEAR!  ✦"),node("div","chapter-letter","CHAPTER Ⅲ CLEAR"),
- node("h1","world-title","未来の作戦書を獲得！"),paragraph("君の答えから、次に進むルートが見つかった。","world-sub"));
+ node("h1","world-title","未来の地図・第一片を獲得！"),paragraph("霧の向こうに、君の目指す方向が見えてきた。","world-sub"));
  const token=node("div","reward-token");append(token,node("span","reward-token-inner",current.crest),node("small","",current.tag));hero.append(token);
- hero.append(heroCopy("未来の地図がひらいたぞ！ここで分かったことを、一緒に確かめよう。",REWARD));
+ hero.append(heroCopy("いいぞ！未来の地図の最初の欠片が見つかった。でも必要額と、今とのギャップはまだ未解放。続きを見つけよう！",REWARD));
  shell.append(hero);
+ shell.append(mapFragments());
+ shell.append(relicArchive(journeyView(previewSample),true));
  // Needs-first design: show the visitor's expressed gain and concern before offering any "three powers".
  const mirror=sectionClass("motivation-mirror");
  append(mirror,node("p","result-kicker","君が答えたことから見えてきた"),
-   node("h2","","未来のギャップを見つけよう"),
+   node("h2","","地図に刻まれた、君の未来"),
    append(node("div","aha-card"),node("small","","✦ 今回、いちばん考えてみたいこと"),node("strong","",motivation.aha.question)));
  const gain=sectionClass("gain-card");
  append(gain,node("span","motivation-head","✦ 叶えたい未来"),node("strong","",motivation.goal.label),
@@ -235,10 +296,10 @@ function resultScreen(){
  life.append(paragraph(motivation.timing,"motivation-note"));
  const gap=node("div","gap-slot");
  append(gap,node("strong","","まだ数字で分かっていないこと"),
-   paragraph("必要なお金 − 現在地 ＝ 埋めたい差","gap-equation"),
+   paragraph("叶えたい未来 → 必要額 → 現在地 → ギャップ → 手段","gap-equation"),
    paragraph(motivation.gap.reason,"gap-reason"));
  life.append(gap);
- life.append(heroCopy("何を買うか、の前に。君の目標を叶えるには、何がどれくらい必要なのか。ここが次の冒険だよ。",SCROLL));
+ life.append(heroCopy("この地図、まだ途中だね。必要なお金と今の状況が分かれば、どんな道があるか一緒に比べられるよ。",SCROLL));
  shell.append(life);
  const cards=sectionClass("new-powers");
  append(cards,node("p","result-kicker","冒険者の現在地"),node("h2","","3つの力 ＋ 稼ぐ力"));
@@ -253,20 +314,20 @@ function resultScreen(){
  append(cards,powerGrid,earning,paragraph("これは回答時点の状態表示。資産額や年収、融資できる額を判定したものではない。","caution"));
  shell.append(cards);
  const nextStage=sectionClass("mission-choice");
- append(nextStage,node("p","result-kicker","次のクエスト"),node("h2","","ここから先は、自分で選べる"),paragraph("先ほど選んだ関心から、まず知っておきたいことを整理しよう。"));
+ append(nextStage,node("p","result-kicker","地図を完成させる次のクエスト"),node("h2","","残りの地図は、何から埋める？"),paragraph("叶えたい未来は見えた。次は必要な金額と今の状態を確かめて、方法を比べる段階。気になる選択肢は自分で選ぼう。"));
  const labels=Object.fromEntries(topics.map(a=>[a[0],a[1]]));
  const entries2=evaluated.topicIds;
  if(entries2.length===0)nextStage.append(paragraph("今日は作戦書を手に入れて、ここで冒険を終えるのもOK。","mission-topic"));
  else for(const t of entries2)nextStage.append(idea("✦",labels[t]||t));
  const action=btn(evaluated.primaryAction.label+"  →","gold-cta",()=>openAction(evaluated));
- const consult=btn("自分のギャップを数字で確かめる方法を見る","alt-cta",()=>openAction({primaryAction:{kind:"consult_interest"},topicIds:[]}));
+ const consult=btn("地図の未解放部分を、数字で整理する方法を見る","alt-cta",()=>openAction({primaryAction:{kind:"consult_interest"},topicIds:[]}));
  nextStage.append(action);
  if(evaluated.primaryAction.kind!=="consult_interest")nextStage.append(consult);
  const panel=node("div","action-panel");panel.id="action-panel";panel.hidden=true;nextStage.append(panel);
  nextStage.append(paragraph("この体験版では、提携先への紹介・予約・情報送信は行わないよ。","caution"));
  shell.append(nextStage);
  const shareBox=sectionClass("share-quest");
- append(shareBox,node("p","result-kicker","冒険を広げる"),node("h2","","君も、未来の大陸をクリア！"),
+ append(shareBox,node("p","result-kicker","冒険を広げる"),node("h2","","未来の地図・第一片を獲得！"),
    paragraph("金額や気がかりは共有しない。冒険の記録だけ、希望する人がシェアできる。"));
  const shareText=node("p","share-confirm");shareText.id="share-confirm";shareText.setAttribute("aria-live","polite");
  shareBox.append(btn("冒険クリアの文章をコピー","alt-cta",async()=>{
