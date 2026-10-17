@@ -65,7 +65,7 @@ function render(){
     <div class="sky-glow" aria-hidden="true"></div>
     <p class="eyebrow">CHAPTER 03 · FUTURE QUEST</p>
     <h1>未来の作戦書を獲得！</h1>
-    <p class="hero-sub">ここから先は、あなたの未来を選ぶ冒険。</p>
+    <p class="hero-sub"><span>今回の発見</span><strong>${safe(result.insight.title)}</strong></p>
     <div class="crest" aria-hidden="true">✧ <span>III</span> ✧</div>
     <div class="hero-avatars">
        <div class="job-portrait">${job?`<img src="${jobBase+job.img}" alt="第1章で獲得した${safe(job.name)}" loading="eager" /><p>${safe(job.name)} <small>· ${safe(STYLES[result.chapter1.style])}</small></p>`:`<div class="no-job">冒険者は<br>未連携</div>`}</div>
