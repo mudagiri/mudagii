@@ -283,7 +283,7 @@ await clickButton(/診断結果を見る/);
  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
  if(engine==='chromium'){
-  await page.locator('[data-comparison-category="food"] .c2v32-worker-rate-card').scrollIntoViewIfNeeded();
+  await page.locator('[data-comparison-category="food"] .c2v32-worker-rate-card--age-income').scrollIntoViewIfNeeded();
   await page.screenshot({path:out+'/15-food-worker-burden-readable.png',fullPage:false,timeout:14000});
  }
 
