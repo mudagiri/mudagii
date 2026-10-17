@@ -9,6 +9,7 @@ import {ENEMY_ASSETS} from './enemy-assets-v1';
 import {CoinPouch,TreasureChest} from './Chapter2V31RewardIcons';
 import {V31CSS} from './chapter2-v31-rpg-css';
 import {V32CSS} from './chapter2-v32-rpg-css';
+import {V32READABILITYCSS} from './chapter2-v32-readability-css';
 import {V19SCENECSS} from './chapter2-v19-scene-css';
 import {V20BRIDGECSS} from './chapter2-v20-bridge-css';
 import {V21GATEBCSS} from './chapter2-v21-gateb-css';
@@ -527,7 +528,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </div>;
  }
 
- return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS+V22COMPARISONCSS}</style><div className="c2v2-page c2v31-page">
+ return <main data-result-version="v32" className="c2v2-root c2v3-world c2v31-rpg c2v32-rpg"><style>{CSS+V3CSS+V31CSS+V32CSS+V19SCENECSS+V20BRIDGECSS+V21GATEBCSS+V22COMPARISONCSS+V32READABILITYCSS}</style><div className="c2v2-page c2v31-page">
   <section className="c2v2-hero c2v3-hero c2v31-hero c2v20-hero" data-section="CHAPTER2_QUEST_COMPLETE" style={continuityStyle}>
    <nav className="c2v20-quest-log" aria-label="ムダギリの冒険進行">
     <span className="c2v20-quest-log-eyebrow">MUDAGIRI QUEST LOG</span>
