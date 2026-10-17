@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400" viewBox="0 0 1000 1400">
+  <defs>
+    <linearGradient id="spectrum" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#37d8ff"/><stop offset="14%" stop-color="#6978ff"/>
+      <stop offset="29%" stop-color="#d44dff"/><stop offset="43%" stop-color="#ff4f9d"/>
+      <stop offset="57%" stop-color="#ff9b3d"/><stop offset="70%" stop-color="#ffe35a"/>
+      <stop offset="84%" stop-color="#55edaa"/><stop offset="100%" stop-color="#35d7ff"/>
+    </linearGradient>
+    <linearGradient id="spectrum2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff60d3"/><stop offset="18%" stop-color="#866cff"/>
+      <stop offset="38%" stop-color="#52c9ff"/><stop offset="56%" stop-color="#5cf0ae"/>
+      <stop offset="72%" stop-color="#ffe86b"/><stop offset="88%" stop-color="#ff8a50"/>
+      <stop offset="100%" stop-color="#ff5e99"/>
+    </linearGradient>
+    <radialGradient id="glint">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".95"/><stop offset="18%" stop-color="#fff" stop-opacity=".46"/>
+      <stop offset="55%" stop-color="#9eeeff" stop-opacity=".12"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="microLines" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(31)">
+      <rect width="1.4" height="20" fill="#fff" opacity=".18"/><rect x="9" width=".8" height="20" fill="#8cecff" opacity=".12"/>
+    </pattern>
+    <pattern id="facet" width="120" height="104" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+      <path d="M0 52 L30 0 L90 0 L120 52 L90 104 L30 104 Z" fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="1.2"/>
+      <path d="M30 0 L60 52 L30 104 M90 0 L60 52 L90 104 M0 52 H120" fill="none" stroke="#fff" stroke-opacity=".055" stroke-width=".8"/>
+    </pattern>
+    <filter id="softNoise" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .09" numOctaves="2" seed="17" result="n"/>
+      <feColorMatrix in="n" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .22 0" result="na"/>
+      <feBlend in="SourceGraphic" in2="na" mode="screen"/>
+    </filter>
+  </defs>
+  <g opacity=".9" filter="url(#softNoise)">
+    <rect x="-140" y="-80" width="1280" height="1560" fill="url(#spectrum)" opacity=".34" transform="rotate(-7 500 700)"/>
+    <path d="M-180 210 L1030 -90 L1170 180 L-40 480 Z" fill="url(#spectrum2)" opacity=".34"/>
+    <path d="M-210 610 L1110 270 L1160 500 L-160 840 Z" fill="url(#spectrum)" opacity=".28"/>
+    <path d="M-190 1040 L1080 700 L1160 990 L-100 1320 Z" fill="url(#spectrum2)" opacity=".31"/>
+    <path d="M-80 1360 L1080 1060 L1120 1280 L20 1490 Z" fill="url(#spectrum)" opacity=".24"/>
+  </g>
+  <rect width="1000" height="1400" fill="url(#microLines)" opacity=".74"/>
+  <rect width="1000" height="1400" fill="url(#facet)" opacity=".68"/>
+  <ellipse cx="170" cy="260" rx="220" ry="180" fill="url(#glint)" opacity=".34"/>
+  <ellipse cx="790" cy="540" rx="250" ry="210" fill="url(#glint)" opacity=".26"/>
+  <ellipse cx="390" cy="1030" rx="260" ry="220" fill="url(#glint)" opacity=".22"/>
+  <ellipse cx="860" cy="1240" rx="190" ry="160" fill="url(#glint)" opacity=".26"/>
+  <g fill="#fff">
+    <circle cx="96" cy="142" r="2.1" opacity=".88"/><circle cx="181" cy="498" r="1.5" opacity=".64"/>
+    <circle cx="268" cy="332" r="2.4" opacity=".82"/><circle cx="356" cy="782" r="1.6" opacity=".66"/>
+    <circle cx="443" cy="184" r="1.4" opacity=".70"/><circle cx="529" cy="608" r="2.2" opacity=".86"/>
+    <circle cx="616" cy="390" r="1.5" opacity=".70"/><circle cx="705" cy="932" r="2.3" opacity=".88"/>
+    <circle cx="792" cy="248" r="1.7" opacity=".76"/><circle cx="876" cy="702" r="2.5" opacity=".90"/>
+    <circle cx="924" cy="1120" r="1.7" opacity=".74"/><circle cx="122" cy="1218" r="2.2" opacity=".84"/>
+    <circle cx="476" cy="1260" r="1.5" opacity=".68"/><circle cx="640" cy="1156" r="1.8" opacity=".76"/>
+  </g>
+</svg>

@@ -1,0 +1,165 @@
+name: Latest Chapter 1 × Chapter 2 V3.2 UI First Gate
+on:
+  push:
+    branches: [release/chapter12-latest-rpg-ui-first-20261016]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pilot-gas-health:
+    name: Existing Pilot Chapter 1 GAS Health (GET-only)
+    runs-on: ubuntu-latest
+    environment: pilot-hidden-preview
+    env:
+      VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify read-only GAS health validation cannot write or leak secrets
+        run: node scripts/qa-money-personality-gas-health.mjs
+      - name: Confirm pilot GAS identity and separation (read-only GET)
+        run: node scripts/check-money-personality-gas-health.mjs
+  release-config:
+    name: Production GAS Configuration (no outbound traffic)
+    runs-on: ubuntu-latest
+    env:
+      CHAPTER2_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+      CHAPTER1_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+    steps:
+      - name: Verify dedicated GAS endpoints are configured and correctly shaped
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$CHAPTER1_GAS_URL" ]; then
+            echo "::error::Chapter 1 dedicated GAS endpoint is missing (VITE_MONEY_PERSONALITY_GAS_URL)"
+            exit 1
+          fi
+          if [ -z "$CHAPTER2_GAS_URL" ]; then
+            echo "::error::Chapter 2 GAS endpoint is missing (VITE_MUDAGIRI_GAS_URL)"
+            exit 1
+          fi
+          for required in "$CHAPTER1_GAS_URL" "$CHAPTER2_GAS_URL"; do
+            case "$required" in
+              https://script.google.com/macros/s/*/exec) ;;
+              *) echo "::error::Expected HTTPS /macros/s/.../exec format for GAS URL"; exit 1 ;;
+            esac
+          done
+          if [ "$CHAPTER1_GAS_URL" = "$CHAPTER2_GAS_URL" ]; then
+            echo "::error::Separate Chapter 1 GAS must not reuse Chapter 2 data endpoint"
+            exit 1
+          fi
+          echo "GAS_CONFIGURED_SEPARATE_ENDPOINTS_PASS (values intentionally omitted)"
+  latest-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container: {image: "mcr.microsoft.com/playwright:v1.55.0-noble"}
+    env:
+      VITE_CHAPTER2_V32: "1"
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Compile latest UI over frozen production benchmark
+        run: |
+          npm run build
+          npm run qa:public-chapter12-entry
+          npm run qa:chapter2-v2
+          npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
+          npx --yes tsx@4.20.6 qa-income-class-food-reference-v1.ts
+          npx --yes tsx@4.20.6 qa-income-class-energy-reference-v1.ts
+          npx --yes tsx@4.20.6 qa-income-class-daily-reference-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-two-reference-lens-v1.ts
+          npx --yes tsx@4.20.6 qa-income-class-worker-burden-rate-v1.ts
+          npx --yes tsx@4.20.6 qa-age-income-joint-burden-gate-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-v32.ts
+          test -f dist/index.html
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
+          test -f public/assets/mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp
+          test -f public/assets/jobs/v1/JOB_04_FNP_turtle.webp
+      - name: Prepare same-origin Chapter 1 to 2 static preview
+        run: |
+          mkdir -p preview
+          cp -R dist/. preview/
+          mkdir -p preview/pilot/chapter2-v32/pilot/money-type
+          cp -R dist/. preview/pilot/chapter2-v32/
+          cp -R dist/. preview/pilot/chapter2-v32/pilot/money-type/
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' preview/pilot/chapter2-v32/assets/*.js
+      - name: Install browser test runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Launch local preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/mudagiri-latest-ui.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v32/pilot/money-type/ >/dev/null; then exit 0; fi
+            sleep 0.4
+          done
+          cat /tmp/mudagiri-latest-ui.log
+          exit 1
+      - name: Public root and backward compatible route smoke
+        env: {PUBLIC_ROUTE_URL: "http://127.0.0.1:4173/"}
+        run: node qa-public-chapter12-browser.mjs
+      - name: Chrome latest Chapter 1 → Chapter 2 integrated browser QA
+        env: {BROWSER_ENGINE: chromium, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
+        run: node qa-chapters-v32-browser.mjs
+      - name: iPhone WebKit latest Chapter 1 → Chapter 2 integrated browser QA
+        env: {BROWSER_ENGINE: webkit, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
+        run: node qa-chapters-v32-browser.mjs
+      - name: Upload synthetic-only screen artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-chapter12-rpg-ui-qa-screens
+          path: integration-v32-mobile-qa/
+          retention-days: 14
+          if-no-files-found: warn
+
+  isolated-preview-build:
+    name: Isolated V3.2 preview build (no GAS writes)
+    runs-on: ubuntu-latest
+    env:
+      VITE_CHAPTER2_V32: "1"
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Build Vercel-compatible deep-link assets
+        run: npm run build -- --base=/
+      - name: Assert isolated SPA routes and public-preview safety
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const config=JSON.parse(readFileSync('vercel.json','utf8'));
+          const html=readFileSync('dist/index.html','utf8');
+          const releaseYaml=readFileSync('.github/workflows/deploy-pages.yml','utf8');
+          const releaseBuild=releaseYaml.split('- name: Build latest public Chapter 1 + Chapter 2')[1]||'';
+          assert.match(releaseBuild,/VITE_CHAPTER2_V32: "1"/);
+          assert.match(releaseBuild,/test "\$VITE_CHAPTER2_V32" = "1"/);
+          assert.equal(config.framework,'vite');
+          assert.equal(config.outputDirectory,'dist');
+          assert.deepEqual(config.rewrites,[
+            {source:'/pilot/chapter2-v32/pilot/money-type/assets/:path*',destination:'/assets/:path*'},
+            {source:'/pilot/chapter2-v32/assets/:path*',destination:'/assets/:path*'},
+            {source:'/pilot/money-type/assets/:path*',destination:'/assets/:path*'},
+            {source:'/(.*)',destination:'/index.html'},
+          ]);
+          assert.match(config.buildCommand,/VITE_CHAPTER2_V32=1/);
+          assert.match(config.buildCommand,/VITE_MUDAGIRI_GAS_URL=''/);
+          assert.match(config.buildCommand,/VITE_MONEY_PERSONALITY_GAS_URL=''/);
+          assert.match(config.buildCommand,/--base=\//);
+          assert.match(html,/src="\/assets\//);
+          assert.doesNotMatch(html,/src="\.\/assets\//);
+          assert.ok(process.env.VITE_CHAPTER2_V32==='1');
+          assert.equal(process.env.VITE_MUDAGIRI_GAS_URL,'');
+          assert.equal(process.env.VITE_MONEY_PERSONALITY_GAS_URL,'');
+          console.log('ISOLATED_V32_PREVIEW_CONFIG_PASS');
+          NODE
