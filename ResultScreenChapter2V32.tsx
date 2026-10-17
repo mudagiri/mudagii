@@ -2,7 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
-import {resolveJointBurdenV1,VERIFIED_2024_JOINT_BURDEN_CELLS_V1} from './age-income-joint-burden-gate-v1';
+import {resolve2024SingleWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense} from './age-income-joint-burden-gate-v1';
 import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
@@ -286,15 +286,21 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const scopedWorkerCategory=(category:string)=>
   workerBurdenReference.available&&['food','energy','daily'].includes(category)
    ?workerBurdenReference.categories[category as WorkerBurdenCategory]??null:null;
- // Age×gross-income burden must come from the SAME official 2024 cross-tab
- // cell. We currently have no verified 1-29 raw-value matrix, so no
- // estimated or official peer rate / monthly comparison buffer is emitted.
- const verifiedJoint=resolveJointBurdenV1({
-  household:vm.profile?.householdSize===1?'single':'multi',
-  workStatus:'worker',ageBand:'',
-  publishedGrossIncomeBands:[],expense:'food',
-  respondentAgeIsHouseholdHead:vm.profile?.householdSize===1
- },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
+ // Verified 2024 joint public tab 1-29-1. IMPORTANT: only single-household
+ // respondents have the same age as the household head by definition.
+ // Worker-household is a labelled *reference population*, and respondent
+ // worker status is not inferred from financial inputs. Never call it the
+ // user's personal official mean, and NEVER add a rate gap to savings.
+ const jointPeerReferenceByCategory:Record<JointBurdenExpense,ReturnType<typeof resolve2024SingleWorkerPeerBurdenV1>>={
+  food:resolve2024SingleWorkerPeerBurdenV1(vm.profile?.householdSize===1?vm.profile?.age:null,singleGrossBand,'food'),
+  energy:resolve2024SingleWorkerPeerBurdenV1(vm.profile?.householdSize===1?vm.profile?.age:null,singleGrossBand,'energy'),
+  daily:resolve2024SingleWorkerPeerBurdenV1(vm.profile?.householdSize===1?vm.profile?.age:null,singleGrossBand,'daily'),
+ };
+ const peerReferenceFor=(category:string)=>category==='food'||category==='energy'||category==='daily'
+  ?jointPeerReferenceByCategory[category]:null;
+ const anyJointRateAvailable=Object.values(jointPeerReferenceByCategory).some(x=>x.available);
+ // Verified peer statistics are a separate comparison, NOT a verified monthly
+ // savings opportunity (worker status and identical expense mix not confirmed).
  const independentReferenceClues:{category:string;label:string;gap:number;method:'verified_age_income'}[]=[];
  const independentReferenceGap=0;
  const counts=vm.v5Counts||{};
@@ -706,7 +712,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p className="c2v32-income-food-note">※年代・世帯などの比較と、年収帯の平均は別々の統計。両方を満たす人の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。</p>
      <p className="c2v32-income-scope-warning">{incomeFoodReference.scopeWarning}</p>
      <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
-     <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同世代×同年収帯の平均負担率：</b>総務省「2024年全国家計構造調査」第1-29表を確認中です。原表の年齢・収入の交差セルと標本数を検証するまで、参考負担率の差と追加の月額バッファは表示しません。{verifiedJoint.available?'（交差セル検証済み）':''}</p>
+     <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同年代×同年収帯の平均負担率：</b>{anyJointRateAvailable
+  ?<>総務省「2024年全国家計構造調査」第1-29-1表から、年齢・年間収入を同時に集計した<strong>全国の勤労者単身世帯</strong>の参考率を表示しています。あなたの働き方までは照合していません。公式の各世帯の負担率平均でも削減可能額でもありません。</>
+  :<>総務省「2024年全国家計構造調査」第1-29-1表を参照していますが、このプロフィールに当てはまる十分な標本数・年収区分の組み合わせはまだ確認できません。年収帯だけの2025年参考率を、同年代との公式平均として代用しません。</>}</p>
      
      <details className="c2v32-income-food-sources">
       <summary>使っている統計と対象範囲</summary>
@@ -746,6 +754,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
      });
      const workerCategory=scopedWorkerCategory(x.category);
+     const sameAgeIncomePeer=peerReferenceFor(x.category);
+     const peerUserShare=sameScope?lens.ownPct:null;
+
      const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
      const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
      const deltaDescription=(delta:number|null,what:string)=>delta===null?''
@@ -771,6 +782,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
        {!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
         <small>あなたの手取り換算（公式平均負担率ではない） <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+      </div>}
+      {sameAgeIncomePeer?.available&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income" data-age-income-worker-peer-category={x.category}>
+       <div className="c2v32-worker-rate-head"><span><strong>同年代×同年収帯の参考負担率</strong><small>全国・勤労者単身世帯／2024年</small></span>
+        <strong>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</strong></div>
+       {peerUserShare!==null&&<div className="c2v32-worker-rate-comparison">
+        <div><small>あなたの支出割合</small><b>{peerUserShare.toFixed(1)}%</b></div>
+        <div><small>同年代・年収帯の参考</small><b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b></div>
+       </div>}
+       <p>世帯主の年齢 {ageBandForObserved2024V1(Number(vm.profile?.age))?.split('（')[0]}、額面年収 {singleGrossBand==='400_499'?'400～499万円':'500～599万円'}の<strong>同時集計</strong>を照合。公表年収階級2区分の平均負担率の幅で、個々の世帯の分布幅ではありません。</p>
+       <small>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。平均費目支出 ÷ 同一交差セルの平均可処分所得。各原表セルの概数標本数は50世帯以上。ただし本人の就労状態の一致は未確認。平均との差を月額の削減額としては扱いません。</small>
       </div>}
       {workerCategory&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
