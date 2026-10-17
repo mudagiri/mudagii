@@ -1,0 +1,35 @@
+/* Chapter 3 V1.3 pain/gain -> personally relevant benefit -> missing financial gap.
+   Neutral, transparent framing; no fabricated user pain or returns. */
+.motivation-mirror,.benefit-bridge,.share-quest{margin:15px 13px 17px;padding:20px 14px;border-radius:13px;background:linear-gradient(150deg,#062633,#092f39);border:1.5px solid #bba06e;box-shadow:0 7px 16px #0006}
+.motivation-mirror h2,.benefit-bridge h2,.share-quest h2{font-size:clamp(19px,5.4vw,22px);line-height:1.55;color:#fff0c8;font-weight:950;margin:0 0 17px}
+.motivation-head{display:block;font-size:12px;font-weight:900;letter-spacing:.02em;margin-bottom:8px}
+.gain-card,.pain-card{border-radius:11px;padding:16px 14px;margin:10px 0;line-height:1.75}
+.gain-card{background:linear-gradient(135deg,#21594c,#164441);border:1.5px solid #a3d3a0}
+.gain-card .motivation-head{color:#e7eeb4}
+.gain-card strong{display:block;font-size:17px;line-height:1.65;color:#fffbe4}
+.pain-card{background:linear-gradient(135deg,#3a3541,#293749);border:1.5px solid #b5a2b4}
+.pain-card .motivation-head{color:#f0cfb8}
+.pain-card strong{display:block;font-size:16px;line-height:1.65;color:#f4e5e2}
+.motivation-context{font-size:12px;color:#d6e9df;margin:8px 0 0}
+.motivation-body{font-size:13px;color:#eff0ef;line-height:1.8;margin:5px 0 0}
+.motivation-mirror .speech-stage,.benefit-bridge .speech-stage{margin-top:19px;margin-bottom:0}
+.benefit-bridge{background:linear-gradient(150deg,#132e37,#0e2531);border-color:#b7a572}
+.benefit-steps{display:grid;gap:6px}
+.benefit-step{background:#f5f0df;border:1px solid #e4cf96;border-radius:10px;padding:12px 13px;color:#243b36;position:relative;margin-bottom:8px}
+.benefit-step:not(:last-child)::after{content:"↓";position:absolute;left:50%;bottom:-19px;transform:translateX(-50%);color:#ffdb8a;font-weight:900;font-size:17px;z-index:1;text-shadow:0 1px 2px #09202a}
+.benefit-step small{display:block;font-size:12px;color:#766339;font-weight:900;margin-bottom:5px}
+.benefit-step strong{display:block;font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.benefit-step.final{background:linear-gradient(145deg,#f8e7b4,#faefcd);border:2px solid #d5a653;box-shadow:0 0 19px #e6c47c33}
+.benefit-step.final strong{font-size:16px;color:#214b3f}
+.motivation-note{font-size:13px;line-height:1.85;color:#deeadb;margin:12px 2px}
+.gap-slot{background:#0c3440;border:1.5px solid #84aaa5;padding:14px;border-radius:11px;margin-top:19px}
+.gap-slot>strong{display:block;color:#f6dfa2;font-size:14px}
+.gap-equation{font-size:15px;font-weight:900;color:#fcf5e5;text-align:center;background:#163e48;border-radius:7px;padding:10px 6px;margin:11px 0;line-height:1.5}
+.gap-reason{font-size:12px;line-height:1.75;color:#cbdedb;margin-bottom:0}
+.share-quest{border-color:#819d94;background:#0a2b33;margin-top:12px}
+.share-quest>p:not(.result-kicker){font-size:13px;line-height:1.8;color:#d3e1dc}
+.share-quest .alt-cta{margin-top:12px}
+.share-confirm{font-size:12px;color:#ffe4a0;line-height:1.7}
+.share-fallback{font-size:12px;line-height:1.8;padding:10px;border:1px dashed #baa278;border-radius:8px;user-select:text;overflow-wrap:anywhere}
+@media(max-width:350px){.motivation-mirror,.benefit-bridge,.share-quest{margin-left:10px;margin-right:10px;padding:16px 11px}.gain-card,.pain-card{padding:13px 10px}.gain-card strong{font-size:16px}.benefit-step{padding:10px 10px}}
+@media(prefers-reduced-motion:reduce){.benefit-step{transition:none}}
