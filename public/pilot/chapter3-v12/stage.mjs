@@ -201,7 +201,8 @@ function resultScreen(){
  // Needs-first design: show the visitor's expressed gain and concern before offering any "three powers".
  const mirror=sectionClass("motivation-mirror");
  append(mirror,node("p","result-kicker","君が答えたことから見えてきた"),
-   node("h2","","未来のギャップを見つけよう"));
+   node("h2","","未来のギャップを見つけよう"),
+   append(node("div","aha-card"),node("small","","✦ 今回、いちばん考えてみたいこと"),node("strong","",motivation.aha.question)));
  const gain=sectionClass("gain-card");
  append(gain,node("span","motivation-head","✦ 叶えたい未来"),node("strong","",motivation.goal.label),
    paragraph(motivation.goal.horizon+"を目安に考える","motivation-context"));
