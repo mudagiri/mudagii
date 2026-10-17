@@ -1,0 +1,36 @@
+name: Chapter 3 Three Forces V1.1 Isolated QA
+
+on:
+  pull_request:
+    paths:
+      - "scripts/chapter3-three-forces-v11.mjs"
+      - "scripts/qa-chapter3-three-forces-v11.mjs"
+      - "docs/CHAPTER3_THREE_FORCES_EARNING_DETAILED_DESIGN_V11_20261017.md"
+      - ".github/workflows/chapter3-three-forces-v11.yml"
+  push:
+    branches:
+      - "design/chapter3-three-forces-earning-v11-20261017"
+    paths:
+      - "scripts/chapter3-three-forces-v11.mjs"
+      - "scripts/qa-chapter3-three-forces-v11.mjs"
+      - "docs/CHAPTER3_THREE_FORCES_EARNING_DETAILED_DESIGN_V11_20261017.md"
+      - ".github/workflows/chapter3-three-forces-v11.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chapter3-rule-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax check
+        run: |
+          node --check scripts/chapter3-three-forces-v11.mjs
+          node --check scripts/qa-chapter3-three-forces-v11.mjs
+      - name: Deterministic logic tests
+        run: node scripts/qa-chapter3-three-forces-v11.mjs
