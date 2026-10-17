@@ -23,7 +23,7 @@ jobs:
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
-      CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
+      CANDIDATE_SHA: "beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee"
       CHAPTER3_SHA: "49fbe2d3db9c43fc545f6ee44eed5fb1d102c969"
     steps:
       - name: Checkout current released main, without modifying it
@@ -35,7 +35,7 @@ jobs:
       - name: Checkout frozen PR 51 candidate
         uses: actions/checkout@v4
         with:
-          ref: fa2435b7da43983d9ecc5c445aa731d587bc8de7
+          ref: beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee
           path: candidate
           persist-credentials: false
       - name: Checkout isolated Chapter 1-3 unified preview
@@ -316,7 +316,7 @@ jobs:
       - name: Verify actual public review URL and exact commit
         env:
           LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
-          CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
+          CANDIDATE_SHA: "beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee"
         run: |
           set -euo pipefail
           for i in $(seq 1 15); do
