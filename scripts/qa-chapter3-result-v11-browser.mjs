@@ -23,7 +23,7 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
      assert.equal(await page.locator(".force-card").count(),3,"3 powers "+i);
      assert.equal(await page.locator(".primary").count(),1,"single primary CTA "+i);
      assert.ok(await page.locator(".primary").isVisible(),"CTA visible "+i);
-     assert.equal(await page.locator(".two-figures").count(),[0,2,3,4,5,6].includes(i)?1:0,"ch2 source visibility "+i);
+     assert.equal(await page.locator(".two-figures").count(),[0,1,2,4,5,6].includes(i)?1:0,"ch2 source visibility "+i);
      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
      assert.ok(overflow<=2,"horizontal overflow "+engine+" "+width+" "+i+": "+overflow);
      await page.locator(".primary").click();
