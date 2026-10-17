@@ -264,9 +264,13 @@ await clickButton(/診断結果を見る/);
  assert.ok(merged40.includes('¥3,575')&&await page.locator('[data-section="INCOME_CLASS_DAILY_ROW"]').count()===1,'Daily necessities reference is inside its category');
  assert.ok(official40.includes('参考差をムダ額・削減額・見直し候補額に加えない'),'Statistical difference cannot become confirmed or possible savings');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'2025 single worker food reference appears only after opt-in');
+ await page.locator('[data-worker-rate-category="food"] summary').click();
  const worker40=await page.locator('[data-worker-rate-category="food"]').innerText();
- assert.ok(worker40.includes('勤労者世帯の参考負担率')&&worker40.includes('14.5%'),'Worker reference rate is observed gross-bracket expense/disposable ratio, not own ratio');
- assert.ok(worker40.includes('第5表')&&worker40.includes('可処分所得'),'Same 2025 table disclosed with its denominator');
+ assert.ok(worker40.includes('年収帯のみの負担率参考')&&worker40.includes('14.5%'),'2025 income-only statistic remains contextual, not age-adjusted');
+ assert.ok(worker40.includes('第5表')&&worker40.includes('可処分所得'),'Original univariate 2025 table remains transparently cited');
+ assert.ok(worker40.includes('年齢を照合した参考負担率ではない'),'Must explicitly reject peer ratio claim');
+ assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No invented age×income monthly buffer');
+ assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('2024年全国家計構造調査'),'Official joint 2024 source is identified');
  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
  if(engine==='chromium'){
@@ -285,7 +289,7 @@ await clickButton(/診断結果を見る/);
  }
  await page.locator('#c2v32-single-income').selectOption('500_599');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'Single income bracket with 27 sampled households must suppress the worker reference');
- assert.ok((await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText()).includes('調査対象が少ない'),'Small-sample suppression explained');
+ assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('交差セルと標本数を検証するまで'),'Age-income peer ratio must remain gated');
  await page.locator('#c2v32-single-income').selectOption('600plus');
  await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
  const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
