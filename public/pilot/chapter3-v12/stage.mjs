@@ -103,12 +103,12 @@ function areaIntro(){
  append(gate,node("span","portal-rune","✧"),node("div","portal-inner","未来への扉が開いた"));
  scene.append(gate);
  scene.append(heroCopy("前のクエストでは家計を見極めたね。次は、何を育てるか。未来の作戦を一緒に考えよう！",MASCOT));
+ scene.append(btn("第3章をはじめる  →","gold-cta stage-entry-cta",begin));
  const open=node("div","intro-next");
  append(open,
   node("p","story-label","新エリアの攻略目標"),
   node("h2","","自分だけの未来の作戦書を手に入れよう"),
   paragraph("5つの問いで、今のお金・時間・働き方を整理。あなたが次に確かめたいことが見つかる。"),
-  btn("第3章をはじめる  →","gold-cta",begin),
   node("small","fineprint","約1〜2分は設計目安。商品適性・融資可否を判定するものではありません。")
  );
  append(shell,scene,open);
