@@ -81,7 +81,7 @@ const smallWorkers=renderToStaticMarkup(React.createElement(ResultScreenChapter2
  rows:[{category:'food',label:'食費',known:true,amount:95000,diagnosisAmount:95000,comparisonAmount:95000,
   comparable:75000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}]
 }}));
-assert.match(smallWorkers,/同世代×同年収帯の平均負担率/);
+assert.doesNotMatch(smallWorkers,/data-age-income-worker-peer-category=/,'multi-person profile does not verify household-head age');
 assert.doesNotMatch(smallWorkers,/data-worker-rate-category="food"/);
 const noWorkerScope=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,monthlyTakeHome:null},
