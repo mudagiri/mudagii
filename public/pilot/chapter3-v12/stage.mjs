@@ -1,4 +1,4 @@
-import {evaluateChapter3,validateChapter3Answers} from "../chapter3-v11/engine.mjs";
+import {evaluateChapter3,validateChapter3Answers} from "./engine.mjs";
 
 /** CH3 ONLY. No C1/C2 source imports, no GAS, no storage, no referrals or analytics. */
 const ART="../../assets/";
