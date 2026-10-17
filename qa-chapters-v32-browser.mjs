@@ -1,6 +1,7 @@
 import {chromium,webkit} from 'playwright';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {auditChapter2TextContrast} from './qa-chapter2-v32-contrast.mjs';
 
 // Both pages are copies of the same integrated build, served on ONE origin.
 // Only the hidden integration prefix is used. No data is POSTed to GAS.
@@ -266,6 +267,13 @@ await clickButton(/診断結果を見る/);
  const worker40=await page.locator('[data-worker-rate-category="food"]').innerText();
  assert.ok(worker40.includes('勤労者世帯の参考負担率')&&worker40.includes('14.5%'),'Worker reference rate is observed gross-bracket expense/disposable ratio, not own ratio');
  assert.ok(worker40.includes('第5表')&&worker40.includes('可処分所得'),'Same 2025 table disclosed with its denominator');
+ // WCAG AA gate against computed rendered colors in the income comparison.
+ await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
+ if(engine==='chromium'){
+  await page.locator('[data-comparison-category="food"] .c2v32-worker-rate-card').scrollIntoViewIfNeeded();
+  await page.screenshot({path:out+'/15-food-worker-burden-readable.png',fullPage:false,timeout:14000});
+ }
+
 
  assert.equal(await page.locator('a:has-text("Excel")').count(),0,'No spreadsheet links on result');
  if(engine==='chromium'){
@@ -344,6 +352,7 @@ await clickButton(/診断結果を見る/);
   assert.ok(layout.scrollWidth<=width+2,'No mobile horizontal overflow: '+JSON.stringify(layout));
   assert.equal(layout.comparisonRows,12,'All comparisons stay visible at '+width);
   assert.ok(layout.shareButton,'One primary share action remains present');
+  await auditChapter2TextContrast(page,{viewportWidth:width});
   await screenshot('04-v32-mobile-'+width);
  }
  await page.setViewportSize({width:390,height:844});
