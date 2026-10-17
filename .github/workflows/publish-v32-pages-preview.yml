@@ -178,12 +178,30 @@ jobs:
           set -euo pipefail
           test ! -e site/pilot/chapter3-v12
           cp -R chapter3/dist/pilot/chapter3-v12 site/pilot/chapter3-v12
+          # Bundle only Chapter 3's official art into its own subpath.
+          # The live root and Chapters 1/2 asset directory remain byte-identical.
+          for asset in \
+            brand/favicon-32.png \
+            mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
+            mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp \
+            mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp; do
+            test -f "chapter3/dist/assets/$asset"
+            mkdir -p "site/pilot/chapter3-v12/assets/$(dirname "$asset")"
+            cp "chapter3/dist/assets/$asset" "site/pilot/chapter3-v12/assets/$asset"
+          done
+          # All CH3 URLs now resolve within /pilot/chapter3-v12/ only.
+          sed -i 's#../../assets/#./assets/#g' \
+            site/pilot/chapter3-v12/index.html \
+            site/pilot/chapter3-v12/stage.mjs \
+            site/pilot/chapter3-v12/stage.css
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import assert from 'node:assert/strict';
           const p='site/pilot/chapter3-v12/index.html',h=fs.readFileSync(p,'utf8');
           fs.writeFileSync(p,h.replace('<head>','<head><meta name="mudagiri-chapter3-sha" content="'+process.env.CHAPTER3_SHA+'">'));
-          for (const a of ['assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp'])assert.ok(fs.existsSync('site/'+a),'Official Chapter 3 art missing');
+          for (const a of ['mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp'])assert.ok(fs.existsSync('site/pilot/chapter3-v12/assets/'+a),'Official Chapter 3 art missing');
           console.log('CHAPTER3_NEW_PATH_ONLY_PASS');
           NODE
       - name: Install browser runner and launch same-origin staging
