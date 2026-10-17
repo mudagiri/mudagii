@@ -23,7 +23,7 @@ jobs:
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
-      CANDIDATE_SHA: "c4a5a7f459b2e888cdb94a933637de3c62076e42"
+      CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
     steps:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout frozen PR 51 candidate
         uses: actions/checkout@v4
         with:
-          ref: c4a5a7f459b2e888cdb94a933637de3c62076e42
+          ref: fa2435b7da43983d9ecc5c445aa731d587bc8de7
           path: candidate
           persist-credentials: false
       - name: Checkout isolated Chapter 1-3 unified preview
@@ -90,6 +90,8 @@ jobs:
           npm run qa:public-chapter12-entry
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
+          npx --yes tsx@4.20.6 qa-income-class-worker-burden-rate-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
       - name: Build Chapter 1-3 unified preview using the same frozen design, no GAS
         working-directory: unified
@@ -239,7 +241,7 @@ jobs:
       - name: Verify actual public review URL and exact commit
         env:
           LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
-          CANDIDATE_SHA: "c4a5a7f459b2e888cdb94a933637de3c62076e42"
+          CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
         run: |
           set -euo pipefail
           for i in $(seq 1 15); do
