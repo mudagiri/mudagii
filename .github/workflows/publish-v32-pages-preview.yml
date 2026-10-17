@@ -35,26 +35,39 @@ jobs:
           ref: 612cf71b53c887f7b8e6b3274cf04e972e47ce0a
           path: candidate
           persist-credentials: false
-      - name: Rebuild unchanged current public site
-        working-directory: existing
-        env:
-          VITE_MUDAGIRI_GAS_URL: \${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+      - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
         run: |
           set -euo pipefail
-          test -n "$VITE_MUDAGIRI_GAS_URL" || { echo "::error::Cannot reproduce existing production build; no Pages deploy"; exit 1; }
-          npm ci
-          npm run build
-      - name: Verify existing live root byte-for-byte BEFORE any Pages upload
-        run: |
-          set -euo pipefail
-          curl -fsSL --retry 3 -H "Cache-Control: no-cache" -o /tmp/live-main-index.html "$LIVE_ROOT"
-          cmp -s existing/dist/index.html /tmp/live-main-index.html || { echo "::error::Live production root differs from the rebuilt main; preview deployment blocked"; exit 1; }
-          for file in existing/dist/assets/index-*.js existing/dist/assets/index-*.css; do
-            test -f "$file" || continue
-            curl -fsSL --retry 3 -H "Cache-Control: no-cache" -o /tmp/live-static-asset "$LIVE_ROOT""assets/$(basename "$file")"
-            cmp -s "$file" /tmp/live-static-asset || { echo "::error::Production JS/CSS differs from live site; no deployment"; exit 1; }
+          test "$(git -C existing rev-parse HEAD)" = "f11055dd69629ca598a7fd190fccc379046f165a" || { echo "::error::main changed since last successful Pages deployment"; exit 1; }
+          test -d existing/public/assets || { echo "::error::Missing original public asset directory"; exit 1; }
+          mkdir -p site/assets
+          cp -R existing/public/. site/
+          curl --fail --silent --show-error --location --retry 3 -H 'Cache-Control: no-cache' -o site/index.html "$LIVE_ROOT"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=fs.readFileSync('site/index.html','utf8');
+          // Verify the exact JS/CSS recorded by the last main Pages deployment.
+          assert.match(html,/\.\/assets\/index-berQLI4S\.js/,'Unexpected main JS revision');
+          assert.match(html,/\.\/assets\/index-4Y1XgWA6\.css/,'Unexpected main CSS revision');
+          const assets=[...html.matchAll(/(?:src|href)="(\.\/assets\/[^"]+\.(?:js|css))"/g)].map(x=>x[1]);
+          assert.equal(assets.length,2,'Expect the published Vite JS and CSS only');
+          for(const asset of assets)assert.match(asset,/^\.\/assets\/index-[A-Za-z0-9_-]+\.(?:js|css)$/);
+          fs.writeFileSync('/tmp/live-mudagiri-assets.txt',assets.join('\n')+'\n');
+          NODE
+          while IFS= read -r asset; do
+            clean="\${asset#./}"
+            curl --fail --silent --show-error --location --retry 3 -H 'Cache-Control: no-cache' \
+              -o "site/$clean" "$LIVE_ROOT""$clean"
+            test -s "site/$clean"
+          done </tmp/live-mudagiri-assets.txt
+          # public/ is at the exact SHA from the last successful production deployment.
+          for file in assets/brand/ogp-1200x630.jpg assets/prebattle/MUDAGIRI_MASTER_CANONICAL_DO_NOT_OVERWRITE.png; do
+            test -f "site/$file" || continue
+            curl -fsSL --retry 2 -o /tmp/live-public-image "$LIVE_ROOT""$file"
+            cmp -s "site/$file" /tmp/live-public-image || { echo "::error::Public assets drifted; deployment blocked"; exit 1; }
           done
-          echo "LIVE_MAIN_EXACT_MATCH_PASS"
+          echo "LIVE_PAGES_EXACT_HTML_JS_CSS_AND_MAIN_PUBLIC_SHA_VERIFIED"
       - name: Build Chapter 1/2 V3.2 preview, no GAS writes
         working-directory: candidate
         env:
@@ -74,7 +87,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p site/pilot/chapter2-v32/pilot/money-type
-          cp -R existing/dist/. site/
           cp -R candidate/dist/. site/pilot/chapter2-v32/
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -87,7 +99,7 @@ jobs:
           const html=raw.replace('<head>','<head><base href="'+base+'"><meta name="robots" content="noindex,nofollow"><meta name="mudagiri-preview-sha" content="'+process.env.CANDIDATE_SHA+'">');
           fs.writeFileSync(p,html);
           fs.writeFileSync('site/pilot/chapter2-v32/pilot/money-type/index.html',html);
-          assert.equal(fs.readFileSync('site/index.html','utf8'),fs.readFileSync('existing/dist/index.html','utf8'));
+          assert.match(fs.readFileSync('site/index.html','utf8'),/index-berQLI4S\.js/);
           console.log('PAGES_LIVE_ROOT_UNCHANGED_CANDIDATE_ADDED_PASS');
           NODE
       - name: Install browser runner and launch same-origin staging
@@ -108,7 +120,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL http://127.0.0.1:4173/mudagii/ -o /tmp/staging-root
-          cmp -s /tmp/staging-root existing/dist/index.html
+          cmp -s /tmp/staging-root site/index.html
           curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/ | grep -q mudagiri-preview-sha
           curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/pilot/money-type/ | grep -q mudagiri-preview-sha
       - name: Chrome chapter 1 to 2 browser journey
