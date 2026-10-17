@@ -3,10 +3,11 @@ import {
  AGE_INCOME_JOINT_MIN_SAMPLE,AGE_INCOME_JOINT_SOURCE_V1,
  VERIFIED_2024_JOINT_BURDEN_CELLS_V1,resolveJointBurdenV1,
  type JointAgeIncomeRowV1,
+ resolve2024SingleWorkerPeerBurdenV1,
 } from './age-income-joint-burden-gate-v1';
 const fixture:JointAgeIncomeRowV1={
  household:'single',workStatus:'worker',ageBand:'30～34（５歳階級）',
- grossAnnualIncomeBand:'500～550万円',approximateSample:40,
+ grossAnnualIncomeBand:'500～550万円',approximateSample:60,
  averageMonthlyDisposableYen:300000,
  expenseYen:{food:62000,energy:12000,daily:4800},
  sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
@@ -19,14 +20,31 @@ const input={
  ageBand:fixture.ageBand,publishedGrossIncomeBands:['500～550万円'],
  expense:'food' as const,respondentAgeIsHouseholdHead:true
 };
-assert.equal(AGE_INCOME_JOINT_MIN_SAMPLE,30);
+assert.equal(AGE_INCOME_JOINT_MIN_SAMPLE,50);
 assert.equal(AGE_INCOME_JOINT_SOURCE_V1.statsDataId,'0004039867');
 assert.equal(AGE_INCOME_JOINT_SOURCE_V1.table,'1-29-1');
-assert.equal(VERIFIED_2024_JOINT_BURDEN_CELLS_V1.length,0,
- 'Must not ship fabricated official age-income reference figures');
-assert.equal(resolveJointBurdenV1(input,VERIFIED_2024_JOINT_BURDEN_CELLS_V1).available,false);
+assert.equal(VERIFIED_2024_JOINT_BURDEN_CELLS_V1.length,20,
+ 'Only previously audited original eStat 2024 age×income single-worker cells permitted');
+assert.equal(resolveJointBurdenV1(input,VERIFIED_2024_JOINT_BURDEN_CELLS_V1).available,false,
+ 'Synthetic fixture age/income never silently aliases official 2024 rows');
+const published=resolve2024SingleWorkerPeerBurdenV1(35,'500_599','food');
+assert.equal(published.available,true);
+assert.equal(published.usedCells,2);
+assert.equal(published.ratePctLow,12.2);
+assert.equal(published.ratePctHigh,17.8);
+assert.equal(published.sourceStatsDataId,'0004039867');
+const otherAge=resolve2024SingleWorkerPeerBurdenV1(25,'500_599','food');
+assert.equal(otherAge.available,true);
+assert.equal(otherAge.ratePctLow,11.0);
+assert.equal(otherAge.ratePctHigh,14.4);
+const small=resolve2024SingleWorkerPeerBurdenV1(63,'500_599','food');
+assert.equal(small.available,false,'n=30 approximate in one of two original subcells is below conservative 50');
+assert.equal(small.reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolve2024SingleWorkerPeerBurdenV1(35,'600plus','food').available,false);
+assert.equal(resolve2024SingleWorkerPeerBurdenV1(75,'400_499','food').available,false);
 assert.equal(resolveJointBurdenV1(input,[{...fixture,verifiedOfficialCell:false}]).reason,'RAW_CELLS_NOT_VERIFIED');
 assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:29}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:49}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
 assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:'X'}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
 assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:'-'}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
 assert.equal(resolveJointBurdenV1(input,[{...fixture,averageMonthlyDisposableYen:null}]).reason,'DISPOSABLE_OR_EXPENSE_UNVERIFIED');
