@@ -46,35 +46,35 @@ jobs:
           NODE
       - name: Build all three without GAS
         run: |
-          npm run build -- --base=/mudagii/pilot/chapter123-unified/
+          npm run build -- --base=/mudagii/pilot/chapter2-v32/
           test -f dist/pilot/chapter3-v11/index.html
           test -f dist/pilot/chapter3-v11/unified-chapter12.css
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
       - name: Serve simulated GitHub Pages subtree
         run: |
           mkdir -p preview/mudagii/pilot/chapter123-unified
-          cp -R dist/. preview/mudagii/pilot/chapter123-unified/
-          mkdir -p preview/mudagii/pilot/chapter123-unified/pilot/money-type
-          cp dist/index.html preview/mudagii/pilot/chapter123-unified/pilot/money-type/index.html
+          cp -R dist/. preview/mudagii/pilot/chapter2-v32/
+          mkdir -p preview/mudagii/pilot/chapter2-v32/pilot/money-type
+          cp dist/index.html preview/mudagii/pilot/chapter2-v32/pilot/money-type/index.html
           python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/chapter123.log 2>&1 &
           for i in $(seq 1 40); do
-            if curl -fsS http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/chapter3-v11/ >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/pilot/chapter3-v11/ >/dev/null; then exit 0; fi
             sleep 0.5
           done
           cat /tmp/chapter123.log
           exit 1
       - name: Visual QA chapter 3 – Chrome and WebKit
         env:
-          CH3_PREVIEW_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/chapter3-v11/
+          CH3_PREVIEW_URL: http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/pilot/chapter3-v11/
         run: node scripts/qa-chapter3-result-v11-browser.mjs
       - name: Existing Chapter 1 to 2 journey regression – Chrome
         env:
-          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/
+          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/
           BROWSER_ENGINE: chromium
         run: node qa-chapters-v32-browser.mjs
       - name: Existing Chapter 1 to 2 journey regression – WebKit
         env:
-          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/
+          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/
           BROWSER_ENGINE: webkit
         run: node qa-chapters-v32-browser.mjs
       - name: Save review screenshots
