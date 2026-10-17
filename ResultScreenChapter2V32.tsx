@@ -1,7 +1,8 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
-import {workerBurdenReferenceForProfileV1,workerBurdenRateGapV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
+import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
+import {resolveJointBurdenV1,VERIFIED_2024_JOINT_BURDEN_CELLS_V1} from './age-income-joint-burden-gate-v1';
 import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
@@ -285,53 +286,17 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const scopedWorkerCategory=(category:string)=>
   workerBurdenReference.available&&['food','energy','daily'].includes(category)
    ?workerBurdenReference.categories[category as WorkerBurdenCategory]??null:null;
- const scopedWorkerGap=(x:any,workerCategory:ReturnType<typeof scopedWorkerCategory>)=>{
-  const own=incomeBurden?.categories?.find((b:any)=>b.category===x.category);
-  const primary=comparisonAvailable(x)?comparisonReferenceAmount(x):null;
-  const comparisonTarget=comparisonAvailable(x)?comparisonTargetAmount(x):null;
-  const sameScope=Boolean(own&&x?.known===true&&typeof x.amount==='number'
-   &&Math.abs(own.monthlyAmount-x.amount)<1
-   &&comparisonTarget!==null&&Math.abs(comparisonTarget-x.amount)<1
-   &&(!incomeBurden?.bundledContributionExcluded));
-  return workerBurdenRateGapV1({
-   ownMonthlySpendingYen:x?.known===true&&typeof x.amount==='number'?x.amount:null,
-   ownMonthlyTakeHomeYen:incomeBurden?.monthlyTakeHome??null,
-   reference:workerCategory,primaryReferenceYen:primary,sameExpenseScope:sameScope
-  });
- };
- // Display-only statistical recheck clues. Do not change the frozen
- // cUpper, confirmed A, diagnosis status, or the future-reward arithmetic.
- // Count each category only once. Never multiply distinct income/age tables.
- const independentReferenceClues:{category:string;label:string;gap:number;method:'worker_rate'|'gross_expense'}[]=rows.flatMap((x:any):{category:string;label:string;gap:number;method:'worker_rate'|'gross_expense'}[]=>{
-  if(!['food','energy','daily'].includes(String(x?.category))
-   ||x?.known!==true||typeof x.amount!=='number'||!Number.isFinite(x.amount)||x.amount<0
-   ||!comparisonAvailable(x))return [];
-  const comparisonTarget=comparisonTargetAmount(x);
-  if(comparisonTarget===null||Math.abs(comparisonTarget-x.amount)>=1)return [];
-  // Prefer the same-population worker burden reference when a full matched
-  // sample and participant take-home are available; never stack two clues
-  // about the SAME spending category.
-  const workerCategory=scopedWorkerCategory(x.category);
-  const workerGap=scopedWorkerGap(x,workerCategory);
-  if(workerGap.available){
-   return workerGap.overlapWithPrimaryYen!==null&&workerGap.overlapWithPrimaryYen>0
-    ?[{category:x.category,label:x.label||x.category,gap:workerGap.overlapWithPrimaryYen,method:'worker_rate'}]:[];
-  }
-  // Non-worker all-household gross-income expense figures remain a clearly
-  // labelled fallback, NOT a substitute disposable-income rate or a saving.
-  const span=x.category==='food'&&incomeFoodReference?.available
-   &&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null
-   ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
-   :x.category==='energy'&&incomeEnergyReference?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
-   :x.category==='daily'&&incomeDailyReference?{low:incomeDailyReference.monthlyLowYen,high:incomeDailyReference.monthlyHighYen}:null;
-  if(!span)return [];
-  const clue=twoReferenceLensV1({currentAmountYen:x.amount,
-   primaryReferenceYen:comparisonReferenceAmount(x),
-   incomeReferenceLowYen:span.low,incomeReferenceHighYen:span.high,
-   ownMonthlyTakeHomeYen:null}).dualPositiveClueYen;
-  return clue!==null&&clue>0?[{category:x.category,label:x.label||x.category,gap:clue,method:'gross_expense'}]:[];
- });
- const independentReferenceGap=independentReferenceClues.reduce((total,x)=>total+x.gap,0);
+ // Age×gross-income burden must come from the SAME official 2024 cross-tab
+ // cell. We currently have no verified 1-29 raw-value matrix, so no
+ // estimated or official peer rate / monthly comparison buffer is emitted.
+ const verifiedJoint=resolveJointBurdenV1({
+  household:vm.profile?.householdSize===1?'single':'multi',
+  workStatus:'worker',ageBand:'',
+  publishedGrossIncomeBands:[],expense:'food',
+  respondentAgeIsHouseholdHead:vm.profile?.householdSize===1
+ },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
+ const independentReferenceClues:{category:string;label:string;gap:number;method:'verified_age_income'}[]=[];
+ const independentReferenceGap=0;
  const counts=vm.v5Counts||{};
  const confirmed=nonnegative(vm.potential?.confirmedA);
  // Display and compound from the same yen-rounded upper bound; never imply
@@ -590,11 +555,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>追加で見直せる可能性がある金額。<strong>実際に削減できるかは、支出の内容を確認してから判断します。</strong></p>
    </section>
    {independentReferenceClues.length>0&&<aside className="c2v32-statistical-buffer" data-section="REFERENCE_RECHECK_BUFFER">
-    <span>🔎 追加の見直しチェック ／ 統計の参考差</span>
+    <span>🔎 同年代×同所得帯の比較 ／ 原表確認済み</span>
     <strong>{independentReferenceClues.length}カテゴリで複数の目安を上回る</strong>
     <p className="c2v32-statistical-gap">比較上のチェック余地：月 <b>{money(independentReferenceGap)}</b></p>
     <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b><small>{x.method==='worker_rate'?'属性別＋勤労者の負担率':'属性別＋年収帯の支出額'}</small></span>)}</div>
-    <small>カテゴリごとに、属性別の支出目安と、同年収帯の勤労者世帯の負担率を使った参考差を照合。率が検証できない場合は全国の年収帯別支出額で代替しています。同じカテゴリの差を二重加算しません。これは削減額ではなく、既存の未確定見直し候補とも重複する可能性があるため、上の金額には加えません。</small>
+    <small>実際に同じ年齢階級・所得階級・世帯区分で公表された原表セルだけを比較に使用します。削減保証ではなく、未確定の確認材料です。</small>
     <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
@@ -741,8 +706,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p className="c2v32-income-food-note">※年代・世帯などの比較と、年収帯の平均は別々の統計。両方を満たす人の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。</p>
      <p className="c2v32-income-scope-warning">{incomeFoodReference.scopeWarning}</p>
      <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
-     {workerBurdenReference.available&&<p className="c2v32-worker-source-inline">参考負担率も確認：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}、{workerBurdenReference.source?.population}。費目平均と可処分所得平均を同じ年収階級で計算。<b>勤労者世帯の参考</b>で、本人の働き方や年齢は照合していません。</p>}
-     {!workerBurdenReference.available&&workerBurdenReference.reason==='SMALL_SAMPLE'&&<p className="c2v32-worker-sample-warning">勤労者世帯の平均負担率：この年収帯は調査対象が少ない公表階級を含むため表示していません。</p>}
+     <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同世代×同年収帯の平均負担率：</b>総務省「2024年全国家計構造調査」第1-29表を確認中です。原表の年齢・収入の交差セルと標本数を検証するまで、参考負担率の差と追加の月額バッファは表示しません。{verifiedJoint.available?'（交差セル検証済み）':''}</p>
+     
      <details className="c2v32-income-food-sources">
       <summary>使っている統計と対象範囲</summary>
       <p>出典：総務省「家計調査」（{incomeFoodReference.source?.year}年）、{incomeFoodReference.source?.table}。全国・{incomeFoodReference.source?.population}。食費は「食料」、光熱費は「光熱・水道」、日用品は「家事雑貨（4.4）＋家事用消耗品（4.5）」から作成。</p>
@@ -781,7 +746,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
      });
      const workerCategory=scopedWorkerCategory(x.category);
-     const workerGap=scopedWorkerGap(x,workerCategory);
      const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
      const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
      const deltaDescription=(delta:number|null,what:string)=>delta===null?''
@@ -808,30 +772,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        {!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
         <small>あなたの手取り換算（公式平均負担率ではない） <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
       </div>}
-      {workerCategory&&<div className="c2v32-worker-rate-card" data-worker-rate-category={x.category}>
-       <div className="c2v32-worker-rate-head"><span>同じ年収帯の<strong>勤労者世帯の参考負担率</strong></span>
-        <strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
-       {workerGap.available?<div className="c2v32-worker-rate-comparison">
-        <div><small>あなた</small><b>{workerGap.ownRatePct?.toFixed(1)}%</b></div>
-        <div><small>参考の上限との差</small><b>{workerGap.rateGapPoints!==null&&workerGap.rateGapPoints>0?'+':''}{workerGap.rateGapPoints?.toFixed(1)}pt</b></div>
-       </div>:<p>比較用の本人手取りと支出範囲が揃わないため、差は計算していません。</p>}
-       {workerGap.available&&workerGap.counterfactualHighYen!==null&&
-        <p>この参考率を<strong>あなたの手取りに当てはめると、月 {money(workerGap.counterfactualLowYen!)}{workerGap.counterfactualLowYen!==workerGap.counterfactualHighYen?' ～ '+money(workerGap.counterfactualHighYen):''}</strong>。{workerGap.excessAboveHighestRateYen!>0
-         ?<>今回の支出との差は月 {money(workerGap.excessAboveHighestRateYen!)}（比較上の差額）。</>
-         :'今回の支出は参考率の上限以下です。'}</p>}
-       {workerGap.available&&workerGap.overlapWithPrimaryYen!==null&&workerGap.overlapWithPrimaryYen>0&&
-        <p className="c2v32-worker-rate-overlap">属性別の比較目安と負担率の両方から見た確認余地：<b>{money(workerGap.overlapWithPrimaryYen)}/月</b>（削減額ではありません）</p>}
-       <small>総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。最小集計数 {workerBurdenReference.sampleMinimum}世帯。費目別平均 ÷ 平均可処分所得。ご本人の働き方・賞与・地域・年齢との一致は未確認。</small>
-      </div>}
+      {workerCategory&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
+       <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
+       <div className="c2v32-worker-rate-head"><span>2025年・年収帯だけの勤労者世帯参考</span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
+       <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
+       <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
+      </details>}
       {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
       {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
        <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
       </p>}
-      {!workerGap.available&&lens.dualPositiveClueYen!==null&&lens.dualPositiveClueYen>0&&
-       <div className="c2v32-dual-reference-clue" data-dual-clue-category={x.category}>
-        <strong>2つの参考で共に上回る部分：月 {money(lens.dualPositiveClueYen)}</strong>
-        <small>見直す優先順位を考える手がかり。小さい方の比較差を表示した参考バッファで、実際に削減できる金額ではありません。診断の見直し候補額には加算しません。</small>
-       </div>}
       {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
        <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
        <button type="button" className="c2v32-evidence-toggle"
@@ -853,7 +803,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※「同じ手取り換算」は全世帯の平均支出額を本人手取りで割る説明用の比率。勤労者の「参考負担率」は、同じ所得階級の勤労者世帯の平均支出 ÷ 平均可処分所得で別に計算しています。いずれも本人と完全一致する比較ではありません。差額は未確定のチェック材料であり、ムダ額・節約額・改善額ではありません。</p>
+   <p className="c2v22-ledger-footnote">※属性別目安と年収帯別参考は独立した統計です。「同世代×同所得帯」の参考負担率は、2024年全国家計構造調査の交差セルを検証した場合だけ算出します。それまでは所得帯だけの参考率を使ってムダ額・改善額・月額バッファを増やしません。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>
