@@ -87,7 +87,7 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
   const missing=sampled.filter(x=>x.missing);
   const inadequate=sampled.filter(x=>!x.missing&&!x.pass);
   return {sampled,missing,inadequate,requireWorker,backgroundRulesInstalled:
-   document.querySelector('style')?.textContent?.includes('Chapter 2 V3.2 legibility repair')??false};
+   [...document.querySelectorAll('style')].some(x=>x.textContent?.includes('.c2v32-rpg .c2v22-comparison-ledger .c2v32-income-inline'))};
  },{requireWorker});
  if(!output.backgroundRulesInstalled)throw new Error('CH2_READABILITY_CSS_NOT_LOADED');
  if(output.missing.length||output.inadequate.length){
