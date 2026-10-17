@@ -56,7 +56,7 @@ jobs:
           fs.writeFileSync('/tmp/live-mudagiri-assets.txt',assets.join('\n')+'\n');
           NODE
           while IFS= read -r asset; do
-            clean="\${asset#./}"
+            clean="${asset#./}"
             curl --fail --silent --show-error --location --retry 3 -H 'Cache-Control: no-cache' \
               -o "site/$clean" "$LIVE_ROOT""$clean"
             test -s "site/$clean"
