@@ -54,6 +54,7 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    assert.ok(await page.locator(".reward-reveal").isVisible(),"stage clear reward");
    assert.ok((await page.locator(".result-scroll h2").innerText()).includes("稼ぐ"),"personalized earning insight");
    assert.equal(await page.locator(".motivation-mirror").count(),1,"pain/gain is part of the actual Chapter 3 result");
+   assert.ok((await page.locator(".aha-card strong").innerText()).length>25,"cross-answer aha before the pain gain cards");
    assert.ok((await page.locator(".gain-card strong").innerText()).includes("お金の事情"),"goal gain expressed in visitor terms");
    assert.ok((await page.locator(".pain-card strong").innerText()).includes("考える時間"),"pain from self-reported Q4");
    assert.equal(await page.locator(".benefit-step").count(),3,"two-step benefit chain");
