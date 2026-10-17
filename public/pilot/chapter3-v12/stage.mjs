@@ -391,7 +391,7 @@ function openAction(res){
     panel.append(card);
    }
    panel.append(paragraph("ここで紹介先の決定や商品申込は行わないよ。疑問を持ち帰って比較してみよう。","caution"));
-  }}
+  }
  panel.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"nearest"});
 }
 function render(){
