@@ -58,7 +58,7 @@ assert.match(officialIncomeHTML,/家事雑貨（4.4）/);
 assert.match(officialIncomeHTML,/2025年/);
 assert.match(officialIncomeHTML,/世帯人数・年齢・地域を掛け合わせた平均ではありません/);
 assert.match(officialIncomeHTML,/参考差をムダ額・削減額・見直し候補額に加えない/);
-assert.match(officialIncomeHTML,/平均世帯の手取り負担率ではありません/);
+assert.match(officialIncomeHTML,/平均支出 ÷ 平均可処分所得/,'same-cell ratio must be labelled as a ratio of means, not a mean of household ratios');
 assert.match(officialIncomeHTML,/費目平均と可処分所得平均を同じ年収階級で計算/);
 assert.match(officialIncomeHTML,/勤労者世帯の参考/);
 assert.match(officialIncomeHTML,/賞与|就労状況・賞与/);
