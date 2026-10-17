@@ -774,7 +774,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       </div>}
       {workerCategory&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
-       <div className="c2v32-worker-rate-head"><span>2025年・年収帯だけの勤労者世帯参考</span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
+       <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
        <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
        <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
       </details>}
