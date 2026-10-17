@@ -184,4 +184,35 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-income-food-sources p{font-size:13px!important;color:#e4ede7!important;line-height:1.7}
 .c2v32-rpg .c2v32-income-food-sources a{display:inline-block;padding:10px 0;font-size:14px;color:#ffe19b;text-decoration:underline}
 @media(max-width:375px){.c2v32-rpg .c2v32-income-food-grid{grid-template-columns:minmax(0,1fr)}.c2v32-rpg .c2v32-income-food-grid strong{font-size:22px}}
+
+/* V3.3 two-reference comparison — unify money, the same user-denominator rate,
+   and the two independent statistical reference descriptions in each atlas row. */
+.c2v32-rpg .c2v32-income-burden--compact{padding:12px 13px;margin:10px 0 13px;border-color:#83a9a1}
+.c2v32-rpg .c2v32-income-burden--compact .c2v32-income-burden-head>strong{font-size:18px;margin:5px 0 3px}
+.c2v32-rpg .c2v32-income-burden--compact>p{font-size:13px!important;line-height:1.6!important;margin:5px 0!important}
+.c2v32-rpg .c2v32-income-food-context--merged{padding:12px;margin:10px 0 13px;box-shadow:none;border-color:#78988e;background:#13313d}
+.c2v32-rpg .c2v32-income-food-context--merged h3{font-size:18px;margin:6px 0 5px}
+.c2v32-rpg .c2v32-income-food-context--merged>p{margin:5px 0!important;font-size:13px!important}
+.c2v32-rpg .c2v22-comparison-row{overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-merged-values{gap:7px;margin-bottom:5px}
+.c2v32-rpg .c2v32-merged-values>span{min-width:0;padding:11px 9px}
+.c2v32-rpg .c2v32-merged-values>span>b{font-size:clamp(16px,4.5vw,21px);font-variant-numeric:tabular-nums;line-height:1.4}
+.c2v32-rpg .c2v32-merged-values .c2v32-inline-percent{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #71949a;color:#e9f2dc;font-size:12px!important;line-height:1.5!important;font-weight:600}
+.c2v32-rpg .c2v32-merged-values .c2v32-inline-percent b{color:#ffe8a1;font-size:15px}
+.c2v32-rpg .c2v32-income-inline{padding:10px 11px;margin-top:8px;border:1px solid #c1a66c;border-radius:10px;background:#173b42;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.c2v32-rpg .c2v32-income-inline>div{min-width:0}
+.c2v32-rpg .c2v32-income-inline small{display:block;font-size:12px!important;line-height:1.5!important;color:#dce9df}
+.c2v32-rpg .c2v32-income-inline b{display:block;color:#ffe6a2;font-size:clamp(17px,4.6vw,21px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.c2v32-rpg .c2v32-income-inline>small b{display:inline;color:#fff1b8;font-size:15px}
+.c2v32-rpg .c2v32-comparison-story{margin:9px 0 5px!important;padding:9px 10px!important;background:#112f38;border-left:3px solid #8eb7b1;border-radius:0 8px 8px 0;color:#eaf4ec!important;font-size:14px!important;line-height:1.55!important}
+.c2v32-rpg .c2v32-comparison-story>b{color:#ffdf9f}
+.c2v32-rpg .c2v32-income-story{margin-top:5px!important;background:#14333a;border-left-color:#e6c17e}
+.c2v32-rpg .c2v32-dual-reference-clue{padding:11px;margin:9px 0;border:1px solid #dbbe79;background:linear-gradient(120deg,#294035,#153640);border-radius:10px}
+.c2v32-rpg .c2v32-dual-reference-clue strong{display:block;color:#ffe99e;font-size:16px;line-height:1.5}
+.c2v32-rpg .c2v32-dual-reference-clue small{display:block;margin-top:5px;color:#dbead9;font-size:12px!important;line-height:1.6!important}
+@media(max-width:375px){
+ .c2v32-rpg .c2v32-income-inline{display:block}
+ .c2v32-rpg .c2v32-income-inline>small{margin-top:5px}
+ .c2v32-rpg .c2v32-merged-values>span>b{font-size:17px}
+}
 `;
