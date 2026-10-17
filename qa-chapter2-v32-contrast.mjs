@@ -39,7 +39,7 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
    ['comparison-statement-label','.c2v22-comparison-ledger .c2v32-comparison-story>b'],
    ['reference-criteria','.c2v22-comparison-ledger .c2v32-context-brief'],
    ['evidence-trigger','.c2v22-comparison-ledger .c2v32-evidence-toggle'],
-   ['parchment-footnote','.c2v22-comparison-ledger .c2v22-ledger-footnote'],
+   ['footnote-outside-parchment','.c2v31-encyclopedia>.c2v22-ledger-footnote'],
    ['category-status','.c2v22-comparison-ledger .c2v23-comparison-status'],
    ['own-income-paragraph','.c2v32-income-burden--compact>p'],
   ];
