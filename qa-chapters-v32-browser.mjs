@@ -271,6 +271,7 @@ await clickButton(/診断結果を見る/);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
  await page.locator('#c2v32-single-income').selectOption('600plus');
+ await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
  const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
  const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
  assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
