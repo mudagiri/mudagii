@@ -1,0 +1,89 @@
+name: Chapter 1-3 Unified RPG Isolation QA
+on:
+  push:
+    branches: [feat/chapter123-unified-rpg-preview-20261017]
+  pull_request:
+    paths:
+      - "public/pilot/chapter3-v11/**"
+      - "ResultScreenChapter2V32.tsx"
+      - "chapter2-v32-rpg-css.ts"
+      - "scripts/qa-chapter3-*"
+      - ".github/workflows/chapter123-unified-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  three-chapter-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      VITE_CHAPTER2_V32: "1"
+      VITE_CHAPTER3_PREVIEW: "1"
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencies
+        run: |
+          npm ci
+          npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Check CH3 isolation and all three-branch rules
+        run: |
+          node scripts/qa-chapter3-three-forces-v11.mjs
+          node scripts/qa-chapter3-result-v11-static.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const result=fs.readFileSync('ResultScreenChapter2V32.tsx','utf8');
+          assert.match(result,/VITE_CHAPTER3_PREVIEW==='1'/);
+          assert.match(result,/OPTIONAL_CHAPTER3_DEMO/);
+          assert.match(result,/無料ライフプラン相談の案内を見る/);
+          assert.equal(fs.readFileSync('scripts/chapter3-three-forces-v11.mjs','utf8'),fs.readFileSync('public/pilot/chapter3-v11/engine.mjs','utf8'));
+          console.log('CHAPTER_1_2_FROZEN_AND_CH3_FLAG_GUARD_PASS');
+          NODE
+      - name: Build all three without GAS
+        run: |
+          npm run build -- --base=/mudagii/pilot/chapter123-unified/
+          test -f dist/pilot/chapter3-v11/index.html
+          test -f dist/pilot/chapter3-v11/unified-chapter12.css
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
+      - name: Serve simulated GitHub Pages subtree
+        run: |
+          mkdir -p preview/mudagii/pilot/chapter123-unified
+          cp -R dist/. preview/mudagii/pilot/chapter123-unified/
+          mkdir -p preview/mudagii/pilot/chapter123-unified/pilot/money-type
+          cp dist/index.html preview/mudagii/pilot/chapter123-unified/pilot/money-type/index.html
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/chapter123.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/chapter3-v11/ >/dev/null; then exit 0; fi
+            sleep 0.5
+          done
+          cat /tmp/chapter123.log
+          exit 1
+      - name: Visual QA chapter 3 – Chrome and WebKit
+        env:
+          CH3_PREVIEW_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/chapter3-v11/
+        run: node scripts/qa-chapter3-result-v11-browser.mjs
+      - name: Existing Chapter 1 to 2 journey regression – Chrome
+        env:
+          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/
+          BROWSER_ENGINE: chromium
+        run: node qa-chapters-v32-browser.mjs
+      - name: Existing Chapter 1 to 2 journey regression – WebKit
+        env:
+          INTEGRATION_URL: http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/
+          BROWSER_ENGINE: webkit
+        run: node qa-chapters-v32-browser.mjs
+      - name: Save review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter123-unified-visual-audit
+          path: |
+            artifacts/chapter3-v11/
+            integration-v32-mobile-qa/
+          if-no-files-found: warn
+          retention-days: 7
