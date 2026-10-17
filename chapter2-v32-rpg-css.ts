@@ -227,4 +227,6 @@ export const V32CSS = `
 .c2v32-rpg .c2v32-statistical-gap-items b{font-variant-numeric:tabular-nums;color:#ffe1a6}
 .c2v32-rpg .c2v32-statistical-buffer>small{display:block;margin-top:9px;font-size:12px;line-height:1.6;color:#c8deda}
 .c2v32-rpg .c2v32-statistical-buffer button{width:100%;min-height:48px;margin-top:10px;border:1px solid #9baeb4;border-radius:9px;background:#163941;color:#f8ecc6;font-size:14px;font-weight:850;cursor:pointer}
+
+.c2v32-rpg .c2v32-income-food-context--merged .c2v32-income-scope-warning{padding:7px 9px;margin:7px 0!important;border-left:3px solid #e2c280;background:#143e41;color:#ffe5b0!important;font-size:12px!important;line-height:1.6!important}
 `;
