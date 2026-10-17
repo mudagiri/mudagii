@@ -558,7 +558,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span>🔎 同年代×同所得帯の比較 ／ 原表確認済み</span>
     <strong>{independentReferenceClues.length}カテゴリで複数の目安を上回る</strong>
     <p className="c2v32-statistical-gap">比較上のチェック余地：月 <b>{money(independentReferenceGap)}</b></p>
-    <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b><small>{x.method==='worker_rate'?'属性別＋勤労者の負担率':'属性別＋年収帯の支出額'}</small></span>)}</div>
+    <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b><small>同年代×同所得帯の交差集計</small></span>)}</div>
     <small>実際に同じ年齢階級・所得階級・世帯区分で公表された原表セルだけを比較に使用します。削減保証ではなく、未確定の確認材料です。</small>
     <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
    </aside>}
