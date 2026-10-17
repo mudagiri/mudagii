@@ -41,7 +41,7 @@ export function validateStoryHandoff(input){
 export function journeyView(sampleEnabled=false){
  if(!sampleEnabled)return {
   kind:"standalone",chapter1:null,chapter2:null,ready:false,
-  label:"前章の結果はこのプレビューに接続されていません"
+  label:"前章の結果は未連携。このプレビューでは実際のJOB・改善額は表示されません。"
  };
  return {kind:"sample",chapter1:{...DEMO_JOURNEY.chapter1},chapter2:{...DEMO_JOURNEY.chapter2},
   ready:true,label:"架空のサンプル：あなたの診断結果ではありません"};
