@@ -254,4 +254,36 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--income-only[open]{
  border-color:#7caba0;
 }
+
+/* Verified 2024 cross-tab — visually primary, unlike 2025 income-only details. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income{
+ background:#dcf0e5;border:2px solid #4e917b;border-radius:12px;
+ padding:12px 11px;color:#163b35;box-shadow:0 2px 0 #e6f7ee inset;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-head>span>strong{
+ font-size:15px;color:#17463b!important;display:block;line-height:1.4;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-head>span>small{
+ font-size:12px!important;color:#31574c;line-height:1.6;display:block;margin-top:3px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-head>strong{
+ color:#15543f!important;font-variant-numeric:tabular-nums;
+ font-size:clamp(20px,5.9vw,28px);line-height:1.45;white-space:normal;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-comparison{
+ margin:9px 0;grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-comparison>div{
+ border:1px solid #98b8a5;background:#fffaf0;padding:8px 7px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income .c2v32-worker-rate-comparison b{
+ font-size:clamp(18px,4.7vw,22px)!important;color:#154539!important;
+ overflow-wrap:anywhere;line-height:1.4;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>p{
+ color:#1b413e!important;font-size:14px!important;line-height:1.7!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>small{
+ color:#36534c!important;font-size:12px!important;line-height:1.7!important;
+}
 `;
