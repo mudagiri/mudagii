@@ -3,7 +3,7 @@ import fs from "node:fs";
 import {chromium,webkit} from "playwright";
 
 const dir="public/pilot/chapter3-v12";
-for(const file of ["index.html","stage.mjs","stage.css"])assert.ok(fs.existsSync(dir+"/"+file),"missing "+file);
+for(const file of ["index.html","stage.mjs","stage.css","story.mjs","story.css","motivation.mjs","motivation.css"])assert.ok(fs.existsSync(dir+"/"+file),"missing "+file);
 const html=fs.readFileSync(dir+"/index.html","utf8");
 const code=fs.readFileSync(dir+"/stage.mjs","utf8");
 const css=fs.readFileSync(dir+"/stage.css","utf8");
@@ -33,25 +33,39 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    const introImages=await page.locator(".speech-mascot").evaluateAll(xs=>xs.map(x=>({url:x.src,loaded:x.complete&&x.naturalWidth>0})));
    assert.ok(introImages.every(x=>x.loaded),"official mascot loads");
    await page.screenshot({path:"artifacts/chapter3-stage/"+name+"-"+width+"-intro.png",fullPage:false});
-   await page.getByRole("button",{name:/第3章をはじめる/}).click();
+   assert.equal(await page.locator(".relic-archive").count(),1,"all three chapters are explained even when C1/C2 disconnected");
+   assert.ok((await page.locator(".relic-disclosure").innerText()).includes("未連携"),"no fake chapter clear");
+   assert.equal(await page.locator(".fog-riddle").count(),1,"future fog is the current antagonist");
+   await page.getByRole("button",{name:/前章を引き継ぐ演出/}).click();
+   assert.ok((await page.locator(".relic-job-img").getAttribute("src")).includes("JOB_01_FDM_elephant.webp"),"official C1 job asset in clearly marked sample");
+   assert.ok((await page.locator(".relic-disclosure").innerText()).includes("架空"),"sample clearly labeled");
+   assert.ok((await page.locator(".relic-archive").innerText()).includes("見直し候補"),"confirmed and unconfirmed house savings are distinct");
+   await page.getByRole("button",{name:/未来の霧を晴らしに行く/}).click();
    assert.equal(await page.locator(".progress-spot").count(),5);
    assert.equal(await page.locator(".gold-cta").isDisabled(),true,"cannot skip Q1 without an answer");
    await page.locator(".answer-option").nth(4).click(); // freedom
-   await page.getByRole("button",{name:/次の問いへ/}).click();
+   await page.getByRole("button",{name:/霧の向こうへ進む/}).click();
    await page.locator(".answer-option").nth(1).click(); // 3-10 years
-   await page.getByRole("button",{name:/次の問いへ/}).click();
+   await page.getByRole("button",{name:/霧の向こうへ進む/}).click();
    assert.equal(await page.locator("fieldset.force-question").count(),3);
    await page.locator('[data-force="capital"] .answer-option').nth(2).click();
    await page.locator('[data-force="time"] .answer-option').nth(2).click();
    await page.locator('[data-force="credit"] .answer-option').nth(3).click();
-   await page.getByRole("button",{name:/次の問いへ/}).click();
+   await page.getByRole("button",{name:/霧の向こうへ進む/}).click();
    await page.locator(".answer-option").nth(4).click(); // busy
-   await page.getByRole("button",{name:/次の問いへ/}).click();
+   await page.getByRole("button",{name:/霧の向こうへ進む/}).click();
    await page.locator(".answer-option").nth(3).click(); // career
    await page.locator(".answer-option").nth(2).click(); // side gig
    assert.match(await page.locator(".chosen-count").innerText(),/2 \/ 2/);
-   await page.getByRole("button",{name:/作戦書をひらく/}).click();
+   await page.getByRole("button",{name:/地図の第一片を獲得/}).click();
    assert.ok(await page.locator(".reward-reveal").isVisible(),"stage clear reward");
+   assert.ok((await page.locator(".reward-reveal").innerText()).includes("第一片を獲得"),"not falsely claim map complete");
+   assert.equal(await page.locator(".fragment-tile").count(),3,"three financial plan components");
+   assert.equal(await page.locator(".fragment-earned").count(),1,"only first fragment earned by five questions");
+   assert.equal(await page.locator(".fragment-locked").count(),2,"amount and gap remain unresolved");
+   assert.equal(await page.locator(".relic-archive").count(),1,"C1/C2 story lineage appears in result");
+   assert.ok((await page.locator(".relic-archive").innerText()).includes("サンプル"),"sample marker persisted");
+
    assert.ok((await page.locator(".result-scroll h2").innerText()).includes("稼ぐ"),"personalized earning insight");
    assert.equal(await page.locator(".motivation-mirror").count(),1,"pain/gain is part of the actual Chapter 3 result");
    assert.ok((await page.locator(".aha-card strong").innerText()).length>25,"cross-answer aha before the pain gain cards");
@@ -87,6 +101,7 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    }
    await page.locator(".demo-select").selectOption("4");
    await page.screenshot({path:"artifacts/chapter3-stage/"+name+"-"+width+"-result.png",fullPage:false});
+   assert.ok((await page.locator(".share-quest").innerText()).includes("第一片"),"viral copy matches still-incomplete map");
    await page.getByRole("button",{name:/もう一度、未来を探索する/}).click();
    assert.ok(await page.locator(".new-world-scene").isVisible(),"reset returns to new world");
    assert.deepEqual(errors,[],"JS errors");
