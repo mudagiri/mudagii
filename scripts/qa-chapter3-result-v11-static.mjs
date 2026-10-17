@@ -26,7 +26,7 @@ for(const asset of [
  ])check(fs.existsSync(asset),"official asset missing: "+asset);
 check(css.includes("@media(max-width:355px)"),"small mobile media");
 check(css.includes("@media(prefers-reduced-motion:reduce)"),"reduced motion");
-for(const word of ["家計の戦果","3つの力の現在地","なぜ今、これを考える？","借入できるかの判定","ここからは、自分で選べる"])
+for(const word of ["家計の戦果","3つの力の現在地","なぜ今、これを考える？","融資可能性の判定","ここからは、自分で選べる"])
  check(js.includes(word),"required copy: "+word);
 check(js.includes("この画面は隔離デモ"),"no real referral");
 check(js.includes("送信しません"),"no outbound");
