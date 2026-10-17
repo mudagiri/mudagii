@@ -72,6 +72,7 @@ jobs:
           npx --yes tsx@4.20.6 qa-income-class-food-reference-v1.ts
           npx --yes tsx@4.20.6 qa-income-class-energy-reference-v1.ts
           npx --yes tsx@4.20.6 qa-income-class-daily-reference-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-two-reference-lens-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           test -f dist/index.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
