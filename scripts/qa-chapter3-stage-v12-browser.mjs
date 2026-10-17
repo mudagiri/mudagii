@@ -65,7 +65,7 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    assert.equal(await page.locator(".fragment-earned").count(),1,"only first fragment earned by five questions");
    assert.equal(await page.locator(".fragment-locked").count(),2,"amount and gap remain unresolved");
    assert.equal(await page.locator(".relic-archive").count(),1,"C1/C2 story lineage appears in result");
-   assert.ok((await page.locator(".relic-archive").innerText()).includes("サンプル"),"sample marker persisted");
+   assert.ok((await page.locator(".relic-archive").textContent()).includes("サンプル"),"sample marker persisted");
 
    const resultOrder=await page.locator(".stage-shell > *").evaluateAll(xs=>xs.map(el=>el.className));
    assert.ok(resultOrder.indexOf("instant-aha")<resultOrder.indexOf("mission-choice"),"personal aha precedes actions");
