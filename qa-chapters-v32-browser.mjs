@@ -262,6 +262,11 @@ await clickButton(/診断結果を見る/);
  assert.ok(merged40.includes('¥12,354')&&await page.locator('[data-section="INCOME_CLASS_ENERGY_ROW"]').count()===1,'Energy national reference is inside its category');
  assert.ok(merged40.includes('¥3,575')&&await page.locator('[data-section="INCOME_CLASS_DAILY_ROW"]').count()===1,'Daily necessities reference is inside its category');
  assert.ok(official40.includes('参考差をムダ額・削減額・見直し候補額に加えない'),'Statistical difference cannot become confirmed or possible savings');
+ assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'2025 single worker food reference appears only after opt-in');
+ const worker40=await page.locator('[data-worker-rate-category="food"]').innerText();
+ assert.ok(worker40.includes('勤労者世帯の参考負担率')&&worker40.includes('14.5%'),'Worker reference rate is observed gross-bracket expense/disposable ratio, not own ratio');
+ assert.ok(worker40.includes('第5表')&&worker40.includes('可処分所得'),'Same 2025 table disclosed with its denominator');
+
  assert.equal(await page.locator('a:has-text("Excel")').count(),0,'No spreadsheet links on result');
  if(engine==='chromium'){
   await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
@@ -270,11 +275,16 @@ await clickButton(/診断結果を見る/);
   assert.ok(incomeHeading>=63,'Sticky navigation must not hide the income reference heading: '+incomeHeading);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
+ await page.locator('#c2v32-single-income').selectOption('500_599');
+ assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'Single income bracket with 27 sampled households must suppress the worker reference');
+ assert.ok((await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText()).includes('調査対象が少ない'),'Small-sample suppression explained');
  await page.locator('#c2v32-single-income').selectOption('600plus');
  await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
  const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
  const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
  assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
+ assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'600+ broad-worker cell available with sample size 39 and warning');
+
  await page.locator('#c2v32-single-income').selectOption('');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
  await singleIncomeOpt.locator('summary').click();
