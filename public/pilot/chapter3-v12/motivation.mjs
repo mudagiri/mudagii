@@ -81,6 +81,6 @@ export function buildChapter3Motivation(answers){
   timing:urgency,
   gap:{goalAmountJPY:null,currentAssetsJPY:null,verifiedDifferenceJPY:null,reason:"必要額と現在の資産・負債は、この5問ではまだ確認していないため算出できません。"},
   consent:{shareNeedsUserAction:true,referralNeedsExplicitConsent:true},
-  copy:"第3章「未来の大陸」をクリア！ 次の冒険は、未来の自分と向き合うこと。 #ムダギリ診断"
+  copy:"未来の大陸で「未来の地図・第一片」を獲得！ 君は、どんな未来を目指す？ #ムダギリ診断"
  };
 }
