@@ -83,7 +83,9 @@ export function resolveJointBurdenV1(input:JointBurdenInputV1,rows:readonly Join
   ratePctHigh:Math.round(Math.max(...exactRates)*1000)/10,
   sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
   usedCells:cells.length,
-  eligibleForReviewBuffer:true as const,
+  // A same-cell official peer ratio does not by itself prove matching work
+  // status, costs, contracts or achievable savings for a participant.
+  eligibleForReviewBuffer:false as const,
  };
 }
 /**
