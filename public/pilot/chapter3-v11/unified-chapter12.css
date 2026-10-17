@@ -1,0 +1,61 @@
+/* Chapter 3 / Chapter 1-2 V3.2 unified visual skin.
+   Visual tokens and stage grammar from Chapter2 V3.1/V3.2 CSS and
+   Chapter12AnswerCheckCard in PR #51. This file does not change them. */
+:root{color-scheme:dark;background:#081c28;color:#f5f7ec}
+body{background:#0b1c26;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+#chapter3-result-root{max-width:470px;background:#081c28;box-shadow:0 0 22px #06151d}
+.preview-bar{background:#052e34;border-bottom-color:#94733c}
+.demo-picker{background:#092331}
+.demo-picker select{background:#082e3b;border-color:#ac8f54}
+.chapter-track{margin:0;padding:8px 12px 11px;gap:5px;align-items:center;justify-content:space-between;background:#082d36;border:1px solid #a78b55;border-radius:0;color:#e9e4ce}
+.chapter-track>span{flex:1;padding:6px 4px;background:#0c3c43;border:1px solid #6b8d80;border-radius:7px;font-size:11px;line-height:1.45;min-width:0}
+.chapter-track>span strong{font-size:12px;color:#fff2c6}
+.chapter-track>span.active{background:linear-gradient(135deg,#73552a,#0c3d42);border-color:#ebc36c;color:#fff8d8}
+.chapter-track>span.active strong{color:#fff1b8}
+.chapter-track>b{font-size:18px;color:#e0b75e;flex:0 0 10px}
+.quest-hero{background-image:linear-gradient(180deg,rgba(5,20,32,.15),rgba(4,22,30,.43) 38%,rgba(4,21,29,.93) 96%),url("../../assets/mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp")!important;background-position:center 29%;background-size:cover;border-bottom:2px solid #e9b955;padding:19px 14px 24px;min-height:460px;box-shadow:inset 0 -14px 28px #0006}
+.quest-hero .eyebrow{font-family:Georgia,serif;font-size:15px;letter-spacing:.06em;margin:4px 0 8px;color:#ffe39a}
+.quest-hero h1{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;font-weight:950;letter-spacing:-.05em;line-height:1.24;text-shadow:0 4px 8px #000;background:linear-gradient(90deg,#88282a,#c63b30 42%,#8f2425);border:2px solid #e5b250;border-radius:3px;display:table;margin:4px auto 12px;padding:9px 12px;font-size:clamp(23px,7.3vw,33px);color:#fff4c8}
+.hero-sub{background:linear-gradient(135deg,rgba(10,40,48,.96),rgba(36,37,45,.96))!important;border:2px solid #ebcd76!important;box-shadow:0 7px 15px #0006,0 0 18px #e6b65330;border-radius:12px!important;padding:12px 11px!important;max-width:370px!important}
+.hero-sub span{color:#ffdd8c!important;font-size:12px!important;letter-spacing:normal!important}
+.hero-sub strong{font-size:clamp(16px,4.7vw,20px)!important;line-height:1.5;color:#fff0c4!important}
+.crest{font-size:19px;margin:12px auto 7px}
+.crest span{width:34px;height:34px;line-height:30px;font-size:18px}
+.hero-avatars{display:grid;grid-template-columns:1fr 96px;align-items:end;gap:8px;max-width:380px;min-height:112px;margin-top:6px}
+.job-portrait{width:100%;display:grid;grid-template-columns:85px minmax(0,1fr);align-items:center;min-height:94px;padding:6px 8px;border:1.5px solid #dfc681;border-radius:15px;background:linear-gradient(110deg,rgba(9,31,43,.87),rgba(5,36,43,.90));box-shadow:0 7px 20px #0005}
+.job-portrait img{width:80px;height:85px;object-fit:contain;image-rendering:pixelated}
+.job-portrait p{margin:0;text-align:left;line-height:1.35;color:#fff5d9;font-size:clamp(13px,3.85vw,17px);text-shadow:0 2px 4px #000}
+.job-portrait small{display:block;font-size:12px;color:#d7e9dc;margin-top:3px}
+.guide-character{width:96px;height:105px;align-items:center}
+.guide-character img{max-width:100px;height:105px;width:100%;image-rendering:pixelated}
+.no-job{font-size:12px;grid-column:1/-1}
+.mudagiri-bubble{margin:8px auto 0;background:#062636;border:2px solid #d8aa54;border-radius:13px;color:#fff;box-shadow:0 4px 12px #0006;max-width:380px;padding:10px 12px}
+.mudagiri-bubble:before{border-bottom-color:#d8aa54;right:13%}
+.bubble-title{font-size:13px;color:#f8d880}
+.mudagiri-bubble p{font-size:14px;color:#fff;line-height:1.58}
+.content-stack{background:linear-gradient(#081c28,#0a2530 57%,#081c28);padding:14px 12px 8px;gap:13px}
+.parchment{background:linear-gradient(160deg,#fffdf8,#f1e9db)!important;color:#262b2b;border:1px solid #dcc38a;box-shadow:0 8px 20px #0005,inset 0 0 0 1px #fdfaf1;padding:17px 13px;border-radius:14px}
+.parchment .section-kicker{color:#6a4b24}
+.insight h2{font-family:system-ui,-apple-system,sans-serif;font-size:clamp(19px,5.1vw,24px);font-weight:950;color:#234b50}
+.insight-icon{height:39px;width:39px;margin:3px auto 5px;border-color:#a9894c;color:#7d6130;background:#fff2cb}
+.key-question{background:#f1e6cb;border-left:4px solid #ca9546;color:#263a3b;font-size:clamp(16px,4.5vw,19px);border-radius:0 8px 8px 0}
+.today-step{background:#edf2e7;border:1px solid #94a993}
+.today-step strong{color:#225c58}
+.today-step p{color:#203c39}
+.reason-label{color:#255d54}
+.glass{border:2px solid #bb923f;border-radius:14px;background:linear-gradient(160deg,rgba(2,36,46,.96),rgba(2,22,35,.97)),url("../../assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp") center top/cover;box-shadow:inset 0 0 0 1px #ffed9d12,0 9px 20px #0005;padding:17px 12px}
+.glass h2,.next-quest h2{color:#fff3d2;font-size:20px}
+.two-figures>div{background:#073342;border:1px solid #6e9088}
+.two-figures span{font-size:12px}
+.two-figures strong{color:#ffe7a3;font-weight:950}
+.force-card{background:linear-gradient(170deg,rgba(7,51,67,.94),rgba(2,35,49,.98));border:1px solid #67838b;border-radius:8px}
+.force-name{color:#fff3df}
+.force-status{color:#f8d880}
+.explainer{background:#092a39;border-color:#668b8c}
+.next-quest{background-image:linear-gradient(160deg,rgba(4,24,33,.88),rgba(7,32,40,.95)),url("../../assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp");border:2px solid #e3c681;box-shadow:0 8px 16px #0006;padding:22px 15px}
+.primary{background:linear-gradient(180deg,#fce4a6,#dba948);color:#232b2c;border:2px solid #fff2cd;border-radius:11px;min-height:52px;box-shadow:0 5px 0 #916221,0 9px 18px #0006}
+.secondary{background:#10404a;border:1px solid #d0bb89;color:#fff2d6;border-radius:9px}
+.closing h2{color:#22494c}
+.closing p:not(.section-kicker){color:#43534e}
+.outline-dark{background:#fff6e6}
+@media(max-width:350px){.chapter-track{padding:7px 5px}.chapter-track>span{font-size:10px;padding:6px 2px}.chapter-track>span strong{font-size:11px}.hero-avatars{grid-template-columns:1fr 74px}.job-portrait{grid-template-columns:68px minmax(0,1fr);padding:6px 5px}.job-portrait img{width:64px;height:70px}.guide-character{width:74px;height:90px}.guide-character img{height:90px}.two-figures strong{font-size:17px}.glass{padding:15px 9px}}
