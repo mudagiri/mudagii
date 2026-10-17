@@ -243,9 +243,9 @@ assert.equal((overview.match(/class="c2v23-comparison-enemy"/g)||[]).length,4,'e
 assert.match(overview,/クイダオーレの敵キャラ/);
 assert.match(overview,/サブスクサキュバスの敵キャラ/);
 assert.doesNotMatch(overview,/>数値比較なし</,'decision basis replaces giant no-reference box');
-assert.match(overview,/今回の入力/);
+assert.match(overview,/あなたの支出/);
 assert.match(overview,/¥54,000/);
-assert.match(overview,/近い条件の目安/,'numeric compare is labeled as guidance, not automatic savings');
+assert.match(overview,/属性別の比較目安/,'numeric compare is labeled as guidance, not automatic savings');
 assert.match(overview,/¥37,860/);
 assert.match(overview,/比較条件：/);
 assert.match(overview,/2人世帯/);
