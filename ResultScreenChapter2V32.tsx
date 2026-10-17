@@ -667,6 +667,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」が本当に見直せるか、一緒に確かめよう。「いつかやりたいこと」を、今日できる一歩に変える作戦も考えよう。</>:'無理に削らず、今の家計を守りながら考えよう。「いつかやりたいこと」を、今日できる小さな一歩につなげよう。'}</p>
    <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
    <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
+   {(import.meta as any).env?.VITE_CHAPTER3_PREVIEW==='1'&&<a className="c2v32-ch3-preview-link" href={new URL('pilot/chapter3-v11/',document.baseURI).href} data-section="OPTIONAL_CHAPTER3_DEMO">✦ 第3章「未来を変えるクエスト」を試す（デモ） →</a>}
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
