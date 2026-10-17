@@ -24,7 +24,7 @@ jobs:
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
-      CANDIDATE_SHA: "beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee"
+      CANDIDATE_SHA: "4b67915eb9d1c262420f40ccc0fd456437fdd32c"
       CHAPTER3_SHA: "49fbe2d3db9c43fc545f6ee44eed5fb1d102c969"
     steps:
       - name: Checkout current released main, without modifying it
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout frozen PR 51 candidate
         uses: actions/checkout@v4
         with:
-          ref: beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee
+          ref: 4b67915eb9d1c262420f40ccc0fd456437fdd32c
           path: candidate
           persist-credentials: false
       - name: Checkout isolated Chapter 1-3 unified preview
@@ -86,7 +86,7 @@ jobs:
           echo "LIVE_PAGES_EXACT_HTML_JS_CSS_AND_MAIN_PUBLIC_SHA_VERIFIED"
       - name: Guard previous previews, permitting verified attach-workflow wipe only
         env:
-          PREVIOUS_CH12_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
+          PREVIOUS_CH12_SHA: "beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee"
         run: |
           set -euo pipefail
           # Attach Money Personality Pilot Preview run 39020780988 redeployed
@@ -157,6 +157,7 @@ jobs:
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
           npx --yes tsx@4.20.6 qa-income-class-worker-burden-rate-v1.ts
+          npx --yes tsx@4.20.6 qa-age-income-joint-burden-gate-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
       - name: Build Chapter 1-3 unified preview using the same frozen design, no GAS
@@ -370,7 +371,7 @@ jobs:
       - name: Verify actual public review URL and exact commit
         env:
           LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
-          CANDIDATE_SHA: "beee2d39707f5dcd3a31e26e3fd4d1393cc3c9ee"
+          CANDIDATE_SHA: "4b67915eb9d1c262420f40ccc0fd456437fdd32c"
         run: |
           set -euo pipefail
           for i in $(seq 1 15); do
