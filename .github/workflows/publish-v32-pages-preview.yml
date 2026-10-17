@@ -24,6 +24,7 @@ jobs:
       UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
       UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
       CANDIDATE_SHA: "fa2435b7da43983d9ecc5c445aa731d587bc8de7"
+      CHAPTER3_SHA: "bad8f51f707ded3340f512b85fd8fab6425666f3"
     steps:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
@@ -42,6 +43,12 @@ jobs:
         with:
           ref: ca4228495692f13739b39b88b0e71823a9603b95
           path: unified
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        name: Checkout ONLY standalone Chapter 3
+        with:
+          ref: bad8f51f707ded3340f512b85fd8fab6425666f3
+          path: chapter3
           persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
         run: |
@@ -76,6 +83,11 @@ jobs:
             cmp -s "site/$file" /tmp/live-public-image || { echo "::error::Public assets drifted; deployment blocked"; exit 1; }
           done
           echo "LIVE_PAGES_EXACT_HTML_JS_CSS_AND_MAIN_PUBLIC_SHA_VERIFIED"
+      - name: Guard existing Chapter 1/2 preview
+        run: |
+          set -euo pipefail
+          curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter2-v32/" | grep -q "$CANDIDATE_SHA" || { echo "::error::C1/C2 preview has changed, no overwrite allowed"; exit 1; }
+          curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter123-unified/" | grep -q "$UNIFIED_SHA" || { echo "::error::Existing preview has changed, no overwrite allowed"; exit 1; }
       - name: Build Chapter 1/2 V3.2 preview, no GAS writes
         working-directory: candidate
         env:
@@ -149,6 +161,31 @@ jobs:
           assert.match(fs.readFileSync('site/index.html','utf8'),/index-berQLI4S\.js/);
           console.log('UNIFIED_ADDED_ROOT_AND_EXISTING_V32_PRESERVED');
           NODE
+      - name: Build self-contained Chapter 3 stage only
+        working-directory: chapter3
+        env:
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/qa-chapter3-three-forces-v11.mjs
+          node --check public/pilot/chapter3-v12/stage.mjs
+          npm run build -- --base=/mudagii/
+          test -f dist/pilot/chapter3-v12/engine.mjs
+      - name: Overlay Chapter 3 v12 as an entirely new directory
+        run: |
+          set -euo pipefail
+          test ! -e site/pilot/chapter3-v12
+          cp -R chapter3/dist/pilot/chapter3-v12 site/pilot/chapter3-v12
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const p='site/pilot/chapter3-v12/index.html',h=fs.readFileSync(p,'utf8');
+          fs.writeFileSync(p,h.replace('<head>','<head><meta name="mudagiri-chapter3-sha" content="'+process.env.CHAPTER3_SHA+'">'));
+          for (const a of ['assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp'])assert.ok(fs.existsSync('site/'+a),'Official Chapter 3 art missing');
+          console.log('CHAPTER3_NEW_PATH_ONLY_PASS');
+          NODE
       - name: Install browser runner and launch same-origin staging
         working-directory: candidate
         run: npm install --no-save --package-lock=false playwright@1.55.0
@@ -205,6 +242,22 @@ jobs:
           BROWSER_ENGINE: webkit
           INTEGRATION_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/"
         run: node qa-chapters-v32-browser.mjs
+      - name: Install Chapter 3 browser QA
+        working-directory: chapter3
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Real GitHub Pages path Chapter 3 quest QA
+        working-directory: chapter3
+        env:
+          CHAPTER3_STAGE_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter3-v12/"
+        run: node scripts/qa-chapter3-stage-v12-browser.mjs
+      - name: Upload Chapter 3 QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-v12-publication-check
+          path: chapter3/artifacts/chapter3-stage/
+          retention-days: 14
+          if-no-files-found: warn
       - name: Upload unified QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -253,7 +306,16 @@ jobs:
                   curl -fsSL "$LIVE_ROOT""pilot/chapter123-unified/pilot/chapter3-v11/" | grep -q 'chapter3-result-root'
                   echo "PUBLIC_CHAPTER123_UNIFIED_VERIFIED"
                   echo "URL: $LIVE_ROOT""pilot/chapter123-unified/"
-                  exit 0
+                  for k in $(seq 1 15); do
+                    if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v12/" | grep -q "bad8f51f707ded3340f512b85fd8fab6425666f3"; then
+                      curl -fsSL "$LIVE_ROOT""pilot/chapter3-v12/stage.mjs" | grep -q 'evaluateChapter3'
+                      echo "PUBLIC_CHAPTER3_V12_NEW_STAGE_VERIFIED"
+                      echo "URL: $LIVE_ROOT""pilot/chapter3-v12/"
+                      exit 0
+                    fi
+                    sleep 6
+                  done
+                  echo "::error::Chapter 3 preview missing/mismatched SHA"; exit 1
                 fi
                 sleep 6
               done
