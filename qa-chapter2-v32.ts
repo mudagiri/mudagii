@@ -32,6 +32,11 @@ assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参�
 assert.match(officialIncomeHTML,/あなたの支出/);
 assert.match(officialIncomeHTML,/あなたの「光熱・水道費」は/);
 assert.match(officialIncomeHTML,/data-dual-clue-category="daily"/);
+assert.match(officialIncomeHTML,/data-section="REFERENCE_RECHECK_BUFFER"/,'two sources must lead to a separate check-only summary');
+assert.match(officialIncomeHTML,/data-dual-clue-category="energy"/);
+assert.match(officialIncomeHTML,/月 <b>¥9,000<\/b>/,'display-only statistical gap is min(primary and income ceiling) per disjoint category');
+assert.doesNotMatch(officialIncomeHTML,/月 最大 ¥9,000/,'statistical gap must never replace frozen cUpper');
+assert.match(officialIncomeHTML,/上の金額には加えません/,'no addition to confirmed or uncertain possible saving');
 assert.match(officialIncomeHTML,/月 ¥/);
 assert.doesNotMatch(officialIncomeHTML,/原表Excelを開く|e-Statの原表Excelを開く|\.xlsx<\/a>/,'UI must cite source without Excel links');
 assert.match(officialIncomeHTML,/500～599万円/);
