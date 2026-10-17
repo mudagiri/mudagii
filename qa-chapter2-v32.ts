@@ -89,7 +89,7 @@ const noWorkerScope=renderToStaticMarkup(React.createElement(ResultScreenChapter
   comparable:75000,comparisonQuality:'exact',v5Status:'inspect',cUpper:0}]
 }}));
 assert.match(noWorkerScope,/data-worker-rate-category="food"/,'official worker population rate can still be shown independently');
-assert.doesNotMatch(noWorkerScope,/data-section="REFERENCE_RECHECK_BUFFER"/,'never invent a rate-derived buffer without participant income');
+assert.doesNotMatch(noWorkerScope,/属性別＋勤労者の負担率/,'worker-rate buffer cannot be calculated without participant take-home');
 
 for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','NEXT_QUEST','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
  assert.ok(uncertain.includes(marker),'missing section or asset '+marker);
