@@ -237,4 +237,21 @@ export const V32READABILITYCSS = `
  .c2v32-rpg .c2v32-statistical-buffer,
  .c2v32-rpg .c2v22-comparison-ledger{transition:none!important}
 }
+
+/* Income-only observation is an optional secondary reference, not an
+   age-matched peer number. Readable but never a savings CTA. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--income-only{
+ background:#eff5ee;border:1px solid #b9c9bd;padding:0 10px 9px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--income-only summary{
+ display:flex;align-items:center;min-height:48px;padding:8px 1px;
+ font-size:14px;font-weight:800;line-height:1.55;color:#25463e;
+ cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--income-only summary:focus-visible{
+ outline:3px solid #136a5b;outline-offset:2px;border-radius:5px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--income-only[open]{
+ border-color:#7caba0;
+}
 `;
