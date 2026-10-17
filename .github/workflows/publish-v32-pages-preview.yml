@@ -21,6 +21,8 @@ jobs:
     env:
       LIVE_ROOT: "https://mudagiri.github.io/mudagii/"
       PREVIEW_ROOT: "/mudagii/pilot/chapter2-v32/"
+      UNIFIED_ROOT: "/mudagii/pilot/chapter123-unified/"
+      UNIFIED_SHA: "be08326d5acd3e7bd68dc36bc6f1a75318cfa9a3"
       CANDIDATE_SHA: "c4a5a7f459b2e888cdb94a933637de3c62076e42"
     steps:
       - name: Checkout current released main, without modifying it
@@ -34,6 +36,12 @@ jobs:
         with:
           ref: c4a5a7f459b2e888cdb94a933637de3c62076e42
           path: candidate
+          persist-credentials: false
+      - name: Checkout isolated Chapter 1-3 unified preview
+        uses: actions/checkout@v4
+        with:
+          ref: be08326d5acd3e7bd68dc36bc6f1a75318cfa9a3
+          path: unified
           persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
         run: |
@@ -83,6 +91,23 @@ jobs:
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
+      - name: Build Chapter 1-3 unified preview using the same frozen design, no GAS
+        working-directory: unified
+        env:
+          VITE_CHAPTER2_V32: "1"
+          VITE_CHAPTER3_PREVIEW: "1"
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build -- --base="$UNIFIED_ROOT"
+          node scripts/qa-chapter3-three-forces-v11.mjs
+          node scripts/qa-chapter3-result-v11-static.mjs
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
+          test -f dist/pilot/chapter3-v11/index.html
+          test -f dist/pilot/chapter3-v11/unified-chapter12.css
       - name: Assemble site with identical main and isolated candidate
         run: |
           set -euo pipefail
@@ -101,6 +126,26 @@ jobs:
           fs.writeFileSync('site/pilot/chapter2-v32/pilot/money-type/index.html',html);
           assert.match(fs.readFileSync('site/index.html','utf8'),/index-berQLI4S\.js/);
           console.log('PAGES_LIVE_ROOT_UNCHANGED_CANDIDATE_ADDED_PASS');
+          NODE
+      - name: Add strictly isolated chapter 1-3 subpath, without altering live root or V3.2
+        run: |
+          set -euo pipefail
+          mkdir -p site/pilot/chapter123-unified/pilot/money-type
+          cp -R unified/dist/. site/pilot/chapter123-unified/
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const base='/mudagii/pilot/chapter123-unified/';
+          const file='site/pilot/chapter123-unified/index.html';
+          const html=fs.readFileSync(file,'utf8');
+          assert.match(html,/<head>/);
+          assert.match(html,/\/mudagii\/pilot\/chapter123-unified\/assets\//);
+          const output=html.replace('<head>','<head><base href="'+base+'"><meta name="robots" content="noindex,nofollow"><meta name="mudagiri-unified-sha" content="'+process.env.UNIFIED_SHA+'">');
+          fs.writeFileSync(file,output);
+          fs.writeFileSync('site/pilot/chapter123-unified/pilot/money-type/index.html',output);
+          assert.ok(fs.existsSync('site/pilot/chapter123-unified/pilot/chapter3-v11/index.html'));
+          assert.match(fs.readFileSync('site/index.html','utf8'),/index-berQLI4S\.js/);
+          console.log('UNIFIED_ADDED_ROOT_AND_EXISTING_V32_PRESERVED');
           NODE
       - name: Install browser runner and launch same-origin staging
         working-directory: candidate
@@ -123,6 +168,9 @@ jobs:
           cmp -s /tmp/staging-root site/index.html
           curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/ | grep -q mudagiri-preview-sha
           curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/pilot/money-type/ | grep -q mudagiri-preview-sha
+          curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/ | grep -q mudagiri-unified-sha
+          curl -fsSL http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/money-type/ | grep -q mudagiri-unified-sha
+          test -s site/pilot/chapter123-unified/pilot/chapter3-v11/result.css
       - name: Chrome chapter 1 to 2 browser journey
         working-directory: candidate
         env:
@@ -135,6 +183,36 @@ jobs:
           BROWSER_ENGINE: webkit
           INTEGRATION_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter2-v32/"
         run: node qa-chapters-v32-browser.mjs
+      - name: Install unified Chrome/WebKit runner
+        working-directory: unified
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Chapter 3 isolated result visual QA — Chrome / WebKit, all 8 cases
+        working-directory: unified
+        env:
+          CH3_PREVIEW_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/pilot/chapter3-v11/"
+        run: node scripts/qa-chapter3-result-v11-browser.mjs
+      - name: Unified chapter 1 -> 2 regression — Chrome
+        working-directory: unified
+        env:
+          BROWSER_ENGINE: chromium
+          INTEGRATION_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/"
+        run: node qa-chapters-v32-browser.mjs
+      - name: Unified chapter 1 -> 2 regression — WebKit
+        working-directory: unified
+        env:
+          BROWSER_ENGINE: webkit
+          INTEGRATION_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter123-unified/"
+        run: node qa-chapters-v32-browser.mjs
+      - name: Upload unified QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages-chapter123-review-screens
+          path: |
+            unified/artifacts/chapter3-v11/
+            unified/integration-v32-mobile-qa/
+          retention-days: 14
+          if-no-files-found: warn
       - name: Upload synthetic-only QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -168,6 +246,17 @@ jobs:
             if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter2-v32/" | grep -q "$CANDIDATE_SHA"; then
               echo "PUBLIC_GITHUB_PAGES_V32_PREVIEW_VERIFIED"
               echo "URL: $LIVE_ROOT""pilot/chapter2-v32/"
+              for j in $(seq 1 15); do
+                if curl -fsSL -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter123-unified/" | grep -q "be08326d5acd3e7bd68dc36bc6f1a75318cfa9a3"; then
+                  curl -fsSL "$LIVE_ROOT""pilot/chapter123-unified/pilot/chapter3-v11/" | grep -q 'chapter3-result-root'
+                  echo "PUBLIC_CHAPTER123_UNIFIED_VERIFIED"
+                  echo "URL: $LIVE_ROOT""pilot/chapter123-unified/"
+                  exit 0
+                fi
+                sleep 6
+              done
+              echo "::error::Chapter123 unified public preview missing/mismatched SHA"
+              exit 1
               exit 0
             fi
             sleep 6
