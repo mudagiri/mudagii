@@ -7,7 +7,7 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: pages
+  group: isolated-pages-v32-review
   cancel-in-progress: false
 jobs:
   package:
