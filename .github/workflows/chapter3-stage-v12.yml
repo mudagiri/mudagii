@@ -7,6 +7,7 @@ on:
       - "public/pilot/chapter3-v12/**"
       - "public/pilot/chapter3-v11/engine.mjs"
       - "scripts/qa-chapter3-stage-v12-browser.mjs"
+      - "scripts/qa-chapter3-motivation-v13.mjs"
       - ".github/workflows/chapter3-stage-v12.yml"
   pull_request:
     paths:
@@ -39,6 +40,8 @@ jobs:
         run: |
           node --check public/pilot/chapter3-v12/stage.mjs
           node --check scripts/qa-chapter3-stage-v12-browser.mjs
+          node --check public/pilot/chapter3-v12/motivation.mjs
+          node scripts/qa-chapter3-motivation-v13.mjs
           node scripts/qa-chapter3-three-forces-v11.mjs
           node scripts/qa-chapter3-result-v11-static.mjs
       - name: Build with no external backends
@@ -47,6 +50,8 @@ jobs:
           test -f dist/pilot/chapter3-v12/index.html
           test -f dist/pilot/chapter3-v12/stage.mjs
           test -f dist/pilot/chapter3-v12/stage.css
+          test -f dist/pilot/chapter3-v12/motivation.mjs
+          test -f dist/pilot/chapter3-v12/motivation.css
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
       - name: Serve Chapter 3 only
         run: |
