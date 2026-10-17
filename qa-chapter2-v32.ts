@@ -60,7 +60,7 @@ assert.match(officialIncomeHTML,/世帯人数・年齢・地域を掛け合わ�
 assert.match(officialIncomeHTML,/参考差をムダ額・削減額・見直し候補額に加えない/);
 assert.match(officialIncomeHTML,/平均支出 ÷ 平均可処分所得/,'same-cell ratio must be labelled as a ratio of means, not a mean of household ratios');
 assert.match(officialIncomeHTML,/同じ所得階級の平均支出 ÷ 平均可処分所得/);
-assert.match(officialIncomeHTML,/勤労者世帯の参考/);
+assert.match(officialIncomeHTML,/年収帯のみの負担率参考/);
 assert.match(officialIncomeHTML,/年齢は未反映/);
 assert.doesNotMatch(officialIncomeHTML,/href="[^"]*e-stat/,'result never sends user to raw government spreadsheet');
 assert.doesNotMatch(officialIncomeHTML,/data-section="CANDIDATE_BREAKDOWN"/);
