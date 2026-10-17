@@ -38,6 +38,7 @@ for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
    assert.equal(await page.locator(".fog-riddle").count(),1,"future fog is the current antagonist");
    await page.getByRole("button",{name:/前章を引き継ぐ演出/}).click();
    assert.ok((await page.locator(".relic-job-img").getAttribute("src")).includes("JOB_01_FDM_elephant.webp"),"official C1 job asset in clearly marked sample");
+   assert.equal(await page.locator(".relic-job-img").evaluate(img=>img.complete&&img.naturalWidth>0),true,"sample official JOB sprite must load, not just have a filename");
    assert.ok((await page.locator(".relic-disclosure").innerText()).includes("架空"),"sample clearly labeled");
    assert.ok((await page.locator(".relic-archive").innerText()).includes("見直し候補"),"confirmed and unconfirmed house savings are distinct");
    await page.getByRole("button",{name:/未来の霧を晴らしに行く/}).click();
