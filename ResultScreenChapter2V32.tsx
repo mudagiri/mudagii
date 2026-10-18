@@ -1,5 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
+import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
@@ -249,7 +250,9 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
- const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(null);
+ const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
+  ['400_499','500_599','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
+   ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
@@ -734,10 +737,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </details>
    {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
     <div className="c2v32-income-burden-head"><span>あなたの支出割合の分母（統計の平均分母ではありません）</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
-    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出は {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。下の各カテゴリで、支出額・比較の目安・手取り比率をまとめて見られるよ。</p>
+    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。この下は1カテゴリ1カードで、本人の割合と公式参考を照合するよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&<details open className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
+   {vm.profile?.householdSize===1&&<details open={!vm.profile?.singlePeerGrossBand2024} className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
     <summary>同年代・単身・同所得帯と比べる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
@@ -860,6 +863,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      const sameAgeIncomePeer=peerReferenceFor(x.category);
      const peerUserShare=sameScope?lens.ownPct:null;
 
+     const peerGap=chapter2PeerGapV1({
+      ownMonthlyExpenseYen:sameScope?Number(ownScopeAmount):null,
+      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null,
+      peerPctLow:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctLow:null,
+      peerPctHigh:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctHigh:null,
+      sameExpenseScopeConfirmed:sameScope,
+      sourceVerified:sameAgeIncomePeer?.available===true,
+     });
+     const signedPoint=(p:number)=>(p>0?'+':'')+p.toFixed(1)+'pt';
+     const signedYen=(v:number)=>(v>0?'+':v<0?'−':'±')+money(Math.abs(v));
      const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
      const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
      const deltaDescription=(delta:number|null,what:string)=>delta===null?''
@@ -883,6 +896,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
        </span>
       </div>
+      {peerGap.available&&<section className="c2v32-peer-gap-card" data-section={'OFFICIAL_PEER_GAP_'+x.category}>
+       <span>全国・同年代×同世帯区分×同年収帯の負担率差</span>
+       <strong>{signedPoint(peerGap.gapPointsLow)} ～ {signedPoint(peerGap.gapPointsHigh)}</strong>
+       <p>あなたの月手取りに換算：<b>{signedYen(peerGap.gapYenLow)} ～ {signedYen(peerGap.gapYenHigh)}／月</b></p>
+       <small>あなたの負担率 − 全国参考率を、あなた自身の手取りに換算した比較上の差額。平均世帯の実際の支出との差額ではなく、ムダ額・削減可能額・未確定見直し候補には加算しません。地域は未反映。</small>
+      </section>}
       {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
