@@ -102,8 +102,12 @@ const multiVerifiedAgeInput=renderToStaticMarkup(React.createElement(ResultScree
 assert.match(multiVerifiedAgeInput,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
  'Multi-person respondent must confirm that their age equals household head age');
 assert.match(multiVerifiedAgeInput,/id="c2v32-head-age-confirm" type="checkbox"/);
+assert.match(multiVerifiedAgeInput,/data-section="PEER_WORKER_STATUS_CONFIRM"/);
+assert.match(multiVerifiedAgeInput,/id="c2v32-worker-status-confirm" type="checkbox"/);
+assert.match(multiVerifiedAgeInput,/勤労者世帯の参考率を表示する/);
 assert.doesNotMatch(multiVerifiedAgeInput,/data-age-income-worker-peer-category=/,
- 'Multi-person peer reference is disabled until household-head age is confirmed');
+ 'Multi-person peer reference is disabled until household-head age and salary-worker status are confirmed');
+assert.match(multiVerifiedAgeInput,/回答は画面表示だけに使い、保存・送信しません/);
 const multiUnsupportedAge=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,age:27},
 }}));
