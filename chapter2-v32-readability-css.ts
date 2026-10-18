@@ -312,4 +312,16 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-peer-age-confirm input:focus-visible{
  outline:3px solid #078976;outline-offset:3px;
 }
+
+/* Progressive disclosure: the source match is acknowledged at the selection,
+ * not only after scrolling through all twelve expense categories. */
+.c2v32-rpg .c2v32-high-income-match-status{
+ color:#f5f2dd!important;font-size:14px!important;line-height:1.65!important;
+ border-top:1px solid #688b88;padding:10px 0 0;margin:10px 0 2px;
+ font-weight:650;
+}
+.c2v32-rpg .c2v32-income-food-single-optin summary:focus-visible,
+.c2v32-rpg .c2v32-income-food-single-optin select:focus-visible{
+ outline:3px solid #b1e8e0;outline-offset:3px;
+}
 `;
