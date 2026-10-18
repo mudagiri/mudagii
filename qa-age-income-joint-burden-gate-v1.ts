@@ -3,7 +3,7 @@ import {
  AGE_INCOME_JOINT_MIN_SAMPLE,AGE_INCOME_JOINT_SOURCE_V1,
  VERIFIED_2024_JOINT_BURDEN_CELLS_V1,resolveJointBurdenV1,
  type JointAgeIncomeRowV1,
- resolve2024SingleWorkerPeerBurdenV1,
+ resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,
 } from './age-income-joint-burden-gate-v1';
 const fixture:JointAgeIncomeRowV1={
  household:'single',workStatus:'worker',ageBand:'30～34（５歳階級）',
@@ -23,7 +23,7 @@ const input={
 assert.equal(AGE_INCOME_JOINT_MIN_SAMPLE,50);
 assert.equal(AGE_INCOME_JOINT_SOURCE_V1.statsDataId,'0004039867');
 assert.equal(AGE_INCOME_JOINT_SOURCE_V1.table,'1-29-1');
-assert.equal(VERIFIED_2024_JOINT_BURDEN_CELLS_V1.length,20,
+assert.equal(VERIFIED_2024_JOINT_BURDEN_CELLS_V1.length,79,
  'Only previously audited original eStat 2024 age×income single-worker cells permitted');
 assert.equal(resolveJointBurdenV1(input,VERIFIED_2024_JOINT_BURDEN_CELLS_V1).available,false,
  'Synthetic fixture age/income never silently aliases official 2024 rows');
@@ -61,4 +61,20 @@ assert.equal(allowed.available,true);
 assert.equal(allowed.ratePctLow,20.7);
 assert.equal(allowed.ratePctHigh,20.7);
 assert.equal(allowed.sourceStatsDataId,'0004039867');
+const multi30=resolve2024MultiWorkerPeerBurdenV1(34,'500_599','food',true);
+assert.equal(multi30.available,true);
+assert.equal(multi30.usedCells,2);
+assert.equal(multi30.ratePctLow,19.5);
+assert.equal(multi30.ratePctHigh,20.3);
+assert.equal(multi30.eligibleForReviewBuffer,false);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','food',false).reason,'HOUSEHOLD_HEAD_AGE_NOT_VERIFIED');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(45,'800_999','food',true).ratePctLow,18.4);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(45,'800_999','food',true).ratePctHigh,19.8);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(29,'500_599','food',true).available,false,'under30 fails when one original 50万円 income class n<50');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(72,'900_999','food',true).available,false,'unknown 900_999 income subgroup is not a profile band');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(72,'800_999','food',true).available,false,'both 900+ original classes n<50 for older households');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(55,'1000plus','food',true).available,false,'broad open-ended annual income is not an exact official bin');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'unknown','food',true).available,false);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','daily',true).available,true);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','energy',true).available,true);
 console.log('CHAPTER2_AGE_INCOME_JOINT_FAIL_CLOSED_QA_PASS');
