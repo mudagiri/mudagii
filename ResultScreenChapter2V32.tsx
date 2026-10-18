@@ -602,9 +602,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
-    <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>月額の未確定候補／すべて表示</small></div>
+    <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>まず最優先の1件から</small></div>
     <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
-    <div className="c2v32-breakdown-entries">{candidates.map((x:any)=>{
+    <div className="c2v32-breakdown-entries">{candidates.slice(0,1).map((x:any)=>{
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
       <div className="c2v32-breakdown-entry-head">
@@ -618,7 +618,19 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
       <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
      </div>;
-    })}</div>
+    })}
+    {candidates.length>1&&<details className="c2v32-more-candidates" data-section="OTHER_CANDIDATE_SUMMARIES">
+     <summary>ほか{candidates.length-1}件の見直し候補を見る（詳しい比較は12カテゴリ一覧へ）</summary>
+     <div>{candidates.slice(1).map((x:any)=>{
+      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
+      return <div className="c2v32-more-candidate" key={x.category} data-candidate-category={x.category}>
+       {enemy?.normal&&<img src={enemy.normal} alt="" loading="lazy"/>}
+       <div><strong>{x.label||x.category}</strong><small>{x.nextAction||'内容を確認する'}</small></div>
+       <span>最大 {money(nonnegative(x.cUpper))}<small>月額・未確定</small></span>
+      </div>;
+     })}</div>
+    </details>}
+    </div>
     <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
    </section>}
    {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
