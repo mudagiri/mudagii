@@ -1,89 +1,21 @@
 name: Attach Money Personality Pilot Preview
 
+# Retired: the isolated-previews recovery workflow already publishes the
+# Chapter 1 pilot plus Chapter 2/3. A second Pages deployment with only the
+# Chapter 1 pilot deletes newer preview paths from the shared Pages site.
+# Keep this manual documentation job for historical workflow links.
 on:
-  workflow_run:
-    workflows:
-      # PR validation must never republish Pages and delete Chapter 2/3 paths.
-      # Reattach the Pilot only after an actual main production deployment.
-      - "Deploy Mudagiri to GitHub Pages"
-    types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages-money-preview-${{ github.event.workflow_run.id }}
-  cancel-in-progress: false
 
 jobs:
-  build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+  retired-publisher:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout production main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          path: main-site
-
-      - name: Checkout pilot branch
-        uses: actions/checkout@v4
-        with:
-          ref: feature/money-personality-pilot
-          path: pilot-site
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: |
-            main-site/package-lock.json
-            pilot-site/package-lock.json
-
-      - name: Build current production root
-        working-directory: main-site
-        env:
-          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
+      - name: Preview publishing ownership
         run: |
-          npm ci
-          npm run build
-
-      - name: Build pilot candidate
-        working-directory: pilot-site
-        env:
-          VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
-          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL }}
-        run: |
-          npm ci
-          npm run build
-          npm run qa:money-pilot
-
-      - name: Assemble production root + hidden pilot preview
-        run: |
-          mkdir -p site
-          cp -R main-site/dist/. site/
-          mkdir -p site/pilot/money-type
-          cp -R pilot-site/dist/. site/pilot/money-type/
-          test -f site/index.html
-          test -f site/pilot/money-type/index.html
-
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          name: github-pages-money-preview-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ./site
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy production root with hidden pilot preview
-        id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages-money-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          echo "This workflow no longer deploys GitHub Pages."
+          echo "Deploy Mudagiri to GitHub Pages -> Restore Isolated Previews After Production Deployment"
+          echo "is the only supported publication chain."
