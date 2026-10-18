@@ -118,6 +118,16 @@ const multiUpperOpenEnded=renderToStaticMarkup(React.createElement(ResultScreenC
 }}));
 assert.doesNotMatch(multiUpperOpenEnded,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
  'Open-ended income group is not a directly comparable gross-income group');
+assert.match(multiUpperOpenEnded,/data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"/,
+ 'Users with broad 1000plus can voluntarily choose the actual official grouped gross band');
+assert.match(multiUpperOpenEnded,/id="c2v32-multi-high-income"/,
+ 'High-income choice belongs only to the optional display, not the frozen profile');
+assert.match(multiUpperOpenEnded,/value="1000_1249"/);
+assert.match(multiUpperOpenEnded,/value="1250_1499"/);
+assert.match(multiUpperOpenEnded,/value="1500plus"/);
+assert.doesNotMatch(multiUpperOpenEnded,/data-age-income-worker-peer-category=/,
+ 'Do not assume which 1000plus published bracket applies without explicit selection');
+assert.match(multiUpperOpenEnded,/診断結果・LINEへ保存や送信はしません/);
 const coResidentIndividual=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,age:35,diagnosisScope:'personal'},
 }}));
