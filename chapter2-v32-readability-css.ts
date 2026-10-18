@@ -379,4 +379,48 @@ export const V32READABILITYCSS = `
  display:block;color:#36534c!important;font-size:12px!important;line-height:1.65!important;
  margin-top:7px;overflow-wrap:anywhere;
 }
+
+/* Same income step, optional cohort refinement: no extra mandatory question. */
+.pre-profile-v4 .pre-annual-peer-optin{
+ margin:18px 0 8px;padding:14px 13px;background:#173d46;
+ border:1px solid #c6aa72;border-radius:12px;color:#f5f6ed;
+}
+.pre-profile-v4 .pre-annual-peer-optin strong{
+ display:block;color:#ffe3a3;font-size:16px;line-height:1.5;
+}
+.pre-profile-v4 .pre-annual-peer-optin p,
+.pre-profile-v4 .pre-annual-peer-optin small{
+ display:block;color:#e4f0ee;font-size:13px;line-height:1.65;margin:8px 0;
+}
+.pre-profile-v4 .pre-annual-peer-optin select{
+ width:100%;min-height:48px;background:#fff;color:#1e3330;
+ border:2px solid #d1b77a;border-radius:10px;font-size:16px;
+}
+.pre-profile-v4 .pre-annual-peer-optin select:focus-visible{
+ outline:3px solid #ffdf8e;outline-offset:2px;
+}
+/* A comparison gap, never a green savings banner. */
+.c2v32-rpg .c2v32-peer-gap-card{
+ margin:9px 0 10px;border:1px solid #aec2b5;background:#f4f7ee;
+ border-radius:11px;padding:12px 13px;color:#193c33;
+}
+.c2v32-rpg .c2v32-peer-gap-card>span{
+ display:block;color:#334e43;font-weight:850;font-size:13px;line-height:1.55;
+}
+.c2v32-rpg .c2v32-peer-gap-card>strong{
+ display:block;color:#0d4650;font-size:19px;line-height:1.5;font-weight:950;
+ font-variant-numeric:tabular-nums;margin:3px 0;
+}
+.c2v32-rpg .c2v32-peer-gap-card>p{
+ font-size:14px!important;line-height:1.7!important;
+ color:#1c4039!important;margin:4px 0 8px;
+}
+.c2v32-rpg .c2v32-peer-gap-card>p b{
+ font-variant-numeric:tabular-nums;font-weight:950;
+ color:#0f5361;font-size:17px;
+}
+.c2v32-rpg .c2v32-peer-gap-card>small{
+ display:block;font-size:12px!important;line-height:1.65!important;
+ color:#496159!important;
+}
 `;
