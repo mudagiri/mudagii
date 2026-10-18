@@ -305,9 +305,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
  const highPeerFor=(expense:JointBurdenExpense,headAgeConfirmed:boolean,headWorkerConfirmed:boolean)=>
   resolve2024HighMultiWorkerPeerBurdenV1(rawProfileAge,multiHighGrossBand,expense,headAgeConfirmed,headWorkerConfirmed);
+ const highIncomePublishedReference=multiCohort&&multiGrossBand==='1000plus'&&multiHighGrossBand
+  ?highPeerFor('food',true,true):null;
  const multiHasAvailablePeerSource=multiCohort&&(
   multiGrossBand==='1000plus'
-   ?highPeerFor('food',true,true).available
+   ?highIncomePublishedReference?.available===true
    :resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available);
  const singleHasAvailablePeerSource=vm.profile?.householdSize===1&&
   resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleGrossBand,'food').available;
@@ -720,7 +722,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>同年代×年収帯の参考負担率を比べる（任意）</summary>
+    <summary>年収帯の参考と比べてみる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
@@ -729,11 +731,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>月手取りから年収を推定しないよ。ここで選んだ年収帯は、この画面の比較表示だけに使い、診断結果やLINEへ保存・送信しません。</p>
+    <p>月手取りから年収は推定しないよ。同年代と比較できる区分だけ年代も反映し、それ以外は年収帯のみの参考です。選択内容は診断結果やLINEに保存・送信しません。</p>
    </details>}
    {multiCohort&&multiGrossBand==='1000plus'&&
     <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN">
-     <summary>年収1,000万円以上の比較を詳しくする（任意）</summary>
+     <summary>自分に近い世帯と比べてみる（任意・年収1,000万円以上）</summary>
      <label htmlFor="c2v32-multi-high-income">世帯全体の額面年収を選ぶ</label>
      <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
       onChange={e=>{
@@ -745,16 +747,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <option value="1250_1499">1,250～1,499万円</option>
       <option value="1500plus">1,500万円以上</option>
      </select>
-     <p>2024年の公式交差集計で標本50世帯以上を確認できた年代だけ表示するよ。
-      月の手取りから年収を推測せず、この選択は画面表示だけに使い、診断結果・LINEへ保存や送信はしません。</p>
+     <p>あなたと同じ年代・世帯年収の参考を探すよ。月手取りから年収を推測せず、この選択は画面表示だけに使い、診断結果・LINEへ保存や送信はしません。</p>
+     {multiHighGrossBand&&<p className="c2v32-high-income-match-status"
+       data-section="MULTI_HIGH_INCOME_MATCH_STATUS" role="status" aria-live="polite">
+      {highIncomePublishedReference?.available===true
+       ?multiHeadAgeConfirmed&&headWorkerConfirmed
+        ?'比較の準備ができたよ。下の食費・光熱水道・日用品で、同年代×同年収帯の参考率を確認できるよ。'
+        :'この年代と年収帯には、公表された参考データがあるよ。世帯主の年齢と働き方を確認すると、下の3カテゴリで比較できるよ。'
+       :'この年代と年収帯は、標本数が少ないなどの理由で比較に必要な条件を満たしていないよ。同年代の率は表示せず、下には年収帯だけの参考を残すよ。'}
+     </p>}
     </details>}
    {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
      <label htmlFor="c2v32-head-age-confirm">
       <input id="c2v32-head-age-confirm" type="checkbox" checked={multiHeadAgeConfirmed}
        onChange={e=>setMultiHeadAgeConfirmed(e.target.checked)}/>
-      <span><strong>同年代×同年収の参考を表示する</strong>
-       <small>プロフィールの年齢（{rawProfileAge}歳）は、世帯主の年齢です</small></span>
+      <span><strong>入力した{rawProfileAge}歳は、世帯主の年齢です</strong>
+       <small>一致する場合のみチェック（同年代×同年収の参考を表示する）</small></span>
      </label>
      <p>公式統計は「世帯主の年齢」を使うよ。別の家族の年齢なら、チェックせずに進んでね。全国の勤労者世帯の参考で、確定した削減額ではありません。</p>
     </div>}
@@ -763,8 +772,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <label htmlFor="c2v32-worker-status-confirm">
       <input id="c2v32-worker-status-confirm" type="checkbox" checked={headWorkerConfirmed}
        onChange={e=>setHeadWorkerConfirmed(e.target.checked)}/>
-      <span><strong>勤労者世帯の参考率を表示する</strong>
-       <small>世帯主が会社・官公庁などに雇用され、給与を得ている</small></span>
+      <span><strong>世帯主は会社員・公務員など、給与を受け取る立場です</strong>
+       <small>当てはまる場合のみチェック（勤労者世帯の参考率を表示する）</small></span>
      </label>
      <p>この統計は世帯主が雇用されている世帯が対象だよ。世帯主が自営業・無職などの場合や、分からない場合はチェックしないでね。回答は画面表示だけに使い、保存・送信しません。</p>
     </div>}
