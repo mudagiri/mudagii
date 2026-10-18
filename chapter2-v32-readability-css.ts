@@ -324,4 +324,25 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-income-food-single-optin select:focus-visible{
  outline:3px solid #b1e8e0;outline-offset:3px;
 }
+
+/* Peer cohort, never a user's own-income-scaled synthetic average. */
+.c2v32-rpg .c2v32-peer-guide{
+ margin:12px 0;padding:14px 13px;border:1.5px solid #9cbdad;
+ border-radius:12px;background:#12393e;color:#f5f5e8;
+}
+.c2v32-rpg .c2v32-peer-guide>strong{
+ display:block;color:#ffdf90;font-size:16px;line-height:1.55;font-weight:900;
+}
+.c2v32-rpg .c2v32-peer-guide>p{
+ font-size:14px!important;line-height:1.7!important;color:#eef5ef!important;
+ margin:8px 0!important;
+}
+.c2v32-rpg .c2v32-peer-guide>p strong{color:#fff0b6}
+.c2v32-rpg .c2v32-peer-guide>small{
+ display:block;font-size:12px!important;line-height:1.65!important;color:#d3e5dd!important;
+}
+.c2v32-rpg .c2v32-income-food-single-optin[open]{
+ border-color:#c5b46c;box-shadow:0 0 0 1px rgba(197,180,108,.15);
+}
+.c2v32-rpg .c2v32-merged-values>span>small{overflow-wrap:anywhere}
 `;
