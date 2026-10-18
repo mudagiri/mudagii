@@ -4,7 +4,8 @@ import {
  VERIFIED_2024_JOINT_BURDEN_CELLS_V1,resolveJointBurdenV1,
  type JointAgeIncomeRowV1,
  resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,
- resolve2024DeclaredWorkerPeerV1,
+ resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,
+ VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1,
 } from './age-income-joint-burden-gate-v1';
 const fixture:JointAgeIncomeRowV1={
  household:'single',workStatus:'worker',ageBand:'30～34（５歳階級）',
@@ -91,4 +92,31 @@ assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand
 assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand:'1000plus',
  expense:'food',headAgeConfirmed:true,headWorkerConfirmed:true}).available,false,
  'No high-income cross-cell guessing until complete independently verified official source');
+// 2024 original a010292.xlsx grouped columns BB/BC/BD: never extrapolate low-n.
+assert.equal(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.length,12);
+assert.ok(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.every(x=>x.household==='multi'&&
+ x.workStatus==='worker'&&x.verifiedOfficialCell&&typeof x.approximateSample==='number'&&
+ x.approximateSample>=50&&x.averageMonthlyDisposableYen!>0));
+const hi=(age:number,gross:'1000_1249'|'1250_1499'|'1500plus',expense:'food'|'energy'|'daily'='food')=>
+ resolve2024HighMultiWorkerPeerBurdenV1(age,gross,expense,true,true);
+assert.equal(hi(35,'1000_1249').ratePctLow,14.9);
+assert.equal(hi(35,'1250_1499').ratePctLow,13.0);
+assert.equal(hi(45,'1500plus').ratePctLow,13.7);
+assert.equal(hi(45,'1500plus').usedCells,1);
+assert.equal(hi(55,'1500plus','energy').available,true);
+assert.equal(hi(55,'1000_1249','daily').available,true);
+assert.equal(hi(75,'1000_1249').available,true,'exactly n=50 is included');
+assert.equal(hi(75,'1250_1499').available,false,'low-n n=20 excluded');
+assert.equal(hi(75,'1500plus').available,false,'low-n n=20 excluded');
+assert.equal(hi(29,'1000_1249').available,false,'under30 n=40 excluded');
+assert.equal(hi(35,'1500plus').available,false,'30s n=40 excluded');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,'1000_1249','food',true,false).available,false,
+ 'head worker confirmation is mandatory');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,'1000_1249','food',false,true).available,false,
+ 'head age confirmation is mandatory');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,null,'food',true,true).available,false,
+ 'broad 1000plus cannot map to a single grouped public income bracket');
+assert.ok(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.every(x=>x.expenseYen.daily!>=0),
+ 'daily necessities are the verified sum of household goods and consumables');
+assert.equal(hi(45,'1500plus').eligibleForReviewBuffer,false);
 console.log('CHAPTER2_AGE_INCOME_JOINT_FAIL_CLOSED_QA_PASS');
