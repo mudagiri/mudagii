@@ -307,12 +307,13 @@ jobs:
           test -f site/pilot/chapter3-v16/chapter3-v21.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter3-v16/assets/*.js
 
-          # Chapter 3 V1.5 separate static subtree. Asset references use ../../assets/
-          # from /pilot/chapter3-v12, so add only required new images to site/assets.
-          # Do not overwrite production assets or touch the frozen Chapter 1/2 files.
+          # Chapter 3 V1.5 separate static subtree with self-contained local assets.
+          # Rewrite asset references only in assembled files, never in the source branch.
+          # Do not touch production files, shared assets or frozen Chapter 1/2 files.
           mkdir -p site/pilot/chapter3-v12
           cp -R chapter3-v15-site/public/pilot/chapter3-v12/. site/pilot/chapter3-v12/
           git -C chapter3-v15-site rev-parse HEAD > site/pilot/chapter3-v12/REVISION_SHA.txt
+          sed -i 's#../../assets/#./assets/#g' site/pilot/chapter3-v12/index.html site/pilot/chapter3-v12/stage.mjs site/pilot/chapter3-v12/stage.css
           for asset in \
             brand/favicon-32.png \
             mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
@@ -322,15 +323,16 @@ jobs:
             mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp \
             jobs/v1/JOB_01_FDM_elephant.webp; do
             source="chapter3-v15-site/public/assets/$asset"
-            target="site/assets/$asset"
+            target="site/pilot/chapter3-v12/assets/$asset"
             test -s "$source"
             mkdir -p "$(dirname "$target")"
-            if [ -f "$target" ]; then cmp "$source" "$target"; else cp "$source" "$target"; fi
+            cp "$source" "$target"
             test -s "$target"
           done
           test -f site/pilot/chapter3-v12/index.html
           test -f site/pilot/chapter3-v12/ux-v15.css
           test -f site/pilot/chapter3-v12/next-guide.mjs
+          grep -q 'const ART="./assets/"' site/pilot/chapter3-v12/stage.mjs
           grep -q 'id="chapter3-stage"' site/pilot/chapter3-v12/index.html
           ! grep -R -E -l 'script.google.com/macros/s/.+/exec' site/pilot/chapter3-v12
           echo "CHAPTER3_V15_STATIC_ASSEMBLY_PASS"
@@ -425,7 +427,7 @@ jobs:
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/chapter3-v21.html" -o /tmp/chapter3-v21.html
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/" -o /tmp/chapter3-v15.html
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/stage.mjs" -o /tmp/chapter3-v15-stage.mjs
-              curl -fsSL --max-time 12 "$base/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp" -o /tmp/chapter3-v15-mascot.webp
+              curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp" -o /tmp/chapter3-v15-mascot.webp
               curl -fsSL --max-time 12 "$base/pilot/chapter12-answercheck-v1/chapter12-answercheck.html" -o /tmp/chapter12-answercheck.html
               test "$(sha256sum /tmp/production-root.html | cut -d ' ' -f1)" = "$EXPECTED_ROOT_SHA"
               grep -q 'id="root"' /tmp/chapter1.html
