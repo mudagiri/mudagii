@@ -30,6 +30,9 @@ async function metrics(name,{allowVertical=false}={}){
   await page.waitForTimeout(60);
   const m=await page.evaluate(({allowVertical})=>{
     const visible=(el)=>{
+      // A closed native <details> does not expose descendant controls to users.
+      // CSS geometry alone can still report an off-screen select as 'visible'.
+      if(el.closest('details:not([open])'))return false;
       const s=getComputedStyle(el);
       const r=el.getBoundingClientRect();
       return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0&&r.width>0&&r.height>0;
