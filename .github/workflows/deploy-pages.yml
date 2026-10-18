@@ -11,8 +11,10 @@ permissions:
   pages: write
   id-token: write
 
+# PR-triggered validation creates a skipped workflow_run. Those runs must not
+# cancel a real Pages restoration sharing the 'pages' concurrency group.
 concurrency:
-  group: "pages"
+  group: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') && 'pages' || format('pages-skip-{0}', github.run_id) }}
   cancel-in-progress: true
 
 jobs:
