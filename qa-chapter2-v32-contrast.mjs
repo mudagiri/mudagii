@@ -46,7 +46,13 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
   if(document.querySelector('.c2v32-income-food-context--merged')){
    classes.push(
     ['income-reference-note','.c2v32-income-food-context--merged .c2v32-income-food-note'],
-    ['income-reference-title','.c2v32-income-food-context--merged h3'],
+    ['income-reference-title','.c2v32-income-food-context--merged h3']
+   );
+  }
+  // Independent income-only cards disappear when a verified 2024
+  // age×income cohort supersedes them; audit them only if actually rendered.
+  if(document.querySelector('.c2v22-comparison-ledger .c2v32-income-inline')){
+   classes.push(
     ['income-amount','.c2v22-comparison-ledger .c2v32-income-inline b'],
     ['income-caption','.c2v22-comparison-ledger .c2v32-income-inline small'],
     ['income-comparison','.c2v22-comparison-ledger .c2v32-income-story']
