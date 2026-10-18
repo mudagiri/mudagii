@@ -32,6 +32,13 @@ assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参�
 assert.match(officialIncomeHTML,/あなたの支出/);
 assert.match(officialIncomeHTML,/あなたの手取りの <b>16.0%<\/b>/,'user expense / own takehome');
 assert.doesNotMatch(officialIncomeHTML,/同じ手取り換算 <b>25.8%<\/b>/,'do not confuse pseudo denominator rate with official worker burden rate');
+assert.match(officialIncomeHTML,/data-section="JOINT_PEER_COMPARISON_GUIDE"/,
+ 'Age × household classification × annual income cohort comparison must be introduced explicitly');
+assert.doesNotMatch(officialIncomeHTML,/あなたの手取り換算/,
+ 'Never create pseudo statistical burden by dividing unrelated reference expenses by user take-home');
+assert.match(officialIncomeHTML,/同年代 × 世帯区分 × 額面年収帯/,
+ 'The matched reference priority is stated clearly');
+
 assert.doesNotMatch(officialIncomeHTML,/この参考率を<strong>あなたの手取りに当てはめると/,'income-only reference is not a same-age peer ratio');
 assert.match(officialIncomeHTML,/あなたの「光熱・水道費」は/);
 assert.match(officialIncomeHTML,/data-worker-rate-category="daily"/,'daily worker reference must be independently sourced');
@@ -320,7 +327,7 @@ assert.match(overview,/サブスクサキュバスの敵キャラ/);
 assert.doesNotMatch(overview,/>数値比較なし</,'decision basis replaces giant no-reference box');
 assert.match(overview,/あなたの支出/);
 assert.match(overview,/¥54,000/);
-assert.match(overview,/属性別の比較目安/,'numeric compare is labeled as guidance, not automatic savings');
+assert.match(overview,/属性別の支出目安（同条件の平均ではない）/,'unmatched attribute amount is never presented as a same-cohort average');
 assert.match(overview,/¥37,860/);
 assert.match(overview,/比較条件：/);
 assert.match(overview,/2人世帯/);
