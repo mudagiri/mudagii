@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-v3-hidden-preview
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -30,6 +30,7 @@ jobs:
       v31_sha: ${{ steps.capture.outputs.v31_sha }}
       v32_sha: ${{ steps.capture.outputs.v32_sha }}
       chapter3_sha: ${{ steps.capture.outputs.chapter3_sha }}
+      chapter3_v15_sha: ${{ steps.capture.outputs.chapter3_v15_sha }}
       answercheck_sha: ${{ steps.capture.outputs.answercheck_sha }}
     steps:
       - name: Checkout unchanged production main
@@ -74,6 +75,13 @@ jobs:
           ref: feat/chapter3-rpg-pilot-v16-20261011
           path: chapter3-site
 
+      # Chapter 3 V1.5 is self-contained static ES modules and does not touch C1/C2.
+      - name: Checkout isolated Chapter 3 V1.5 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: feat/chapter3-v11-rpg-result-isolated-20261017
+          path: chapter3-v15-site
+
       - name: Checkout separate Chapter 1-2 answer-check visual pilot
         uses: actions/checkout@v4
         with:
@@ -90,6 +98,7 @@ jobs:
           echo "v31_sha=$(git -C v31-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "v32_sha=$(git -C v32-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "chapter3_sha=$(git -C chapter3-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "chapter3_v15_sha=$(git -C chapter3-v15-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "answercheck_sha=$(git -C answercheck-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
@@ -222,6 +231,16 @@ jobs:
           npm run qa:chapter3-life-fork
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
 
+      - name: Validate isolated Chapter 3 V1.5 learning guides and JS
+        working-directory: chapter3-v15-site
+        run: |
+          node scripts/qa-chapter3-guides-v15.mjs
+          node --check public/pilot/chapter3-v12/stage.mjs
+          node --check public/pilot/chapter3-v12/engine.mjs
+          node --check public/pilot/chapter3-v12/story.mjs
+          node --check public/pilot/chapter3-v12/motivation.mjs
+          node --check public/pilot/chapter3-v12/next-guide.mjs
+
       - name: Build isolated chapter1-chapter2 answer check without GAS
         working-directory: answercheck-site
         env:
@@ -288,6 +307,34 @@ jobs:
           test -f site/pilot/chapter3-v16/chapter3-v21.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' site/pilot/chapter3-v16/assets/*.js
 
+          # Chapter 3 V1.5 separate static subtree. Asset references use ../../assets/
+          # from /pilot/chapter3-v12, so add only required new images to site/assets.
+          # Do not overwrite production assets or touch the frozen Chapter 1/2 files.
+          mkdir -p site/pilot/chapter3-v12
+          cp -R chapter3-v15-site/public/pilot/chapter3-v12/. site/pilot/chapter3-v12/
+          git -C chapter3-v15-site rev-parse HEAD > site/pilot/chapter3-v12/REVISION_SHA.txt
+          for asset in \
+            brand/favicon-32.png \
+            mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
+            mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp \
+            mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp \
+            jobs/v1/JOB_01_FDM_elephant.webp; do
+            source="chapter3-v15-site/public/assets/$asset"
+            target="site/assets/$asset"
+            test -s "$source"
+            mkdir -p "$(dirname "$target")"
+            if [ -f "$target" ]; then cmp "$source" "$target"; else cp "$source" "$target"; fi
+            test -s "$target"
+          done
+          test -f site/pilot/chapter3-v12/index.html
+          test -f site/pilot/chapter3-v12/ux-v15.css
+          test -f site/pilot/chapter3-v12/next-guide.mjs
+          grep -q 'id="chapter3-stage"' site/pilot/chapter3-v12/index.html
+          ! grep -R -E -l 'script.google.com/macros/s/.+/exec' site/pilot/chapter3-v12
+          echo "CHAPTER3_V15_STATIC_ASSEMBLY_PASS"
+
           # Answer check only exists in a separate mock-data subtree.
           mkdir -p site/pilot/chapter12-answercheck-v1
           cp -R answercheck-site/dist/. site/pilot/chapter12-answercheck-v1/
@@ -349,6 +396,7 @@ jobs:
           EXPECTED_V31: ${{ needs.assemble.outputs.v31_sha }}
           EXPECTED_V32: ${{ needs.assemble.outputs.v32_sha }}
           EXPECTED_CHAPTER3: ${{ needs.assemble.outputs.chapter3_sha }}
+          EXPECTED_CHAPTER3_V15: ${{ needs.assemble.outputs.chapter3_v15_sha }}
           EXPECTED_ANSWERCHECK: ${{ needs.assemble.outputs.answercheck_sha }}
         run: |
           set -euo pipefail
@@ -361,8 +409,9 @@ jobs:
             v31="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v31/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
             v32="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v32/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
             chapter3="$(curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
+            chapter3_v15="$(curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
             answercheck="$(curl -fsSL --max-time 12 "$base/pilot/chapter12-answercheck-v1/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
-            if [ "$integrated" = "$EXPECTED_INTEGRATION" ] && [ "$existing" = "$EXPECTED_PILOT" ] && [ "$v3" = "$EXPECTED_V3" ] && [ "$v31" = "$EXPECTED_V31" ] && [ "$v32" = "$EXPECTED_V32" ] && [ "$chapter3" = "$EXPECTED_CHAPTER3" ] && [ "$answercheck" = "$EXPECTED_ANSWERCHECK" ]; then
+            if [ "$integrated" = "$EXPECTED_INTEGRATION" ] && [ "$existing" = "$EXPECTED_PILOT" ] && [ "$v3" = "$EXPECTED_V3" ] && [ "$v31" = "$EXPECTED_V31" ] && [ "$v32" = "$EXPECTED_V32" ] && [ "$chapter3" = "$EXPECTED_CHAPTER3" ] && [ "$chapter3_v15" = "$EXPECTED_CHAPTER3_V15" ] && [ "$answercheck" = "$EXPECTED_ANSWERCHECK" ]; then
               curl -fsSL --max-time 12 "$base/" -o /tmp/production-root.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/" -o /tmp/chapter2-v2.html
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/pilot/money-type/" -o /tmp/chapter1.html
@@ -374,6 +423,9 @@ jobs:
               curl -fsSL --max-time 12 "$base/pilot/chapter2-v32/pilot/money-type/" -o /tmp/chapter1-v32.html
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/chapter3-pilot.html" -o /tmp/chapter3-v16.html
               curl -fsSL --max-time 12 "$base/pilot/chapter3-v16/chapter3-v21.html" -o /tmp/chapter3-v21.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/" -o /tmp/chapter3-v15.html
+              curl -fsSL --max-time 12 "$base/pilot/chapter3-v12/stage.mjs" -o /tmp/chapter3-v15-stage.mjs
+              curl -fsSL --max-time 12 "$base/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp" -o /tmp/chapter3-v15-mascot.webp
               curl -fsSL --max-time 12 "$base/pilot/chapter12-answercheck-v1/chapter12-answercheck.html" -o /tmp/chapter12-answercheck.html
               test "$(sha256sum /tmp/production-root.html | cut -d ' ' -f1)" = "$EXPECTED_ROOT_SHA"
               grep -q 'id="root"' /tmp/chapter1.html
@@ -386,6 +438,9 @@ jobs:
               grep -q 'id="root"' /tmp/chapter1-v32.html
               grep -q 'id="chapter3-pilot-root"' /tmp/chapter3-v16.html
               grep -q 'id="chapter3-life-fork-root"' /tmp/chapter3-v21.html
+              grep -q 'id="chapter3-stage"' /tmp/chapter3-v15.html
+              grep -q 'CH3 ONLY' /tmp/chapter3-v15-stage.mjs
+              test -s /tmp/chapter3-v15-mascot.webp
               grep -q 'id="root"' /tmp/chapter12-answercheck.html
               echo "RESTORE_AFTER_PRODUCTION_AND_PREVIEW_PASS"
               echo "Live production index unchanged vs production build; existing pilot and integrated revisions confirmed."
