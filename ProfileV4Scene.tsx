@@ -77,6 +77,26 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  };
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
+  <style>{`
+   .pre-profile-v4 .pre-annual-peer-optin{
+    padding:13px 12px;margin:15px 0 8px;border:1px solid #d8b877;
+    border-radius:12px;background:#153c46;color:#f5f7ee;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin label strong{
+    display:block;font-size:16px;font-weight:900;color:#ffdda0;line-height:1.55;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin p,
+   .pre-profile-v4 .pre-annual-peer-optin small{
+    display:block;font-size:13px;line-height:1.65;color:#e8f2ef;margin:8px 0;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin select{
+    width:100%;min-height:48px;font-size:16px;border-radius:10px;
+    background:#fff;color:#172c2c;border:2px solid #a8d5ca;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin select:focus-visible{
+    outline:3px solid #ffe19b;outline-offset:3px;
+   }
+  `}</style>
   <img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/>
   <div className="pre-profile-overlay" aria-hidden="true"/>
   <header className="pre-profile-hud">
