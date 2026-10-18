@@ -286,4 +286,30 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>small{
  color:#36534c!important;font-size:12px!important;line-height:1.7!important;
 }
+
+/* Head-of-household age verification is optional, never hidden in RPG scenery. */
+.c2v32-rpg .c2v32-peer-age-confirm{
+ background:#fff7e9;border:1.5px solid #bb9858;border-radius:12px;
+ margin:12px 0 14px;padding:12px 13px;color:#203b3c;
+ box-shadow:0 5px 12px rgba(0,0,0,.12);
+}
+.c2v32-rpg .c2v32-peer-age-confirm>label{
+ display:flex;align-items:center;gap:12px;min-height:49px;cursor:pointer;
+}
+.c2v32-rpg .c2v32-peer-age-confirm input{
+ flex:0 0 auto;width:24px;height:24px;accent-color:#0b6959;
+}
+.c2v32-rpg .c2v32-peer-age-confirm label span{display:block;min-width:0;}
+.c2v32-rpg .c2v32-peer-age-confirm label strong{
+ display:block;color:#153f3c;font-size:15px;line-height:1.55;font-weight:900;
+}
+.c2v32-rpg .c2v32-peer-age-confirm label small{
+ display:block;color:#3f514c!important;font-size:13px!important;line-height:1.65;
+}
+.c2v32-rpg .c2v32-peer-age-confirm>p{
+ color:#3c504b!important;margin:7px 0 0;font-size:13px!important;line-height:1.68!important;
+}
+.c2v32-rpg .c2v32-peer-age-confirm input:focus-visible{
+ outline:3px solid #078976;outline-offset:3px;
+}
 `;
