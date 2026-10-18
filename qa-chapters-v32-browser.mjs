@@ -256,6 +256,11 @@ await clickButton(/診断結果を見る/);
  await singleIncomeOpt.locator('summary').click();
  await page.locator('#c2v32-single-income').selectOption('400_499');
  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
+ // A matching income and age class does not establish worker-household scope.
+ assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
+  'Never auto-display wage-worker peers before the household head declares worker status');
+ await page.locator('#c2v32-worker-status-confirm').check();
+ assert.equal(await page.locator('#c2v32-worker-status-confirm').isChecked(),true);
  const official40=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
  const merged40=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
  assert.ok(official40.includes('年齢・世帯の目安と、年収帯の参考を一緒に見る'),'Two independent references share a compact explanation');
@@ -273,7 +278,7 @@ await clickButton(/診断結果を見る/);
  const sameAgeFood40=await sameAge40.innerText();
  assert.ok(sameAgeFood40.includes('14.8 ～ 25.3%'),'Real e-Stat 2024 30s x 400–499 worker food rate range');
  assert.ok(sameAgeFood40.includes('あなたの支出割合')&&sameAgeFood40.includes('20.0%'),'User own takehome rate is shown next to same age+income worker reference');
- assert.ok(sameAgeFood40.includes('就労状態の一致は未確認'),'No unsupported worker-status claim');
+ assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
 
@@ -310,6 +315,8 @@ await clickButton(/診断結果を見る/);
 
  await page.locator('#c2v32-single-income').selectOption('');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
+ assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
+  'Clearing gross salary removes all same-cell references even with worker declaration');
  await singleIncomeOpt.locator('summary').click();
 
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
