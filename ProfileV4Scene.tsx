@@ -79,8 +79,15 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
   <style>{`
    .pre-profile-v4 .pre-annual-peer-optin{
-    padding:13px 12px;margin:15px 0 8px;border:1px solid #d8b877;
+    padding:6px 10px;margin:8px 0 3px;border:1px solid #d8b877;
     border-radius:12px;background:#153c46;color:#f5f7ee;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin summary{
+    min-height:38px;display:flex;align-items:center;cursor:pointer;
+    font-size:14px;line-height:1.4;font-weight:900;color:#ffdda0;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin summary:focus-visible{
+    outline:3px solid #ffdda0;outline-offset:2px;
    }
    .pre-profile-v4 .pre-annual-peer-optin label strong{
     display:block;font-size:16px;font-weight:900;color:#ffdda0;line-height:1.55;
@@ -173,8 +180,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り"/><span>/ 月</span></div></label>
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
     {(draft.householdSize===1||(draft.diagnosisScope==='household'&&Number(draft.householdSize)>1))&&
-     <div className="pre-annual-peer-optin" data-section="PROFILE_OPTIONAL_GROSS_ANNUAL">
-      <label htmlFor="profile-annual-peer-band"><strong>年間の額面収入も教えてね（任意）</strong></label>
+     <details className="pre-annual-peer-optin" data-section="PROFILE_OPTIONAL_GROSS_ANNUAL">
+      <summary>年間の額面収入も選ぶ（任意・比較の精度UP）</summary>
+      <label htmlFor="profile-annual-peer-band"><strong>額面の年収帯</strong></label>
       <p>同年代・近い年収帯と比べるための追加情報。手取りから年収は推定しないよ。分からなくても先に進めるし、診断の判定・削減額には使わない。</p>
       {draft.householdSize===1?
        <select id="profile-annual-peer-band" className="pre-select"
@@ -200,7 +208,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
         <option value="1000plus">1,000万円以上（詳細区分は結果で確認）</option>
        </select>}
       <small>{draft.householdSize===1?'単身の本人年収で比較します。':'家族の収入を合わせた世帯全体の額面年収です。'}地域まで同時に一致させた公式平均ではありません。</small>
-     </div>}
+     </details>}
    </div>}
 
    {!['scope','composition','contribution','housing'].includes(step)&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
