@@ -198,29 +198,29 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
  firstQuest:{category:'mobile',label:'通信費',nextAction:'料金プランを確認'}
 }}));
 
-// Four-lens UX contract: the amount must be immediately explained, no "open
-// details" required for the *main* monthly upper bound. All contributing rows
-// appear before any annualization, personality card or meeting CTA.
+// Four-lens UX contract: total and largest item's reason remain visible.
+// All other candidates are accessible in a compact disclosure BEFORE
+// annualization; the complete detail lives in the one 12-category ledger.
 assert.match(candidateHtml,/>2カテゴリ<\/strong>/,'treasure shows compact count without a split phrase');
 assert.match(candidateHtml,/まず、見直し候補の理由を見る/,'when source rows exist, invite explanation before scenario numbers');
 const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same prominent amount in stacked hero and treasure');
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
 assert.match(candidateHtml,/宝箱の中身はこれ/);
-assert.equal((candidateHtml.match(/data-candidate-category=/g)||[]).length,2,'every positive cUpper contributor is initially visible');
+assert.equal((candidateHtml.match(/data-candidate-category=/g)||[]).length,2,'all contributor amounts must remain in result HTML');
 const breakdownHTML=candidateHtml.slice(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'),candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"'));
 for(const label of ['通信費','食費','最大 ¥5,500','最大 ¥12,354','候補になった理由：','確かめること：','スマホ料金プランを確認','食費の内訳を確認','月額・未確定','まだ削減できると決まった金額ではない']){
- assert.ok(breakdownHTML.includes(label),'missing visible candidate evidence '+label);
+ assert.ok(breakdownHTML.includes(label),'missing candidate evidence '+label);
 }
-assert.equal((breakdownHTML.match(/候補になった理由：/g)||[]).length,2,'each candidate must have inline evidence');
-assert.match(breakdownHTML,/今回の入力：/,'actual expense visible when known');
-assert.match(breakdownHTML,/¥54,000/,'food entered monthly not hidden in gallery');
-assert.match(breakdownHTML,/¥37,860/,'food comparison amount transparent where known');
-assert.match(breakdownHTML,/¥11,500/,'mobile entered monthly shown as source');
-assert.match(breakdownHTML,/月6,000円を超える部分/,'mobile contract-aware upper basis shown');
-assert.match(breakdownHTML,/平均との差がそのまま削減額になるわけではありません/,'no interpretation of benchmark as savings');
-
-assert.equal((breakdownHTML.match(/確かめること：/g)||[]).length,2,'each candidate must give a practical next check');
+assert.equal((breakdownHTML.match(/候補になった理由：/g)||[]).length,1,'only the top candidate repeats detail before the definitive 12-category list');
+assert.match(breakdownHTML,/今回の入力：/,'largest candidate shows actual expense');
+assert.match(breakdownHTML,/¥54,000/,'largest candidate food expense remains visible');
+assert.match(breakdownHTML,/¥37,860/,'largest food comparison clearly remains non-saving context');
+assert.match(breakdownHTML,/data-section="OTHER_CANDIDATE_SUMMARIES"/,'other candidates have an optional compact disclosure');
+assert.match(breakdownHTML,/ほか1件の見直し候補を見る/,'other candidate count visible');
+assert.match(breakdownHTML,/平均との差がそのまま削減額になるわけではありません/,'no inference of savings');
+assert.equal((breakdownHTML.match(/確かめること：/g)||[]).length,1,'top candidate has one immediate check, other details appear in ledger');
+assert.ok(candidateHtml.includes('data-comparison-category="mobile"'),'secondary mobile details remain in 12-category ledger');
 assert.ok(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"')<candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.ok(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(candidateHtml.indexOf('data-section="FUTURE_REWARDS"')<candidateHtml.indexOf('data-section="CONSULTATION_CTA_TOP"'));
