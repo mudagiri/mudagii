@@ -716,13 +716,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
    <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
+   <div className="c2v32-peer-guide" data-section="JOINT_PEER_COMPARISON_GUIDE">
+    <strong>比べるのは「同年代 × 世帯区分 × 額面年収帯」</strong>
+    <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
+    <small>※二人以上は家族の人数まで一致する意味ではありません。他のカテゴリは現時点では同じ3条件を満たす平均負担率を保証できず、属性別支出目安と区別して表示します。</small>
+   </div>
    {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
-    <div className="c2v32-income-burden-head"><span>比較するときの共通の分母</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
+    <div className="c2v32-income-burden-head"><span>あなたの支出割合の分母（統計の平均分母ではありません）</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
     <p>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出は {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。下の各カテゴリで、支出額・比較の目安・手取り比率をまとめて見られるよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>年収帯の参考と比べてみる（任意）</summary>
+   {vm.profile?.householdSize===1&&<details open className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
+    <summary>同年代・単身・同所得帯と比べる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
@@ -731,7 +736,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>月手取りから年収は推定しないよ。同年代と比較できる区分だけ年代も反映し、それ以外は年収帯のみの参考です。選択内容は診断結果やLINEに保存・送信しません。</p>
+    <p>月手取りから年収は推定しないよ。2024年の公式交差集計が確認できた区分だけ同年代×単身×額面年収帯の率を示す。選択内容は診断結果やLINEに保存・送信しません。</p>
+    {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
+      {singleHasAvailablePeerSource
+       ?headWorkerConfirmed
+        ?'同年代・単身・同額面年収帯の参考率を食費・光熱水道・日用品で表示中。'
+        :'この年代と年収帯には公表データがあるよ。世帯主の働き方を確認すると同条件の率を表示できるよ。'
+       :'この年代と年収帯は標本数などの条件を満たさないため、同条件の率を表示できません。年収帯だけの参考とは区別します。'}
+     </p>}
    </details>}
    {multiCohort&&multiGrossBand==='1000plus'&&
     <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN">
@@ -853,15 +865,17 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
         {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
        </span>
-       <span className={!comparable?'c2v23-basis-mode':''}><small>{comparable?'属性別の比較目安':'判定の手がかり'}</small><b>{comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
-        {!sameAgeIncomePeer?.available&&!scopedWorkerCategory(x.category)&&lens.primaryOnOwnTakeHomePct!==null&&<small className="c2v32-inline-percent">あなたの手取り換算（平均負担率ではない） <b>{lens.primaryOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{sameAgeIncomePeer?.available?'同年代×世帯区分×同年収帯の参考負担率':comparable?'属性別の支出目安（同条件の平均ではない）':'判定の手がかり'}</small>
+        <b>{sameAgeIncomePeer?.available
+          ?sameAgeIncomePeer.ratePctLow?.toFixed(1)+(sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1))+'%'
+          :comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
+        {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
        </span>
       </div>
       {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
-       {!sameAgeIncomePeer?.available&&!workerCategory&&lens.incomeLowOnOwnTakeHomePct!==null&&lens.incomeHighOnOwnTakeHomePct!==null&&
-        <small>あなたの手取り換算（公式平均負担率ではない） <b>{lens.incomeLowOnOwnTakeHomePct.toFixed(1)}{lens.incomeLowOnOwnTakeHomePct===lens.incomeHighOnOwnTakeHomePct?'':' ～ '+lens.incomeHighOnOwnTakeHomePct.toFixed(1)}%</b></small>}
+       <small>年収帯だけの支出参考であり、同年代の平均負担率ではありません。</small>
       </div>}
       {sameAgeIncomePeer?.available&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income" data-age-income-worker-peer-category={x.category}>
        <div className="c2v32-worker-rate-head"><span><strong>同年代×同年収帯の参考負担率</strong><small>全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年</small></span>
@@ -882,7 +896,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
        <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
       </details>}
-      {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
+      {lens.primaryDeltaYen!==null&&!sameAgeIncomePeer?.available&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
       {incomeRange&&!sameAgeIncomePeer?.available&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
        <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
       </p>}
@@ -896,7 +910,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {comparisonEvidence===x.category?'出典を閉じる ↑':'出典と比較の注意点を見る ↓'}
        </button>
        <div id={'c2v32-evidence-'+x.category} hidden={comparisonEvidence!==x.category} className="c2v32-comparison-evidence">
-        {differs&&<p>比較対象の支出：{money(compareAmount!)}/月（{x.comparisonAmountLabel||'比較対象額'}）</p>}
+        {differs&&<p>別の基準による参考支出：{referenceAmount===null?'―':money(referenceAmount)}/月（{x.comparisonAmountLabel||'比較対象額'}）。同年代×世帯区分×年収帯の平均ではありません。</p>}
         <p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
         <p>比較の目安との差は、そのままムダ額・節約額ではありません。</p>
         {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
@@ -907,7 +921,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※属性別目安と年収帯別参考は独立した統計です。「同世代×同所得帯」の参考負担率は、2024年全国家計構造調査の交差セルを検証した場合だけ算出します。それまでは所得帯だけの参考率を使ってムダ額・改善額・月額バッファを増やしません。</p>
+   <p className="c2v22-ledger-footnote">※「あなたの割合」は月手取りへの割合。「同年代×世帯区分×同所得帯」は2024年の勤労者世帯の同一交差セルが存在する場合の参考率です。年齢だけ・年収だけの平均金額をあなたの手取りで割って同条件の平均と呼びません。平均との差をムダ額・改善額・月額バッファには加えません。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>
