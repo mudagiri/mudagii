@@ -25,6 +25,7 @@ export const AGE_INCOME_JOINT_SOURCE_V1={
 // Require >=50 approximate sampled households for each narrow original
 // age×income class; stricter than our previous 2025 income-only n>=30.
 import {OBSERVED_2024_MULTI_WORKER_CELLS} from './age-income-joint-multi-2024-official-v1';
+import {OBSERVED_2024_HIGH_MULTI_WORKER_CELLS} from './age-income-joint-high-2024-official-v1';
 
 export const AGE_INCOME_JOINT_MIN_SAMPLE=50;
 export type JointBurdenExpense='food'|'energy'|'daily';
@@ -238,4 +239,51 @@ export function resolve2024DeclaredWorkerPeerV1(params:{
  return params.household==='multi'
   ?resolve2024MultiWorkerPeerBurdenV1(params.age,params.grossBand,params.expense,params.headAgeConfirmed)
   :resolve2024SingleWorkerPeerBurdenV1(params.age,params.grossBand,params.expense);
+}
+
+/** Optional display-only gross-income refinement of the frozen 1000plus profile. */
+export const AGE_INCOME_HIGH_MULTI_GROSS_BANDS={
+ '1000_1249':['（再掲）1000～1250万円'],
+ '1250_1499':['（再掲）1250～1500万円'],
+ '1500plus':['（再掲）1500万円以上'],
+} as const;
+export type HighGrossBand2024V1=keyof typeof AGE_INCOME_HIGH_MULTI_GROSS_BANDS;
+export const VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1:readonly JointAgeIncomeRowV1[]=
+ OBSERVED_2024_HIGH_MULTI_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
+  averageMonthlyDisposableYen,food,energy,houseware,consumables])=>({
+  household:'multi' as const,workStatus:'worker' as const,ageBand,grossAnnualIncomeBand,
+  approximateSample,averageMonthlyDisposableYen,
+  expenseYen:{food,energy,daily:houseware+consumables},
+  sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
+  verifiedOfficialCell:true,
+ }));
+
+/**
+ * A previously selected frozen annual-income bucket of 1000plus is not enough
+ * to choose one original grouped e-Stat high-income column. The visitor must
+ * separately opt in to a precise gross-income option, plus both scope gates.
+ */
+export function resolve2024HighMultiWorkerPeerBurdenV1(
+ age:number|null|undefined,
+ grossBand:HighGrossBand2024V1|null|undefined,
+ expense:JointBurdenExpense,
+ headAgeConfirmed:boolean,
+ headWorkerConfirmed:boolean,
+){
+ const missing=(reason:string)=>({
+  available:false as const,reason,ratePctLow:null as number|null,
+  ratePctHigh:null as number|null,sourceStatsDataId:null as string|null,
+  usedCells:0,eligibleForReviewBuffer:false as const,
+ });
+ if(!headWorkerConfirmed)return missing('HOUSEHOLD_HEAD_WORK_STATUS_NOT_VERIFIED');
+ if(!headAgeConfirmed)return missing('HOUSEHOLD_HEAD_AGE_NOT_VERIFIED');
+ if(!grossBand||!Object.prototype.hasOwnProperty.call(AGE_INCOME_HIGH_MULTI_GROSS_BANDS,grossBand))
+  return missing('HIGH_GROSS_INCOME_CLASS_NOT_SELECTED');
+ const ageBand=typeof age==='number'?ageBandForObserved2024V1(age):null;
+ if(!ageBand)return missing('AGE_CLASS_UNSUPPORTED');
+ return resolveJointBurdenV1({
+  household:'multi',workStatus:'worker',ageBand,expense,
+  publishedGrossIncomeBands:[...AGE_INCOME_HIGH_MULTI_GROSS_BANDS[grossBand]],
+  respondentAgeIsHouseholdHead:true,
+ },VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1);
 }
