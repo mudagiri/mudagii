@@ -30,7 +30,7 @@ jobs:
       - name: Checkout current released main, without modifying it
         uses: actions/checkout@v4
         with:
-          ref: f11055dd69629ca598a7fd190fccc379046f165a
+          ref: f98eac0396337d8c89dc32ea19ad958f0a872246
           path: existing
           persist-credentials: false
       - name: Checkout frozen PR 51 candidate
