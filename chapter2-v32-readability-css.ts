@@ -345,4 +345,38 @@ export const V32READABILITYCSS = `
  border-color:#c5b46c;box-shadow:0 0 0 1px rgba(197,180,108,.15);
 }
 .c2v32-rpg .c2v32-merged-values>span>small{overflow-wrap:anywhere}
+
+/* Optional scope limitations: collapse by default to keep the reward-first UX. */
+.c2v32-rpg .c2v32-peer-coverage-audit{
+ background:#15323a;border:1px solid #658d84;border-radius:12px;
+ color:#f2f4ed;margin:10px 0 16px;padding:7px 12px;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit summary{
+ min-height:44px;display:flex;align-items:center;color:#ffe3a0!important;
+ font-size:14px!important;line-height:1.55!important;font-weight:850;
+ cursor:pointer;list-style:revert;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit>p,
+.c2v32-rpg .c2v32-peer-coverage-audit>small{
+ display:block;color:#e3f0e9!important;line-height:1.65!important;font-size:13px!important;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit ul{
+ padding:0;margin:12px 0;list-style:none;display:grid;gap:8px;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit li{
+ padding:10px 11px;background:#edf3ee;border-radius:9px;color:#193b34;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit li strong{
+ color:#17392e;display:block;font-size:14px;line-height:1.5;margin-bottom:3px;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit li span{
+ color:#29453e;display:block;font-size:13px;line-height:1.6;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-peer-coverage-audit summary:focus-visible{
+ outline:3px solid #b1e8e0;outline-offset:3px;
+}
+.c2v32-rpg [data-section^="PEER_SCOPE_CAVEAT_"]{
+ display:block;color:#36534c!important;font-size:12px!important;line-height:1.65!important;
+ margin-top:7px;overflow-wrap:anywhere;
+}
 `;
