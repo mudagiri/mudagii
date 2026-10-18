@@ -99,7 +99,7 @@ function result(){
  w.append(hero);
  const insight=el("section","v16-insight");
  add(insight,p("✦ 回答から見えてきた、今の分岐点","v16-kicker"),
- el("h2","","あなたの未来を止めているのは？"),
+ el("h2","","未来へ進むために、まず整えたいこと"),
  p(d.headline,"v16-headline"));
  const pair=el("div","v16-evidence-pair");
  add(pair,
