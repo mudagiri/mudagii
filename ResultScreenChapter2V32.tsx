@@ -2,7 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
-import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,ageBandForObserved2024V1,type JointBurdenExpense} from './age-income-joint-burden-gate-v1';
+import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
 import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
@@ -250,6 +250,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(null);
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
+ const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
@@ -294,22 +295,31 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const multiCohort=vm.profile?.householdSize>1&&vm.profile?.diagnosisScope==='household';
  const multiGrossBand=multiCohort?vm.profile?.annualIncomeBand??null:null;
  const rawProfileAge=typeof vm.profile?.age==='number'?vm.profile.age:null;
- const householdAnnualBandLabel=multiCohort?({
-  '500_599':'500～599万円','600_699':'600～699万円',
-  '700_799':'700～799万円','800_999':'800～999万円',
- } as Record<string,string>)[String(multiGrossBand)]??null
-  :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
- const multiHasAvailablePeerSource=multiCohort&&
-  resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available;
+ const householdAnnualBandLabel=multiCohort&&multiGrossBand==='1000plus'
+  ?({'1000_1249':'1,000～1,249万円','1250_1499':'1,250～1,499万円',
+     '1500plus':'1,500万円以上'} as Record<string,string>)[String(multiHighGrossBand)]??'1,000万円以上（未細分化）'
+  :multiCohort?({
+   '500_599':'500～599万円','600_699':'600～699万円',
+   '700_799':'700～799万円','800_999':'800～999万円',
+  } as Record<string,string>)[String(multiGrossBand)]??null
+   :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
+ const highPeerFor=(expense:JointBurdenExpense,headAgeConfirmed:boolean,headWorkerConfirmed:boolean)=>
+  resolve2024HighMultiWorkerPeerBurdenV1(rawProfileAge,multiHighGrossBand,expense,headAgeConfirmed,headWorkerConfirmed);
+ const multiHasAvailablePeerSource=multiCohort&&(
+  multiGrossBand==='1000plus'
+   ?highPeerFor('food',true,true).available
+   :resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available);
  const singleHasAvailablePeerSource=vm.profile?.householdSize===1&&
   resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleGrossBand,'food').available;
- const peerRateFor=(expense:JointBurdenExpense)=>resolve2024DeclaredWorkerPeerV1({
-  household:multiCohort?'multi':'single',
-  age:multiCohort?rawProfileAge:vm.profile?.householdSize===1?rawProfileAge:null,
-  grossBand:multiCohort?multiGrossBand:singleGrossBand,
-  expense,headAgeConfirmed:!multiCohort||multiHeadAgeConfirmed,
-  headWorkerConfirmed,
- });
+ const peerRateFor=(expense:JointBurdenExpense)=>multiCohort&&multiGrossBand==='1000plus'
+  ?highPeerFor(expense,multiHeadAgeConfirmed,headWorkerConfirmed)
+  :resolve2024DeclaredWorkerPeerV1({
+   household:multiCohort?'multi':'single',
+   age:multiCohort?rawProfileAge:vm.profile?.householdSize===1?rawProfileAge:null,
+   grossBand:multiCohort?multiGrossBand:singleGrossBand,
+   expense,headAgeConfirmed:!multiCohort||multiHeadAgeConfirmed,
+   headWorkerConfirmed,
+  });
  const jointPeerReferenceByCategory:Record<JointBurdenExpense,ReturnType<typeof resolve2024SingleWorkerPeerBurdenV1>>={
   food:peerRateFor('food'),energy:peerRateFor('energy'),daily:peerRateFor('daily'),
  };
@@ -721,6 +731,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </select>
     <p>月手取りから年収を推定しないよ。ここで選んだ年収帯は、この画面の比較表示だけに使い、診断結果やLINEへ保存・送信しません。</p>
    </details>}
+   {multiCohort&&multiGrossBand==='1000plus'&&
+    <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN">
+     <summary>年収1,000万円以上の比較を詳しくする（任意）</summary>
+     <label htmlFor="c2v32-multi-high-income">世帯全体の額面年収を選ぶ</label>
+     <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
+      onChange={e=>{
+       const v=e.target.value;
+       setMultiHighGrossBand(v==='1000_1249'||v==='1250_1499'||v==='1500plus'?v:null);
+      }}>
+      <option value="">選ばずに進む</option>
+      <option value="1000_1249">1,000～1,249万円</option>
+      <option value="1250_1499">1,250～1,499万円</option>
+      <option value="1500plus">1,500万円以上</option>
+     </select>
+     <p>2024年の公式交差集計で標本50世帯以上を確認できた年代だけ表示するよ。
+      月の手取りから年収を推測せず、この選択は画面表示だけに使い、診断結果・LINEへ保存や送信はしません。</p>
+    </details>}
    {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
      <label htmlFor="c2v32-head-age-confirm">
@@ -837,7 +864,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <p>あなたの{String(x.label||x.category)}は手取りの <b>{peerUserShare===null?'―':peerUserShare.toFixed(1)+'%'}</b>。同年代×同年収帯の勤労者{multiCohort?'二人以上':'単身'}世帯の参考は <b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b>。
         {peerUserShare!==null&&(sameAgeIncomePeer.ratePctHigh??0)<peerUserShare?' 公表参考の上限を上回っています。':peerUserShare!==null&&(sameAgeIncomePeer.ratePctLow??0)>peerUserShare?' 公表参考の下限を下回っています。':peerUserShare!==null?' 公表された参考の幅の中です。':''}
        </p>
-       <p>世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>を照合。原表{sameAgeIncomePeer.usedCells}区分の平均負担率の幅であり、個々の世帯の分布幅ではありません。</p>
+       <p>世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>を照合。原表{sameAgeIncomePeer.usedCells}区分から計算した参考率であり、複数階級の場合の表示幅も個々の世帯の分布幅ではありません。</p>
        <small>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。平均費目支出 ÷ 同一交差セルの平均可処分所得。各原表セルの概数標本数は50世帯以上。世帯主の就労区分の一致は入力時の本人申告によるもの。平均との差を月額の削減額としては扱いません。</small>
       </div>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
