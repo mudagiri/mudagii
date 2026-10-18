@@ -78,19 +78,32 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
   <style>{`
-   /* Keep both optional income and navigation in the 390x844 one-screen HUD. */
-   .pre-profile-v4.pre-step-income .pre-panel{
-    bottom:max(133px,calc(env(safe-area-inset-bottom) + 121px));
-    padding-top:10px;padding-bottom:8px;
-   }
+   /* The canonical game HUD uses a 390px !important fixed flex panel.
+      Reclaim slack INSIDE the frame; moving the panel does not solve clipping. */
    .pre-profile-v4.pre-step-income .pre-dialogue{
-    min-height:35px;margin-bottom:6px;padding:6px 9px;
+    flex:0 0 36px!important;min-height:36px!important;max-height:36px!important;
+    margin:0 0 5px auto!important;padding:5px 9px!important;font-size:12px!important;
    }
-   .pre-profile-v4.pre-step-income .pre-input-wrap{margin-top:8px}
+   .pre-profile-v4.pre-step-income .pre-panel h2{
+    min-height:29px!important;margin:3px 0 0!important;font-size:23px!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-helper{
+    flex:0 0 26px!important;min-height:26px!important;max-height:26px!important;
+    margin:2px 0 0!important;font-size:11px!important;line-height:1.35!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-input-wrap{
+    flex:0 0 48px!important;height:48px!important;margin:4px 0 0!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-money-input{min-height:48px!important}
    .pre-profile-v4.pre-step-income .pre-annual-peer-optin{
-    margin:4px 0 1px;padding:1px 8px;
+    margin:3px 0 0!important;padding:2px 8px!important;min-height:35px;
    }
-   .pre-profile-v4.pre-step-income .pre-annual-peer-optin summary{min-height:34px;font-size:13px}
+   .pre-profile-v4.pre-step-income .pre-annual-peer-optin summary{
+    min-height:31px!important;font-size:13px!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-panel:has(.pre-annual-peer-optin[open]){
+    overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;
+   }
    .pre-profile-v4 .pre-annual-peer-optin{
     padding:6px 10px;margin:8px 0 3px;border:1px solid #d8b877;
     border-radius:12px;background:#153c46;color:#f5f7ee;
