@@ -54,7 +54,7 @@ jobs:
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
         run: |
           set -euo pipefail
-          test "$(git -C existing rev-parse HEAD)" = "f11055dd69629ca598a7fd190fccc379046f165a" || { echo "::error::main changed since last successful Pages deployment"; exit 1; }
+          test "$(git -C existing rev-parse HEAD)" = "f98eac0396337d8c89dc32ea19ad958f0a872246" || { echo "::error::main changed since last successful Pages deployment"; exit 1; }
           test -d existing/public/assets || { echo "::error::Missing original public asset directory"; exit 1; }
           mkdir -p site/assets
           cp -R existing/public/. site/
