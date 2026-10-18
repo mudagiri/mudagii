@@ -256,6 +256,13 @@ await clickButton(/診断結果を見る/);
  assert.equal(await singleIncomeOpt.evaluate(el=>el.open),true,
   'Gross income selection must be visible, not hidden under collapsed details');
  assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
+ const cohortScopeDetails=page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]');
+ assert.equal(await cohortScopeDetails.count(),1,'All unavailable category reasons are discoverable in one optional detail');
+ await cohortScopeDetails.locator('summary').click();
+ assert.equal(await cohortScopeDetails.locator('[data-peer-coverage-category]').count(),9,
+  'Nine category limitations are displayed, not falsely claimed as cross-tab peers');
+ assert.ok((await cohortScopeDetails.innerText()).includes('サブスクだけの公式平均はないよ'));
+ await cohortScopeDetails.locator('summary').click();
  assert.equal(await page.locator('.c2v32-rpg').getByText('あなたの手取り換算',{exact:false}).count(),0,
   'Never print synthetic own-denominator proxies as statistical burden rates');
  await page.locator('#c2v32-single-income').selectOption('400_499');
@@ -290,6 +297,8 @@ await clickButton(/診断結果を見る/);
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
+ assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
+  'Official housewares+consumables comparison is narrower than all daily goods');
 
  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
