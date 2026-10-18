@@ -4,6 +4,7 @@ import {
  VERIFIED_2024_JOINT_BURDEN_CELLS_V1,resolveJointBurdenV1,
  type JointAgeIncomeRowV1,
  resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,
+ resolve2024DeclaredWorkerPeerV1,
 } from './age-income-joint-burden-gate-v1';
 const fixture:JointAgeIncomeRowV1={
  household:'single',workStatus:'worker',ageBand:'30～34（５歳階級）',
@@ -77,4 +78,17 @@ assert.equal(resolve2024MultiWorkerPeerBurdenV1(55,'1000plus','food',true).avail
 assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'unknown','food',true).available,false);
 assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','daily',true).available,true);
 assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','energy',true).available,true);
+for(const household of ['single','multi'] as const){
+ const args={household,age:35,grossBand:'500_599',expense:'food' as const,headAgeConfirmed:true};
+ assert.equal(resolve2024DeclaredWorkerPeerV1({...args,headWorkerConfirmed:false}).reason,
+  'HOUSEHOLD_HEAD_WORK_STATUS_NOT_VERIFIED',
+  'Never claim same-age worker rate unless household head explicitly confirms wage/salary work');
+ assert.equal(resolve2024DeclaredWorkerPeerV1({...args,headWorkerConfirmed:true}).available,true);
+}
+assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand:'500_599',
+ expense:'food',headAgeConfirmed:false,headWorkerConfirmed:true}).available,false,
+ 'Worker status does not override unverified household head age');
+assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand:'1000plus',
+ expense:'food',headAgeConfirmed:true,headWorkerConfirmed:true}).available,false,
+ 'No high-income cross-cell guessing until complete independently verified official source');
 console.log('CHAPTER2_AGE_INCOME_JOINT_FAIL_CLOSED_QA_PASS');
