@@ -91,6 +91,35 @@ const noWorkerScope=renderToStaticMarkup(React.createElement(ResultScreenChapter
 assert.match(noWorkerScope,/data-worker-rate-category="food"/,'official worker population rate can still be shown independently');
 assert.doesNotMatch(noWorkerScope,/data-section="REFERENCE_RECHECK_BUFFER"/,'never show a reference buffer without verified age×income cells');
 
+// Multi-person peer reference requires explicitly matching respondent age to
+// household head age; never auto-label an unverified household as same-age.
+const multiVerifiedAgeInput=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,age:35},
+ rows:[{category:'food',label:'食費',known:true,amount:85000,diagnosisAmount:85000,
+  comparisonAmount:85000,comparable:80000,comparisonQuality:'exact',
+  v5Status:'inspect',aAmount:0,cUpper:0}],
+}}));
+assert.match(multiVerifiedAgeInput,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
+ 'Multi-person respondent must confirm that their age equals household head age');
+assert.match(multiVerifiedAgeInput,/id="c2v32-head-age-confirm" type="checkbox"/);
+assert.doesNotMatch(multiVerifiedAgeInput,/data-age-income-worker-peer-category=/,
+ 'Multi-person peer reference is disabled until household-head age is confirmed');
+const multiUnsupportedAge=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,age:27},
+}}));
+assert.doesNotMatch(multiUnsupportedAge,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
+ 'Do not ask for unnecessary confirmation when public income subcell n<50');
+const multiUpperOpenEnded=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,age:35,annualIncomeBand:'1000plus'},
+}}));
+assert.doesNotMatch(multiUpperOpenEnded,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
+ 'Open-ended income group is not a directly comparable gross-income group');
+const coResidentIndividual=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
+ ...makeVm(0,0),profile:{...incomeProfile,age:35,diagnosisScope:'personal'},
+}}));
+assert.doesNotMatch(coResidentIndividual,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
+ 'Individual income should never be compared to household-income-based official peer group');
+
 for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','NEXT_QUEST','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
  assert.ok(uncertain.includes(marker),'missing section or asset '+marker);
 }
