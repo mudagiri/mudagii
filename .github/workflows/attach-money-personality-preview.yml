@@ -3,8 +3,9 @@ name: Attach Money Personality Pilot Preview
 on:
   workflow_run:
     workflows:
+      # PR validation must never republish Pages and delete Chapter 2/3 paths.
+      # Reattach the Pilot only after an actual main production deployment.
       - "Deploy Mudagiri to GitHub Pages"
-      - "Validate Diagnosis V2.1"
     types: [completed]
 
 permissions:
@@ -18,7 +19,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout production main
