@@ -218,3 +218,24 @@ export function resolve2024MultiWorkerPeerBurdenV1(
   respondentAgeIsHouseholdHead:headAgeConfirmed,
  },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
 }
+
+/**
+ * A respondent's age and gross income matching published cells is NOT enough
+ * to assert membership in the published wage/salary-worker population.
+ * Multi-person households additionally require confirmation that profile age
+ * belongs to their household head. Display-only evidence gate, never savings.
+ */
+export function resolve2024DeclaredWorkerPeerV1(params:{
+ household:JointHouseholdType;age:number|null|undefined;
+ grossBand:string|null|undefined;expense:JointBurdenExpense;
+ headAgeConfirmed:boolean;headWorkerConfirmed:boolean;
+}){
+ if(!params.headWorkerConfirmed)return {
+  available:false as const,reason:'HOUSEHOLD_HEAD_WORK_STATUS_NOT_VERIFIED' as const,
+  ratePctLow:null as number|null,ratePctHigh:null as number|null,
+  sourceStatsDataId:null as string|null,usedCells:0,eligibleForReviewBuffer:false as const,
+ };
+ return params.household==='multi'
+  ?resolve2024MultiWorkerPeerBurdenV1(params.age,params.grossBand,params.expense,params.headAgeConfirmed)
+  :resolve2024SingleWorkerPeerBurdenV1(params.age,params.grossBand,params.expense);
+}
