@@ -58,6 +58,7 @@ export function classify(a){
  if(a.horizon==="under3")return "deadline";
  if(a.obstacle==="busy")return "time";
  if(a.goal==="undecided"||a.horizon==="unknown")return "navigate";
+ if(a.obstacle==="none"||a.obstacle==="skip")return "expand";
  if(a.preparation==="regular"||a.preparation==="uncertain")return "course";
  if(a.obstacle==="loss")return "brave";
  if(a.preparation==="notYet"||a.preparation==="unknown"||a.obstacle==="dontKnow")return "launch";
