@@ -97,6 +97,12 @@ jobs:
           echo "v3_sha=$(git -C v3-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "v31_sha=$(git -C v31-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "v32_sha=$(git -C v32-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          # Check scripts required during assembled preview publishing up front.
+          # Prevent another costly multi-chapter build that ultimately publishes nothing.
+          test -s v32-site/scripts/prepare-money-personality-preview-og.mjs
+          test -s v31-site/scripts/prepare-money-personality-preview-og.mjs
+          test -f v32-site/qa-chapter2-v32.ts
+          echo "V32_PREVIEW_PUBLISH_PREREQUISITES_PASS"
           echo "chapter3_sha=$(git -C chapter3-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "chapter3_v15_sha=$(git -C chapter3-v15-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "answercheck_sha=$(git -C answercheck-site rev-parse HEAD)" >> "$GITHUB_OUTPUT"
