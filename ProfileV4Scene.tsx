@@ -80,7 +80,7 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   <style>{`
    /* Keep both optional income and navigation in the 390x844 one-screen HUD. */
    .pre-profile-v4.pre-step-income .pre-panel{
-    bottom:max(94px,calc(env(safe-area-inset-bottom) + 84px));
+    bottom:max(133px,calc(env(safe-area-inset-bottom) + 121px));
     padding-top:10px;padding-bottom:8px;
    }
    .pre-profile-v4.pre-step-income .pre-dialogue{
