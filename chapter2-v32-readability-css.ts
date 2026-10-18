@@ -423,4 +423,38 @@ export const V32READABILITYCSS = `
  display:block;font-size:12px!important;line-height:1.65!important;
  color:#496159!important;
 }
+
+/* One major candidate is expanded; the other candidates are condensed. */
+.c2v32-rpg .c2v32-more-candidates{
+ border:1px solid #879d8f;border-radius:11px;margin:9px 0;
+ background:#18363c;color:#fff0c6;padding:7px 10px;
+}
+.c2v32-rpg .c2v32-more-candidates summary{
+ cursor:pointer;min-height:44px;display:flex;align-items:center;
+ font-size:14px;line-height:1.5;font-weight:850;color:#ffde98;
+}
+.c2v32-rpg .c2v32-more-candidates summary:focus-visible{
+ outline:3px solid #a7e6df;outline-offset:3px;
+}
+.c2v32-rpg .c2v32-more-candidate{
+ display:flex;align-items:center;gap:9px;margin:7px 0;
+ padding:10px 8px;background:#ecf2eb;border-radius:9px;color:#17392f;
+}
+.c2v32-rpg .c2v32-more-candidate img{
+ width:42px;height:42px;object-fit:contain;flex:0 0 42px;
+}
+.c2v32-rpg .c2v32-more-candidate>div{flex:1;min-width:0}
+.c2v32-rpg .c2v32-more-candidate>div strong{
+ display:block;color:#15352d;font-size:14px;line-height:1.5;
+}
+.c2v32-rpg .c2v32-more-candidate>div small{
+ display:block;color:#395549;font-size:12px;line-height:1.55;
+}
+.c2v32-rpg .c2v32-more-candidate>span{
+ flex:0 0 auto;color:#14544b;font-weight:850;font-size:14px;
+ font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v32-more-candidate>span small{
+ display:block;color:#466157;text-align:right;font-size:11px;
+}
 `;
