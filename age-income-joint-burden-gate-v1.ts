@@ -24,6 +24,8 @@ export const AGE_INCOME_JOINT_SOURCE_V1={
 // Approximate sample counts are rounded to tens in this 2024 release.
 // Require >=50 approximate sampled households for each narrow original
 // age×income class; stricter than our previous 2025 income-only n>=30.
+import {OBSERVED_2024_MULTI_WORKER_CELLS} from './age-income-joint-multi-2024-official-v1';
+
 export const AGE_INCOME_JOINT_MIN_SAMPLE=50;
 export type JointBurdenExpense='food'|'energy'|'daily';
 export type JointHouseholdType='single'|'multi';
@@ -129,14 +131,24 @@ const OBSERVED_2024_SINGLE_WORKER_CELLS:readonly (readonly [string,string,number
  ["60～69（10歳階級2）","550～600万円",30,323212,58783,12491,1206,1395],
 ] as const;
 export const VERIFIED_2024_JOINT_BURDEN_CELLS_V1:readonly JointAgeIncomeRowV1[]=
- OBSERVED_2024_SINGLE_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
+ [
+ ...OBSERVED_2024_SINGLE_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
    averageMonthlyDisposableYen,food,energy,houseware,consumables])=>({
-  household:'single',workStatus:'worker',ageBand,grossAnnualIncomeBand,
+  household:'single' as const,workStatus:'worker' as const,ageBand,grossAnnualIncomeBand,
   approximateSample,averageMonthlyDisposableYen,
   expenseYen:{food,energy,daily:houseware+consumables},
   sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
   verifiedOfficialCell:true,
- }));
+ })),
+ ...OBSERVED_2024_MULTI_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
+   averageMonthlyDisposableYen,food,energy,houseware,consumables])=>({
+  household:'multi' as const,workStatus:'worker' as const,ageBand,grossAnnualIncomeBand,
+  approximateSample,averageMonthlyDisposableYen,
+  expenseYen:{food,energy,daily:houseware+consumables},
+  sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
+  verifiedOfficialCell:true,
+ })),
+ ];
 export const AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS={
  '400_499':['400～450万円','450～500万円'],
  '500_599':['500～550万円','550～600万円'],
@@ -148,6 +160,7 @@ export function ageBandForObserved2024V1(age:number):string|null{
  if(age<50)return '40～49（10歳階級2）';
  if(age<60)return '50～59（10歳階級2）';
  if(age<70)return '60～69（10歳階級2）';
+ if(age<80)return '70～79（10歳階級2）';
  return null;
 }
 export function resolve2024SingleWorkerPeerBurdenV1(
@@ -170,3 +183,38 @@ export function resolve2024SingleWorkerPeerBurdenV1(
  },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
 }
 
+
+/** Household gross-income selection, no inference from take-home. */
+export const AGE_INCOME_SUPPORTED_MULTI_GROSS_BANDS={
+ '500_599':['500～550万円','550～600万円'],
+ '600_699':['600～650万円','650～700万円'],
+ '700_799':['700～750万円','750～800万円'],
+ '800_999':['800～850万円','850～900万円','900～950万円','950～1000万円'],
+} as const;
+
+/**
+ * Multi-person tables classify age by HEAD of household, not respondent.
+ * Confirm head-age equivalence explicitly in a lightweight optional UI before
+ * showing a same-age reference; worker cohort is labelled, not inferred.
+ */
+export function resolve2024MultiWorkerPeerBurdenV1(
+ age:number|null|undefined,
+ annualGrossBand:string|null|undefined,
+ expense:JointBurdenExpense,
+ headAgeConfirmed:boolean,
+){
+ const ageBand=typeof age==='number'?ageBandForObserved2024V1(age):null;
+ const gross=annualGrossBand==='500_599'||annualGrossBand==='600_699'||
+  annualGrossBand==='700_799'||annualGrossBand==='800_999'
+  ?AGE_INCOME_SUPPORTED_MULTI_GROSS_BANDS[annualGrossBand]:null;
+ if(!ageBand||!gross)return {
+  available:false as const,reason:!ageBand?'AGE_CLASS_UNSUPPORTED':'GROSS_INCOME_CLASS_UNSUPPORTED',
+  ratePctLow:null as number|null,ratePctHigh:null as number|null,
+  sourceStatsDataId:null as string|null,usedCells:0,eligibleForReviewBuffer:false as const,
+ };
+ return resolveJointBurdenV1({
+  household:'multi',workStatus:'worker',ageBand,
+  publishedGrossIncomeBands:[...gross],expense,
+  respondentAgeIsHouseholdHead:headAgeConfirmed,
+ },VERIFIED_2024_JOINT_BURDEN_CELLS_V1);
+}
