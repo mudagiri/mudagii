@@ -78,6 +78,19 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
   <style>{`
+   /* Keep both optional income and navigation in the 390x844 one-screen HUD. */
+   .pre-profile-v4.pre-step-income .pre-panel{
+    bottom:max(94px,calc(env(safe-area-inset-bottom) + 84px));
+    padding-top:10px;padding-bottom:8px;
+   }
+   .pre-profile-v4.pre-step-income .pre-dialogue{
+    min-height:35px;margin-bottom:6px;padding:6px 9px;
+   }
+   .pre-profile-v4.pre-step-income .pre-input-wrap{margin-top:8px}
+   .pre-profile-v4.pre-step-income .pre-annual-peer-optin{
+    margin:4px 0 1px;padding:1px 8px;
+   }
+   .pre-profile-v4.pre-step-income .pre-annual-peer-optin summary{min-height:34px;font-size:13px}
    .pre-profile-v4 .pre-annual-peer-optin{
     padding:6px 10px;margin:8px 0 3px;border:1px solid #d8b877;
     border-radius:12px;background:#153c46;color:#f5f7ee;
