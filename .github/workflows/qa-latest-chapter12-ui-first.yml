@@ -108,6 +108,21 @@ jobs:
       - name: iPhone WebKit latest Chapter 1 → Chapter 2 integrated browser QA
         env: {BROWSER_ENGINE: webkit, INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"}
         run: node qa-chapters-v32-browser.mjs
+      - name: Serve synthetic high-income result fixture (local Vite only)
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4182 --strictPort >/tmp/mudagiri-high-income-qa.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4182/qa-high-income-browser.html >/dev/null; then exit 0; fi
+            sleep 0.4
+          done
+          cat /tmp/mudagiri-high-income-qa.log
+          exit 1
+      - name: Chrome high-income interactive comparison QA
+        env: {BROWSER_ENGINE: chromium, HIGH_INCOME_QA_URL: "http://127.0.0.1:4182/qa-high-income-browser.html"}
+        run: node qa-chapter2-high-income-browser.mjs
+      - name: iPhone WebKit high-income interactive comparison QA
+        env: {BROWSER_ENGINE: webkit, HIGH_INCOME_QA_URL: "http://127.0.0.1:4182/qa-high-income-browser.html"}
+        run: node qa-chapter2-high-income-browser.mjs
       - name: Upload synthetic-only screen artifacts
         if: always()
         uses: actions/upload-artifact@v4
