@@ -408,6 +408,11 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$PAGE_URL"
+          # GitHub Pages may briefly reply 503 while the new artifact propagates.
+          # Retry temporary HTTP failures, but KEEP strict SHA and DOM assertions.
+          curl() {
+            command curl --retry 5 --retry-all-errors --retry-delay 2 --retry-max-time 60 "$@"
+          }
           base="$(printf '%s' "$PAGE_URL" | sed 's#/$##')"
           for i in $(seq 1 15); do
             integrated="$(curl -fsSL --max-time 12 "$base/pilot/chapter2-v2/REVISION_SHA.txt" 2>/dev/null | tr -d '\r\n' || true)"
