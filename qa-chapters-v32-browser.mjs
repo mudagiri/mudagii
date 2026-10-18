@@ -300,7 +300,7 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
  const age50=await page.locator('[data-age-income-worker-peer-category="food"]').innerText();
  assert.ok(age50.includes('12.2 ～ 17.8%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
- assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時に集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
+ assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No extra savings buffer before worker employment status and expense match');
  await page.locator('#c2v32-single-income').selectOption('600plus');
  await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
