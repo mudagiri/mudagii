@@ -163,6 +163,14 @@ await clickButton(/民間賃貸/);
 
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
+const entryGross=page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]');
+assert.equal(await entryGross.count(),1,'Entry offers optional annual gross bracket without new required step');
+assert.equal(await entryGross.evaluate(el=>el.open),false,'Optional entry income must start collapsed');
+await entryGross.locator('summary').click();
+await page.locator('#profile-annual-peer-band').selectOption('400_499');
+assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'400_499');
+await page.locator('#profile-annual-peer-band').selectOption('');
+await entryGross.locator('summary').click();
 await screenshot('07-single-income');
 await clickButton(/次へ/);
 
@@ -292,6 +300,11 @@ await clickButton(/診断結果を見る/);
  const primaryPeerFood=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
  assert.ok(primaryPeerFood.includes('同年代×世帯区分×同年収帯の参考負担率')&&primaryPeerFood.includes('14.8 ～ 25.3%'),
   'The true 2024 same-cohort burden rate must be in the primary comparison cell');
+ const peerGapText=await page.locator('[data-section="OFFICIAL_PEER_GAP_food"]').innerText();
+ assert.ok(peerGapText.includes('-5.3pt ～ +5.2pt'),'Official 2024 gap uses signed 0.1 percentage points');
+ assert.ok(peerGapText.includes('−¥18,550 ～ +¥18,200'),'Monthly yen gap uses own take-home with signed endpoints');
+ assert.ok(peerGapText.includes('地域は未反映')&&peerGapText.includes('削減可能額'),
+  'National-only gap must not become a fake regional saving');
  assert.equal(await page.locator('[data-comparison-story="food"]').count(),0,
   'Hide conflicting age-only yen comparison story when true peer is available');
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
