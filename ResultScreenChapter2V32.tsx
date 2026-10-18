@@ -298,6 +298,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   '700_799':'700～799万円','800_999':'800～999万円',
  } as Record<string,string>)[String(multiGrossBand)]??null
   :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
+ const multiHasAvailablePeerSource=multiCohort&&
+  resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available;
  const peerRateFor=(expense:JointBurdenExpense)=>multiCohort
   ?resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,expense,multiHeadAgeConfirmed)
   :resolve2024SingleWorkerPeerBurdenV1(vm.profile?.householdSize===1?rawProfileAge:null,singleGrossBand,expense);
@@ -712,7 +714,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </select>
     <p>月手取りから年収を推定しないよ。ここで選んだ年収帯は、この画面の比較表示だけに使い、診断結果やLINEへ保存・送信しません。</p>
    </details>}
-   {multiCohort&&householdAnnualBandLabel&&ageBandForObserved2024V1(Number(rawProfileAge))&&
+   {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
      <label htmlFor="c2v32-head-age-confirm">
       <input id="c2v32-head-age-confirm" type="checkbox" checked={multiHeadAgeConfirmed}
@@ -732,7 +734,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
      <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同年代×同年収帯の平均負担率：</b>{anyJointRateAvailable
      ?<>総務省「2024年全国家計構造調査」第1-29-1表から、年齢・世帯年収を同時集計した<strong>全国の勤労者{multiCohort?'二人以上':'単身'}世帯</strong>の参考率を表示。世帯主の働き方との一致は未確認です。各世帯の負担率の平均でも削減可能額でもありません。</>
-     :multiCohort&&!multiHeadAgeConfirmed&&householdAnnualBandLabel
+     :multiCohort&&!multiHeadAgeConfirmed&&multiHasAvailablePeerSource
       ?<>入力した年齢が世帯主の年齢なら、上のチェックから参考率を確認できるよ。確認なしに「同世代の平均」は表示しません。</>
       :<>2024年の公式交差集計で、プロフィールに対応する十分な標本数・年収区分を確認できていません。所得帯だけの2025年参考率を同年代の平均として代用しません。</>}</p>
      <details className="c2v32-income-food-sources">
