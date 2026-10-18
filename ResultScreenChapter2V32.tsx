@@ -1,5 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
+import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
@@ -719,8 +720,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <div className="c2v32-peer-guide" data-section="JOINT_PEER_COMPARISON_GUIDE">
     <strong>比べるのは「同年代 × 世帯区分 × 額面年収帯」</strong>
     <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
-    <small>※二人以上は家族の人数まで一致する意味ではありません。他のカテゴリは現時点では同じ3条件を満たす平均負担率を保証できず、属性別支出目安と区別して表示します。</small>
+    <small>※二人以上は家族人数の完全一致ではありません。食費・光熱水道・日用品の3費目も、診断の支出範囲が公表費目と完全に一致する保証はありません。特に日用品は公式の「家事雑貨＋家事用消耗品」だけを参考にしています。</small>
    </div>
+   <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
+    <summary>ほかの9カテゴリは、なぜ同条件の平均が出ないの？</summary>
+    <p>同じ年代・年収の統計表に数字があっても、対象費目の範囲が違えば「あなたと同条件の平均」とは呼べないよ。比べられない理由を確認できるようにしたよ。</p>
+    <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
+     <li key={x.category} data-peer-coverage-category={x.category}>
+      <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
+      <span>{x.userNotice}</span>
+     </li>)}</ul>
+    <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
+   </details>
    {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
     <div className="c2v32-income-burden-head"><span>あなたの支出割合の分母（統計の平均分母ではありません）</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
     <p>入力済み{incomeBurden.knownCategoryCount}カテゴリの支出は {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。下の各カテゴリで、支出額・比較の目安・手取り比率をまとめて見られるよ。</p>
@@ -889,6 +900,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </p>
        <p>世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>を照合。原表{sameAgeIncomePeer.usedCells}区分から計算した参考率であり、複数階級の場合の表示幅も個々の世帯の分布幅ではありません。</p>
        <small>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。平均費目支出 ÷ 同一交差セルの平均可処分所得。各原表セルの概数標本数は50世帯以上。世帯主の就労区分の一致は入力時の本人申告によるもの。平均との差を月額の削減額としては扱いません。</small>
+       <small data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</small>
       </div>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
