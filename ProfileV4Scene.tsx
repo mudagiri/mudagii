@@ -152,6 +152,35 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    {step==='income'&&<div>
     <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り"/><span>/ 月</span></div></label>
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
+    {(draft.householdSize===1||(draft.diagnosisScope==='household'&&Number(draft.householdSize)>1))&&
+     <div className="pre-annual-peer-optin" data-section="PROFILE_OPTIONAL_GROSS_ANNUAL">
+      <label htmlFor="profile-annual-peer-band"><strong>年間の額面収入も教えてね（任意）</strong></label>
+      <p>同年代・近い年収帯と比べるための追加情報。手取りから年収は推定しないよ。分からなくても先に進めるし、診断の判定・削減額には使わない。</p>
+      {draft.householdSize===1?
+       <select id="profile-annual-peer-band" className="pre-select"
+        value={draft.singlePeerGrossBand2024??''}
+        onChange={e=>{
+         const v=e.target.value;
+         patch({singlePeerGrossBand2024:v==='400_499'||v==='500_599'||v==='600plus'?v:null});
+        }}>
+        <option value="">選ばない・わからない</option>
+        <option value="400_499">400〜499万円</option>
+        <option value="500_599">500〜599万円</option>
+        <option value="600plus">600万円以上（同年代の参考は限定的）</option>
+       </select>:
+       <select id="profile-annual-peer-band" className="pre-select"
+        value={draft.annualIncomeBand}
+        onChange={e=>patch({annualIncomeBand:e.target.value as ProfileDraftV4['annualIncomeBand']})}>
+        <option value="unknown">選ばない・わからない</option>
+        <option value="under500">500万円未満（同条件の公表値は限定的）</option>
+        <option value="500_599">500〜599万円</option>
+        <option value="600_699">600〜699万円</option>
+        <option value="700_799">700〜799万円</option>
+        <option value="800_999">800〜999万円</option>
+        <option value="1000plus">1,000万円以上（詳細区分は結果で確認）</option>
+       </select>}
+      <small>{draft.householdSize===1?'単身の本人年収で比較します。':'家族の収入を合わせた世帯全体の額面年収です。'}地域まで同時に一致させた公式平均ではありません。</small>
+     </div>}
    </div>}
 
    {!['scope','composition','contribution','housing'].includes(step)&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}
