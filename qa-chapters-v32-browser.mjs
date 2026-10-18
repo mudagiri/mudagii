@@ -253,7 +253,11 @@ await clickButton(/診断結果を見る/);
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
  assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'No peer income reference before explicit user choice');
- await singleIncomeOpt.locator('summary').click();
+ assert.equal(await singleIncomeOpt.evaluate(el=>el.open),true,
+  'Gross income selection must be visible, not hidden under collapsed details');
+ assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
+ assert.equal(await page.locator('.c2v32-rpg').getByText('あなたの手取り換算',{exact:false}).count(),0,
+  'Never print synthetic own-denominator proxies as statistical burden rates');
  await page.locator('#c2v32-single-income').selectOption('400_499');
  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
  // A matching income and age class does not establish worker-household scope.
@@ -278,6 +282,11 @@ await clickButton(/診断結果を見る/);
  const sameAgeFood40=await sameAge40.innerText();
  assert.ok(sameAgeFood40.includes('14.8 ～ 25.3%'),'Real e-Stat 2024 30s x 400–499 worker food rate range');
  assert.ok(sameAgeFood40.includes('あなたの支出割合')&&sameAgeFood40.includes('20.0%'),'User own takehome rate is shown next to same age+income worker reference');
+ const primaryPeerFood=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
+ assert.ok(primaryPeerFood.includes('同年代×世帯区分×同年収帯の参考負担率')&&primaryPeerFood.includes('14.8 ～ 25.3%'),
+  'The true 2024 same-cohort burden rate must be in the primary comparison cell');
+ assert.equal(await page.locator('[data-comparison-story="food"]').count(),0,
+  'Hide conflicting age-only yen comparison story when true peer is available');
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
@@ -311,13 +320,15 @@ await clickButton(/診断結果を見る/);
  assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'600+ broad-worker cell available with sample size 39 and warning');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,'600plus single gross is broader than approved 2024 age-income source rows');
+ assert.ok((await page.locator('[data-section="SINGLE_PEER_MATCH_STATUS"]').innerText()).includes('標本数などの条件'),
+  'Give explicit reason for unavailable matched cohort');
 
 
  await page.locator('#c2v32-single-income').selectOption('');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
   'Clearing gross salary removes all same-cell references even with worker declaration');
- await singleIncomeOpt.locator('summary').click();
+ if(await singleIncomeOpt.evaluate(el=>el.open)) await singleIncomeOpt.locator('summary').click();
 
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
