@@ -66,7 +66,7 @@ jobs:
       - name: Checkout isolated V32 possibility-first result
         uses: actions/checkout@v4
         with:
-          ref: feat/chapter2-result-v32-possible-rewards-20261011
+          ref: release/chapter12-latest-rpg-ui-first-20261016
           path: v32-site
 
       - name: Checkout separate Chapter 3 RPG pilot
