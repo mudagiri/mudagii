@@ -29,6 +29,7 @@ const annual=page.locator('#c2v32-multi-high-income');
 const age=page.locator('#qa-head-age');
 const head=page.locator('#c2v32-head-age-confirm');
 const worker=page.locator('#c2v32-worker-status-confirm');
+const matchStatus=page.locator('[data-section="MULTI_HIGH_INCOME_MATCH_STATUS"]');
 async function changeAge(n){await age.selectOption(String(n));}
 async function selectGross(band){await annual.selectOption(band);}
 async function assertRate(pct){
@@ -49,11 +50,17 @@ try{
  await selectGross('1500plus');
  await worker.waitFor({state:'visible'});
  await head.waitFor({state:'visible'});
+ await matchStatus.waitFor({state:'visible'});
+ assert.ok((await matchStatus.innerText()).includes('世帯主の年齢と働き方を確認すると'),
+  'Public-cell match must guide the user to the missing consent gates');
+ assert.equal(await matchStatus.getAttribute('aria-live'),'polite');
  assert.equal(await peers().count(),0,'Selecting published bracket alone does not prove population');
  await worker.check();
  assert.equal(await peers().count(),0,'Household-head age confirmation is independently required');
  await head.check();
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
+ assert.ok((await matchStatus.innerText()).includes('比較の準備ができたよ'),
+  'After both confirmations show a visible completion cue at the income selector');
  assert.ok((await food().innerText()).includes('世帯年収 1,500万円以上'),'Selection must be visibly labelled');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,
   'No statistical difference is a confirmed or potential saving');
@@ -66,6 +73,8 @@ try{
  await changeAge(35);
  await selectGross('1500plus');
  assert.equal(await peers().count(),0,'Age 30s n=40 < 50 must fail closed');
+ assert.ok((await matchStatus.innerText()).includes('標本数が少ない'),
+  'When age cohort is unsupported, explain why rather than making comparison silently disappear');
  assert.equal(await head.count(),0,'No false prompt to confirm an ineligible peer cell');
  await selectGross('1000_1249');
  await assertRate('14.9%'); // 30–39, 1000–1250, source 88255 / 593662
@@ -87,6 +96,7 @@ try{
  await head.check();
  await selectGross('');
  assert.equal(await peers().count(),0,'Unselecting exact income must revoke peer');
+ assert.equal(await matchStatus.count(),0,'Clearing selection also clears contextual status');
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:844});
   const scrollWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
