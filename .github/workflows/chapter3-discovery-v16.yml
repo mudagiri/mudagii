@@ -22,6 +22,9 @@ jobs:
     timeout-minutes: 30
     container:
       image: mcr.microsoft.com/playwright:v1.55.0-noble
+    defaults:
+      run:
+        shell: bash
     env:
       VITE_MUDAGIRI_GAS_URL: ""
       VITE_MONEY_PERSONALITY_GAS_URL: ""
