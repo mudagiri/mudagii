@@ -7,6 +7,9 @@ export type HouseholdContributionModeV4='bundled'|'itemized'|'little_or_none'|nu
 export type HousingTenureV4='rental'|'owned'|'family_home'|'company_housing'|'other';
 export type HousingSubtypeV4='private_rental'|'public_rental'|'unknown_rental'|'mortgage'|'no_mortgage'|'other'|null;
 export type AnnualIncomeBandV4='under500'|'500_599'|'600_699'|'700_799'|'800_999'|'1000plus'|'unknown';
+/** Optional display-only, narrow 2024 gross bracket for single-person cohorts.
+ * No use in V1 diagnosis, frozen benchmark or savings calculations. */
+export type SinglePeerGrossBand2024='400_499'|'500_599'|'600plus'|null;
 
 export interface ProfileV4 {
  diagnosisScope:DiagnosisScopeV4;
@@ -23,6 +26,7 @@ export interface ProfileV4 {
  housingSubtype:HousingSubtypeV4;
  monthlyTakeHome:number|null;
  annualIncomeBand:AnnualIncomeBandV4;
+ singlePeerGrossBand2024?:SinglePeerGrossBand2024;
 }
 
 export type LegacyFamilyProfileV4='single'|'couple'|'children'|'other';
@@ -104,6 +108,7 @@ export interface ProfileDraftV4 {
  monthlyTakeHome:number|null;
  monthlyTakeHomeAnswered:boolean;
  annualIncomeBand:AnnualIncomeBandV4;
+ singlePeerGrossBand2024?:SinglePeerGrossBand2024;
  compositionConfirmed:boolean;
 }
 
@@ -123,6 +128,7 @@ export function emptyProfileDraftV4():ProfileDraftV4{
   monthlyTakeHome:null,
   monthlyTakeHomeAnswered:false,
   annualIncomeBand:'unknown',
+  singlePeerGrossBand2024:null,
   compositionConfirmed:false,
  };
 }
@@ -174,6 +180,7 @@ export function finalizeProfileV4(d:ProfileDraftV4):ProfileV4{
   housingSubtype:d.housingSubtype,
   monthlyTakeHome:d.monthlyTakeHome,
   annualIncomeBand:d.annualIncomeBand,
+  singlePeerGrossBand2024:householdSize===1?(d.singlePeerGrossBand2024??null):null,
  };
  assertProfileV4(profile);
  return profile;
