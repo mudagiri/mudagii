@@ -51,6 +51,12 @@ jobs:
           ref: 6824a25197fe7cc83510d8515dfe7307f1cbc1d9
           path: chapter3
           persist-credentials: false
+      - name: Checkout V1.6 future discovery (independent of Chapters 1 and 2)
+        uses: actions/checkout@v4
+        with:
+          ref: 7654678d22aec614f6ba131fc9ba96647d688073
+          path: chapter3-v16
+          persist-credentials: false
       - name: Preserve exact existing GitHub Pages bytes (no main rebuild)
         run: |
           set -euo pipefail
@@ -276,6 +282,38 @@ jobs:
           for (const a of ['mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp','mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp','jobs/v1/JOB_01_FDM_elephant.webp'])assert.ok(fs.existsSync('site/pilot/chapter3-v12/assets/'+a),'Official Chapter 3 art missing');
           console.log('CHAPTER3_NEW_PATH_ONLY_PASS');
           NODE
+      - name: Build Chapter 3 V1.6 as a second isolated public path
+        working-directory: chapter3-v16
+        env:
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/qa-chapter3-discovery-v16.mjs
+          npm run build -- --base=/mudagii/
+          test -s dist/pilot/chapter3-v16/app.mjs
+          test -s dist/pilot/chapter3-v16/engine.mjs
+          test -s dist/pilot/chapter3-v16/v16.css
+      - name: Overlay only Chapter 3 V1.6 while keeping V1.5 intact
+        run: |
+          set -euo pipefail
+          test ! -e site/pilot/chapter3-v16
+          mkdir -p site/pilot/chapter3-v16
+          cp -R chapter3-v16/dist/pilot/chapter3-v16/. site/pilot/chapter3-v16/
+          test -s site/pilot/chapter3-v12/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp
+          test -s site/pilot/chapter3-v12/assets/mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp
+          test -s site/pilot/chapter3-v12/next-guide.mjs
+          CHAPTER3_V16_SHA="7654678d22aec614f6ba131fc9ba96647d688073" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const file='site/pilot/chapter3-v16/index.html';
+          const input=fs.readFileSync(file,'utf8');
+          assert.ok(input.includes('../chapter3-v12/stage.css'));
+          assert.ok(input.includes('./app.mjs'));
+          fs.writeFileSync(file,input.replace('<head>','<head><meta name="mudagiri-chapter3-v16-sha" content="'+process.env.CHAPTER3_V16_SHA+'">'));
+          console.log('CHAPTER3_V16_ISOLATED_OVERLAY_PASS');
+          NODE
       - name: Install browser runner and launch same-origin staging
         working-directory: candidate
         run: npm install --no-save --package-lock=false playwright@1.55.0
@@ -340,12 +378,27 @@ jobs:
         env:
           CHAPTER3_STAGE_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter3-v12/"
         run: node scripts/qa-chapter3-stage-v12-browser.mjs
+      - name: Real GitHub Pages path Chapter 3 V1.6 mobile quest QA
+        working-directory: chapter3-v16
+        env:
+          CH3_V16_URL: "http://127.0.0.1:4173/mudagii/pilot/chapter3-v16/"
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          node scripts/qa-chapter3-v16-browser.mjs
       - name: Upload Chapter 3 QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chapter3-v12-publication-check
           path: chapter3/artifacts/chapter3-stage/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Upload Chapter 3 V1.6 mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages-chapter3-v16-review-screens
+          path: chapter3-v16/artifacts/chapter3-v16/
           retention-days: 14
           if-no-files-found: warn
       - name: Upload unified QA screenshots
@@ -387,6 +440,7 @@ jobs:
           CANDIDATE_SHA: "8a526924ef3f4245adeeb460522bae130e655fb6"
           UNIFIED_SHA: "ca4228495692f13739b39b88b0e71823a9603b95"
           CHAPTER3_SHA: "6824a25197fe7cc83510d8515dfe7307f1cbc1d9"
+          CHAPTER3_V16_SHA: "7654678d22aec614f6ba131fc9ba96647d688073"
         run: |
           set -euo pipefail
           # Never pipe curl to grep -q under pipefail: early grep closure can
@@ -427,7 +481,15 @@ jobs:
                 curl -fsSL "$LIVE_ROOT""pilot/chapter3-v12/assets/$asset" -o /dev/null
               done
               echo "PUBLIC_CHAPTER3_V15_WITH_SEVEN_LOCAL_ASSETS_VERIFIED"
-              echo "URL: $LIVE_ROOT""pilot/chapter3-v12/"
+              curl -fsSL --retry 3 -H 'Cache-Control: no-cache' "$LIVE_ROOT""pilot/chapter3-v16/" -o /tmp/live-ch3-v16.html
+              grep -Fq "$CHAPTER3_V16_SHA" /tmp/live-ch3-v16.html
+              grep -Fq '../chapter3-v12/stage.css' /tmp/live-ch3-v16.html
+              for file in app.mjs engine.mjs v16.css; do
+                curl -fsSL --retry 2 "$LIVE_ROOT""pilot/chapter3-v16/$file" -o /tmp/live-ch3-v16-$file
+                test -s "/tmp/live-ch3-v16-$file"
+              done
+              echo "PUBLIC_CHAPTER3_V16_DISCOVERY_VERIFIED"
+              echo "URL: $LIVE_ROOT""pilot/chapter3-v16/"
               exit 0
             fi
             sleep 6
