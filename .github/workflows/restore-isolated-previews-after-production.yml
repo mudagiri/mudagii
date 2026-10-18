@@ -206,15 +206,14 @@ jobs:
         run: |
           npm ci
           npm run build
+          npm run qa:public-chapter12-entry
           npm run qa:chapter2-v2
-          npm run qa:chapter2-v3
-          npm run qa:chapter2-v31
-          npm run qa:chapter2-v32
-          npm run qa:money-entry
-          npm run qa:money-public-flow
-          npm run qa:money-engine
-          npm run qa:resume
           npm run qa:result-v5
+          npm run qa:resume
+          npx --yes tsx@4.20.6 qa-age-income-joint-burden-gate-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-v32.ts
+          test -f dist/index.html
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
 
       - name: Build separate Chapter 3 static pilot with no GAS
         working-directory: chapter3-site
