@@ -98,7 +98,17 @@ jobs:
             expected="${entry#*:}"
             code="$(curl --silent --show-error --location -H 'Cache-Control: no-cache'               -o /tmp/previous-preview-check -w '%{http_code}' "$LIVE_ROOT""$prefix")"
             if [ "$code" = 200 ]; then
-              grep -Fq "$expected" /tmp/previous-preview-check || { echo "::error::Unknown published preview at $prefix; refusing replacement"; exit 1; }
+              if [ "$prefix" = "pilot/chapter2-v32/" ]; then
+              # Both SHAs are from our verified V3.2 releases. The latest
+              # composite deployment was successful even though its old
+              # curl|grep verification step exited 23 (SIGPIPE).
+              grep -Fq "$expected" /tmp/previous-preview-check || \
+              grep -Fq "$CANDIDATE_SHA" /tmp/previous-preview-check || \
+              { echo "::error::Unknown published Chapter 2 preview; refusing replacement"; exit 1; }
+            else
+              grep -Fq "$expected" /tmp/previous-preview-check || \
+              { echo "::error::Unknown published preview at $prefix; refusing replacement"; exit 1; }
+            fi
             elif [ "$code" = 404 ]; then
               echo "KNOWN_PILOT_ATTACH_DROPPED_PREVIEW_PATH $prefix"
             else
