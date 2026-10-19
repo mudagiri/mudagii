@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
+import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 import {buildSafeFunnelEvent,buildPostHogCaptureBody} from './src/product-funnel-analytics-v1';
 import {externalLineContext} from './scripts/coverage-consult-handoff-v1.mjs';
 
@@ -12,6 +14,44 @@ const makeVm=(confirmedA:number,cUpper:number)=>({
 });
 const show=(a:number,c:number)=>renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(a,c)}));
 const uncertain=show(0,17854);
+
+const verifiedPositive=chapter2PeerGapV1({
+ ownMonthlyExpenseYen:100000,ownMonthlyTakeHomeYen:500000,
+ peerPctLow:12.4,peerPctHigh:15.6,
+ sameExpenseScopeConfirmed:true,sourceVerified:true
+});
+assert.equal(verifiedPositive.available,true);
+if(verifiedPositive.available){
+ const card=renderToStaticMarkup(React.createElement(Chapter2PeerComparisonCard,{
+  category:'food',label:'食費',gap:verifiedPositive,householdLabel:'二人以上'
+ }));
+ assert.match(card,/data-peer-three-way-category="food"/);
+ assert.match(card,/あなたの負担率/);
+ assert.match(card,/20.0%/);
+ assert.match(card,/12.4% ～ 15.6%/);
+ assert.match(card,/\+4.4pt ～ \+7.6pt/);
+ assert.match(card,/\+¥22,000 ～ \+¥38,000/);
+ assert.match(card,/統計上の比較差/);
+ assert.match(card,/勤労者二人以上世帯/);
+ assert.doesNotMatch(card,/削減できる金額です|確定改善額|見直し候補：月最大/);
+}
+const verifiedNegative=chapter2PeerGapV1({
+ ownMonthlyExpenseYen:60000,ownMonthlyTakeHomeYen:500000,
+ peerPctLow:14.8,peerPctHigh:25.3,
+ sameExpenseScopeConfirmed:true,sourceVerified:true
+});
+assert.equal(verifiedNegative.available,true);
+if(verifiedNegative.available){
+ const card=renderToStaticMarkup(React.createElement(Chapter2PeerComparisonCard,{
+  category:'energy',label:'光熱費',gap:verifiedNegative,householdLabel:'単身'
+ }));
+ assert.match(card,/-13.3pt ～ -2.8pt/);
+ assert.match(card,/−¥66,500 ～ −¥14,000/);
+ assert.match(card,/全国参考/);
+}
+// The three-way presentation must never render for age/income-only marginals,
+// missing worker confirmation, missing head-of-household age, or scope mismatch.
+
 // 2025 e-Stat's income class is an independent reference. It must never
 // overwrite the age/size primary comparison, cUpper, or confirmed saving.
 const incomeProfile={diagnosisScope:'household',householdSize:4,monthlyTakeHome:400000,annualIncomeBand:'500_599'};
@@ -26,6 +66,7 @@ const officialIncomeHTML=renderToStaticMarkup(React.createElement(ResultScreenCh
  {category:'daily',label:'日用品費',known:true,amount:10000,diagnosisAmount:10000,comparisonAmount:10000,
   comparable:8000,comparisonQuality:'exact',v5Status:'inspect',aAmount:0,cUpper:0,applicability:'applicable'}]
 }}));
+assert.doesNotMatch(officialIncomeHTML,/data-peer-three-way-category=/,'no opt-in and population confirmation; no matched card');
 assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_CONTEXT"/);
 assert.match(officialIncomeHTML,/data-section="INCOME_CLASS_FOOD_ROW"/);
 assert.match(officialIncomeHTML,/年齢・世帯の目安と、年収帯の参考を一緒に見る/);
