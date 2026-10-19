@@ -74,6 +74,26 @@ jobs:
         env:
           CH3_V16_URL: "http://127.0.0.1:4173/pilot/chapter3-v16/"
         run: node scripts/qa-chapter3-v16-browser.mjs
+      - name: External GitHub-source preview smoke (non-blocking)
+        continue-on-error: true
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          base="https://raw.githack.com/mudagiri/mudagii/${SOURCE_SHA}"
+          for file in \
+            public/pilot/chapter3-v16/index.html \
+            public/pilot/chapter3-v16/app.mjs \
+            public/pilot/chapter3-v16/engine.mjs \
+            public/pilot/chapter3-v16/v16.css \
+            public/pilot/chapter3-v12/stage.css \
+            public/pilot/chapter3-v12/next-guide.mjs \
+            public/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
+            public/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp; do
+            test -n "$(curl --fail --silent --show-error --location --max-time 20 "$base/$file")"
+            echo "REMOTE_OK $file"
+          done
+          echo "REMOTE_PREVIEW_PASS $base/public/pilot/chapter3-v16/index.html"
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
