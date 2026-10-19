@@ -33,6 +33,14 @@ if(verifiedPositive.available){
  assert.match(card,/\+¥22,000 ～ \+¥38,000/);
  assert.match(card,/統計上の比較差/);
  assert.match(card,/勤労者二人以上世帯/);
+ assert.doesNotMatch(card,/今回のあなたの支出/,'optional expense remains absent when not given');
+ const withExpense=renderToStaticMarkup(React.createElement(Chapter2PeerComparisonCard,{
+  category:'food',label:'食費',gap:verifiedPositive,householdLabel:'二人以上',ownMonthlyExpenseYen:100000
+ }));
+ assert.match(withExpense,/今回のあなたの支出：/);
+ assert.match(withExpense,/¥100,000／月/);
+ assert.match(withExpense,/data-peer-three-way-category="food"/);
+ assert.doesNotMatch(withExpense,/見直し候補：月最大/);
  assert.doesNotMatch(card,/削減できる金額です|確定改善額|見直し候補：月最大/);
 }
 const verifiedNegative=chapter2PeerGapV1({
