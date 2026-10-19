@@ -545,4 +545,63 @@ export const V32READABILITYCSS = `
  font-size:13px!important;line-height:1.7!important;
  color:#50432a!important;margin:3px 0 6px!important;
 }
+
+/* Same-cohort comparison: three figures are a single decision unit.
+   Always neutral, never a green "saving" or treasure reward. */
+.c2v32-rpg .c2v32-peer-gap-card--three-way{
+ border:2px solid #638e86;background:#f0f6ee;
+ padding:13px 12px;color:#173d37;
+}
+.c2v32-rpg .c2v32-peer-gap-heading{
+ display:block;color:#144e42;font-size:15px;font-weight:950;line-height:1.5;
+ margin-bottom:9px;
+}
+.c2v32-rpg .c2v32-peer-3way{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;margin:0 0 10px;
+}
+.c2v32-rpg .c2v32-peer-metric{
+ min-width:0;display:flex;flex-direction:column;gap:4px;
+ background:#fffdf7;border:1px solid #b8cbbd;border-radius:9px;
+ padding:10px 8px;
+}
+.c2v32-rpg .c2v32-peer-metric>span{
+ color:#32544a;font-size:13px;line-height:1.45;font-weight:850;
+}
+.c2v32-rpg .c2v32-peer-metric>strong{
+ font-size:clamp(19px,5vw,24px);line-height:1.28;
+ font-weight:950;font-variant-numeric:tabular-nums;color:#174a44;
+ overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-peer-metric>small{
+ margin-top:auto;color:#52695d;font-size:12px;line-height:1.5;
+}
+.c2v32-rpg .c2v32-peer-metric--difference{
+ grid-column:1/-1;border-color:#c4a96a;background:#fff8e6;
+}
+.c2v32-rpg .c2v32-peer-metric--difference>strong{
+ font-size:clamp(21px,5.5vw,26px);color:#59491d;
+}
+.c2v32-rpg .c2v32-peer-gap-translation{
+ display:flex;align-items:flex-start;flex-direction:column;gap:4px;
+ font-size:13px!important;line-height:1.6!important;margin:0 0 8px!important;
+}
+.c2v32-rpg .c2v32-peer-gap-translation>strong{
+ font-weight:900;
+}
+.c2v32-rpg .c2v32-peer-gap-translation>b{
+ font-size:clamp(17px,4.8vw,21px);line-height:1.45;
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-peer-gap-disclaimer{
+ display:block;color:#3e574e!important;font-size:12px!important;line-height:1.65!important;
+}
+.c2v32-rpg .c2v32-peer-scope-unmatched{
+ margin:8px 0;padding:9px 11px;border-left:3px solid #8a8870;
+ font-size:13px;line-height:1.65;color:#334e47;
+ background:#edf1e9;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-peer-3way{grid-template-columns:minmax(0,1fr)}
+}
 `;

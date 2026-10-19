@@ -46,6 +46,8 @@ try{
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
+ assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
+  'Three-way comparison must not appear before official population and income validation');
  await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"] summary').click();
  await selectGross('1500plus');
  await worker.waitFor({state:'visible'});
@@ -59,6 +61,16 @@ try{
  assert.equal(await peers().count(),0,'Household-head age confirmation is independently required');
  await head.check();
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
+ const foodThreeWay=page.locator('[data-peer-three-way-category="food"]');
+ assert.equal(await page.locator('[data-peer-three-way-category]').count(),3,
+  'All 3 supported original categories show same-cell percent comparisons');
+ await foodThreeWay.waitFor({state:'visible'});
+ const threeWayText=await foodThreeWay.innerText();
+ assert.ok(threeWayText.includes('16.0%')&&threeWayText.includes('13.7%')&&threeWayText.includes('+2.3pt'),
+  'User rate, official matching cohort rate and signed percentage-point gap are visible together');
+ assert.ok((await page.locator('[data-section="OFFICIAL_PEER_GAP_food"]').innerText()).includes('統計上の比較差'),
+  'Percent gap is not treated as a confirmed saving');
+
  assert.ok((await matchStatus.innerText()).includes('比較の準備ができたよ'),
   'After both confirmations show a visible completion cue at the income selector');
  await food().locator(':scope > summary').click();
@@ -91,6 +103,7 @@ try{
  await assertRate('14.9%'); // age 50s, 1500+, 130143 / 870777
  await worker.uncheck();
  assert.equal(await peers().count(),0,'Withdrawing worker declaration immediately hides peer rates');
+ assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,'Matched cards also vanish after worker revocation');
  await worker.check();
  await head.uncheck();
  assert.equal(await peers().count(),0,'Withdrawing household-head age declaration hides peer rates');
