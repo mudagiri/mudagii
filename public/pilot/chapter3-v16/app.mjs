@@ -2,7 +2,7 @@ import {GOALS,HORIZONS,PREPARATIONS,OBSTACLES,PRIORITIES,buildDiscovery} from ".
 import {getTopicGuide} from "../chapter3-v12/next-guide.mjs";
 /** Chapter 3 V1.6 isolated pilot: zero storage, zero backend requests, no C1/C2 data reading. */
 const root=document.getElementById("chapter3-stage");
-const ASSETS="../chapter3-v12/assets/";
+const ASSETS="../../assets/";
 const GUIDE=ASSETS+"mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp";
 const WIN=ASSETS+"mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp";
 const BG=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp";
