@@ -530,4 +530,19 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-single-next-action>small{
  font-size:13px;line-height:1.6;color:#4c4331;
 }
+
+.c2v32-rpg .c2v32-action-evidence{
+ margin-top:5px;border-top:1px solid #d4c59f;padding-top:4px;
+}
+.c2v32-rpg .c2v32-action-evidence>summary{
+ cursor:pointer;display:flex;align-items:center;min-height:44px;
+ color:#604d28;font-size:13px;font-weight:850;line-height:1.5;
+}
+.c2v32-rpg .c2v32-action-evidence>summary:focus-visible{
+ outline:3px solid #76602d;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-action-evidence>p{
+ font-size:13px!important;line-height:1.7!important;
+ color:#50432a!important;margin:3px 0 6px!important;
+}
 `;
