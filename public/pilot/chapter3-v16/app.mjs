@@ -9,7 +9,7 @@ const BG=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.w
 const HALL=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp";
 const FIELDS=["goal","horizon","preparation","obstacle","priority"];
 const initial=()=>({goal:null,horizon:null,preparation:null,obstacle:null,priority:null});
-let answers=initial(),screen="intro",step=0,selectedTopics=[],planOpened=false,guideOpened=false,copied=false;
+let answers=initial(),screen="intro",step=0,selectedTopics=[],planOpened=false,guideOpened=false,consultOpened=false,copied=false;
 const QUESTIONS=[
  {legend:"叶えたい未来",head:"お金の心配が減ったら、何を変えたい？",sub:"「何を増やすか」の前に、叶えたい暮らしを1つ選ぼう。",say:"自分の本当の目的が、未来の地図になる。",keys:["stability","future","retirement","family","freedom","undecided"],map:GOALS,glyphs:["☀","✦","⌛","⌂","↗","？"]},
  {legend:"叶えたい時期",head:"その未来、いつ頃叶えたい？",sub:"正確でなくていい。時期が決まっていなくても大丈夫。",say:"いつ使うお金かで、選ぶ道は変わってくる。",keys:["under3","threeTo10","over10","unknown"],map:HORIZONS,glyphs:["◷","◴","∞","？"]},
@@ -49,7 +49,7 @@ function choose(k){
  render();toTop();
 }
 function goBack(){if(step===0){screen="intro";}else step--;render();toTop();}
-function reset(){answers=initial();screen="intro";step=0;selectedTopics=[];planOpened=false;guideOpened=false;copied=false;render();toTop();}
+function reset(){answers=initial();screen="intro";step=0;selectedTopics=[];planOpened=false;guideOpened=false;consultOpened=false;copied=false;render();toTop();}
 function intro(){
  const w=shell();
  const scene=bg(el("section","new-world-scene v16-intro"),BG);
@@ -94,13 +94,15 @@ function result(){
  add(hero,p("✦ QUEST CLEAR! ✦","area-crest"),el("div","chapter-letter","CHAPTER III CLEAR"),
  el("h1","world-title","君の未来の作戦タイプは"),
  el("div","v16-route-name",d.routeTitle),
+ p(d.discovery,"v16-discovery-hero"),
  p("未来の霧を晴らす、第一歩が見えてきた。","world-sub"),
  add(el("div","v16-crest"),el("span","",d.crest)),speech("正解の道は1つじゃない。君が叶えたいことと、守りたいものを地図に刻もう！",WIN));
  w.append(hero);
  const insight=el("section","v16-insight");
  add(insight,p("✦ 回答から見えてきた、今の分岐点","v16-kicker"),
- el("h2","","未来へ進むために、まず整えたいこと"),
- p(d.headline,"v16-headline"));
+ el("h2","","君の答えをつなぐと、見えてくること"),
+ p(d.headline,"v16-headline"),
+ p(d.timeframeCue,"v16-timeframe"));
  const pair=el("div","v16-evidence-pair");
  add(pair,
   add(el("div","v16-evidence"),el("small","","叶えたい未来"),el("strong","",d.goal)),
@@ -160,6 +162,24 @@ function result(){
   learn.append(detail);
  }
  w.append(learn);
+ const consult=el("section","v16-consult");consult.id="v16-consult";
+ add(consult,p("THE NEXT MAP / 任意の相談","v16-kicker"),
+  el("h2","","一緒に整理すると、何が見える？"),
+  p("「"+d.goal+"」に近づくために、生活を無理に変える前に、判断材料をそろえる。","v16-plan-desc"),
+  p(d.benefit,"v16-consult-benefit"));
+ if(!consultOpened){
+  consult.append(button("相談で整理できる3つのことを見る","v16-alt",()=>{consultOpened=true;render();document.getElementById("v16-consult")?.scrollIntoView({behavior:"smooth",block:"start"});}));
+ }else{
+  const items=el("ol","v16-consult-items");
+  [
+   ["目的地を数字にする","いつ・何に・いくら必要か。必要額が分からない部分も分けて考える。"],
+   ["今ある材料を棚卸しする","貯蓄・返済・保障・家計の状況を確認する。第2章の確定改善額と未確定候補は混ぜない。"],
+   ["今の暮らしを守る道を比べる","「"+d.priority+"」を守る条件から、実行できそうな選択肢と先に調べることを整理する。"]
+  ].forEach(([h,body])=>items.append(add(el("li",""),el("strong","",h),p(body))));
+  consult.append(items);
+ }
+ consult.append(p("ここでは相談予約・LINE送信は行いません。必要額や将来の成果を保証するものでもありません。","v16-minor"));
+ w.append(consult);
  const share=el("section","v16-share");
  add(share,p("冒険の称号だけ、シェアしよう","v16-kicker"),el("h2","",d.routeTitle),
  p("金額や答えた気がかりはシェア文に含めない。","v16-minor"),
