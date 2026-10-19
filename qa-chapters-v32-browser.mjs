@@ -318,6 +318,7 @@ await clickButton(/診断結果を見る/);
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
+ await page.locator('[data-age-income-worker-peer-category="daily"] summary').click();
  assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
   'Official housewares+consumables comparison is narrower than all daily goods');
 
