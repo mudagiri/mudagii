@@ -58,7 +58,17 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
     ['income-comparison','.c2v22-comparison-ledger .c2v32-income-story']
    );
   }
-  if(requireWorker||document.querySelector('.c2v32-worker-rate-card')){
+  if(document.querySelector('.c2v22-comparison-ledger .c2v32-peer-evidence')){
+   // The matched benchmark is no longer repeated in another expanded 2-column
+   // card. Check the visible reference, signed gap and optional source instead.
+   classes.push(
+    ['worker-evidence-trigger','.c2v22-comparison-ledger .c2v32-peer-evidence>summary'],
+    ['worker-evidence-source','.c2v22-comparison-ledger .c2v32-peer-evidence[open] .c2v32-peer-evidence-body p'],
+    ['worker-gap-number','.c2v22-comparison-ledger .c2v32-peer-gap-card>strong'],
+    ['worker-gap-yen','.c2v22-comparison-ledger .c2v32-peer-gap-card>p b'],
+    ['worker-gap-caveat','.c2v22-comparison-ledger .c2v32-peer-gap-card>small']
+   );
+  }else if(requireWorker||document.querySelector('.c2v32-worker-rate-card')){
    classes.push(
     ['worker-burden-heading','.c2v22-comparison-ledger .c2v32-worker-rate-head>span strong'],
     ['worker-burden-number','.c2v22-comparison-ledger .c2v32-worker-rate-head>strong'],
