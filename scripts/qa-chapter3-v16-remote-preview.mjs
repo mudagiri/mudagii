@@ -27,7 +27,7 @@ for(const [name,type] of [["chromium",chromium],["webkit",webkit]]){
    "将来のお金の心配を減らしたい",
    "3〜10年後",
    "始めたけど、このままでいいか迷う",
-   "何から始めればいいか分からない",
+   "情報が多くて、どれが合うか分からない",
    "今の楽しみ"
   ]) await page.getByRole("button",{name:new RegExp(term)}).click();
   assert.match(await page.locator(".v16-route-name").innerText(),/進路を整える戦術家/);
