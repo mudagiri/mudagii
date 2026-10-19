@@ -97,8 +97,7 @@ function result(){
  add(el("div","v16-crest"),el("span","",d.crest)),speech("未来の地図、1枚目を手に入れたね。次は君だけの進み方を確かめよう！",WIN));
  w.append(hero);
  const insight=el("section","v16-insight");
- add(insight,p("✦ 回答から見えてきた、今の分岐点","v16-kicker"),
- el("h2","","君の答えをつなぐと、見えてくること"),
+ add(insight,p("✦ 回答から見えてきた、今の分かれ道","v16-kicker"),
  p(d.discovery,"v16-discovery-hero"),
  add(el("div","v16-action-reward"),el("small","","まずできる、ひとつの行動"),el("strong","",d.action)),
  button("設計図に必要な3つのことを確認する →","gold-cta v16-primary",()=>{
