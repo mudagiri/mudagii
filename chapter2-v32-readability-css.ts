@@ -481,4 +481,20 @@ export const V32READABILITYCSS = `
  margin:7px 0;font-size:12px!important;line-height:1.7!important;
  color:#28483d!important;overflow-wrap:anywhere;
 }
+
+/* One collapsed explanation for the 2024 matched and 2025 income-only methods. */
+.c2v32-rpg .c2v32-income-method-detail{
+ padding:7px 12px;margin:12px 0;border:1px solid #789e91;
+ border-radius:11px;background:#183940;color:#f4f7f2;
+}
+.c2v32-rpg .c2v32-income-method-detail>summary{
+ display:flex;align-items:center;min-height:44px;cursor:pointer;
+ font-size:14px;font-weight:900;line-height:1.55;color:#ffe19c;
+}
+.c2v32-rpg .c2v32-income-method-detail>summary:focus-visible{
+ outline:3px solid #a7e6df;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-income-method-detail[open]{
+ padding-bottom:13px;
+}
 `;
