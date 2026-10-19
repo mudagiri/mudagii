@@ -117,3 +117,25 @@
 .v16-consult-items strong{display:block;font-size:15px;color:#ffe4a3}
 .v16-consult-items p{margin:4px 0;color:#e7eee7}
 @media(max-width:350px){.v16-discovery-hero{font-size:13px}.v16-consult{padding:14px 11px}}
+
+/* Mobile-first result audit: surface personally relevant insight and action before evidence. */
+.v16-result-hero{padding-top:17px;padding-bottom:7px}
+.v16-result-hero .chapter-letter{margin:3px auto;font-size:11px}
+.v16-result-hero .world-title{font-size:clamp(19px,5.5vw,24px);margin:5px auto 2px}
+.v16-result-hero .v16-route-name{font-size:clamp(25px,7.8vw,34px)}
+.v16-result-hero .v16-crest{width:60px;height:60px;margin:6px auto 3px}
+.v16-result-hero .v16-crest span{font-size:30px}
+.v16-result-hero .speech-stage{margin:2px auto 5px}
+.v16-result-hero .speech-mascot{width:61px;height:64px;flex-basis:61px}
+.v16-insight{margin-top:11px;padding-top:14px}
+.v16-insight h2{font-size:16px;line-height:1.35;margin-bottom:8px}
+.v16-insight .v16-discovery-hero{margin:0 0 12px;padding:11px 12px;max-width:none;background:#f4e9ce;border-color:#d6bf90;box-shadow:none;font-size:15px;line-height:1.65}
+.v16-insight .v16-action-reward{margin:0}
+.v16-insight .v16-primary{margin:12px 0 16px;min-height:53px}
+.v16-insight .v16-headline{border-top:1px solid #d7c39e;padding-top:12px;font-size:15px;line-height:1.65;margin-bottom:8px}
+.v16-insight .v16-timeframe{margin-bottom:12px}
+@media(max-width:350px){
+ .build-flag{font-size:10px;letter-spacing:0}
+ .v16-insight .v16-discovery-hero{font-size:14px;line-height:1.6}
+ .v16-result-hero .v16-route-name{font-size:25px}
+}
