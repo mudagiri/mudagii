@@ -919,20 +919,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
        <small>年収帯だけの支出参考であり、同年代の平均負担率ではありません。</small>
       </div>}
-      {sameAgeIncomePeer?.available&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income" data-age-income-worker-peer-category={x.category}>
-       <div className="c2v32-worker-rate-head"><span><strong>同年代×同年収帯の参考負担率</strong><small>全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年</small></span>
-        <strong>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</strong></div>
-       {peerUserShare!==null&&<div className="c2v32-worker-rate-comparison">
-        <div><small>あなたの支出割合</small><b>{peerUserShare.toFixed(1)}%</b></div>
-        <div><small>同年代・年収帯の参考</small><b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b></div>
-       </div>}
-       <p>あなたの{String(x.label||x.category)}は手取りの <b>{peerUserShare===null?'―':peerUserShare.toFixed(1)+'%'}</b>。同年代×同年収帯の勤労者{multiCohort?'二人以上':'単身'}世帯の参考は <b>{sameAgeIncomePeer.ratePctLow?.toFixed(1)}{sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1)}%</b>。
-        {peerUserShare!==null&&(sameAgeIncomePeer.ratePctHigh??0)<peerUserShare?' 公表参考の上限を上回っています。':peerUserShare!==null&&(sameAgeIncomePeer.ratePctLow??0)>peerUserShare?' 公表参考の下限を下回っています。':peerUserShare!==null?' 公表された参考の幅の中です。':''}
-       </p>
-       <p>世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>を照合。原表{sameAgeIncomePeer.usedCells}区分から計算した参考率であり、複数階級の場合の表示幅も個々の世帯の分布幅ではありません。</p>
-       <small>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。平均費目支出 ÷ 同一交差セルの平均可処分所得。各原表セルの概数標本数は50世帯以上。世帯主の就労区分の一致は入力時の本人申告によるもの。平均との差を月額の削減額としては扱いません。</small>
-       <small data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</small>
-      </div>}
+      {sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-peer-evidence" data-age-income-worker-peer-category={x.category}>
+       <summary>この参考率の条件・出典を見る（2024年・全国）</summary>
+       <div className="c2v32-peer-evidence-body">
+        <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>。原表{sameAgeIncomePeer.usedCells}区分の値で、複数階級の参考幅は個々の世帯の分布幅ではありません。</p>
+        <p>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。同じセルの平均費目支出 ÷ 平均可処分所得。概数標本数50世帯以上のセルのみ採用。世帯主の就労形態は本人申告によるもの。</p>
+        <p data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</p>
+       </div>
+      </details>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
        <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
