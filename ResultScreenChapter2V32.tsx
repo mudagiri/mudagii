@@ -899,6 +899,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
        <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
       </div>
+      {peerGap.available
+       ?<Chapter2PeerComparisonCard category={x.category}
+         label={x.label||x.category} gap={peerGap}
+         ownMonthlyExpenseYen={Number(ownScopeAmount)}
+         householdLabel={multiCohort?'二人以上':'単身'}/>
+       :<>
       <div className="c2v22-comparison-values c2v32-merged-values">
        <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
         {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
@@ -910,8 +916,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
        </span>
       </div>
-      {peerGap.available&&<Chapter2PeerComparisonCard category={x.category}
-       label={x.label||x.category} gap={peerGap} householdLabel={multiCohort?'二人以上':'単身'}/>}
+       </>}
       {sameAgeIncomePeer?.available&&!peerGap.available&&<p className="c2v32-peer-scope-unmatched"
        data-peer-3way-unavailable={x.category}>
        同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
