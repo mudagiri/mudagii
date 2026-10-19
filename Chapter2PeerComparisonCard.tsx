@@ -2,7 +2,7 @@ import React from 'react';
 import type {Chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 
 type VerifiedGap=Extract<Chapter2PeerGapV1,{available:true}>;
-type Props={category:string;label:string;gap:VerifiedGap;householdLabel:'単身'|'二人以上'};
+type Props={category:string;label:string;gap:VerifiedGap;householdLabel:'単身'|'二人以上';ownMonthlyExpenseYen?:number};
 
 function signedPoints(v:number){return (v>0?'+':'')+v.toFixed(1)+'pt';}
 function signedYen(v:number){return (v>0?'+':v<0?'−':'±')+'¥'+Math.abs(v).toLocaleString('ja-JP');}
@@ -14,11 +14,13 @@ function range<T>(lo:T,hi:T,fmt:(v:T)=>string){return lo===hi?fmt(lo):fmt(lo)+' 
  * average / average monthly disposable income.
  * No peer yen amount, reduction target, or candidate upper bound is inferred.
  */
-export default function Chapter2PeerComparisonCard({category,label,gap,householdLabel}:Props){
+export default function Chapter2PeerComparisonCard({category,label,gap,householdLabel,ownMonthlyExpenseYen}:Props){
  return <section className="c2v32-peer-gap-card c2v32-peer-gap-card--three-way"
    data-section={'OFFICIAL_PEER_GAP_'+category}
    aria-label={label+'の同年代・同世帯区分・同所得帯との支出割合比較'}>
   <strong className="c2v32-peer-gap-heading">📊 同年代・同世帯区分・同所得帯と比べる</strong>
+  {typeof ownMonthlyExpenseYen==='number'&&Number.isFinite(ownMonthlyExpenseYen)&&ownMonthlyExpenseYen>=0&&
+   <p className="c2v32-peer-own-amount">今回のあなたの支出：<b>¥{ownMonthlyExpenseYen.toLocaleString('ja-JP')}／月</b></p>}
   <div className="c2v32-peer-3way" data-peer-three-way-category={category}>
    <div className="c2v32-peer-metric">
     <span>あなたの負担率</span>
