@@ -52,7 +52,7 @@ function choose(k){
 function goBack(){if(step===0){screen="intro";}else step--;render();toTop();}
 function reset(){answers=initial();screen="intro";step=0;selectedTopics=[];planOpened=false;guideOpened=false;consultOpened=false;copied=false;render();toTop();}
 function intro(){
- const w=shell();
+ const w=shell();w.classList.add("v16-single-viewport","v16-intro-shell");
  const scene=bg(el("section","new-world-scene v16-intro"),BG);
  add(scene,p("✦ NEW AREA UNLOCKED ✦","area-crest"),el("div","chapter-letter","CHAPTER Ⅲ"),
  el("h1","world-title","未来の大陸"),p("増やす前に、どんな未来を叶えたい？","world-sub"));
@@ -62,21 +62,35 @@ function intro(){
  });
  scene.append(steps);
  const portal=el("div","portal");add(portal,el("span","portal-rune","✧"),el("div","portal-inner","未来の扉が開いた"));scene.append(portal);
- scene.append(speech("お金を増やす方法は、その先に叶えたいことがあってこそ意味がある。まずは君の未来を探そう！"));
+ scene.append(add(el("div","v16-intro-bridge"),el("span","","JOBの戦い方"),el("b","","›"),el("span","","家計の戦果"),el("b","","›"),el("strong","","未来の探索")));
+ scene.append(speech("家計バトルの先は、まだ見ぬ未来の大陸。君が叶えたいことを探しに行こう！"));
  scene.append(button("5つの問いで、未来を探す →","gold-cta stage-entry-cta",start));
  scene.append(p("未来の目的地・今の障害・守りたいものから、最初の一歩を見つける。","v16-hero-promise"));
- add(w,scene,add(el("section","v16-context"),p("第1章：自分の戦い方 ／ 第2章：家計との戦い","v16-context-cap"),el("h2","","第3章は「その先、どう生きたい？」"),p("前章のJOB・STYLEや家計の戦果は、現在この独立プレビューへ未連携。実際の結果や改善額を作りません。","v16-minor")));
- return w;
+ w.append(scene);return w;
 }
 function question(){
- const w=shell();w.append(rail());
+ const w=shell();w.classList.add("v16-single-viewport","v16-quest-shell","v16-quest-"+String(step+1));w.append(rail());
  const progress=el("div","quest-progress");
  add(progress,add(el("div","progress-caption"),el("span","",QUESTIONS[step].legend),el("b","",String(step+1)+" / 5")));
  const spots=el("div","progress-spots");
  for(let n=0;n<5;n++)spots.append(el("span","progress-spot"+(n<step?" done":n===step?" current":""),n<step?"✓":String(n+1)));
  progress.append(spots);w.append(progress);
- const q=QUESTIONS[step],arena=bg(el("section","question-arena v16-arena"),HALL);
- add(arena,add(el("header","area-heading"),p("QUEST "+String(step+1).padStart(2,"0")+" · "+q.legend,"heading-over"),el("h1","",q.head),p(q.sub,"heading-desc")),speech(q.say));
+ const q=QUESTIONS[step],sceneBackground=[BG,BG,HALL,BG,REWARD][step];
+ const arena=bg(el("section","question-arena v16-arena"),sceneBackground);
+ const SCOUT=[
+  {name:"未来の灯火",mark:"✦",hint:"この先の未来を選ぼう"},
+  {name:"時の地平線",mark:"◷",hint:"向かう時期を見渡そう"},
+  {name:"現在地の標",mark:"⌖",hint:"いま立っている場所を知ろう"},
+  {name:"霧の番人",mark:"◈",hint:"霧の正体を確かめよう"},
+  {name:"守護の紋章",mark:"✧",hint:"守りたいものを決めよう"}
+ ][step];
+ const scout=add(el("div","v16-exploration-scene v16-scout-"+String(step+1)),
+  add(el("div","v16-scout-symbol"),el("span","",SCOUT.mark)),
+  add(el("div","v16-scout-label"),el("b","",SCOUT.name),el("small","",SCOUT.hint)));
+ scout.setAttribute("aria-hidden","true");
+ add(arena,
+  add(el("header","area-heading"),p("QUEST "+String(step+1).padStart(2,"0")+" · "+q.legend,"heading-over"),el("h1","",q.head),p(q.sub,"heading-desc")),
+  scout,speech(q.say));
  const choices=el("div","question-options");
  for(let i=0;i<q.keys.length;i++){
   const key=q.keys[i],value=q.map[key],label=typeof value==="string"?value:value.label;
@@ -84,7 +98,8 @@ function question(){
   add(b,el("span","option-glyph",q.glyphs[i]),el("span","option-text",label),el("span","option-mark","›"));
   choices.append(b);
  }
- add(arena,choices,p("選ぶと次の質問に進むよ","v16-auto-hint"),button("← 1つ前に戻る","quiet-back",goBack));
+ const controls=add(el("div","v16-quest-controls"),p("選ぶと次のエリアに進む","v16-auto-hint"),button("← 戻る","quiet-back",goBack));
+ add(arena,choices,controls);
  w.append(arena);return w;
 }
 function result(){
