@@ -113,7 +113,7 @@ function result(){
  insight.append(pair);
  add(insight,p(d.synthesis,"v16-synthesis"),
  add(el("div","v16-action-reward"),el("small","","まずできる、ひとつの行動"),el("strong","",d.action)),
- button("この未来を、もう少し具体的にする →","gold-cta v16-primary",()=>{
+ button("設計図に必要な3つのことを確認する →","gold-cta v16-primary",()=>{
   planOpened=true;render();document.getElementById("v16-plan")?.scrollIntoView({behavior:"smooth",block:"start"});
  }));
  w.append(insight);
@@ -161,7 +161,6 @@ function result(){
   }
   learn.append(detail);
  }
- w.append(learn);
  const consult=el("section","v16-consult");consult.id="v16-consult";
  add(consult,p("THE NEXT MAP / 任意の相談","v16-kicker"),
   el("h2","","一緒に整理すると、何が見える？"),
@@ -179,7 +178,7 @@ function result(){
   consult.append(items);
  }
  consult.append(p("ここでは相談予約・LINE送信は行いません。必要額や将来の成果を保証するものでもありません。","v16-minor"));
- w.append(consult);
+ w.append(consult);w.append(learn);
  const share=el("section","v16-share");
  add(share,p("冒険の称号だけ、シェアしよう","v16-kicker"),el("h2","",d.routeTitle),
  p("金額や答えた気がかりはシェア文に含めない。","v16-minor"),
