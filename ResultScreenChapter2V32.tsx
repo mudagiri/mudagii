@@ -885,8 +885,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       sameExpenseScopeConfirmed:sameScope,
       sourceVerified:sameAgeIncomePeer?.available===true,
      });
-     const signedPoint=(p:number)=>(p>0?'+':'')+p.toFixed(1)+'pt';
-     const signedYen=(v:number)=>(v>0?'+':v<0?'−':'±')+money(Math.abs(v));
      const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
      const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
      const deltaDescription=(delta:number|null,what:string)=>delta===null?''
