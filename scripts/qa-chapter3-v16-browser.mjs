@@ -37,6 +37,10 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    assert.match(info,/始めたけど、このままでいいか迷う/);
    assert.match(info,/何から始めればいいか分からない/);
    assert.match(info,/今の楽しみ/);
+   const discovery=await page.locator(".v16-discovery-hero").innerText();
+   assert.match(discovery,/将来のお金の心配を減らしたい/);
+   assert.match(discovery,/今の楽しみ/);
+   assert.match(await page.locator(".v16-timeframe").innerText(),/時期/);
    await page.screenshot({path:path.join(output,engine+"-"+width+"-result.png"),fullPage:false});
    await page.getByRole("button",{name:/この未来を、もう少し具体的/}).click();
    assert.match(await page.locator(".v16-unlocked").innerText(),/必要/);
@@ -44,6 +48,9 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.getByRole("button",{name:/ライフプランの整理/}).click();
    await page.getByRole("button",{name:/選んだテーマの攻略ヒントを見る/}).click();
    assert.equal(await page.locator(".v16-guide").count(),2);
+   await page.getByRole("button",{name:/相談で整理できる3つのこと/}).click();
+   assert.equal(await page.locator(".v16-consult-items li").count(),3);
+   assert.match(await page.locator(".v16-consult").innerText(),/今の楽しみ/);
    assert.ok((await page.locator(".v16-guide").first().innerText()).includes("今日の一歩"));
    const screen=await page.evaluate(()=>({w:innerWidth,body:document.body.scrollWidth,html:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll("button")].every(b=>{const r=b.getBoundingClientRect();return r.width>=0;})}));
    assert.ok(screen.html<=screen.w+1,engine+" "+width+" horizontal overflow "+JSON.stringify(screen));
