@@ -962,6 +962,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
        <span>⚔ 未確定の見直し候補 <b>月最大 {money(nonnegative(x.cUpper))}</b></span>
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
+       <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
       </div>}
      </div>;
     })}
