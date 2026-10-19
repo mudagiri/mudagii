@@ -297,7 +297,7 @@ await clickButton(/診断結果を見る/);
  assert.equal(await sameAge40.evaluate(el=>el.open),false,'Reference evidence stays folded on first view');
  assert.ok((await sameAge40.innerText()).includes('条件・出典を見る'),'Source details are discoverable');
  const foodCardCollapsed=await page.locator('[data-comparison-category="food"]').innerText();
- assert.equal((foodCardCollapsed.match(/14\\.8 ～ 25\\.3%/g)||[]).length,1,
+ assert.equal((foodCardCollapsed.match(/14\.8 ～ 25\.3%/g)||[]).length,1,
   'Only one copy of the same reference rate should appear in a visible card');
  await sameAge40.locator('summary').click();
  const sameAgeFood40=await sameAge40.innerText();
