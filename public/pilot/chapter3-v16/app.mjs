@@ -26,7 +26,7 @@ const add=(p,...children)=>{for(const c of children)if(c)p.append(c);return p;};
 const p=(s,cls="")=>el("p",cls,s);
 const button=(s,cls,fn)=>{const b=el("button",cls,s);b.type="button";b.onclick=fn;return b;};
 const img=(src,cls,alt)=>{const n=el("img",cls);n.src=src;n.alt=alt;return n;};
-const shell=()=>add(el("div","stage-shell"),p("CHAPTER III · 未来の作戦書 / 独立プレビュー・個人情報の保存なし","build-flag"));
+const shell=()=>add(el("div","stage-shell"),p("CHAPTER III · 未来の作戦書 / 保存なし","build-flag"));
 const bg=(n,image)=>{n.style.setProperty("--world-bg","url('"+image+"')");return n;};
 function rail(){
  const r=el("div","chapter-rail");
@@ -94,13 +94,16 @@ function result(){
  add(hero,p("✦ QUEST CLEAR! ✦","area-crest"),el("div","chapter-letter","CHAPTER III CLEAR"),
  el("h1","world-title","君の未来の作戦タイプは"),
  el("div","v16-route-name",d.routeTitle),
- p(d.discovery,"v16-discovery-hero"),
- p("未来の霧を晴らす、第一歩が見えてきた。","world-sub"),
- add(el("div","v16-crest"),el("span","",d.crest)),speech("正解の道は1つじゃない。君が叶えたいことと、守りたいものを地図に刻もう！",WIN));
+ add(el("div","v16-crest"),el("span","",d.crest)),speech("未来の地図、1枚目を手に入れたね。次は君だけの進み方を確かめよう！",WIN));
  w.append(hero);
  const insight=el("section","v16-insight");
  add(insight,p("✦ 回答から見えてきた、今の分岐点","v16-kicker"),
  el("h2","","君の答えをつなぐと、見えてくること"),
+ p(d.discovery,"v16-discovery-hero"),
+ add(el("div","v16-action-reward"),el("small","","まずできる、ひとつの行動"),el("strong","",d.action)),
+ button("設計図に必要な3つのことを確認する →","gold-cta v16-primary",()=>{
+  planOpened=true;render();document.getElementById("v16-plan")?.scrollIntoView({behavior:"smooth",block:"start"});
+ }),
  p(d.headline,"v16-headline"),
  p(d.timeframeCue,"v16-timeframe"));
  const pair=el("div","v16-evidence-pair");
@@ -111,11 +114,7 @@ function result(){
   add(el("div","v16-evidence"),el("small","","手放したくないもの"),el("strong","",d.priority))
  );
  insight.append(pair);
- add(insight,p(d.synthesis,"v16-synthesis"),
- add(el("div","v16-action-reward"),el("small","","まずできる、ひとつの行動"),el("strong","",d.action)),
- button("設計図に必要な3つのことを確認する →","gold-cta v16-primary",()=>{
-  planOpened=true;render();document.getElementById("v16-plan")?.scrollIntoView({behavior:"smooth",block:"start"});
- }));
+ insight.append(p(d.synthesis,"v16-synthesis"));
  w.append(insight);
  const plan=el("section","v16-plan");plan.id="v16-plan";
  add(plan,p("MAP PIECE 01 / 03","v16-kicker"),el("h2","","ここから「未来の設計図」に変えよう"),
