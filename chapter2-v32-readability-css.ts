@@ -556,6 +556,17 @@ export const V32READABILITYCSS = `
  display:block;color:#144e42;font-size:15px;font-weight:950;line-height:1.5;
  margin-bottom:9px;
 }
+/* Show the actual expense once above the verified three-way rate comparison. */
+.c2v32-rpg .c2v32-peer-own-amount{
+ display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;
+ gap:4px 8px;margin:0 0 10px!important;padding:8px 9px;
+ border-radius:8px;background:#e4eee5;color:#20493b!important;
+ font-size:13px!important;font-weight:800;line-height:1.55!important;
+}
+.c2v32-rpg .c2v32-peer-own-amount b{
+ color:#163d36;font-size:17px;font-weight:950;
+ font-variant-numeric:tabular-nums;
+}
 .c2v32-rpg .c2v32-peer-3way{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
  gap:8px;margin:0 0 10px;
