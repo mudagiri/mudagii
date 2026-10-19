@@ -50,7 +50,7 @@ jobs:
           test -f dist/pilot/chapter3-v16/v16.css
           test -f dist/pilot/chapter3-v12/stage.css
           test -f dist/pilot/chapter3-v12/next-guide.mjs
-      - name: Prepare real GitHub Pages sibling asset paths
+      - name: Verify canonical shared assets
         run: |
           set -euo pipefail
           for asset in \
@@ -60,8 +60,6 @@ jobs:
             mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp \
             mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp; do
             test -s "dist/assets/$asset"
-            mkdir -p "dist/pilot/chapter3-v12/assets/$(dirname "$asset")"
-            cp "dist/assets/$asset" "dist/pilot/chapter3-v12/assets/$asset"
           done
       - name: Start isolated browser server
         run: |
