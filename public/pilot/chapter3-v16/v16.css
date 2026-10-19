@@ -277,3 +277,31 @@
  .v16-insight .v16-discovery-hero{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.v16-map-fragment.is-earned{animation:none}}
+
+/* Mobile space recovery: preserve reward art and a visible companion without burying CTA. */
+.v16-guild-victory{padding-top:8px;padding-bottom:7px}
+.v16-guild-victory .world-title{margin:1px auto 4px;font-size:clamp(24px,7vw,32px)}
+.v16-guild-victory .area-crest{margin-bottom:3px}
+.v16-battle-banner{padding-top:3px;padding-bottom:3px;margin-bottom:4px}
+.v16-loot-label{margin:0 auto 4px}
+.v16-map-fragment{height:65px;flex-basis:71px;padding:4px}
+.v16-map-fragment b{font-size:21px}
+.v16-map-fragment span{font-size:11px}
+.v16-map-reward{margin-bottom:4px}
+.v16-map-note{margin-bottom:4px}
+.v16-route-award{display:flex;align-items:center;gap:9px;text-align:left;padding:5px 9px;margin-bottom:0}
+.v16-route-mascot{width:49px;height:54px;flex:0 0 49px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 5px #0007)}
+.v16-route-copy{min-width:0;flex:1}
+.v16-route-award small{font-size:11px}
+.v16-route-award .v16-route-name{font-size:clamp(22px,6vw,27px);line-height:1.3}
+.v16-insight .speech-stage{margin:13px auto 8px}
+.v16-insight .speech-mascot{width:60px;height:67px;flex:0 0 60px;image-rendering:pixelated}
+.v16-insight .speech-text{background:#fffaf0;border-color:#e9cb95;color:#2d2c26;box-shadow:0 4px 12px #0006}
+.v16-insight .speech-text p{font-size:13px;line-height:1.55}
+@media(max-width:350px){
+ .v16-guild-victory .world-title{font-size:23px}
+ .v16-map-fragment{height:61px;flex-basis:67px}
+ .v16-route-award{gap:6px;padding:4px 7px}
+ .v16-route-mascot{width:45px;height:51px;flex-basis:45px}
+ .v16-route-award .v16-route-name{font-size:21px}
+}
