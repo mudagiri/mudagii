@@ -21,7 +21,7 @@ export const PREPARATIONS=Object.freeze({
 export const OBSTACLES=Object.freeze({
  living:{label:"毎月のお金に余裕がない",check:"まず生活費を守れるか"},
  debt:{label:"ローンや返済が気になる",check:"返済と必要な現金を確保できるか"},
- dontKnow:{label:"何から始めればいいか分からない",check:"最初に整理する条件は何か"},
+ dontKnow:{label:"情報が多くて、どれが合うか分からない",check:"手段より先に比べる条件は何か"},
  loss:{label:"失敗や損失が怖い",check:"失って困るもの・避けたい変動は何か"},
  busy:{label:"時間がなくて後回しになる",check:"無理なく使える時間はどこか"},
  none:{label:"今は特に困っていない",check:"今の暮らしを崩さず何を叶えるか"},
@@ -63,7 +63,7 @@ const PROTECTED_BENEFITS=Object.freeze({
 const OBSTACLE_CUES=Object.freeze({
  living:"毎月の支払いが気になるなら、未来のために今の生活を圧迫しない順番が大切。",
  debt:"返済が気になるなら、増やし方の前に毎月の負担と手元資金を確かめたい。",
- dontKnow:"何から始めるか分からないなら、方法を増やすより確認事項を1つに絞りたい。",
+ dontKnow:"情報が多いなら、方法を増やすより比較する条件を先に絞りたい。",
  loss:"失敗が怖いなら、リターンの話より先に守るべき生活費を決めたい。",
  busy:"時間がないなら、完璧な計画より取りかかれる小さな作業を選びたい。",
  none:"大きな困りごとがないなら、今の満足を崩さず選択肢を比べられる。",
