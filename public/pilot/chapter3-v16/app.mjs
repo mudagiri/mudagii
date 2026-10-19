@@ -104,8 +104,9 @@ function result(){
   p("✦ REWARD UNLOCKED ✦","v16-loot-label"),
   fragments,
   p("MAP PIECE 01 / 03 · 第一片獲得","v16-map-note"),
-  add(el("div","v16-route-award"),el("small","","未来の作戦タイプ"),el("div","v16-route-name",d.routeTitle)),
-  speech("自分の戦い方、家計の戦果。その先に叶えたい未来がある。地図の第一片、見つけたね！",WIN));
+  add(el("div","v16-route-award"),
+   img(WIN,"v16-route-mascot","ムダギリくん"),
+   add(el("div","v16-route-copy"),el("small","","未来の作戦タイプ"),el("div","v16-route-name",d.routeTitle))));
  w.append(hero);
  const insight=el("section","v16-insight");
  add(insight,p("✦ 回答から見えてきた、今の分かれ道","v16-kicker"),
@@ -114,6 +115,7 @@ function result(){
  button("設計図に必要な3つのことを確認する →","gold-cta v16-primary",()=>{
   planOpened=true;render();document.getElementById("v16-plan")?.scrollIntoView({behavior:"smooth",block:"start"});
  }),
+ speech("地図の第一片、手に入れたね。自分の戦い方も家計の戦果も、叶えたい未来につながっていくよ。",WIN),
  p(d.headline,"v16-headline"),
  p(d.timeframeCue,"v16-timeframe"));
  const pair=el("div","v16-evidence-pair");
