@@ -577,7 +577,7 @@ export const V32READABILITYCSS = `
  padding:10px 8px;
 }
 .c2v32-rpg .c2v32-peer-metric>span{
- color:#32544a;font-size:13px;line-height:1.45;font-weight:850;
+ color:#32544a;font-size:14px;line-height:1.5;font-weight:850;
 }
 .c2v32-rpg .c2v32-peer-metric>strong{
  font-size:clamp(19px,5vw,24px);line-height:1.28;
@@ -585,7 +585,7 @@ export const V32READABILITYCSS = `
  overflow-wrap:anywhere;
 }
 .c2v32-rpg .c2v32-peer-metric>small{
- margin-top:auto;color:#52695d;font-size:12px;line-height:1.5;
+ margin-top:auto;color:#52695d;font-size:13px;line-height:1.55;
 }
 .c2v32-rpg .c2v32-peer-metric--difference{
  grid-column:1/-1;border-color:#c4a96a;background:#fff8e6;
@@ -605,7 +605,7 @@ export const V32READABILITYCSS = `
  font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
 }
 .c2v32-rpg .c2v32-peer-gap-disclaimer{
- display:block;color:#3e574e!important;font-size:12px!important;line-height:1.65!important;
+ display:block;color:#3e574e!important;font-size:13px!important;line-height:1.7!important;
 }
 .c2v32-rpg .c2v32-peer-scope-unmatched{
  margin:8px 0;padding:9px 11px;border-left:3px solid #8a8870;
