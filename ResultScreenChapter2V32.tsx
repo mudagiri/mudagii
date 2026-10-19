@@ -909,10 +909,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </span>
       </div>
       {peerGap.available&&<section className="c2v32-peer-gap-card" data-section={'OFFICIAL_PEER_GAP_'+x.category}>
-       <span>全国・同年代×同世帯区分×同年収帯の負担率差</span>
+       <span>あなた − 全国の参考負担率（差）</span>
        <strong>{signedPoint(peerGap.gapPointsLow)} ～ {signedPoint(peerGap.gapPointsHigh)}</strong>
-       <p>あなたの月手取りに換算：<b>{signedYen(peerGap.gapYenLow)} ～ {signedYen(peerGap.gapYenHigh)}／月</b></p>
-       <small>あなたの負担率 − 全国参考率を、あなた自身の手取りに換算した比較上の差額。平均世帯の実際の支出との差額ではなく、ムダ額・削減可能額・未確定見直し候補には加算しません。地域は未反映。</small>
+       <p>手取り換算：<b>{signedYen(peerGap.gapYenLow)} ～ {signedYen(peerGap.gapYenHigh)}／月</b></p>
+       <small>これは比較上の差額で、削減可能額ではありません。地域は未反映。詳細は下の「条件・出典」から。</small>
       </section>}
       {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
