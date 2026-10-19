@@ -41,9 +41,9 @@ export default function Chapter2PeerComparisonCard({category,label,gap,household
    <b>{range(gap.gapYenLow,gap.gapYenHigh,signedYen)}／月</b>
   </p>
   <small className="c2v32-peer-gap-disclaimer">
-   これは<strong>統計上の比較差</strong>で、削減できる金額・ムダ額・見直し候補額ではありません。
+   これは<strong>統計上の比較差</strong>で、削減可能額・ムダ額・見直し候補額ではありません。
    参考率は同一集計区分の平均支出 ÷ 平均可処分所得で、個々の世帯の負担率の平均ではありません。
-   地域・人数の完全一致・費目の内訳は未照合です。
+   地域は未反映。二人以上世帯の人数の完全一致と費目の内訳も未照合です。
   </small>
  </section>;
 }
