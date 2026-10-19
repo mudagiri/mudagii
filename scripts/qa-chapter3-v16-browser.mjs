@@ -48,9 +48,11 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.getByRole("button",{name:/始めたけど、このままでいいか迷う/}).click();
    assert.equal(await page.locator("button.answer-option").count(),7);
    await assertSceneFits(page,engine,width,"Q4");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q4.png"),fullPage:false});
    await page.getByRole("button",{name:/情報が多くて、どれが合うか分からない/}).click();
    assert.equal(await page.locator("button.answer-option").count(),5);
    await assertSceneFits(page,engine,width,"Q5");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q5.png"),fullPage:false});
    await page.getByRole("button",{name:/今の楽しみ/}).click();
    assert.match(await page.title(),/作戦書/);
    assert.match(await page.locator(".v16-route-name").innerText(),/進路を整える戦術家/);
@@ -93,6 +95,24 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    assert.match(await page.title(),/V1\.6/);
    await page.close();
    checks++;console.log("CH3_V16_BROWSER_PASS",engine,width);
+  }
+  // Short-height fallback: tapping every answer must remain possible even when a single-screen layout cannot fit.
+  for(const height of [600,667]){
+   const narrow=await browser.newPage({viewport:{width:320,height},deviceScaleFactor:1});
+   try{
+    await narrow.goto(url,{waitUntil:"networkidle"});
+    await narrow.getByRole("button",{name:/5つの問いで/}).click();
+    for(const name of ["将来のお金の心配を減らしたい","3〜10年後","始めたけど、このままでいいか迷う"]){
+     await narrow.getByRole("button",{name:new RegExp(name)}).click();
+    }
+    assert.equal(await narrow.locator("button.answer-option").count(),7);
+    const skipped=narrow.getByRole("button",{name:/今は答えたくない/});
+    await skipped.click({timeout:10000}); // Auto-scroll should make the seventh option tappable if needed.
+    assert.equal(await narrow.locator("button.answer-option").count(),5);
+    await narrow.getByRole("button",{name:/今の楽しみ/}).click();
+    assert.match(await narrow.locator(".v16-route-name").innerText(),/.+/);
+    console.log("CH3_V16_SHORT_SCREEN_REACHABLE",engine,height);
+   }finally{await narrow.close();}
   }
  }finally{await browser.close();}
 }
