@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
+import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
@@ -909,12 +910,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
        </span>
       </div>
-      {peerGap.available&&<section className="c2v32-peer-gap-card" data-section={'OFFICIAL_PEER_GAP_'+x.category}>
-       <span>あなた − 全国の参考負担率（差）</span>
-       <strong>{signedPoint(peerGap.gapPointsLow)} ～ {signedPoint(peerGap.gapPointsHigh)}</strong>
-       <p>手取り換算：<b>{signedYen(peerGap.gapYenLow)} ～ {signedYen(peerGap.gapYenHigh)}／月</b></p>
-       <small>これは比較上の差額で、削減可能額ではありません。地域は未反映。詳細は下の「条件・出典」から。</small>
-      </section>}
+      {peerGap.available&&<Chapter2PeerComparisonCard category={x.category}
+       label={x.label||x.category} gap={peerGap} householdLabel={multiCohort?'二人以上':'単身'}/>}
+      {sameAgeIncomePeer?.available&&!peerGap.available&&<p className="c2v32-peer-scope-unmatched"
+       data-peer-3way-unavailable={x.category}>
+       同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
+      </p>}
       {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
