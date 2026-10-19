@@ -53,39 +53,85 @@ export function validateAnswers(a){
  }
  return {ok:errors.length===0,errors};
 }
+const PROTECTED_BENEFITS=Object.freeze({
+ joy:"楽しみに使うお金を一律に削る前に、満足度を下げずに見直せる選択肢を探しやすくなる。",
+ people:"家族や大切な人との時間も判断条件にすれば、金額だけで決めずに済む。",
+ peace:"日々の安心を守る最低限の現金を確認してから、次の選択を考えやすくなる。",
+ growth:"学びや挑戦に使う余白も残しながら、目標への進み方を比べられる。",
+ freedom:"途中で方針を変えられる余地を残し、自分で選ぶ感覚を大切にできる。"
+});
+const OBSTACLE_CUES=Object.freeze({
+ living:"毎月の支払いが気になるなら、未来のために今の生活を圧迫しない順番が大切。",
+ debt:"返済が気になるなら、増やし方の前に毎月の負担と手元資金を確かめたい。",
+ dontKnow:"何から始めるか分からないなら、方法を増やすより確認事項を1つに絞りたい。",
+ loss:"失敗が怖いなら、リターンの話より先に守るべき生活費を決めたい。",
+ busy:"時間がないなら、完璧な計画より取りかかれる小さな作業を選びたい。",
+ none:"大きな困りごとがないなら、今の満足を崩さず選択肢を比べられる。",
+ skip:"困りごとは答えないままでいい。話せる目標と条件だけから進められる。"
+});
 export function classify(a){
+ // One primary route is a priority for the next action, not a permanent personality diagnosis.
  if(["living","debt"].includes(a.obstacle))return "protect";
+ if(a.goal==="undecided")return "navigate";
  if(a.horizon==="under3")return "deadline";
  if(a.obstacle==="busy")return "time";
- if(a.goal==="undecided"||a.horizon==="unknown")return "navigate";
- if(a.obstacle==="none"||a.obstacle==="skip")return "expand";
- if(a.preparation==="regular"||a.preparation==="uncertain")return "course";
+ if(a.horizon==="unknown")return "navigate";
  if(a.obstacle==="loss")return "brave";
- if(a.preparation==="notYet"||a.preparation==="unknown"||a.obstacle==="dontKnow")return "launch";
+ if(a.preparation==="regular"||a.preparation==="uncertain")return "course";
+ if(a.obstacle==="dontKnow")return "launch";
+ if(a.obstacle==="none"||a.obstacle==="skip")return "expand";
+ if(a.preparation==="notYet"||a.preparation==="unknown")return "launch";
  return "expand";
+}
+function nextAction(a,route){
+ const check=GOALS[a.goal].check;
+ switch(route){
+  case "protect":return a.obstacle==="debt"
+   ?"返済額・生活費・手元に残す現金を1か月分だけ並べる"
+   :"毎月の固定費と、暮らしのために残したいお金を並べる";
+  case "deadline":return "3年以内に実現したいことを1つ選び、必要な時期と使い道を書く";
+  case "time":return "今週の15分を1回確保し、「"+check+"」をメモする";
+  case "navigate":return a.goal==="undecided"
+   ?"「"+PRIORITIES[a.priority].label+"」を守れる未来の候補を2つ書き出す"
+   :"「"+GOALS[a.goal].label+"」をいつ叶えたいか、大まかな時期を1つ考える";
+  case "course":return "今続けている準備と「"+HORIZONS[a.horizon]+"」の目的が合っているか書き出す";
+  case "brave":return "失ったら暮らしに困るお金と、避けたい変化を1つずつ書き出す";
+  case "launch":return "「"+check+"」について、分かることと未確認のことを1つずつ書く";
+  default:return "「"+GOALS[a.goal].label+"」に近づく選択肢を2つ比べてみる";
+ }
 }
 export function buildDiscovery(a){
  const check=validateAnswers(a);
  if(!check.ok)return {ok:false,errors:check.errors};
  const goal=GOALS[a.goal],priority=PRIORITIES[a.priority],obstacle=OBSTACLES[a.obstacle];
  const routeId=classify(a),route=ROUTES[routeId];
+ const discovery=a.goal==="undecided"
+  ?"未来の目的地はまだ未定。でも、「"+priority.label+"」を手放したくないことは、すでに分かっている。"
+  :"「"+goal.label+"」を目指したい。同時に「"+priority.label+"」も守りたい。どちらかを諦める前に、両立できる条件を探そう。";
+ const obstacleCue=OBSTACLE_CUES[a.obstacle];
+ const benefit=PROTECTED_BENEFITS[a.priority];
+ const timeframeCue=a.horizon==="unknown"
+  ?"期限はまだ未定。必要額を決め打ちする前に、いつ叶えたいかを整理できる。"
+  :a.horizon==="under3"
+   ?"3年以内の目標なら、いつ使うお金かを先に確かめたい。"
+   :"使う時期までの距離を確かめれば、急いで手段を決めずに済む。";
  const obstacleText=["none","skip"].includes(a.obstacle)
   ?(a.obstacle==="none"?"今は大きな困りごとを感じていない":"気がかりは答えないことを選んだ")
   :"一方で「"+obstacle.label+"」が気になっている";
  const premise="「"+goal.label+"」という未来を選び、時期は「"+HORIZONS[a.horizon]+"」。準備は「"+PREPARATIONS[a.preparation].label+"」。"+obstacleText+"。";
- const synthesis=route.turn+" 「"+priority.label+"」を守りたいという答えも、作戦の大事な条件になる。";
+ const synthesis=obstacleCue+" "+benefit;
  return {
   ok:true,version:"CH3_DISCOVERY_V1_6",routeId,routeTitle:route.title,crest:route.crest,
-  headline:route.turn,premise,synthesis,
+  headline:route.turn,premise,synthesis,discovery,obstacleCue,benefit,timeframeCue,
   goal:goal.label,dream:goal.dream,horizon:HORIZONS[a.horizon],
   preparation:PREPARATIONS[a.preparation].label,obstacle:obstacle.label,
   priority:priority.label,priorityClause:priority.clause,
-  action:route.step,why:route.reason,firstCheck:goal.check,
+  action:nextAction(a,routeId),why:route.reason,firstCheck:goal.check,
   nextQuestion:"その未来は「いつ」「いくら必要」で、今の手元資金との差はいくら？",
   shareText:"ムダギリ診断 第3章で「"+route.title+"」の称号を獲得！未来の作戦を考える冒険へ。 #ムダギリ診断",
   chapter1Linked:false,chapter2Linked:false,confirmedSavingMonthlyJPY:null,
   reviewCandidateUpperMonthlyJPY:null,goalAmountJPY:null,currentAssetsJPY:null,gapJPY:null,
   suitabilityAssessed:false,loanEligibleAssessed:false,
-  disclaimer:"これは回答から考えられる優先順位の仮説。資産額・必要額・適性はこの5問だけでは判定しません。"
+  disclaimer:"これは本人の回答から考えた次の確認順序の仮説です。資産額・必要額・金融商品の適合性は5問だけでは判定できません。"
  };
 }
