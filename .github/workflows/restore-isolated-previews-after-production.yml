@@ -122,6 +122,9 @@ jobs:
           grep -q 'PROFILE_OPTIONAL_GROSS_ANNUAL' v32-site/ProfileV4Scene.tsx
           grep -q 'OFFICIAL_PEER_GAP_' v32-site/ResultScreenChapter2V32.tsx
           grep -q 'OTHER_CANDIDATE_SUMMARIES' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'OTHER_REFERENCE_' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'CATEGORY_NEXT_ACTION_' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'c2v32-action-evidence' v32-site/ResultScreenChapter2V32.tsx
           # The 2024 benchmark is printed once per row; duplicate rate and
           # cross-tab methodology panels must remain behind accessible details.
           grep -q 'c2v32-peer-evidence' v32-site/ResultScreenChapter2V32.tsx
