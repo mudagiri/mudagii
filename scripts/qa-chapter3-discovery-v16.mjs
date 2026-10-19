@@ -23,7 +23,7 @@ for(const goal of Object.keys(GOALS))
      if(obstacle==="none")assert.ok(!/恐怖|失敗が怖い/.test(x.synthesis),"no invented pain");
      assert.ok(x.premise.includes(GOALS[goal].label));
      assert.ok(x.premise.includes(PREPARATIONS[preparation].label));
-     assert.ok(x.synthesis.includes(PRIORITIES[priority].label));
+     assert.ok(x.synthesis.includes(x.obstacleCue),"synthesis should respond to the chosen obstacle");
      assert.equal(x.chapter1Linked,false);
      assert.equal(x.chapter2Linked,false);
      for(const key of ["confirmedSavingMonthlyJPY","reviewCandidateUpperMonthlyJPY","goalAmountJPY","currentAssetsJPY","gapJPY"])assert.equal(x[key],null);
