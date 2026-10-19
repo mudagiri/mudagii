@@ -294,9 +294,14 @@ await clickButton(/診断結果を見る/);
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('2024年全国家計構造調査'),'Official joint 2024 source is identified');
  const sameAge40=page.locator('[data-age-income-worker-peer-category="food"]');
  assert.equal(await sameAge40.count(),1,'30–39 age and 400–499 gross class must match OFFICIAL same-cell source');
+ assert.equal(await sameAge40.evaluate(el=>el.open),false,'Reference evidence stays folded on first view');
+ assert.ok((await sameAge40.innerText()).includes('条件・出典を見る'),'Source details are discoverable');
+ const foodCardCollapsed=await page.locator('[data-comparison-category="food"]').innerText();
+ assert.equal((foodCardCollapsed.match(/14\\.8 ～ 25\\.3%/g)||[]).length,1,
+  'Only one copy of the same reference rate should appear in a visible card');
+ await sameAge40.locator('summary').click();
  const sameAgeFood40=await sameAge40.innerText();
- assert.ok(sameAgeFood40.includes('14.8 ～ 25.3%'),'Real e-Stat 2024 30s x 400–499 worker food rate range');
- assert.ok(sameAgeFood40.includes('あなたの支出割合')&&sameAgeFood40.includes('20.0%'),'User own takehome rate is shown next to same age+income worker reference');
+ assert.ok(sameAgeFood40.includes('2024年全国家計構造調査'),'Official e-Stat source must open on request');
  const primaryPeerFood=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
  assert.ok(primaryPeerFood.includes('同年代×世帯区分×同年収帯の参考負担率')&&primaryPeerFood.includes('14.8 ～ 25.3%'),
   'The true 2024 same-cohort burden rate must be in the primary comparison cell');
@@ -331,7 +336,7 @@ await clickButton(/診断結果を見る/);
  }
  await page.locator('#c2v32-single-income').selectOption('500_599');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
- const age50=await page.locator('[data-age-income-worker-peer-category="food"]').innerText();
+ const age50=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
  assert.ok(age50.includes('12.2 ～ 17.8%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No extra savings buffer before worker employment status and expense match');
