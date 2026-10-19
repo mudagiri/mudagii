@@ -224,8 +224,19 @@ function result(){
  add(w,button("最初から、未来を探索し直す","quiet-back v16-reset",reset),p("第1章JOB・STYLE／第2章12カテゴリは未連携。金額の創作・外部送信・予約は行いません。","v16-page-note"));
  return w;
 }
+function rescueClippedStage(){
+ const shellNode=root.querySelector(".v16-single-viewport");
+ if(!shellNode)return;
+ const controls=[...shellNode.querySelectorAll(".answer-option,.quiet-back,.stage-entry-cta")];
+ const outOfView=controls.some(control=>{
+  const rect=control.getBoundingClientRect();
+  return rect.bottom>window.innerHeight+1||rect.top < -1;
+ });
+ if(outOfView)shellNode.classList.add("v16-height-fallback");
+}
 function render(){
  root.replaceChildren(screen==="intro"?intro():screen==="quest"?question():result());
+ requestAnimationFrame(rescueClippedStage);
  document.title=screen==="result"?"未来の作戦書を獲得｜ムダギリ診断 第3章":screen==="quest"?"QUEST "+String(step+1)+"｜未来の大陸":"第3章V1.6｜未来の大陸";
 }
 render();
