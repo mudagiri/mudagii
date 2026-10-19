@@ -34,11 +34,11 @@ async function changeAge(n){await age.selectOption(String(n));}
 async function selectGross(band){await annual.selectOption(band);}
 async function assertRate(pct){
  await food().waitFor({state:'visible',timeout:12000});
- const t=await food().innerText();
- assert.ok(t.includes(pct),`Food reference should be ${pct}, got ${t.slice(0,500)}`);
+ const primary=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
+ assert.ok(primary.includes(pct),`Food reference should be ${pct}, got ${primary.slice(0,500)}`);
  assert.equal(await peers().count(),3,'All 3 original public expenses are visible');
- assert.ok(t.includes('あなたの支出割合'),'Personal take-home ratio should display alongside public peer');
- assert.ok(t.includes('2024年'),'Original source year is visible');
+ assert.ok(primary.includes('あなたの手取りの'),'Personal take-home ratio is in the main matched peer cell');
+ assert.ok(primary.includes('2024年'),'Original published source year appears in the primary cell');
 }
 try{
  await page.goto(url,{waitUntil:'networkidle'});
@@ -61,7 +61,8 @@ try{
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
  assert.ok((await matchStatus.innerText()).includes('比較の準備ができたよ'),
   'After both confirmations show a visible completion cue at the income selector');
- assert.ok((await food().innerText()).includes('世帯年収 1,500万円以上'),'Selection must be visibly labelled');
+ await food().locator(':scope > summary').click();
+ assert.ok((await food().innerText()).includes('世帯年収 1,500万円以上'),'Selection is explicit in the optional original source note');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,
   'No statistical difference is a confirmed or potential saving');
  if(engine==='chromium'){
