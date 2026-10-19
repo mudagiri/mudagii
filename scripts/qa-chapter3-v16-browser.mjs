@@ -32,6 +32,13 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.getByRole("button",{name:/今の楽しみ/}).click();
    assert.match(await page.title(),/作戦書/);
    assert.match(await page.locator(".v16-route-name").innerText(),/進路を整える戦術家/);
+   assert.match(await page.locator(".v16-guild-victory .world-title").innerText(),/未来の地図を発見/);
+   assert.equal(await page.locator(".v16-map-fragment").count(),3,"three pieces of the future map must be visible");
+   assert.equal(await page.locator(".v16-map-fragment.is-earned").count(),1,"first map piece earned");
+   assert.equal(await page.locator(".v16-map-fragment.is-locked").count(),2,"other pieces stay locked");
+   assert.match(await page.locator(".v16-route-award").innerText(),/未来の作戦タイプ/);
+   assert.match(await page.locator(".v16-journey-bridge").innerText(),/未連携|接続されていません/);
+   assert.equal(await page.locator("img[src*='JOB_']").count(),0,"unlinked chapter 1 must not show imaginary JOB artwork");
    const info=await page.locator(".v16-insight").innerText();
    assert.match(info,/将来のお金の心配を減らしたい/);
    assert.match(info,/始めたけど、このままでいいか迷う/);
