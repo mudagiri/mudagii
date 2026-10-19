@@ -34,11 +34,16 @@ async function changeAge(n){await age.selectOption(String(n));}
 async function selectGross(band){await annual.selectOption(band);}
 async function assertRate(pct){
  await food().waitFor({state:'visible',timeout:12000});
- const primary=await page.locator('[data-comparison-category="food"] .c2v32-merged-values').innerText();
- assert.ok(primary.includes(pct),`Food reference should be ${pct}, got ${primary.slice(0,500)}`);
+ const primary=page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way');
+ await primary.waitFor({state:'visible'});
+ const text=await primary.innerText();
+ assert.ok(text.includes(pct),`Food official reference should be ${pct}, got ${text.slice(0,500)}`);
  assert.equal(await peers().count(),3,'All 3 original public expenses are visible');
- assert.ok(primary.includes('あなたの手取りの'),'Personal take-home ratio is in the main matched peer cell');
- assert.ok(primary.includes('2024年'),'Original published source year appears in the primary cell');
+ assert.ok(text.includes('あなたの負担率'),'Own monthly take-home ratio is visible in the matched peer card');
+ assert.ok(text.includes('2024年'),'Original published source year appears in the primary card');
+ assert.ok(text.includes('今回のあなたの支出：'),'Actual spend is visible alongside matched ratios');
+ assert.equal(await page.locator('[data-comparison-category="food"] .c2v32-merged-values').count(),0,
+  'Once the 3-way card is verified, hide the old duplicate two-column comparison');
 }
 try{
  await page.goto(url,{waitUntil:'networkidle'});
