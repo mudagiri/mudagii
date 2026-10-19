@@ -442,3 +442,15 @@ body:has(.v16-single-viewport){height:100dvh;overflow:hidden}
  .v16-quest-shell .v16-arena .answer-option{min-height:46px}
 }
 @media(prefers-reduced-motion:reduce){.v16-exploration-scene::before{animation:none}}
+
+/* Optional safety valve for dynamic text zoom / browser UI reductions. */
+body:has(.v16-height-fallback){height:auto!important;overflow-y:auto!important}
+#chapter3-stage:has(.v16-height-fallback){height:auto!important;min-height:100dvh;overflow:visible!important}
+#chapter3-stage .stage-shell.v16-height-fallback{height:auto!important;min-height:100dvh;overflow:visible!important}
+.v16-height-fallback .v16-intro,.v16-height-fallback .v16-arena{min-height:0!important;flex:none}
+.v16-height-fallback .v16-arena .question-options{flex:none;grid-auto-rows:minmax(46px,auto)}
+.v16-height-fallback .v16-arena .answer-option{min-height:46px}
+.v16-scout-4 .v16-scout-symbol{position:relative;border-radius:37% 37% 25% 25%;background:linear-gradient(145deg,#456777 0%,#142b41 49%,#081925 100%);border-color:#b2d3d4;box-shadow:0 0 15px #b1eaf35c,inset 0 -6px 11px #0006}
+.v16-scout-4 .v16-scout-symbol span{visibility:hidden}
+.v16-scout-4 .v16-scout-symbol::before{content:"";position:absolute;top:41%;left:25%;width:10%;height:12%;border-radius:50%;background:#ffe2a0;box-shadow:18px 0 0 #ffe2a0,0 0 10px 3px #f7deb673,18px 0 10px 3px #f7deb673}
+.v16-scout-4 .v16-scout-symbol::after{content:"";position:absolute;left:7px;right:7px;bottom:-2px;height:11px;border-radius:50%;background:linear-gradient(90deg,transparent,#bbdbdba8,transparent);filter:blur(3px)}
