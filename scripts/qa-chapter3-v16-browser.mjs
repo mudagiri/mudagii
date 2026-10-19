@@ -41,6 +41,9 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    assert.match(discovery,/将来のお金の心配を減らしたい/);
    assert.match(discovery,/今の楽しみ/);
    assert.match(await page.locator(".v16-timeframe").innerText(),/時期/);
+   const firstAction=await page.locator(".v16-primary").boundingBox();
+   assert.ok(firstAction&&firstAction.y+firstAction.height<=845,
+    engine+" "+width+" the first meaningful CTA must fit on the result's first 844px viewport: "+JSON.stringify(firstAction));
    await page.screenshot({path:path.join(output,engine+"-"+width+"-result.png"),fullPage:false});
    await page.getByRole("button",{name:/設計図に必要な3つのこと/}).click();
    assert.match(await page.locator(".v16-unlocked").innerText(),/必要/);
