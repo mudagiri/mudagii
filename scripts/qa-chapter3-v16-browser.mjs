@@ -4,6 +4,22 @@ import path from "node:path";
 import {chromium,webkit} from "playwright";
 const url=process.env.CH3_V16_URL||"http://127.0.0.1:4173/pilot/chapter3-v16/";
 const output="artifacts/chapter3-v16";fs.mkdirSync(output,{recursive:true});
+async function assertSceneFits(page,engine,width,label){
+ const x=await page.evaluate(()=>{
+  const viewport=innerHeight;
+  const visible=document.querySelector(".v16-single-viewport");
+  const scope=visible?.querySelector(".v16-intro, .v16-arena");
+  const area=scope?.getBoundingClientRect();
+  const actions=[...document.querySelectorAll(".v16-single-viewport button")];
+  const buttons=actions.map(b=>({name:b.textContent.trim().slice(0,40),top:b.getBoundingClientRect().top,bottom:b.getBoundingClientRect().bottom}));
+  const outside=buttons.filter(b=>b.top < -1 || b.bottom > viewport + 1);
+  return {viewport,html:document.documentElement.scrollHeight,stage:visible?.getBoundingClientRect().height,
+   scene:area?{top:area.top,bottom:area.bottom}:null,outside};
+ });
+ assert.ok(x.scene&&x.scene.bottom<=x.viewport+1,engine+" "+width+" "+label+" scene must fit: "+JSON.stringify(x));
+ assert.equal(x.outside.length,0,engine+" "+width+" "+label+" all controls must fit: "+JSON.stringify(x));
+ assert.ok(x.html<=x.viewport+1,engine+" "+width+" "+label+" page must not scroll: "+JSON.stringify(x));
+}
 let checks=0;
 for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
  const browser=await browserType.launch({headless:true});
@@ -17,18 +33,24 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.goto(url,{waitUntil:"networkidle"});
    assert.match(await page.title(),/V1\.6/);
    await page.waitForFunction(()=>[...document.querySelectorAll(".speech-mascot")].every(x=>x.complete&&x.naturalWidth>0));
+   await assertSceneFits(page,engine,width,"intro");
    await page.screenshot({path:path.join(output,engine+"-"+width+"-intro.png"),fullPage:false});
    await page.getByRole("button",{name:/5つの問いで/}).click();
    assert.equal(await page.locator("button.answer-option").count(),6);
+   await assertSceneFits(page,engine,width,"Q1");
    await page.getByRole("button",{name:/将来のお金の心配を減らしたい/}).click();
    assert.equal(await page.locator("button.answer-option").count(),4);
+   await assertSceneFits(page,engine,width,"Q2");
    await page.getByRole("button",{name:/3〜10年後/}).click();
    assert.equal(await page.locator("button.answer-option").count(),4,"Q3 must be 4 choices, not 12");
+   await assertSceneFits(page,engine,width,"Q3");
    await page.screenshot({path:path.join(output,engine+"-"+width+"-q3.png"),fullPage:false});
    await page.getByRole("button",{name:/始めたけど、このままでいいか迷う/}).click();
    assert.equal(await page.locator("button.answer-option").count(),7);
+   await assertSceneFits(page,engine,width,"Q4");
    await page.getByRole("button",{name:/情報が多くて、どれが合うか分からない/}).click();
    assert.equal(await page.locator("button.answer-option").count(),5);
+   await assertSceneFits(page,engine,width,"Q5");
    await page.getByRole("button",{name:/今の楽しみ/}).click();
    assert.match(await page.title(),/作戦書/);
    assert.match(await page.locator(".v16-route-name").innerText(),/進路を整える戦術家/);
