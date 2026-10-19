@@ -12,6 +12,14 @@ for(const goal of Object.keys(GOALS))
      assert.equal(x.ok,true,JSON.stringify(answers));
      assert.ok(x.routeTitle&&x.headline&&x.action&&x.dream&&x.premise&&x.synthesis);
      assert.ok(x.discovery.includes(PRIORITIES[priority].label),"discovery reflects what the user protects");
+     assert.ok(x.discovery.length>=35&&x.discovery.length<=165,"personal discovery needs a concise reasoned insight");
+     assert.ok(!/保証|必ず叶う|儲かる|誰でも/.test(x.discovery),"no performance guarantees");
+     if(["none","skip"].includes(obstacle)&&["notYet","unknown"].includes(preparation)&&
+        goal!=="undecided"&&!["under3","unknown"].includes(horizon))
+      assert.equal(x.routeId,"launch","not-yet-started must not be classified as already expanding");
+     if(obstacle==="none"&&preparation==="regular"&&
+        goal!=="undecided"&&!["under3","unknown"].includes(horizon))
+      assert.equal(x.routeId,"expand","ready, no reported obstacle should permit expansion");
      assert.ok(x.benefit&&x.obstacleCue&&x.timeframeCue,"result needs a defensible, concrete benefit");
      assert.ok(x.action.length>12&&x.action.length<120,"single actionable next step");
      if(goal==="undecided"&&!["living","debt"].includes(obstacle))
@@ -19,6 +27,7 @@ for(const goal of Object.keys(GOALS))
      if(obstacle==="skip"){
       assert.ok(!/強い障害が報告されていない|困りごとがない/.test(x.why),"skipping is not evidence of no obstacle");
       assert.ok(/答えない/.test(x.obstacleCue),"preserve voluntary disclosure");
+      assert.ok(!/大きな障害を感じていない|今は大きな障害を感じていない/.test(x.discovery),"never infer that skipped means no obstacle");
      }
      if(obstacle==="none")assert.ok(!/恐怖|失敗が怖い/.test(x.synthesis),"no invented pain");
      assert.ok(x.premise.includes(GOALS[goal].label));
@@ -42,6 +51,13 @@ assert.equal(buildDiscovery({goal:"undecided",horizon:"under3",preparation:"notY
 assert.equal(buildDiscovery({goal:"family",horizon:"threeTo10",preparation:"uncertain",obstacle:"none",priority:"people"}).routeId,"course");
 assert.equal(buildDiscovery({goal:"future",horizon:"threeTo10",preparation:"unknown",obstacle:"loss",priority:"peace"}).routeId,"brave");
 assert.equal(buildDiscovery({goal:"freedom",horizon:"threeTo10",preparation:"notYet",obstacle:"busy",priority:"growth"}).routeId,"time");
+assert.equal(buildDiscovery({goal:"future",horizon:"over10",preparation:"notYet",obstacle:"none",priority:"joy"}).routeId,"launch");
+assert.equal(buildDiscovery({goal:"family",horizon:"over10",preparation:"unknown",obstacle:"skip",priority:"people"}).routeId,"launch");
+assert.equal(buildDiscovery({goal:"freedom",horizon:"threeTo10",preparation:"regular",obstacle:"none",priority:"freedom"}).routeId,"expand");
+const sample=buildDiscovery({goal:"future",horizon:"threeTo10",preparation:"uncertain",obstacle:"dontKnow",priority:"joy"});
+assert.match(sample.discovery,/準備は始めているけれど/);
+assert.match(sample.discovery,/今の楽しみ/);
+assert.match(sample.discovery,/目標につながるか/);
 assert.deepEqual(validateAnswers({}).errors,["goal","horizon","preparation","obstacle","priority"]);
 assert.equal(buildDiscovery(null).ok,false);
 assert.equal(buildDiscovery({goal:"future",horizon:"under3",preparation:"unknown",obstacle:"none",priority:"garbage"}).ok,false);
