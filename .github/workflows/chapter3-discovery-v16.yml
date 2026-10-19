@@ -6,12 +6,14 @@ on:
       - "public/pilot/chapter3-v16/**"
       - "scripts/qa-chapter3-discovery-v16.mjs"
       - "scripts/qa-chapter3-v16-browser.mjs"
+      - "scripts/qa-chapter3-v16-remote-preview.mjs"
       - ".github/workflows/chapter3-discovery-v16.yml"
   pull_request:
     paths:
       - "public/pilot/chapter3-v16/**"
       - "scripts/qa-chapter3-discovery-v16.mjs"
       - "scripts/qa-chapter3-v16-browser.mjs"
+      - "scripts/qa-chapter3-v16-remote-preview.mjs"
       - ".github/workflows/chapter3-discovery-v16.yml"
   workflow_dispatch:
 permissions:
@@ -94,6 +96,11 @@ jobs:
             echo "REMOTE_OK $file"
           done
           echo "REMOTE_PREVIEW_PASS $base/public/pilot/chapter3-v16/index.html"
+      - name: Chromium and WebKit smoke test on independent GitHub-source URL
+        continue-on-error: true
+        env:
+          CH3_V16_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/qa-chapter3-v16-remote-preview.mjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
