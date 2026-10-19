@@ -42,7 +42,7 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    assert.match(discovery,/今の楽しみ/);
    assert.match(await page.locator(".v16-timeframe").innerText(),/時期/);
    await page.screenshot({path:path.join(output,engine+"-"+width+"-result.png"),fullPage:false});
-   await page.getByRole("button",{name:/この未来を、もう少し具体的/}).click();
+   await page.getByRole("button",{name:/設計図に必要な3つのこと/}).click();
    assert.match(await page.locator(".v16-unlocked").innerText(),/必要/);
    await page.getByRole("button",{name:/資産運用の基本/}).click();
    await page.getByRole("button",{name:/ライフプランの整理/}).click();
