@@ -762,7 +762,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>月手取りから年収は推定しないよ。2024年の公式交差集計が確認できた区分だけ同年代×単身×額面年収帯の率を示す。選択内容は診断結果やLINEに保存・送信しません。</p>
+    <p>月手取りから年収を推定せず、2024年の公式交差集計を確認できる区分だけ同年代の参考率を示すよ。入口で入力した年収帯はプロフィールに保持される場合があるけれど、ここで選び直しても確定改善額・共有カードには反映しないよ。</p>
     {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
       {singleHasAvailablePeerSource
        ?headWorkerConfirmed
