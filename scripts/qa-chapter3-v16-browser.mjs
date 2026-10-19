@@ -27,7 +27,7 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.screenshot({path:path.join(output,engine+"-"+width+"-q3.png"),fullPage:false});
    await page.getByRole("button",{name:/始めたけど、このままでいいか迷う/}).click();
    assert.equal(await page.locator("button.answer-option").count(),7);
-   await page.getByRole("button",{name:/何から始めればいいか分からない/}).click();
+   await page.getByRole("button",{name:/情報が多くて、どれが合うか分からない/}).click();
    assert.equal(await page.locator("button.answer-option").count(),5);
    await page.getByRole("button",{name:/今の楽しみ/}).click();
    assert.match(await page.title(),/作戦書/);
@@ -35,7 +35,7 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    const info=await page.locator(".v16-insight").innerText();
    assert.match(info,/将来のお金の心配を減らしたい/);
    assert.match(info,/始めたけど、このままでいいか迷う/);
-   assert.match(info,/何から始めればいいか分からない/);
+   assert.match(info,/情報が多くて、どれが合うか分からない/);
    assert.match(info,/今の楽しみ/);
    const discovery=await page.locator(".v16-discovery-hero").innerText();
    assert.match(discovery,/将来のお金の心配を減らしたい/);
