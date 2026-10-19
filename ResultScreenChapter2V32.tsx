@@ -816,8 +816,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p>この統計は世帯主が雇用されている世帯が対象だよ。世帯主が自営業・無職などの場合や、分からない場合はチェックしないでね。回答は画面表示だけに使い、保存・送信しません。</p>
     </div>}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
-    <section className="c2v32-income-food-context c2v32-income-food-context--merged" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
-     <span className="c2v2-kicker">2つの比較基準</span>
+    <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
+     <summary>{anyJointRateAvailable?'比較の仕組み・統計の対象を見る（任意）':'年収帯だけの参考について（年齢・地域は未反映）'}</summary>
+     <span className="c2v2-kicker">比較基準の説明</span>
      <h3>年齢・世帯の目安と、年収帯の参考を一緒に見る</h3>
      <p>{anyJointRateAvailable
    ?<>プロフィールと同じ年代・年収帯を照合した<strong>2024年の公式交差集計を優先</strong>して、食費・光熱費・日用品に表示しています。本人の手取り割合も横に並べたよ。</>
@@ -842,7 +843,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {incomeEnergyReference&&<p>光熱費：対象の年収階級 {incomeEnergyReference.coveredPublishedBrackets.join('、')}（{incomeEnergyReference.matchedCells}区分・最小集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯）。</p>}
       {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
      </details>
-    </section>}
+    </details>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {shown.map((x:any)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
