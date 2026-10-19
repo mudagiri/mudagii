@@ -105,3 +105,15 @@
  .v16-crest{animation:none}
  html{scroll-behavior:auto}
 }
+
+/* V1.6 personal discovery + optional, non-booking consultation explanation */
+.v16-discovery-hero{margin:13px auto 10px;max-width:400px;padding:12px 13px;background:#f8f1dd;color:#23453e;border:1.5px solid #e1c58a;border-radius:12px;font-size:15px;line-height:1.7;font-weight:850;text-align:left;box-shadow:0 7px 20px #0007}
+.v16-timeframe{background:#e9f0e9;border-left:3px solid #6e9f88;color:#265349;padding:9px 10px;font-size:13px;font-weight:800;line-height:1.7;margin:0 0 15px}
+.v16-consult{margin:17px 12px;padding:19px 14px;border:1.5px solid #c5ae76;background:linear-gradient(150deg,#163a40,#0c2835);border-radius:15px;scroll-margin-top:14px}
+.v16-consult h2{font-size:20px;line-height:1.5;color:#ffebba;margin:0 0 10px}
+.v16-consult-benefit{font-size:14px;line-height:1.7;color:#faf1d7;font-weight:800;margin:10px 0 17px}
+.v16-consult-items{list-style:decimal;padding:0 0 0 20px;margin:11px 0;color:#f8f0d5}
+.v16-consult-items li{padding:6px 0 9px;font-size:13px;line-height:1.7}
+.v16-consult-items strong{display:block;font-size:15px;color:#ffe4a3}
+.v16-consult-items p{margin:4px 0;color:#e7eee7}
+@media(max-width:350px){.v16-discovery-hero{font-size:13px}.v16-consult{padding:14px 11px}}
