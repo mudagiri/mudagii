@@ -457,4 +457,28 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-more-candidate>span small{
  display:block;color:#466157;text-align:right;font-size:11px;
 }
+
+/* Matched benchmark is printed ONCE in the main value pair. Source is optional. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence{
+ background:#edf4ed;border:1px solid #99b3a6;box-shadow:none;
+ margin:8px 0 7px;padding:5px 11px;border-radius:10px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence>summary{
+ display:flex;align-items:center;min-height:44px;
+ font-size:13px;line-height:1.55;font-weight:800;
+ color:#17594c;cursor:pointer;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence>summary:focus-visible{
+ outline:3px solid #136a5b;outline-offset:2px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence[open]{
+ border-color:#528a79;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence-body{
+ border-top:1px solid #b4c9bd;padding-top:5px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-peer-evidence-body p{
+ margin:7px 0;font-size:12px!important;line-height:1.7!important;
+ color:#28483d!important;overflow-wrap:anywhere;
+}
 `;
