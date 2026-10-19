@@ -45,6 +45,7 @@ for(const goal of Object.keys(GOALS))
      if(obstacle==="skip")assert.ok(/答えない/.test(x.premise));
      routes.add(x.routeId);routeCounts[x.routeId]++;count++;
     }
+assert.notEqual(OBSTACLES.dontKnow.label,PREPARATIONS.unknown.label,"Q3 and Q4 must not ask the same question");
 assert.deepEqual([...routes].sort(),Object.keys(ROUTES).sort(),"all 8 routes reachable");
 assert.ok(Object.values(routeCounts).every(n=>n>0),"every result type must actually occur");
 assert.equal(buildDiscovery({goal:"undecided",horizon:"under3",preparation:"notYet",obstacle:"none",priority:"joy"}).routeId,"navigate");
