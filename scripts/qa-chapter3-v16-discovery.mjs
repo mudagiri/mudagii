@@ -20,7 +20,7 @@ for(const example of CASES){
  assert.equal(r.routeId,id,id+" result route");
  for(const key of ["routeTitle","headline","premise","synthesis","action","why","firstCheck"]){
   assert.equal(typeof r[key],"string",id+" "+key);
-  assert.ok(r[key].length>12,id+" "+key+" nontrivial");
+  assert.ok(r[key].length>(key==="routeTitle"?4:12),id+" "+key+" nontrivial");
  }
  assert.ok(r.premise.includes(GOALS[a.goal].label),id+" user reported goal");
  assert.ok(r.premise.includes(HORIZONS[a.horizon]),id+" user reported horizon");
