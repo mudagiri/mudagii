@@ -934,10 +934,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
        <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
       </details>}
-      {lens.primaryDeltaYen!==null&&!sameAgeIncomePeer?.available&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
-      {incomeRange&&!sameAgeIncomePeer?.available&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
+      {!sameAgeIncomePeer?.available&&(lens.primaryDeltaYen!==null||incomeRange&&lens.incomeDeltaYen!==null)&&
+       <details className="c2v32-auxiliary-comparisons" data-section={'OTHER_REFERENCE_'+x.category}>
+        <summary>ほかの比較目安を見る（同条件の平均ではありません）</summary>
+      {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
+      {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
        <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
       </p>}
+       </details>}
       {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
        <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
        <button type="button" className="c2v32-evidence-toggle"
@@ -955,7 +959,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </div>
       </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
 
-      {nonnegative(x.cUpper)>0&&<p className="c2v22-comparison-review"><b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b><span>{candidateReason(x)}</span></p>}
+      {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
+       <span>⚔ 未確定の見直し候補 <b>月最大 {money(nonnegative(x.cUpper))}</b></span>
+       <small>まず確認：{x.nextAction||candidateReason(x)}</small>
+      </div>}
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
