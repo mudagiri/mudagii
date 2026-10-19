@@ -7,6 +7,7 @@ const GUIDE=ASSETS+"mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp";
 const WIN=ASSETS+"mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp";
 const BG=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp";
 const HALL=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp";
+const REWARD=ASSETS+"mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp";
 const FIELDS=["goal","horizon","preparation","obstacle","priority"];
 const initial=()=>({goal:null,horizon:null,preparation:null,obstacle:null,priority:null});
 let answers=initial(),screen="intro",step=0,selectedTopics=[],planOpened=false,guideOpened=false,consultOpened=false,copied=false;
@@ -90,11 +91,21 @@ function result(){
  const d=buildDiscovery(answers);
  if(!d.ok){screen="quest";step=0;return question();}
  const w=shell();w.append(rail());
- const hero=bg(el("section","reward-reveal v16-result-hero"),BG);
- add(hero,p("✦ QUEST CLEAR! ✦","area-crest"),el("div","chapter-letter","CHAPTER III CLEAR"),
- el("h1","world-title","君の未来の作戦タイプは"),
- el("div","v16-route-name",d.routeTitle),
- add(el("div","v16-crest"),el("span","",d.crest)),speech("未来の地図、1枚目を手に入れたね。次は君だけの進み方を確かめよう！",WIN));
+ const hero=bg(el("section","reward-reveal v16-result-hero v16-guild-victory"),REWARD);
+ const fragments=add(el("div","v16-map-reward"),
+  add(el("div","v16-map-fragment is-earned"),el("small","","01"),el("b","","✦"),el("span","","目的地")),
+  add(el("div","v16-map-fragment is-locked"),el("small","","02"),el("b","","？"),el("span","","必要額")),
+  add(el("div","v16-map-fragment is-locked"),el("small","","03"),el("b","","？"),el("span","","現在地")));
+ fragments.setAttribute("role","img");
+ fragments.setAttribute("aria-label","未来の地図の第一片、目的地を獲得。必要額と現在地の2片は未解放");
+ add(hero,p("✦ QUEST CLEAR! ✦","area-crest"),
+  el("div","v16-battle-banner","CHAPTER III · 未来の大陸"),
+  el("h1","world-title","未来の地図を発見！"),
+  p("✦ REWARD UNLOCKED ✦","v16-loot-label"),
+  fragments,
+  p("MAP PIECE 01 / 03 · 第一片獲得","v16-map-note"),
+  add(el("div","v16-route-award"),el("small","","未来の作戦タイプ"),el("div","v16-route-name",d.routeTitle)),
+  speech("自分の戦い方、家計の戦果。その先に叶えたい未来がある。地図の第一片、見つけたね！",WIN));
  w.append(hero);
  const insight=el("section","v16-insight");
  add(insight,p("✦ 回答から見えてきた、今の分かれ道","v16-kicker"),
@@ -121,6 +132,11 @@ function result(){
  const three=el("div","v16-piece-grid");
  [["1","発見済み","目標と最初の一歩"],["2","次の探索","いつ、いくら必要か"],["3","次の探索","今の資金と差額"]].forEach(([n,s,t],i)=>three.append(add(el("div","v16-piece"+(i===0?" earned":"")),el("b","",n),el("small","",s),el("strong","",t))));
  plan.append(three);
+ const journey=add(el("div","v16-journey-bridge"),
+  p("冒険の記録が、次の地図につながる","v16-journey-title"),
+  p("第1章 JOB・STYLE → 第2章 家計バトル → 第3章 未来の地図","v16-journey-sequence"),
+  p("※第1・第2章の本人データは、この独立プレビューにはまだ接続されていません。","v16-journey-note"));
+ plan.append(journey);
  if(planOpened){
   const detail=add(el("div","v16-unlocked"),p("✦ 次の地図が見えてきた","v16-kicker"),
    el("h3","","数字で確かめたい3つのこと"),
