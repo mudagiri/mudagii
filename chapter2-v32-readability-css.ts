@@ -497,4 +497,37 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-income-method-detail[open]{
  padding-bottom:13px;
 }
+
+/* One compact action per category; all secondary statistical narratives
+   remain discoverable rather than cluttering the result. */
+.c2v32-rpg .c2v32-auxiliary-comparisons{
+ border:1px solid #b8c9bb;border-radius:10px;margin:8px 0;
+ padding:4px 10px;background:#f2f6f2;color:#23493b;
+}
+.c2v32-rpg .c2v32-auxiliary-comparisons>summary{
+ display:flex;align-items:center;cursor:pointer;min-height:44px;
+ color:#1c574b;font-weight:850;font-size:13px;line-height:1.5;
+}
+.c2v32-rpg .c2v32-auxiliary-comparisons>summary:focus-visible{
+ outline:3px solid #146b5c;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-auxiliary-comparisons p{
+ font-size:13px!important;line-height:1.7!important;
+ color:#26453b!important;margin:5px 0 9px!important;
+}
+.c2v32-rpg .c2v32-single-next-action{
+ display:grid;gap:4px;margin:10px 0 0;padding:10px 11px;
+ border:1px solid #c0aa67;border-radius:10px;
+ background:#fcf7e8;color:#52431f;
+}
+.c2v32-rpg .c2v32-single-next-action>span{
+ font-size:13px;line-height:1.55;color:#564321;
+}
+.c2v32-rpg .c2v32-single-next-action>span b{
+ font-size:15px;font-weight:900;color:#644012;
+ font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v32-single-next-action>small{
+ font-size:13px;line-height:1.6;color:#4c4331;
+}
 `;
