@@ -454,3 +454,170 @@ body:has(.v16-height-fallback){height:auto!important;overflow-y:auto!important}
 .v16-scout-4 .v16-scout-symbol span{visibility:hidden}
 .v16-scout-4 .v16-scout-symbol::before{content:"";position:absolute;top:41%;left:25%;width:10%;height:12%;border-radius:50%;background:#ffe2a0;box-shadow:18px 0 0 #ffe2a0,0 0 10px 3px #f7deb673,18px 0 10px 3px #f7deb673}
 .v16-scout-4 .v16-scout-symbol::after{content:"";position:absolute;left:7px;right:7px;bottom:-2px;height:11px;border-radius:50%;background:linear-gradient(90deg,transparent,#bbdbdba8,transparent);filter:blur(3px)}
+
+/* Chapter 3 V1.6 exploration-stage refactor: world/event-first, commands-second.
+   A background plus a heading is not a playable RPG scene. Keep the original
+   frozen answer model while giving narrative and visual priority to encounters. */
+.v16-quest-shell .v16-adventure-arena{
+  display:flex;flex-direction:column;gap:7px;padding:7px 10px 7px;
+  justify-content:flex-start;min-height:0!important;
+  background-image:linear-gradient(180deg,rgba(4,22,30,.28),rgba(5,19,29,.90) 56%,#061b29),var(--world-bg);
+}
+.v16-quest-shell .v16-event-world{
+  position:relative;display:flex;flex-direction:column;
+  flex:1 1 auto;min-height:176px;max-height:none;
+  gap:0;padding:0;overflow:hidden;
+  border:2px solid #c5a96b;border-radius:13px;
+  background-image:linear-gradient(180deg,rgba(1,14,24,.36) 0%,rgba(8,33,42,.10) 37%,rgba(1,16,26,.84) 100%),var(--world-bg);
+  background-size:cover;background-position:center 45%;
+  box-shadow:inset 0 0 0 1px #faeacb32,0 8px 19px rgba(0,0,0,.52);
+}
+.v16-quest-shell .v16-event-world::before{
+  content:"";position:absolute;inset:-15% -25%;z-index:0;
+  background:radial-gradient(ellipse at 46% 25%,rgba(229,213,138,.21),transparent 35%),
+             radial-gradient(ellipse at 80% 68%,rgba(137,189,195,.23),transparent 40%);
+  pointer-events:none;animation:v16-event-breath 5.7s ease-in-out infinite alternate
+}
+.v16-event-world::after{
+ content:"";position:absolute;z-index:1;inset:20% -22% 9%;
+ pointer-events:none;opacity:.42;
+ background:radial-gradient(ellipse at 30% 65%,rgba(206,232,216,.31),transparent 48%),
+            radial-gradient(ellipse at 70% 50%,rgba(177,229,235,.30),transparent 54%);
+ filter:blur(11px);animation:v16-fog-drift 8s ease-in-out infinite alternate
+}
+.v16-event-heading{
+ position:relative;z-index:4;display:flex;align-items:baseline;justify-content:space-between;gap:6px;
+ width:100%;padding:7px 10px 3px;
+ background:linear-gradient(180deg,rgba(1,15,28,.90),rgba(2,21,29,.16));
+ text-shadow:0 2px 4px #000
+}
+.v16-event-heading small{font:900 10px Georgia,serif;letter-spacing:.08em;color:#ecd1a0}
+.v16-event-heading strong{font-size:14px;line-height:1.25;color:#ffe6a0}
+.v16-event-vista{position:relative;z-index:2;flex:1 1 auto;min-height:90px;width:100%}
+.v16-event-road{
+ position:absolute;bottom:2px;left:14%;right:19%;height:52%;opacity:.8;pointer-events:none;
+ background:linear-gradient(180deg,rgba(238,200,124,.08),rgba(235,185,94,.22) 43%,rgba(18,35,41,.08));
+ clip-path:polygon(40% 0%,58% 0%,100% 100%,0 100%);
+ border-bottom:2px solid #ebbe7a6a;
+}
+.v16-event-landmark{
+ position:absolute;z-index:3;left:17%;top:49%;transform:translate(-50%,-50%);
+ width:clamp(95px,29vw,133px);height:clamp(101px,31vw,143px);
+ display:flex;align-items:center;justify-content:center;
+ border:5px double #e4c789;border-radius:50% 50% 11% 11%;
+ background:radial-gradient(ellipse at 53% 36%,#c2f1d0 0%,#47aeaa99 29%,#112b3aef 67%,#081523f0 100%);
+ box-shadow:0 0 28px #ffde9369,inset 0 0 25px #f7e5a24d,0 6px 10px #0006;
+ animation:v16-art-bob 3.9s ease-in-out infinite alternate;
+}
+.v16-event-landmark span{
+ font:900 clamp(48px,16vw,72px) Georgia,serif;line-height:1;color:#fff0b3;
+ text-shadow:0 0 9px #ffde91,0 0 30px #f3c16b;
+}
+.v16-event-companion{
+ position:absolute;z-index:5;right:7%;bottom:-1px;
+ height:clamp(103px,24dvh,155px);width:auto;max-width:42%;
+ object-fit:contain;object-position:bottom center;
+ filter:drop-shadow(0 6px 5px #000b) drop-shadow(0 0 7px #e6c88e81);
+ image-rendering:pixelated;animation:v16-art-bob 3.3s ease-in-out infinite alternate-reverse
+}
+.v16-event-dialogue{
+ position:relative;z-index:5;flex:0 0 auto;
+ display:flex;align-items:baseline;gap:8px;
+ min-height:42px;padding:7px 11px;
+ border-top:2px solid #c9af75;
+ background:linear-gradient(120deg,rgba(8,27,38,.97),rgba(8,49,51,.96));
+ text-align:left;box-shadow:0 -4px 11px #0009
+}
+.v16-event-dialogue small{white-space:nowrap;color:#f6d68d;font-size:10px;font-weight:950}
+.v16-event-dialogue p{color:#f9f1dd;margin:0;font-size:12px;font-weight:800;line-height:1.45}
+.v16-command-heading{display:grid;gap:2px;flex:0 0 auto;padding:5px 3px 4px;text-align:center}
+.v16-command-heading small{color:#efc772;font-size:10px;font-weight:950;letter-spacing:.06em}
+.v16-command-heading h1{margin:0;color:#fff2ca;font-size:clamp(16px,5vw,19px);font-weight:950;line-height:1.38;text-shadow:0 2px 5px #000}
+.v16-command-hint{font-size:11px;color:#d8e4e2;line-height:1.4;margin:0}
+.v16-quest-shell .v16-adventure-arena .v16-route-options{
+ display:grid;flex:0 0 auto;grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-auto-rows:minmax(58px,auto);gap:6px;align-content:end;min-height:0;
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option{
+ position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ min-width:0;width:100%;min-height:58px;height:100%;
+ padding:6px 18px 6px 9px;gap:3px;
+ background:linear-gradient(135deg,rgba(8,47,59,.95),rgba(8,26,41,.97));
+ border:1.5px solid #9aab9b;border-radius:8px;
+ color:#f5f4e6;text-align:left;box-shadow:0 3px 6px #0009;
+ font-size:12px;line-height:1.35;overflow-wrap:anywhere;
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option::before{
+ content:"";position:absolute;top:0;bottom:0;left:0;width:3px;
+ background:linear-gradient(#c3b27e,#e9d9a2,#897847)
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option .option-glyph{
+ width:23px;flex:0 0 23px;height:21px;min-height:21px;border-radius:5px;
+ font-size:15px;line-height:1;color:#ffe4a5;background:#204b50;
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option .option-text{
+ font-size:12px;font-weight:850;line-height:1.32;min-width:0;
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option .option-mark{
+ position:absolute;right:7px;bottom:8px;font-size:16px;color:#f1d496;
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option:focus-visible{
+ outline:3px solid #9cecf5;outline-offset:1px
+}
+.v16-quest-shell .v16-adventure-arena .v16-route-option:active{
+ background:linear-gradient(120deg,#376454,#183b4d);transform:scale(.99);
+}
+.v16-quest-shell .v16-adventure-arena .v16-quest-controls{min-height:31px}
+.v16-quest-shell .v16-adventure-arena .v16-quest-controls .quiet-back{min-height:31px;padding:4px 10px}
+.v16-quest-shell .v16-adventure-arena .v16-quest-controls .v16-auto-hint{color:#ecd18e}
+.v16-scout-2 .v16-event-landmark{border-radius:50%;background:radial-gradient(circle,#f7e3ac 0%,#66533d 24%,#1a3046 68%);}
+.v16-scout-2 .v16-event-landmark::before{
+ content:"";position:absolute;inset:13%;border:2px dashed #f8d28e9e;border-radius:50%
+}
+.v16-scout-3 .v16-event-landmark{border-radius:6px 6px 25px 25px;border-width:5px;background:linear-gradient(130deg,#e7d09a,#9f7950 65%,#533c34);}
+.v16-scout-3 .v16-event-landmark span{color:#2e3d38;text-shadow:0 0 6px #f8eccf}
+.v16-scout-4 .v16-event-landmark{
+ border:3px solid #b6d4d5;border-radius:43% 40% 16% 18%;
+ background:linear-gradient(135deg,#254b5f,#0b2438 60%,#061e2f);
+ box-shadow:inset 0 -8px 17px #0008,0 0 24px #9bc5d961;
+ transform:translate(-50%,-50%) rotate(-3deg)
+}
+.v16-scout-4 .v16-event-landmark span{font-size:0}
+.v16-scout-4 .v16-event-landmark::before{
+ content:"";position:absolute;left:26%;top:39%;width:13px;height:13px;
+ border-radius:50%;background:#ffe6a5;
+ box-shadow:38px 0 0 #ffe6a5,0 0 11px #ffe6a5,38px 0 11px #ffe6a5;
+}
+.v16-scout-4 .v16-event-landmark::after{
+ content:"";position:absolute;left:-14px;right:-14px;bottom:-12px;height:35px;
+ border-radius:45% 45% 15% 15%;opacity:.8;
+ background:radial-gradient(ellipse,#d1e8e87a,transparent 74%);
+ filter:blur(4px)
+}
+.v16-scout-5 .v16-event-landmark{border-radius:16px 16px 50% 50%;background:radial-gradient(circle at 50% 34%,#fbefbb,#ab9348 47%,#40533f);}
+.v16-scout-5 .v16-event-landmark span{color:#ffffdb;text-shadow:0 0 10px #edbd5f,0 0 20px #fff1b0}
+@keyframes v16-event-breath{to{transform:translateX(5%);opacity:.75}}
+@keyframes v16-art-bob{to{transform:translateY(-6px)}}
+@media(max-height:780px){
+ .v16-quest-shell .v16-adventure-arena{gap:5px;padding:5px 8px}
+ .v16-quest-shell .v16-adventure-arena .v16-route-options{gap:4px;grid-auto-rows:minmax(55px,auto)}
+ .v16-quest-shell .v16-adventure-arena .v16-route-option{min-height:55px;padding:5px 15px 4px 8px}
+ .v16-quest-shell .v16-event-world{min-height:132px}
+ .v16-event-dialogue{min-height:37px;padding:5px 8px}
+ .v16-event-landmark{width:91px;height:95px}
+ .v16-event-companion{height:clamp(82px,21dvh,128px)}
+}
+@media(max-width:350px){
+ .v16-event-heading{padding:5px 8px 3px}
+ .v16-event-dialogue p{font-size:11.5px;line-height:1.35}
+ .v16-event-dialogue small{font-size:9px}
+ .v16-command-hint{font-size:10px}
+ .v16-quest-shell .v16-adventure-arena .v16-route-option .option-text{font-size:11.5px}
+ .v16-scout-4 .v16-event-landmark::before{box-shadow:33px 0 0 #ffe6a5,0 0 11px #ffe6a5,33px 0 11px #ffe6a5}
+}
+@media(prefers-reduced-motion:reduce){
+ .v16-event-companion,.v16-event-landmark,.v16-event-world::after,.v16-event-world::before{animation:none}
+}
+/* In short-height fallback, prioritize 44px targets and natural scrolling. */
+.v16-height-fallback .v16-adventure-arena .v16-route-options{grid-auto-rows:minmax(48px,auto)}
+.v16-height-fallback .v16-adventure-arena .v16-route-option{min-height:48px}
