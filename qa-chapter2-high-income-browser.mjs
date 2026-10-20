@@ -48,6 +48,8 @@ async function assertRate(pct){
 try{
  await page.goto(url,{waitUntil:'networkidle'});
  await page.locator('[data-result-version="v32"]').waitFor({state:'visible',timeout:18000});
+ assert.match(await page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]').innerText(),/12カテゴリの判定状況/,
+  'Completed quest must not claim that every unknown spending category was fully appraised');
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
