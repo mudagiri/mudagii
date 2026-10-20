@@ -71,35 +71,49 @@ function intro(){
 function question(){
  const w=shell();w.classList.add("v16-single-viewport","v16-quest-shell","v16-quest-"+String(step+1));w.append(rail());
  const progress=el("div","quest-progress");
- add(progress,add(el("div","progress-caption"),el("span","",QUESTIONS[step].legend),el("b","",String(step+1)+" / 5")));
+ add(progress,add(el("div","progress-caption"),el("span","","探索中 · "+QUESTIONS[step].legend),el("b","",String(step+1)+" / 5")));
  const spots=el("div","progress-spots");
  for(let n=0;n<5;n++)spots.append(el("span","progress-spot"+(n<step?" done":n===step?" current":""),n<step?"✓":String(n+1)));
  progress.append(spots);w.append(progress);
  const q=QUESTIONS[step],sceneBackground=[BG,BG,HALL,BG,REWARD][step];
- const arena=bg(el("section","question-arena v16-arena"),sceneBackground);
- const SCOUT=[
-  {name:"未来の灯火",mark:"✦",hint:"この先の未来を選ぼう"},
-  {name:"時の地平線",mark:"◷",hint:"向かう時期を見渡そう"},
-  {name:"現在地の標",mark:"⌖",hint:"いま立っている場所を知ろう"},
-  {name:"霧の番人",mark:"◈",hint:"霧の正体を確かめよう"},
-  {name:"守護の紋章",mark:"✧",hint:"守りたいものを決めよう"}
+ const arena=bg(el("section","question-arena v16-arena v16-adventure-arena"),sceneBackground);
+ const EVENT=[
+  {place:"灯火の分かれ道",landmark:"✦",report:"霧の向こうに、いくつもの未来が見える。君はどの景色を目指す？",
+   prompt:"最初に目指したい未来を選ぼう",context:"お金の心配が減ったら、何を変えたい？"},
+  {place:"時の時計塔",landmark:"◷",report:"古い時計塔が動き出した！叶える時期によって、進む道が変わるよ。",
+   prompt:"いつ頃、その未来にたどり着きたい？",context:"正確な年月が分からなくても大丈夫。"},
+  {place:"現在地の石碑",landmark:"⌖",report:"旅の記録が映る石碑だ。今の準備を確かめると、次の道が見えてくる。",
+   prompt:"今の準備は、どこまで進んでる？",context:"今の感覚にいちばん近いものを選ぼう。"},
+  {place:"霧の番人",landmark:"◈",report:"霧の番人が現れた！倒すより先に、何が行く手を見えなくしているか確かめよう。",
+   prompt:"行く手を遮っているものは何だろう？",context:"困っていないなら「特にない」でOK。答えなくても進める。"},
+  {place:"守護の祭壇",landmark:"✧",report:"大陸の奥に祭壇が現れた。最後に、未来へ持っていきたい大切なものを選ぼう。",
+   prompt:"未来へ進むとき、何を守りたい？",context:"守りたいものに、正解も不正解もないよ。"}
  ][step];
- const scout=add(el("div","v16-exploration-scene v16-scout-"+String(step+1)),
-  add(el("div","v16-scout-symbol"),el("span","",SCOUT.mark)),
-  add(el("div","v16-scout-label"),el("b","",SCOUT.name),el("small","",SCOUT.hint)));
- scout.setAttribute("aria-hidden","true");
- add(arena,
-  add(el("header","area-heading"),p("QUEST "+String(step+1).padStart(2,"0")+" · "+q.legend,"heading-over"),el("h1","",q.head),p(q.sub,"heading-desc")),
-  scout,speech(q.say));
- const choices=el("div","question-options");
+ const scene=el("div","v16-exploration-scene v16-event-world v16-scout-"+String(step+1));
+ const sceneTop=add(el("div","v16-event-heading"),el("small","","EXPLORATION "+String(step+1).padStart(2,"0")),
+   el("strong","",EVENT.place));
+ const vista=el("div","v16-event-vista");
+ const landmark=add(el("div","v16-event-landmark"),el("span","",EVENT.landmark));
+ landmark.setAttribute("aria-hidden","true");
+ const companion=img(step===4?WIN:GUIDE,"v16-event-companion","ムダギリくん");
+ const path=el("div","v16-event-road");path.setAttribute("aria-hidden","true");
+ vista.append(path,landmark,companion);
+ const voice=add(el("div","v16-event-dialogue"),
+  el("small","","ムダギリくん"),p(EVENT.report));
+ scene.append(sceneTop,vista,voice);
+ const command=add(el("div","v16-command-heading"),
+  el("small","","▶ COMMAND / 進む道を選ぶ"),
+  el("h1","",EVENT.prompt),
+  p(EVENT.context,"v16-command-hint"));
+ const choices=el("div","question-options v16-route-options");
  for(let i=0;i<q.keys.length;i++){
   const key=q.keys[i],value=q.map[key],label=typeof value==="string"?value:value.label;
-  const b=button("","answer-option",()=>choose(key));
+  const b=button("","answer-option v16-route-option",()=>choose(key));
   add(b,el("span","option-glyph",q.glyphs[i]),el("span","option-text",label),el("span","option-mark","›"));
   choices.append(b);
  }
- const controls=add(el("div","v16-quest-controls"),p("選ぶと次のエリアに進む","v16-auto-hint"),button("← 戻る","quiet-back",goBack));
- add(arena,choices,controls);
+ const controls=add(el("div","v16-quest-controls"),p("選んだ道へ進む","v16-auto-hint"),button("← 戻る","quiet-back",goBack));
+ arena.append(scene,command,choices,controls);
  w.append(arena);return w;
 }
 function result(){
