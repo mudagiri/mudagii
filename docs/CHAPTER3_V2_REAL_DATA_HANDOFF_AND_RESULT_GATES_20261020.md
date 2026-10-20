@@ -1,6 +1,8 @@
 # 第3章 V2｜第1・2章実コード照合・データ引継ぎ契約案・結果妥当性監査
 
 **2026-10-20 / 技術＋コンテンツ監査 Draft 0.3 / 本番・診断エンジン・UI・画像は未変更。**
+
+> **現行判断（Draft 0.4）**：接続先は PR #51 `release/chapter12-latest-rpg-ui-first-20261016` を最新候補として参照。PR #51は未マージ、本番rootには未適用。冒険の内容は旧E3を撤回し新「霧の関門」を第一候補に変更。詳細は [`CHAPTER3_V2_FLOW_DECISION_AND_HANDOFF_GATE_20261020.md`](./CHAPTER3_V2_FLOW_DECISION_AND_HANDOFF_GATE_20261020.md)。旧記述は当時の実コード監査として保持。
 対象参照ブランチ：`release/chapter12-latest-rpg-ui-first-20261016`（**実装候補の読み取り**。このブランチが本番稼働中とは未確認）
 V2設計ブランチ：`design/chapter3-v2-result-first-20261020`
 先行文書：`CHAPTER3_V2_EVENT_DECISION_AUDIT_DRAFT_02_20261020.md`
