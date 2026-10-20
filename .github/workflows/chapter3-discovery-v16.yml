@@ -1,0 +1,111 @@
+name: Chapter 3 V1.6 Future Discovery QA
+on:
+  push:
+    branches: [feat/chapter3-v16-future-discovery-20261019]
+    paths:
+      - "public/pilot/chapter3-v16/**"
+      - "scripts/qa-chapter3-discovery-v16.mjs"
+      - "scripts/qa-chapter3-v16-browser.mjs"
+      - "scripts/qa-chapter3-v16-remote-preview.mjs"
+      - ".github/workflows/chapter3-discovery-v16.yml"
+  pull_request:
+    paths:
+      - "public/pilot/chapter3-v16/**"
+      - "scripts/qa-chapter3-discovery-v16.mjs"
+      - "scripts/qa-chapter3-v16-browser.mjs"
+      - "scripts/qa-chapter3-v16-remote-preview.mjs"
+      - ".github/workflows/chapter3-discovery-v16.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  standalone-chapter3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    defaults:
+      run:
+        shell: bash
+    env:
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare dependencies
+        run: |
+          npm ci
+          npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Static assertions and every answer combination
+        run: |
+          node --check public/pilot/chapter3-v16/app.mjs
+          node --check public/pilot/chapter3-v16/engine.mjs
+          node --check scripts/qa-chapter3-v16-browser.mjs
+          node scripts/qa-chapter3-discovery-v16.mjs
+          node scripts/qa-chapter3-three-forces-v11.mjs
+      - name: Build fully isolated source
+        run: |
+          npm run build
+          test -f dist/pilot/chapter3-v16/index.html
+          test -f dist/pilot/chapter3-v16/app.mjs
+          test -f dist/pilot/chapter3-v16/engine.mjs
+          test -f dist/pilot/chapter3-v16/v16.css
+          test -f dist/pilot/chapter3-v12/stage.css
+          test -f dist/pilot/chapter3-v12/next-guide.mjs
+      - name: Verify canonical shared assets
+        run: |
+          set -euo pipefail
+          for asset in \
+            brand/favicon-32.png \
+            mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
+            mudagiri/poses/v1/MUDAGIRI_POSE_23_RESULT.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_01_GUILD_HALL.webp \
+            mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp; do
+            test -s "dist/assets/$asset"
+          done
+      - name: Start isolated browser server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist > /tmp/ch3-v16.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter3-v16/ -o /dev/null; then exit 0; fi
+            sleep 0.5
+          done
+          cat /tmp/ch3-v16.log
+          exit 1
+      - name: Mobile Chromium + iPhone WebKit, widths 320 375 390 430
+        env:
+          CH3_V16_URL: "http://127.0.0.1:4173/pilot/chapter3-v16/"
+        run: node scripts/qa-chapter3-v16-browser.mjs
+      - name: External GitHub-source preview smoke (non-blocking)
+        continue-on-error: true
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          base="https://raw.githack.com/mudagiri/mudagii/${SOURCE_SHA}"
+          for file in \
+            public/pilot/chapter3-v16/index.html \
+            public/pilot/chapter3-v16/app.mjs \
+            public/pilot/chapter3-v16/engine.mjs \
+            public/pilot/chapter3-v16/v16.css \
+            public/pilot/chapter3-v12/stage.css \
+            public/pilot/chapter3-v12/next-guide.mjs \
+            public/assets/mudagiri/poses/v1/MUDAGIRI_POSE_03_GUIDE.webp \
+            public/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp; do
+            test -n "$(curl --fail --silent --show-error --location --max-time 20 "$base/$file")"
+            echo "REMOTE_OK $file"
+          done
+          echo "REMOTE_PREVIEW_PASS $base/public/pilot/chapter3-v16/index.html"
+      - name: Chromium and WebKit smoke test on independent GitHub-source URL
+        continue-on-error: true
+        env:
+          CH3_V16_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/qa-chapter3-v16-remote-preview.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-v16-discovery-mobile-qa
+          path: artifacts/chapter3-v16/
+          if-no-files-found: warn
+          retention-days: 14

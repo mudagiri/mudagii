@@ -1,0 +1,129 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import {chromium,webkit} from "playwright";
+const url=process.env.CH3_V16_URL||"http://127.0.0.1:4173/pilot/chapter3-v16/";
+const output="artifacts/chapter3-v16";fs.mkdirSync(output,{recursive:true});
+async function assertSceneFits(page,engine,width,label){
+ const x=await page.evaluate(()=>{
+  const viewport=innerHeight;
+  const visible=document.querySelector(".v16-single-viewport");
+  const scope=visible?.querySelector(".v16-intro, .v16-arena");
+  const area=scope?.getBoundingClientRect();
+  const actions=[...document.querySelectorAll(".v16-single-viewport button")];
+  const buttons=actions.map(b=>({name:b.textContent.trim().slice(0,40),top:b.getBoundingClientRect().top,bottom:b.getBoundingClientRect().bottom}));
+  const outside=buttons.filter(b=>b.top < -1 || b.bottom > viewport + 1);
+  return {viewport,html:document.documentElement.scrollHeight,stage:visible?.getBoundingClientRect().height,
+   scene:area?{top:area.top,bottom:area.bottom}:null,outside};
+ });
+ assert.ok(x.scene&&x.scene.bottom<=x.viewport+1,engine+" "+width+" "+label+" scene must fit: "+JSON.stringify(x));
+ assert.equal(x.outside.length,0,engine+" "+width+" "+label+" all controls must fit: "+JSON.stringify(x));
+ assert.ok(x.html<=x.viewport+1,engine+" "+width+" "+label+" page must not scroll: "+JSON.stringify(x));
+}
+let checks=0;
+for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
+ const browser=await browserType.launch({headless:true});
+ try{
+  for(const width of [320,375,390,430]){
+   const page=await browser.newPage({viewport:{width,height:844},deviceScaleFactor:1});
+   const errors=[];const backend=[];
+   page.on("pageerror",err=>errors.push(String(err)));
+   page.on("response",res=>{if(res.status()>=400)errors.push(res.status()+" "+res.url());});
+   page.on("request",req=>{if(/script\.google\.com|google-analytics|line\.me|\/(api|webhook)\//i.test(req.url()))backend.push(req.url());});
+   await page.goto(url,{waitUntil:"networkidle"});
+   assert.match(await page.title(),/V1\.6/);
+   await page.waitForFunction(()=>[...document.querySelectorAll(".speech-mascot")].every(x=>x.complete&&x.naturalWidth>0));
+   await assertSceneFits(page,engine,width,"intro");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-intro.png"),fullPage:false});
+   await page.getByRole("button",{name:/5つの問いで/}).click();
+   assert.equal(await page.locator("button.answer-option").count(),6);
+   await assertSceneFits(page,engine,width,"Q1");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q1.png"),fullPage:false});
+   await page.getByRole("button",{name:/将来のお金の心配を減らしたい/}).click();
+   assert.equal(await page.locator("button.answer-option").count(),4);
+   await assertSceneFits(page,engine,width,"Q2");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q2.png"),fullPage:false});
+   await page.getByRole("button",{name:/3〜10年後/}).click();
+   assert.equal(await page.locator("button.answer-option").count(),4,"Q3 must be 4 choices, not 12");
+   await assertSceneFits(page,engine,width,"Q3");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q3.png"),fullPage:false});
+   await page.getByRole("button",{name:/始めたけど、このままでいいか迷う/}).click();
+   assert.equal(await page.locator("button.answer-option").count(),7);
+   const encounter=await page.locator(".v16-event-world").boundingBox();
+   assert.ok(encounter&&encounter.height>=150,
+    engine+" "+width+" scenic encounter must be substantial rather than a tiny icon: "+JSON.stringify(encounter));
+   assert.equal(await page.locator(".v16-event-companion").count(),1,"official mascot appears within encounter");
+   assert.equal(await page.locator(".v16-event-landmark").count(),1);
+   const gridColumns=await page.locator(".v16-route-options").evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(" ").length);
+   assert.equal(gridColumns,2,"game commands should not be a 7-row survey");
+   await assertSceneFits(page,engine,width,"Q4");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q4.png"),fullPage:false});
+   await page.getByRole("button",{name:/情報が多くて、どれが合うか分からない/}).click();
+   assert.equal(await page.locator("button.answer-option").count(),5);
+   await assertSceneFits(page,engine,width,"Q5");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q5.png"),fullPage:false});
+   await page.getByRole("button",{name:/今の楽しみ/}).click();
+   assert.match(await page.title(),/作戦書/);
+   assert.match(await page.locator(".v16-route-name").innerText(),/進路を整える戦術家/);
+   assert.match(await page.locator(".v16-guild-victory .world-title").innerText(),/未来の地図を発見/);
+   assert.equal(await page.locator(".v16-map-fragment").count(),3,"three pieces of the future map must be visible");
+   assert.equal(await page.locator(".v16-map-fragment.is-earned").count(),1,"first map piece earned");
+   assert.equal(await page.locator(".v16-map-fragment.is-locked").count(),2,"other pieces stay locked");
+   assert.match(await page.locator(".v16-route-award").innerText(),/未来の作戦タイプ/);
+   assert.match(await page.locator(".v16-journey-bridge").innerText(),/未連携|接続されていません/);
+   assert.equal(await page.locator("img[src*='JOB_']").count(),0,"unlinked chapter 1 must not show imaginary JOB artwork");
+   const info=await page.locator(".v16-insight").innerText();
+   assert.match(info,/将来のお金の心配を減らしたい/);
+   assert.match(info,/始めたけど、このままでいいか迷う/);
+   assert.match(info,/情報が多くて、どれが合うか分からない/);
+   assert.match(info,/今の楽しみ/);
+   const discovery=await page.locator(".v16-discovery-hero").innerText();
+   assert.match(discovery,/将来のお金の心配を減らしたい/);
+   assert.match(discovery,/今の楽しみ/);
+   assert.match(await page.locator(".v16-timeframe").innerText(),/時期/);
+   const firstAction=await page.locator(".v16-primary").boundingBox();
+   assert.ok(firstAction&&firstAction.y+firstAction.height<=845,
+    engine+" "+width+" the first meaningful CTA must fit on the result's first 844px viewport: "+JSON.stringify(firstAction));
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-result.png"),fullPage:false});
+   await page.getByRole("button",{name:/設計図に必要な3つのこと/}).click();
+   assert.match(await page.locator(".v16-unlocked").innerText(),/必要/);
+   await page.getByRole("button",{name:/資産運用の基本/}).click();
+   await page.getByRole("button",{name:/ライフプランの整理/}).click();
+   await page.getByRole("button",{name:/選んだテーマの攻略ヒントを見る/}).click();
+   assert.equal(await page.locator(".v16-guide").count(),2);
+   await page.getByRole("button",{name:/相談で整理できる3つのこと/}).click();
+   assert.equal(await page.locator(".v16-consult-items li").count(),3);
+   assert.match(await page.locator(".v16-consult").innerText(),/今の楽しみ/);
+   assert.ok((await page.locator(".v16-guide").first().innerText()).includes("今日の一歩"));
+   const screen=await page.evaluate(()=>({w:innerWidth,body:document.body.scrollWidth,html:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll("button")].every(b=>{const r=b.getBoundingClientRect();return r.width>=0;})}));
+   assert.ok(screen.html<=screen.w+1,engine+" "+width+" horizontal overflow "+JSON.stringify(screen));
+   assert.deepEqual(errors,[],engine+" "+width+" console / image errors");
+   assert.deepEqual(backend,[],engine+" "+width+" unexpected external requests");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-guide.png"),fullPage:false});
+   await page.getByRole("button",{name:/最初から、未来を探索し直す/}).click();
+   assert.match(await page.title(),/V1\.6/);
+   await page.close();
+   checks++;console.log("CH3_V16_BROWSER_PASS",engine,width);
+  }
+  // Short-height fallback: tapping every answer must remain possible even when a single-screen layout cannot fit.
+  for(const height of [600,667]){
+   const narrow=await browser.newPage({viewport:{width:320,height},deviceScaleFactor:1});
+   try{
+    await narrow.goto(url,{waitUntil:"networkidle"});
+    await narrow.getByRole("button",{name:/5つの問いで/}).click();
+    for(const name of ["将来のお金の心配を減らしたい","3〜10年後","始めたけど、このままでいいか迷う"]){
+     await narrow.getByRole("button",{name:new RegExp(name)}).click();
+    }
+    assert.equal(await narrow.locator("button.answer-option").count(),7);
+    const skipped=narrow.getByRole("button",{name:/今は答えたくない/});
+    await skipped.click({timeout:10000}); // Auto-scroll should make the seventh option tappable if needed.
+    assert.equal(await narrow.locator("button.answer-option").count(),5);
+    await narrow.getByRole("button",{name:/今の楽しみ/}).click();
+    assert.match(await narrow.locator(".v16-route-name").innerText(),/.+/);
+    console.log("CH3_V16_SHORT_SCREEN_REACHABLE",engine,height);
+   }finally{await narrow.close();}
+  }
+ }finally{await browser.close();}
+}
+assert.equal(checks,8);
+console.log("CH3_V16_MOBILE_CHROMIUM_WEBKIT_ALL_PASS");
