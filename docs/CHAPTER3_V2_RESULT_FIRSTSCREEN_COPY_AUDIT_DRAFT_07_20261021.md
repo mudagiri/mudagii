@@ -1,7 +1,9 @@
 # ムダギリ診断 第3章 V2｜リザルト1画面目・6ケース厳格編集監査 Draft 0.7
 
 日付：2026-10-21 JST  
-**状態：コンテンツ編集候補／未FROZEN。架空ケースの手動レビューのみ。診断エンジン・画像・UI・予約導線は未実装。**  
+**状態：コンテンツ編集候補／未FROZEN。架空ケースの手動レビューのみ。診断エンジン・画像・UI・予約導線は未実装。**
+
+> **2026-10-21 Draft 0.8**：本書でNO-GOとした収入アップ/資産形成の一部を、**条件付きの追加1問で初手が変化するか**再設計。4視点各25点の採点基準とNO-GO条件を[Draft 0.8](./CHAPTER3_V2_100POINT_CONTENT_GATE_AND_WEAK_RESULTS_DRAFT_08_20261021.md)で定義。第1章・第2章との正しい根拠連結はまだ要検証。**100点の認定やコンテンツFROZENではない**。  
 実装基準候補：PR #51 \`release/chapter12-latest-rpg-ui-first-20261016\`（本日時点のPR確認ではopen/draft）、V2設計：PR #70（open/draft）。  
 前提：[8ケースの失格分析](./CHAPTER3_V2_RESULT_NOVELTY_P0_AUDIT_DRAFT_06_20261021.md)／[目標×時間軸16条件](./CHAPTER3_V2_HORIZON_DECISION_MATRIX_DRAFT_061_20261021.md)。
 
