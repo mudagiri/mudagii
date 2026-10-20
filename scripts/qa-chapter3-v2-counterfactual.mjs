@@ -69,6 +69,14 @@ const runCases=function runCases(api){
  const empty=make();empty.chapter1=null;empty.chapter2=null;
  ok(go(empty,{horizon:"unknown"}).actionId==="compare_goals","unknown goal fallback");
  ok(!p(v(make(),"unit-id"),{horizon:"invalid"}).ok,"invalid horizon");
+ const fractional=make();row(fractional,"mobile","inspect",0,234.55);
+ ok(v(fractional,"unit-id").ok,"V5 fractional C amounts accepted");
+ const fracMismatch=make();row(fracMismatch,"mobile","inspect",0,234.55);fracMismatch.chapter2.potential.cUpper=234.65;
+ ok(!v(fracMismatch,"unit-id").ok,"material fractional C mismatch rejected");
+ const nonfinite=make();row(nonfinite,"mobile","inspect",0,Number.POSITIVE_INFINITY);
+ ok(!v(nonfinite,"unit-id").ok,"nonfinite C rejected");
+ ok(go(ch,{horizon:"near"}).shareSafe.requiresExplicitConsent===true,"sharing requires explicit consent");
+ ok(go(ch,{horizon:"near"}).shareSafe.goalTheme===null,"goal never auto published");
  return {passed:n,failed:0,scope:"synthetic_V5-shaped_fixtures_only"};
 };
 
