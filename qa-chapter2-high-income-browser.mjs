@@ -53,6 +53,17 @@ try{
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
   'Three-way comparison must not appear before official population and income validation');
+ // Result shortcuts must lead ABOVE the optional income and head-of-household
+ // controls, not directly to the category cards (which would conceal them).
+ const compareShortcut=page.locator('[data-section="RESULT_SHORTCUTS"] button').nth(1);
+ assert.match(await compareShortcut.innerText(),/同条件比較/);
+ await compareShortcut.click();
+ await page.waitForFunction(()=>{
+  const guide=document.querySelector('[data-section="JOINT_PEER_COMPARISON_GUIDE"]');
+  return guide&&Math.abs(guide.getBoundingClientRect().top)<150;
+ },null,{timeout:7000});
+ assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1,
+  'Income selector must be reachable immediately after the comparison guide');
  await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"] summary').click();
  await selectGross('1500plus');
  await worker.waitFor({state:'visible'});
