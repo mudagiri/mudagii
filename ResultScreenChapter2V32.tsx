@@ -572,8 +572,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <button type="button" onClick={()=>jumpToSection(candidates.length?'CANDIDATE_BREAKDOWN':'POTENTIAL_TREASURE')}>
     <span aria-hidden="true">⚔</span>{candidates.length?'見直し候補':'宝箱'}
    </button>
-   <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>
-    <span aria-hidden="true">📖</span>12カテゴリ比較
+   <button type="button" onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
+    <span aria-hidden="true">📖</span>同条件比較
    </button>
    <button type="button" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>
     <span aria-hidden="true">⚑</span>相談する
@@ -600,7 +600,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p className="c2v32-statistical-gap">比較上のチェック余地：月 <b>{money(independentReferenceGap)}</b></p>
     <div className="c2v32-statistical-gap-items">{independentReferenceClues.map(x=><span key={x.category}>{x.label} <b>{money(x.gap)}/月</b><small>同年代×同所得帯の交差集計</small></span>)}</div>
     <small>実際に同じ年齢階級・所得階級・世帯区分で公表された原表セルだけを比較に使用します。削減保証ではなく、未確定の確認材料です。</small>
-    <button type="button" onClick={()=>jumpToSection('CATEGORY_COMPARISON_OVERVIEW')}>どの支出か、12カテゴリの比較で確認する ↓</button>
+    <button type="button" onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>比較条件を確認して、12カテゴリを見る ↓</button>
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
     <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>まず最優先の1件から</small></div>
@@ -700,8 +700,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </section>
    <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
    {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
-    onClick={()=>document.querySelector('[data-section="CATEGORY_COMPARISON_OVERVIEW"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>
-    12カテゴリの比較基準を一覧で見る ↓
+    onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
+    同年代・同世帯・同所得帯の比較条件から見る ↓
    </button>}
   </section>
   <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
