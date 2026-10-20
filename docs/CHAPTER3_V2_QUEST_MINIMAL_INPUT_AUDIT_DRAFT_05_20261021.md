@@ -2,6 +2,8 @@
 
 2026-10-21（JST） / 状態 **CONTENTS DRAFT / FROZENではない / 画像生成、UI、診断エンジン未実装**。
 
+> **P0監査に基づく更新**：本書の「QUEST 2 今いちばん何を確かめたい？」には「本人の回答をそのまま次の一手に言い換える」欠陥がある。**現行0.5はFROZEN不可**。8ケースの内容監査は [Draft 0.6](./CHAPTER3_V2_RESULT_NOVELTY_P0_AUDIT_DRAFT_06_20261021.md)、16条件の目標×期限分岐・Q3発動規則は [Draft 0.6.1](./CHAPTER3_V2_HORIZON_DECISION_MATRIX_DRAFT_061_20261021.md) を優先。画像・UI実装はいずれも未実施。
+
 **本書はDraft 0.4の見直し提案**。最重要変更：**「3つの回答イベント必須」を取りやめ、目標（既知なら確認）、本人の障害（確認）、必要時だけ補足（条件付き）の構成**へ変更。3つ目のシーンは遊びの演出を残すが、全員へ追加入力を迫らない。
 
 参照したGitHub：PR #51（release/chapter12-latest-rpg-ui-first-20261016、2026-10-21現在Draft）、PR #70（本設計）。特に \`ResultScreenChapter2V32.tsx\` と \`consult-route-v1.ts\`。公開サイトの実HTML確認は本稿ではしていない。
