@@ -670,7 +670,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   />}
 
   <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS" data-observation-kind={recognition?.kind??"no_supported_observation"}>
-   <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリ鑑定完了</small></div>
+   <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリの判定状況</small></div>
    <h2>今回の戦果</h2>
    <div className="c2v2-counts c2v31-counts">
     {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
