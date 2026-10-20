@@ -11,7 +11,7 @@ GitHub PR #70のデザイン専用ブランチ `design/chapter3-v2-result-first-
 - `scripts/qa-chapter3-v2-counterfactual.mjs`：合成データでの正常系、反証系、不正データ拒否、共有保護を確認するテスト。
 - `.github/workflows/qa-chapter3-v2-isolated.yml`：PR内の試作コード更新時にNode 22で構文チェックと上記テストを実行。mainのGAS、診断ロジック、公開ルーティングは触らない。
 
-**初回の実行エンジンと同じ関数に対して32件の検査を直接実行しPASS。GitHub上では小数Cの扱いと共有保護を追加し、テストを37件へ拡張した。** CIの結果を確認するまで、「GitHub Actions 37/37 PASS」とは書かない。
+**実行結果：GitHub ActionsのNode 22上で37件すべてPASS（失敗0）。** 構文チェックも成功。実行ログ： [Chapter 3 V2 Isolated Counterfactual QA / Run #39485394600](https://github.com/mudagiri/mudagii/actions/runs/39485394600)。ログ出力は `CHAPTER3_V2_COUNTERFACTUAL_QA_PASS {"passed":37,"failed":0,"scope":"synthetic_V5-shaped_fixtures_only"}`。初期関数の検査32件に、小数Cと共有保護の5件を追加してCI実行した。
 
 **現段階では、本人に対する診断精度・新しい発見・予約CV率の証明ではない。** 4視点の「100点」は検証基準であり、現実の評価得点は未計測。
 
