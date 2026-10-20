@@ -48,6 +48,13 @@ const ART={
  guide:'./assets/battle1/MUDAGIRI_BATTLE_FOLLOW.png',
  quest:'./assets/battle1/MUDAGIRI_BATTLE_SWING.png'
 };
+/** A completed adventure does not mean every expense has a confirmed appraisal. */
+export function chapter2QuestShareLabels(jobName?:string|null){
+ return {
+  main:jobName?'冒険者：'+jobName:'12カテゴリをチェック',
+  sub:jobName?'12カテゴリをチェック！好きなものは守って、ムダだけ斬る。':'好きなものは守って、ムダだけ斬る。',
+ };
+}
 const TALK_POSES={
  check:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_20_CHECK.webp',
  explain:'./assets/mudagiri/poses/v1/MUDAGIRI_POSE_04_EXPLAIN.webp',
@@ -239,9 +246,9 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
   ctx.drawImage(mascot,850-mascot.naturalWidth*sc/2,785,mascot.naturalWidth*sc,mascot.naturalHeight*sc);
  }
  ctx.fillStyle='#ffe9aa';ctx.font=job?'bold 53px sans-serif':'bold 52px sans-serif';
- ctx.fillText(job?'冒険者：'+job.name:'12カテゴリ鑑定完了',540,1047);
+ ctx.fillText(chapter2QuestShareLabels(job?.name).main,540,1047);
  ctx.fillStyle='#d7e3eb';ctx.font='bold 28px sans-serif';
- ctx.fillText(job?'12カテゴリ鑑定完了！好きなものは守って、ムダだけ斬る。':'好きなものは守って、ムダだけ斬る。',540,1128);
+ ctx.fillText(chapter2QuestShareLabels(job?.name).sub,540,1128);
  ctx.fillStyle='#f4d76b';ctx.font='bold 29px sans-serif';ctx.fillText('あなたの家計にも、隠れた敵がいるかも。',540,1198);
  ctx.fillStyle='#9eb4c1';ctx.font='24px sans-serif';ctx.fillText('#ムダギリ診断  ｜  あなたも冒険してみる？',540,1240);
  const blob=await new Promise<Blob|null>(r=>canvas.toBlob(r,'image/png'));
