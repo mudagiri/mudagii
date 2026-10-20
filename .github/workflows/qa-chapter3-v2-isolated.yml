@@ -1,0 +1,28 @@
+name: Chapter 3 V2 Isolated Counterfactual QA
+
+on:
+  pull_request:
+    paths:
+      - 'chapter3-v2/**'
+      - 'scripts/qa-chapter3-v2-counterfactual.mjs'
+      - '.github/workflows/qa-chapter3-v2-isolated.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  counterfactual:
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'design/chapter3-v2-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated source syntax
+        run: |
+          node --check chapter3-v2/decision-core.mjs
+          node --check scripts/qa-chapter3-v2-counterfactual.mjs
+      - name: Verify synthetic V5-shaped fixtures and counterfactual behavior
+        run: node scripts/qa-chapter3-v2-counterfactual.mjs
