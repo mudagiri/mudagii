@@ -3,7 +3,7 @@ on:
   push:
     branches: [release/chapter12-latest-rpg-ui-first-20261016]
   pull_request:
-    branches: [main]
+    branches: [main, release/chapter12-latest-rpg-ui-first-20261016]
   workflow_dispatch:
 permissions:
   contents: read
