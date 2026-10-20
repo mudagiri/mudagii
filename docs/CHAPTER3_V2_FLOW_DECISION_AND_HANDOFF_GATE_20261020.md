@@ -1,6 +1,8 @@
 # ムダギリ診断｜第3章 V2｜接続先・冒険構成・判定ゲート 決定メモ Draft 0.4
 作成：2026-10-20
 状態：**CONTENTS CANDIDATE / FROZEN前**。第1章・第2章・本番main・画像・CSS・診断エンジン・CTA予約の実装変更なし。
+
+> **2026-10-21 更新：設問構成はDraft 0.5を優先**。第2章V3.2には既に「未来の目的地」8択があり、重複を避けるためQUEST1は選択済みなら確認、QUEST2で最初に確かめたい条件、QUEST3は必要な場合だけ補足とする。[Draft 0.5](./CHAPTER3_V2_QUEST_MINIMAL_INPUT_AUDIT_DRAFT_05_20261021.md) の方針は未凍結。
 以前の仮案 \`CHAPTER3_V2_EVENT_DECISION_AUDIT_DRAFT_02_20261020.md\` と \`CHAPTER3_V2_REAL_DATA_HANDOFF_AND_RESULT_GATES_20261020.md\` を踏まえた設計判断。**本書の構成判断が優先。**
 
 ## 0. 結論（ここで採用候補を絞る）
