@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import ResultScreenChapter2V32,{chapter2QuestShareLabels} from './ResultScreenChapter2V32';
 import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 import {buildSafeFunnelEvent,buildPostHogCaptureBody} from './src/product-funnel-analytics-v1';
@@ -14,6 +14,11 @@ const makeVm=(confirmedA:number,cUpper:number)=>({
 });
 const show=(a:number,c:number)=>renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:makeVm(a,c)}));
 const uncertain=show(0,17854);
+assert.equal(chapter2QuestShareLabels().main,'12カテゴリをチェック');
+assert.equal(chapter2QuestShareLabels('戦術ハンター').main,'冒険者：戦術ハンター');
+assert.match(chapter2QuestShareLabels('戦術ハンター').sub,/12カテゴリをチェック/);
+assert.doesNotMatch(chapter2QuestShareLabels().main+chapter2QuestShareLabels('戦術ハンター').sub,/鑑定完了/,
+ 'A finished quest must not imply every spending category was appraised');
 
 const verifiedPositive=chapter2PeerGapV1({
  ownMonthlyExpenseYen:100000,ownMonthlyTakeHomeYen:500000,
