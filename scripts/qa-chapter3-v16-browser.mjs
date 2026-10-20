@@ -38,15 +38,24 @@ for(const [engine,browserType] of [["chromium",chromium],["webkit",webkit]]){
    await page.getByRole("button",{name:/5つの問いで/}).click();
    assert.equal(await page.locator("button.answer-option").count(),6);
    await assertSceneFits(page,engine,width,"Q1");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q1.png"),fullPage:false});
    await page.getByRole("button",{name:/将来のお金の心配を減らしたい/}).click();
    assert.equal(await page.locator("button.answer-option").count(),4);
    await assertSceneFits(page,engine,width,"Q2");
+   await page.screenshot({path:path.join(output,engine+"-"+width+"-q2.png"),fullPage:false});
    await page.getByRole("button",{name:/3〜10年後/}).click();
    assert.equal(await page.locator("button.answer-option").count(),4,"Q3 must be 4 choices, not 12");
    await assertSceneFits(page,engine,width,"Q3");
    await page.screenshot({path:path.join(output,engine+"-"+width+"-q3.png"),fullPage:false});
    await page.getByRole("button",{name:/始めたけど、このままでいいか迷う/}).click();
    assert.equal(await page.locator("button.answer-option").count(),7);
+   const encounter=await page.locator(".v16-event-world").boundingBox();
+   assert.ok(encounter&&encounter.height>=150,
+    engine+" "+width+" scenic encounter must be substantial rather than a tiny icon: "+JSON.stringify(encounter));
+   assert.equal(await page.locator(".v16-event-companion").count(),1,"official mascot appears within encounter");
+   assert.equal(await page.locator(".v16-event-landmark").count(),1);
+   const gridColumns=await page.locator(".v16-route-options").evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(" ").length);
+   assert.equal(gridColumns,2,"game commands should not be a 7-row survey");
    await assertSceneFits(page,engine,width,"Q4");
    await page.screenshot({path:path.join(output,engine+"-"+width+"-q4.png"),fullPage:false});
    await page.getByRole("button",{name:/情報が多くて、どれが合うか分からない/}).click();
