@@ -27,12 +27,12 @@ export function validateHandoff(x,id){
    const set=new Set();let sumA=0,sumC=0;
    for(const r of c2.rows){
      if(!r||!CATS.includes(r.category)||set.has(r.category)||!STATUSES.includes(r.v5Status)||typeof r.known!=="boolean"||
-       !Number.isSafeInteger(r.aAmount)||r.aAmount<0||!Number.isSafeInteger(r.cUpper)||r.cUpper<0||
+       !Number.isSafeInteger(r.aAmount)||r.aAmount<0||!Number.isFinite(r.cUpper)||r.cUpper<0||
        (r.v5Status==="na"&&(r.aAmount||r.cUpper))||
        (r.aAmount>0&&(r.category!=="sub"||r.v5Status!=="cut")))return fail("INVALID_ROW");
      set.add(r.category);sumA+=r.aAmount;sumC+=r.cUpper;
    }
-   if(set.size!==CATS.length||!c2.potential||c2.potential.confirmedA!==sumA||c2.potential.cUpper!==sumC)return fail("A_C_MISMATCH");
+   if(set.size!==CATS.length||!c2.potential||!Number.isSafeInteger(c2.potential.confirmedA)||!Number.isFinite(c2.potential.cUpper)||c2.potential.confirmedA!==sumA||Math.abs(c2.potential.cUpper-sumC)>0.00001)return fail("A_C_MISMATCH");
  }
  return {ok:true,value:{chapter1:c1,chapter2:c2,anonymousUserId:id}};
 }
@@ -101,6 +101,6 @@ export function planNextAction(parsed,input){
  return {ok:true,goal,goalSource:source,actionId,firstStep,question,consultTopic,
    evidenceStrength:tags.some(x=>/^c2_(rent|education|fun|insurance|c_not_cash)/.test(x))?"connected_evidence":"limited",
    reasonTags:tags,noFinancialSuitabilityClaim:true,
-   shareSafe:{jobCode:c1?.jobCode??null,goalTheme:goal==="undecided"?"exploring":goal}};
+   shareSafe:{jobCode:c1?.jobCode??null,publicJourney:"future_quest",goalTheme:null,requiresExplicitConsent:true}};
 }
 
