@@ -3,6 +3,8 @@ import './chapter3-v2-pilot.css';
 import {JOB_CHARACTER_ASSETS} from './src/features/money-personality/job-character-assets-v1';
 // @ts-ignore Isolated plain-JS V2 POC, with shape validated by the handoff adapter.
 import {planNextAction,validateHandoff} from './chapter3-v2/decision-core.mjs';
+// @ts-ignore Isolated content layer uses validated status tags from the decision POC.
+import {buildResultNarrative} from './chapter3-v2/result-narrative.mjs';
 
 type Props={
   handoff:any;
@@ -72,10 +74,10 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
   goal:effectiveGoal,goalOverrideConfirmed:selectNewGoal||!inherited,
   horizon,detail
  }):null,[validation,effectiveGoal,selectNewGoal,inherited,horizon,detail]);
+ const narrative=validation.ok&&plan?.ok?buildResultNarrative(plan,validation,{horizon,detail}):null;
  const detailKey=effectiveGoal==='income'?'income':
   effectiveGoal==='invest'&&horizon==='near'?'invest':
   effectiveGoal==='time'?'time':null;
- const shouldAskDetail=detailKey!==null && detail==='unknown';
  const screenNumber=screen==='destination'?1:screen==='horizon'?2:screen==='detail'?3:4;
  const announce=(event:string,payload:Record<string,unknown>={})=>onEvent?.('chapter3_v2_'+event,{
    ...payload,version:'PILOT_V2',noFinancialData:true
@@ -99,7 +101,6 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
   else if(screen==='horizon')setScreen('destination');
   else onBack();
  };
- const reasonGoal=inherited&&!selectNewGoal?'第2章で選んだ目的地':'今回自分で選んだ目的地';
  const evidenceSummary=c2?.rows?.filter((x:any)=>x.v5Status==='protect').length??0;
  if(!validation.ok)return <main className="c3v2"><div className="c3v2-shell">
   <h1>冒険データを確認できませんでした</h1><p>ほかの診断結果を混ぜないため、いったん第2章へ戻って確認してね。</p>
@@ -167,19 +168,16 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
    {screen==='result'&&<section className="c3v2-panel c3v2-result">
     <div className="c3v2-world c3v2-world--result" aria-hidden="true">✦　⚑　✦</div>
     <span className="c3v2-kicker">QUEST CLEAR — 未来の作戦書</span>
-    <h2>{GOAL_NAME(effectiveGoal)}への、最初の一手</h2>
-    <div className="c3v2-result-hero"><small>まずやってみること</small><strong>{plan?.firstStep??'目指したいことを一つ書き出す'}</strong></div>
-    <div className="c3v2-reasons"><strong>この作戦の理由</strong>
-      <p>① {reasonGoal}：「{GOAL_NAME(effectiveGoal)}」</p>
-      <p>② 目指す時期：{HORIZONS.find(x=>x.id===horizon)?.title??'まだ未定'}</p>
-      {plan?.reasonTags?.includes('c2_rent_review')&&<p>③ 第2章：住居費に確認の余地があった（差額をそのまま削減額とはしない）</p>}
-      {plan?.reasonTags?.includes('c2_rent_protect')&&<p>③ 第2章：今の住まいで守るものがある</p>}
-      {plan?.reasonTags?.includes('c2_education_protect')&&<p>③ 第2章：現在の教育費を守る理由がある</p>}
-      {plan?.reasonTags?.includes('c2_fun_protect')&&<p>③ 第2章：楽しみに使う支出を守る理由がある</p>}
-      {plan?.reasonTags?.includes('c2_c_not_cash')&&<p>③ 第2章：未確定の見直し候補を使える現金と考えない</p>}
-      {!plan?.reasonTags?.some((x:string)=>x.startsWith('c2_'))&&
-        <p className="c3v2-muted">第2章の結果だけで、この未来に必要な金額や資金余力は判断できないよ。</p>}
+    <h2 data-testid="chapter3-headline">{narrative?.ok?narrative.headline:GOAL_NAME(effectiveGoal)+'への、最初の一手'}</h2>
+    <p className="c3v2-insight" data-testid="chapter3-insight">{narrative?.ok?narrative.insight:'今回の目標に向けて、必要な条件を一つずつ確かめよう。'}</p>
+    <div className="c3v2-result-hero"><small>今日の一手</small><strong>{narrative?.ok?narrative.todayAction:(plan?.firstStep??'目指したいことを一つ書き出す')}</strong></div>
+    <div className="c3v2-reasons"><strong>{narrative?.ok?narrative.proofLabel:'この作戦の理由'}</strong>
+      <p>あなたが選んだ未来：{GOAL_NAME(effectiveGoal)}</p>
+      <p>目指す時期：{HORIZONS.find(x=>x.id===horizon)?.title??'まだ未定'}</p>
+      {narrative?.ok&&narrative.chapter2Evidence&&<p>{narrative.chapter2Evidence}</p>}
+      {narrative?.ok&&narrative.limitedEvidence&&<p className="c3v2-muted">前章の情報だけで詳しい提案はできないから、これはまず調べるための道しるべだよ。</p>}
     </div>
+    {narrative?.ok&&<p className="c3v2-uncertainty"><strong>まだ分かっていないこと：</strong>{narrative.uncertainty}</p>}
     <div className="c3v2-result-note"><strong>相談すると整理できること</strong><p>{plan?.consultTopic??'これからの優先事項'}。実際の条件や状況を確認しながら作戦を具体化するよ。</p></div>
     <button className="c3v2-btn c3v2-btn--gold" type="button" onClick={()=>{
       announce('consult_preview',{topic:plan?.consultTopic??'future'});
