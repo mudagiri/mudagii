@@ -17,6 +17,8 @@ ok(main.includes("chapter2Goal:goal"),'C2 selected goal forwarded');
 ok(main.includes("chapter2Vm:result"),'live V5 VM forwarded');
 ok(main.includes("if(result&&chapter3V2Pilot&&chapter3Handoff)"),'pilot mounted only with validated handoff');
 ok(main.includes("pilotNoExternalActions={chapter3V2Pilot}"),'pilot mode prevents C2 outbound actions');
+ok(main.includes("chapter3V2Pilot?new LocalPersistenceV3()"),'pilot persistence is local-only even with GAS config');
+ok(main.includes("if(!chapter3V2Pilot&&(chapter2V32||chapter2V31))trackMudagiriProductEvent"),'analytics capture suppressed in pilot');
 ok(result.includes("onChapter3?:(goal:string|null)=>void"),'result opt-in callback');
 ok(result.includes("initialChapter3Goal"),'return path preserves C2 goal');
 ok(result.includes("consultFromChapter3"),'consult CTA returns to C2 native modal');
