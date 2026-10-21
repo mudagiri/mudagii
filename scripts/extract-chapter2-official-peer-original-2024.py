@@ -77,6 +77,7 @@ def extract(path, household):
         candidates = []
         seen_codes = {}
         header = []
+        income_headers = {}
         scanned = 0
         with zf.open(sheet) as src:
             tree=ET.iterparse(src,events=("start","end"))
@@ -89,6 +90,8 @@ def extract(path, household):
                 scanned += 1
                 cells = {col_name(c.attrib.get("r","")):unpack_cell(c,shared)
                          for c in node.iter(MAIN+"c")}
+                if scanned==7:
+                    income_headers={k:v for k,v in cells.items() if v and k not in ("A","B","C","D","E","F","G","H","I","J","K","L")}
                 if scanned<=22:
                     header.append({"row":node.attrib.get("r"),"fields":{k:v for k,v in cells.items() if k in ("A","E","F","G","H","I","J","K","L","M","BB","BC","BD")}})
                 item = str(cells.get("K",""))
@@ -116,6 +119,54 @@ def extract(path, household):
                         "K_item":item,"grossBands":all_income_columns,
                     })
                 root.clear()
+    # A published fee-cell ratio is a ratio of aggregate means, NOT
+    # the mean of household spending ratios and NOT a diagnosis-category rate.
+    # National average and other overlapping reprinted bands are kept
+    # separate and never summed together.
+    grouped={}
+    for row in candidates:
+        grouped.setdefault(row["H_headAge"],{})[row["K_item"]]=row
+    sourced=[]
+    for age,items in grouped.items():
+        count=items.get("0_総数")
+        income=items.get("4_可処分所得")
+        if not count or not income:
+            continue
+        for col,label in income_headers.items():
+            if not (label.startswith(("A","B","C","R")) or "万円" in label):
+                continue
+            raw_n=count["grossBands"].get(col)
+            raw_d=income["grossBands"].get(col)
+            if not (raw_n and raw_n.isdigit() and int(raw_n)>=50):
+                continue
+            if not (raw_d and raw_d.isdigit() and int(raw_d)>0):
+                continue
+            raw_rates={}
+            for category,names in CODES.items():
+                if category=="denominator":
+                    continue
+                by_item={}
+                for code in names:
+                    r=items.get(code)
+                    if r is None:
+                        continue
+                    raw=r["grossBands"].get(col,"")
+                    if raw and raw.isdigit():
+                        value=int(raw)
+                        by_item[code]={
+                          "averageMonthlyExpenseYen":value,
+                          "officialRelatedItemRatePct":round(value/int(raw_d)*100,2),
+                          "originalSheetRow":int(r["sourceRow"]),
+                        }
+                if by_item:raw_rates[category]=by_item
+            sourced.append({
+                "age":age,"grossIncomeColumn":col,"publishedIncomeLabel":label,
+                "sampleNApprox":int(raw_n),
+                "averageMonthlyDisposableYen":int(raw_d),
+                "referenceExpenseItems":raw_rates,
+                "notEquivalentToDiagnosisCategory":True,
+                "mustNotEnterSavingOrReviewUpper":True,
+            })
     return {
         "sourceFile":Path(path).name,"household":household,
         "verifiedSha256":actual,"sheetXml":sheet,
@@ -123,6 +174,9 @@ def extract(path, household):
         "firstRows":header,"matchedOfficialItemCodes":{k:sorted(v) for k,v in seen_codes.items()},
         "candidateRowsCount":len(candidates),
         "candidateRows":candidates[:1000],
+        "officialIncomeHeaders":income_headers,
+        "eligibleOriginalIncomeCells":sourced,
+        "eligibleOriginalIncomeCellsCount":len(sourced),
         "notOfficialDiagnosisAverage":True,
         "rateProductionApproved":False,
     }
@@ -142,6 +196,8 @@ if __name__=="__main__":
           "household":rec["household"],"sha":rec["verifiedSha256"],
           "rowsScanned":rec["rowsScanned"],"codeHits":rec["matchedOfficialItemCodes"],
           "candidateRows":rec["candidateRowsCount"],
+          "eligibleIncomeCells":rec["eligibleOriginalIncomeCellsCount"],
+          "age40HigherIncomeCount":len([x for x in rec["eligibleOriginalIncomeCells"] if "40～49" in x["age"] and x["grossIncomeColumn"] in ("BB","BC","BD")]),
           "sample":rec["candidateRows"][:4],
           "firstRows":rec["firstRows"][:3]
         },ensure_ascii=False))
