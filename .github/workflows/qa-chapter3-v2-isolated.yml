@@ -4,7 +4,8 @@ on:
   pull_request:
     paths:
       - 'chapter3-v2/**'
-      - 'scripts/qa-chapter3-v2-counterfactual.mjs'
+      - 'scripts/qa-chapter3-v2-*.mjs'
+      - 'scripts/qa-chapter3-v2-*.ts'
       - '.github/workflows/qa-chapter3-v2-isolated.yml'
   workflow_dispatch:
 
@@ -23,6 +24,14 @@ jobs:
       - name: Verify isolated source syntax
         run: |
           node --check chapter3-v2/decision-core.mjs
+          node --check chapter3-v2/handoff-adapter.mjs
+          node --check scripts/qa-chapter3-v2-handoff.mjs
           node --check scripts/qa-chapter3-v2-counterfactual.mjs
       - name: Verify synthetic V5-shaped fixtures and counterfactual behavior
         run: node scripts/qa-chapter3-v2-counterfactual.mjs
+      - name: Verify explicit opt-in V5 minimal handoff
+        run: node scripts/qa-chapter3-v2-handoff.mjs
+      - name: Install TypeScript QA dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify actual V5 builder to C3 adapter integration
+        run: npx --yes tsx@4.20.6 scripts/qa-chapter3-v2-realvm.ts
