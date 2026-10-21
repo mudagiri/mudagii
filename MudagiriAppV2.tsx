@@ -66,7 +66,8 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const [chapter3ConsultReturn,setChapter3ConsultReturn]=useState(false);
  const [diagnosisId,setDiagnosisId]=useState(()=>restored?.diagnosisId??draft?.diagnosisId??(typeof window==='undefined'?'server':newDiagnosisId()));
  const [anonymousUserId]=useState(()=>restored?.anonymousUserId??draft?.anonymousUserId??(typeof window==='undefined'?'server':getOrCreateAnonymousUserId()));
- const store=useMemo(()=>persistence??(typeof window!=='undefined'?productionPersistenceV3(new LocalPersistenceV3()):undefined),[persistence]);
+ // Never send pilot household snapshots, goal choices or events to configured GAS.
+ const store=useMemo(()=>typeof window==='undefined'?undefined:chapter3V2Pilot?new LocalPersistenceV3():(persistence??productionPersistenceV3(new LocalPersistenceV3())),[persistence,chapter3V2Pilot]);
 
  const emit=useCallback((name:string,data?:Record<string,unknown>)=>{
    onEvent?.(name,data);
