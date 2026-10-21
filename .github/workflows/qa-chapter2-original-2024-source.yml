@@ -4,6 +4,7 @@ on:
     branches: [release/chapter12-latest-rpg-ui-first-20261016]
     paths:
       - scripts/extract-chapter2-official-peer-original-2024.py
+      - scripts/qa-extracted-official-2024-source.py
       - .github/workflows/qa-chapter2-original-2024-source.yml
   workflow_dispatch:
 permissions:
@@ -36,6 +37,8 @@ jobs:
             --multi /tmp/mudagiri-official-2024/a010292.xlsx \
             --single /tmp/mudagiri-official-2024/a010293.xlsx \
             --output /tmp/mudagiri-official-2024/source-candidates.json
+      - name: Assert published original cohort cell count, values and no salary extrapolation
+        run: python3 scripts/qa-extracted-official-2024-source.py /tmp/mudagiri-official-2024/source-candidates.json
       - name: Upload SHA-verified original row extract
         uses: actions/upload-artifact@v4
         with:
