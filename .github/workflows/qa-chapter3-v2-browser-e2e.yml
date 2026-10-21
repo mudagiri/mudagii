@@ -48,6 +48,8 @@ jobs:
           test ! -d preview/pilot/chapter2-v32/assets
           test ! -d preview/pilot/chapter2-v32/pilot/money-type/assets
           test -d preview/assets
+      - name: Check evidence-grounded Chapter3 copy logic
+        run: node scripts/qa-chapter3-v2-result-narrative.mjs
       - name: Install browser automation runner
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Start local static preview
