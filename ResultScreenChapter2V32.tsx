@@ -43,6 +43,7 @@ type Props={
  onChapter3?:(goal:string|null)=>void;
  initialChapter3Goal?:string|null;
  consultFromChapter3?:boolean;
+ chapter3Error?:string;
 };
 
 const ART={
@@ -259,7 +260,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false,chapter3Error=''}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
@@ -1011,6 +1012,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <h2>次は、未来へ進む番だよ。</h2>
    <p>第1章で知った自分の戦い方と、今回の家計の手がかりを連れていこう。もう答えた目的地は、聞き直さないよ。</p>
    <p className="c2v2-note">第3章で使うのはJOB・STYLEと12カテゴリの確認状況、見直し機会・未確定候補。金額を実際に貯めたお金とは扱いません。第2章から直接相談することもできます。</p>
+   {chapter3Error&&<p role="alert" className="c2v2-note">{chapter3Error}</p>}
    <button type="button" className="c2v2-primary" onClick={()=>{
     onEvent?.('chapter3_v2_entry_requested',{from:'chapter2_v32',goalSelected:!!goal});
     onChapter3(goal);
