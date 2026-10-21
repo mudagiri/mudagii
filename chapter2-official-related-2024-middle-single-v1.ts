@@ -42,7 +42,7 @@ export function relatedOfficial50manItems2024(params:{
    ?AGE_INCOME_SUPPORTED_MULTI_GROSS_BANDS[band as keyof typeof AGE_INCOME_SUPPORTED_MULTI_GROSS_BANDS]:null
   :band&&Object.prototype.hasOwnProperty.call(AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS,band)
    ?AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS[band as keyof typeof AGE_INCOME_SUPPORTED_SINGLE_GROSS_BANDS]:null;
- if(!gross||gross.length===0)return notAvailable('UNSUPPORTED_GROSS_BAND');
+ if(!gross)return notAvailable('UNSUPPORTED_GROSS_BAND');
  const rows:SourceRow[]=[];
  for(const income of gross){
   const matches=OFFICIAL_2024_ORIGINAL_50MAN_WORKER_CELLS_V2.filter(row=>
