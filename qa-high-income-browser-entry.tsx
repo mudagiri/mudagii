@@ -13,6 +13,19 @@ const rows=[
  {category:'daily',label:'日用品費',known:true,amount:9000,diagnosisAmount:9000,
   comparisonAmount:9000,comparable:7000,comparisonQuality:'exact',
   v5Status:'inspect',applicability:'applicable',aAmount:0,cUpper:0},
+ // The result screen normally receives all 12 category rows, even when the
+ // visitor did not answer their spending amounts. Public related references
+ // must never require a fabricated personal expense for those rows.
+ ...([
+  ['mobile','通信費'],['car','車関連費'],['fun','娯楽・交際費'],
+  ['beautyFashion','美容・服飾'],['rent','住居費'],['insurance','保険'],
+  ['childEducation','子どもの教育費'],['sub','サブスク'],
+  ['selfDevelopment','自己投資'],
+ ] as const).map(([category,label])=>({
+  category,label,known:false,amount:null,diagnosisAmount:null,comparisonAmount:null,
+  comparable:null,comparisonQuality:'none',v5Status:'na',applicability:'not_applicable',
+  aAmount:0,cUpper:0,
+ })),
 ];
 // Strictly synthetic profile. The only real data loaded is the public
 // age×gross-income source. This harness is NOT included in the Vite dist build.
@@ -23,7 +36,7 @@ function App(){
   diagnosisId:'qa-high-income-synthetic-only',
   profile:{diagnosisScope:'household',householdSize:4,age,annualIncomeBand:'1000plus',
     monthlyTakeHome:1000000,prefecture:'東京都'},
-  potential:{confirmedA:0,cUpper:0},v5Counts:{cut:0,optimize:0,protect:0,inspect:3,ok:0,na:0},
+  potential:{confirmedA:0,cUpper:0},v5Counts:{cut:0,optimize:0,protect:0,inspect:3,ok:0,na:9},
   rows,firstQuest:null,consultRoute:null,
  };
  return <>

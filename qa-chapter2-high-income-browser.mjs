@@ -75,10 +75,21 @@ try{
   'Public-cell match must guide the user to the missing consent gates');
  assert.equal(await matchStatus.getAttribute('aria-live'),'polite');
  assert.equal(await peers().count(),0,'Selecting published bracket alone does not prove population');
+ assert.equal(await page.locator('[data-peer-related-rate-category]').count(),0,'Seven related public items also require both cohort checks');
  await worker.check();
  assert.equal(await peers().count(),0,'Household-head age confirmation is independently required');
  await head.check();
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
+ assert.equal(await page.locator('[data-peer-related-rate-category]').count(),7,
+  'Exactly seven additional related official public fee groups render only after cohort verification');
+ const mobileRelated=await page.locator('[data-peer-related-rate-category="mobile"]').innerText();
+ assert.ok(mobileRelated.includes('通信')&&mobileRelated.includes('1.65%')&&mobileRelated.includes('15,948'),
+  'Original 2024 official communication source rate is distinct from smartphone diagnosis benchmark');
+ assert.ok((await page.locator('[data-peer-related-rate-category="car"]').innerText()).includes('内数'),
+  'Car maintenance must never be added to the published total');
+ assert.ok((await page.locator('[data-peer-related-rate-category="insurance"]').innerText()).includes('保障だけでなく'),
+  'Official insurance contributions are not a coverage premium benchmark');
+
  const foodThreeWay=page.locator('[data-peer-three-way-category="food"]');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),3,
   'All 3 supported original categories show same-cell percent comparisons');
@@ -121,6 +132,8 @@ try{
  await assertRate('14.9%'); // age 50s, 1500+, 130143 / 870777
  await worker.uncheck();
  assert.equal(await peers().count(),0,'Withdrawing worker declaration immediately hides peer rates');
+ assert.equal(await page.locator('[data-peer-related-rate-category]').count(),0,
+  'Removing worker consent hides all seven public related expense rates');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,'Matched cards also vanish after worker revocation');
  await worker.check();
  await head.uncheck();

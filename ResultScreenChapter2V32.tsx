@@ -3,6 +3,7 @@ import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
+import {relatedOfficialExpenseItems2024} from './chapter2-official-related-2024-high-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
@@ -340,6 +341,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const peerReferenceFor=(category:string)=>category==='food'||category==='energy'||category==='daily'
   ?jointPeerReferenceByCategory[category]:null;
  const anyJointRateAvailable=Object.values(jointPeerReferenceByCategory).some(x=>x.available);
+ // Seven extra official public fee groups, ONLY same original joint cell.
+ // These are related items, not diagnosis-category benchmark/confirmed savings.
+ const relatedOriginal2024=multiCohort&&multiGrossBand==='1000plus'
+  ?relatedOfficialExpenseItems2024({
+     household:'multi',headAge:rawProfileAge,gross:multiHighGrossBand,
+     headAgeConfirmed:multiHeadAgeConfirmed,headWorkerConfirmed,
+    }):null;
  // Verified peer statistics are a separate comparison, NOT a verified monthly
  // savings opportunity (worker status and identical expense mix not confirmed).
  const independentReferenceClues:{category:string;label:string;gap:number;method:'verified_age_income'}[]=[];
@@ -746,8 +754,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <small>※二人以上は家族人数の完全一致ではありません。食費・光熱水道・日用品の3費目も、診断の支出範囲が公表費目と完全に一致する保証はありません。特に日用品は公式の「家事雑貨＋家事用消耗品」だけを参考にしています。</small>
    </div>
    <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
-    <summary>ほかの9カテゴリは、なぜ同条件の平均が出ないの？</summary>
-    <p>同じ年代・年収の統計表に数字があっても、対象費目の範囲が違えば「あなたと同条件の平均」とは呼べないよ。比べられない理由を確認できるようにしたよ。</p>
+    <summary>ほかの9カテゴリの関連公表費目と、直接比較できない理由</summary>
+    <p>同じ年代・年収帯でも統計と診断の費目範囲は違うよ。原本で確認できる関連費目率は、各カテゴリのカードに参考資料として別表示するよ。</p>
     <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
      <li key={x.category} data-peer-coverage-category={x.category}>
       <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
@@ -882,6 +890,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      });
      const workerCategory=scopedWorkerCategory(x.category);
      const sameAgeIncomePeer=peerReferenceFor(x.category);
+     const relatedPublicItems=relatedOriginal2024?.available
+      ?relatedOriginal2024.items.filter(item=>item.category===x.category):[];
      const peerUserShare=sameScope?lens.ownPct:null;
 
      const peerGap=chapter2PeerGapV1({
@@ -939,6 +949,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <p data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</p>
        </div>
       </details>}
+      {relatedPublicItems.length>0&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
+       data-section={'OFFICIAL_RELATED_PEER_'+x.category} data-peer-related-rate-category={x.category}>
+       <strong>同じ属性の公式統計にある「関連費目」の参考率</strong>
+       <div className="c2v32-worker-rate-head"><span>全国・二人以上の勤労者世帯／2024年</span><strong>公表費目（診断の平均とは別）</strong></div>
+       <ul>{relatedPublicItems.map(item=><li key={item.code}>
+        <span>{item.label}：<b>{item.officialRelatedRatePct.toFixed(2)}%</b> （月 {money(item.averageMonthlyExpenseYen)}）</span>
+        <small>{item.scope}</small>
+       </li>)}</ul>
+       <small>原表の概数標本数 {relatedOriginal2024?.available?relatedOriginal2024.n:'—'}世帯。費目平均支出÷同一公表セルの平均可処分所得。本人との割合差・削減額・見直し候補額は計算しません。</small>
+      </div>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
        <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
