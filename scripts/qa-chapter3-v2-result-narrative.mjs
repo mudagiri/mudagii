@@ -54,7 +54,7 @@ const investBase=fixture('invest');
 const invest=[];
 for(const detail of ['plannedExpense','noPlannedExpense','unknown']){
  const c=narrative(investBase,{horizon:'near',detail});invest.push(c.copy.headline);
- ok(c.copy.missing??false,'investment route discloses missing finances');
+ ok(Boolean(c.copy.uncertainty),'investment route discloses missing finances');
  ok(c.copy.noProductSuitability===true,'no suitability label');
 }
 ok(new Set(invest).size===3,'near-term liquidity choices yield separate insight');
