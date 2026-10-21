@@ -33,7 +33,7 @@ ok(adapter.includes("Math.abs(vm.potential.cUpper-totalC)>0.00001"),'C cannot si
 ok(adapter.includes("rows.push({category:x.category"),'only explicit minimum data projection');
 ok(!adapter.includes('window.location')&&!adapter.includes('fetch('),'adapter never makes external requests');
 ok(pilot.includes("planNextAction(validation"),'result generated from validated decision engine');
-ok(pilot.includes("onConsult();"),'consult button has real return action');
+ok(pilot.includes("onConsult(plan?.consultTopic"),'consult button forwards individualized topic');
 ok(pilot.includes("onBack();"),'back button has real return action');
 ok(pilot.includes("JOB_CHARACTER_ASSETS"),'reuse official C1 RPG job images');
 ok(pilot.includes("MUDAGIRI_POSE_03_GUIDE.webp"),'reuse official mascot pose');
