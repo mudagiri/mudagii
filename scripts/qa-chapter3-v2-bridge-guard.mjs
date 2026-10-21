@@ -1,0 +1,39 @@
+import fs from 'node:fs';
+
+let count=0;
+const main=fs.readFileSync('MudagiriAppV2.tsx','utf8');
+const result=fs.readFileSync('ResultScreenChapter2V32.tsx','utf8');
+const pilot=fs.readFileSync('Chapter3V2Pilot.tsx','utf8');
+const adapter=fs.readFileSync('chapter3-v2/handoff-adapter.mjs','utf8');
+const page=fs.readFileSync('src/main.tsx','utf8');
+
+function ok(v,reason){count++;if(!v)throw new Error('C3_BRIDGE_GUARD_FAIL '+count+': '+reason)}
+ok(main.includes("const chapter3V2Pilot=chapter2V32&&"),'C3 only when V32 preview active');
+ok(main.includes("get('chapter3v2')==='1'"),'C3 explicit opt-in query flag');
+ok(main.includes("buildChapter3HandoffFromV5({"),'no parallel unvalidated handoff');
+ok(main.includes("consent:C3_HANDOFF_CONSENT"),'explicit entry action requirement');
+ok(main.includes("const source=readChapter1HandoffV1(anonymousUserId)"),'only valid C1 source');
+ok(main.includes("chapter2Goal:goal"),'C2 selected goal forwarded');
+ok(main.includes("chapter2Vm:result"),'live V5 VM forwarded');
+ok(main.includes("chapter3Handoff&&"),'pilot mounted only with validated handoff');
+ok(main.includes("pilotNoExternalActions={chapter3V2Pilot}"),'pilot mode prevents C2 outbound actions');
+ok(result.includes("onChapter3?:(goal:string|null)=>void"),'result opt-in callback');
+ok(result.includes("initialChapter3Goal"),'return path preserves C2 goal');
+ok(result.includes("consultFromChapter3"),'consult CTA returns to C2 native modal');
+ok(result.includes("onChapter3(goal)"),'actual button uses current C2 useState goal');
+ok(result.includes("{onChapter3&&<section"),'entry hidden unless preview callback');
+ok(result.includes("onClick={()=>consultation('goal_quest')}"),'original consultation CTA kept');
+ok(result.includes("onClick={()=>{setGoal(code);"),'C2 goal control preserved');
+ok(adapter.includes("consent!==C3_HANDOFF_CONSENT"),'no implicit consent');
+ok(adapter.includes("vm.diagnosisId!==diagnosisId"),'diagnosis mismatch rejection');
+ok(adapter.includes("x.anonymousUserId!==anonymousUserId"),'C1 identity mismatch rejection');
+ok(adapter.includes("Math.abs(vm.potential.cUpper-totalC)>0.00001"),'C cannot silently diverge');
+ok(adapter.includes("rows.push({category:x.category"),'only explicit minimum data projection');
+ok(!adapter.includes('window.location')&&!adapter.includes('fetch('),'adapter never makes external requests');
+ok(pilot.includes("planNextAction(validation"),'result generated from validated decision engine');
+ok(pilot.includes("onConsult();"),'consult button has real return action');
+ok(pilot.includes("onBack();"),'back button has real return action');
+ok(pilot.includes("JOB_CHARACTER_ASSETS"),'reuse official C1 RPG job images');
+ok(pilot.includes("MUDAGIRI_POSE_03_GUIDE.webp"),'reuse official mascot pose');
+ok(page.includes('<MudagiriAppV2 />'),'no rerouting of main public entry');
+console.log('CHAPTER3_V2_UI_BRIDGE_GUARDS_PASS',JSON.stringify({passed:count,failed:0,scope:'static_contract_checks'}));
