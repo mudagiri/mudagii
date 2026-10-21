@@ -5,7 +5,7 @@
 
 > **2026-10-21 追記：実ブラウザE2E PASS**。[GitHub Actions #39537262044](https://github.com/mudagiri/mudagii/actions/runs/39537262044) にて **Chromium・iPhone相当のWebKit両方で第1章→第2章→第3章の実タップ試験成功**。住まい目標の引継ぎ、公式JOB画像、期間回答、追加1問による収入アップの結果差、戻る操作、第2章相談モーダル復帰、320/375/390/430pxの横はみ出し、外部通信0を確認。[スクリーンショット・レポート](https://github.com/mudagiri/mudagii/actions/runs/39537262044/artifacts/12318601325)を14日間保管。WebKitの自動試験は実iPhone端末での手動QAと区別する。
 
-> **公開URL未発行**：Vercelには旧プロジェクトが登録されているが、対象チーム `nagatsukas-projects` への権限がなく project APIが403。チームの再認可なしにデプロイを実施しない。本番rootへの変更を避ける。
+> **GitHub-only運用（現行方針）**：Vercelは使用しない。Github Actionsで静的Pagesパッケージを生成し、[Chromium/WebKit検証](https://github.com/mudagiri/mudagii/actions/runs/39540774941)も完了。公開URLはまだ未発行。既存Pages本番を上書きしないため、独立したGitHub Pages公開先を必要とする。[運用設計はこちら](./CHAPTER3_V2_GITHUB_ONLY_PREVIEW_PLAN_20261021.md)。
 ベース：PR #51 \`release/chapter12-latest-rpg-ui-first-20261016\`（第1章×第2章V3.2の最新版候補）。PR #70の設計と独立判定POCを流用し、C2側を実際に触るコードは本PRだけで進めた。
 
 ## 0. 今回完了・未完了
