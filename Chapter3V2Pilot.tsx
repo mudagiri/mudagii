@@ -9,7 +9,7 @@ import {buildResultNarrative} from './chapter3-v2/result-narrative.mjs';
 type Props={
   handoff:any;
   onBack:()=>void;
-  onConsult:()=>void;
+  onConsult:(topic:string)=>void;
   onEvent?:(event:string,payload?:Record<string,unknown>)=>void;
 };
 type Screen='destination'|'horizon'|'detail'|'result';
@@ -181,7 +181,7 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
     <div className="c3v2-result-note"><strong>相談すると整理できること</strong><p>{plan?.consultTopic??'これからの優先事項'}。実際の条件や状況を確認しながら作戦を具体化するよ。</p></div>
     <button className="c3v2-btn c3v2-btn--gold" type="button" onClick={()=>{
       announce('consult_preview',{topic:plan?.consultTopic??'future'});
-      onConsult();
+      onConsult(plan?.consultTopic??'今後の優先事項');
     }}>第2章の相談窓口を確認する →</button>
     <button className="c3v2-link" type="button" onClick={onBack}>第2章の戦果へ戻る</button>
     <small className="c3v2-muted">これは診断試作。具体的な金融商品や収入増加の可否を判定するものではありません。</small>
