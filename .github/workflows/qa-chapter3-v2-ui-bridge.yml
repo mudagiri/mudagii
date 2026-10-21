@@ -41,6 +41,7 @@ jobs:
           node --check chapter3-v2/handoff-adapter.mjs
           node scripts/qa-chapter3-v2-counterfactual.mjs
           node scripts/qa-chapter3-v2-handoff.mjs
+          node scripts/qa-chapter3-v2-result-narrative.mjs
       - name: Real V5 builder handoff QA
         run: npx --yes tsx@4.20.6 scripts/qa-chapter3-v2-realvm.ts
       - name: UI bridge static protection assertions
