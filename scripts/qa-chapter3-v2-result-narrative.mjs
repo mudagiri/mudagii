@@ -24,6 +24,10 @@ const narrative=(f,answers)=>{
  const copy=buildResultNarrative(plan,v,answers);assert.ok(copy.ok,'copy can render');
  return {copy,plan};
 };
+const noHousingEvidence=narrative(fixture('home'),{horizon:'near'});
+ok(noHousingEvidence.copy.headline.includes('住まい'),'housing without C2 review still has domain-specific title');
+ok(noHousingEvidence.copy.chapter2Evidence===null,'unknown housing status does not invent C2 evidence');
+ok(noHousingEvidence.copy.limitedEvidence===true,'limited housing data is labeled exploratory');
 const housing=row(fixture('home'),'rent','inspect',0,3500);
 const home=narrative(housing,{horizon:'near'});
 ok(home.plan.actionId==='housing_contract','C2 housing review controls choice');
@@ -66,6 +70,11 @@ for(const [detail,id,word] of [['work','work_time','仕事'],['home','home_time'
  ok(n.copy.headline.includes(word),'time route '+detail+' delivers actual distinct insight');
 }
 ok(new Set(time).size===3,'three time usage answers yield unique steps');
+for(const [goal,horizon,match] of [['challenge','near','挑戦'],['family','near','家族'],['retirement','far','老後'],['travel','near','楽しみ'],['safety','near','保障']]){
+  const n=narrative(fixture(goal),{horizon});
+  ok(n.copy.headline.includes(match),'goal-specific fallback for '+goal);
+  ok(n.copy.chapter2Evidence===null,'unconfirmed C2 never faked for '+goal);
+}
 const unknown=narrative(fixture('undecided'),{horizon:'unknown'});
 ok(unknown.copy.limitedEvidence===true,'unknown goal is honest about limited evidence');
 ok(!unknown.copy.chapter2Evidence,'unknown goal does not fake chapter2 evidence');
