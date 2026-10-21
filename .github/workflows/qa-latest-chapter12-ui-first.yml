@@ -77,6 +77,7 @@ jobs:
           npx --yes tsx@4.20.6 qa-age-income-joint-burden-gate-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-official-peer-category-coverage-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-peer-model-calibration-audit-v1.ts
+          npx --yes tsx@4.20.6 qa-chapter2-peer-model-middle-income-audit-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-official-peer-gap-v1.ts
           npx --yes tsx@4.20.6 qa-chapter2-v32.ts
           test -f dist/index.html
