@@ -451,7 +451,7 @@ await clickButton(/診断結果を見る/);
  assert.ok(parseInt(canRead.font,10)>=16&&canRead.display!=='none','Chapter3 first step should be readable');
  await ch3.getByRole('button',{name:/第2章の戦果へ戻る/}).click();
  await chapter3Entry.waitFor({state:'visible'});
- assert.ok((await goalDetails.innerText()).includes('住まい'),'C2 goal remains after Chapter3 return');
+ assert.equal((await page.locator('[data-section="GOAL_QUEST"] button.is-selected').first().textContent())?.trim(),'住まい','C2 goal remains after Chapter3 return');
  await chapter3Entry.getByRole('button',{name:/未来の地図をひらく/}).click();
  await ch3.waitFor({state:'visible'});
  await ch3.getByRole('button',{name:'目的地を変える'}).click();
