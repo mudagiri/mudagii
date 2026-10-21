@@ -23,7 +23,7 @@ export const PEER_2024_OFFICIAL_ADJACENT_SOURCE={
  productionSavingEligible:false,
 } as const;
 
-const EXTRA_ITEMS=[
+export const EXTRA_ITEMS=[
  {category:'mobile',code:'21010703_通信',label:'通信',scope:'スマホ1回線の料金ではなく郵便・固定通信等も含む公表費目'},
  {category:'car',code:'21010702_自動車等関係費',label:'自動車等関係費',scope:'購入費や非保有世帯を含む。維持費とは合算しない'},
  {category:'car',code:'210107023_自動車等維持',label:'自動車等維持',scope:'自動車等関係費の内数。車保有世帯のみの平均ではない'},

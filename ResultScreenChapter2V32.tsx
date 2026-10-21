@@ -4,6 +4,7 @@ import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
 import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
 import {relatedOfficialExpenseItems2024} from './chapter2-official-related-2024-high-v1';
+import {relatedOfficial50manItems2024} from './chapter2-official-related-2024-middle-single-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
@@ -348,6 +349,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      household:'multi',headAge:rawProfileAge,gross:multiHighGrossBand,
      headAgeConfirmed:multiHeadAgeConfirmed,headWorkerConfirmed,
     }):null;
+ const relatedOriginal50man2024=multiCohort&&multiGrossBand!=='1000plus'
+  ?relatedOfficial50manItems2024({
+     household:'multi',headAge:rawProfileAge,grossBand:multiGrossBand,
+     headAgeConfirmed:multiHeadAgeConfirmed,headWorkerConfirmed,
+    })
+  :vm.profile?.householdSize===1
+   ?relatedOfficial50manItems2024({
+      household:'single',headAge:rawProfileAge,grossBand:singleGrossBand,
+      headAgeConfirmed:true,headWorkerConfirmed,
+     }):null;
  // Verified peer statistics are a separate comparison, NOT a verified monthly
  // savings opportunity (worker status and identical expense mix not confirmed).
  const independentReferenceClues:{category:string;label:string;gap:number;method:'verified_age_income'}[]=[];
@@ -892,6 +903,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      const sameAgeIncomePeer=peerReferenceFor(x.category);
      const relatedPublicItems=relatedOriginal2024?.available
       ?relatedOriginal2024.items.filter(item=>item.category===x.category):[];
+     const related50manItems=relatedOriginal50man2024?.available
+      ?relatedOriginal50man2024.items.filter(item=>item.category===x.category):[];
      const peerUserShare=sameScope?lens.ownPct:null;
 
      const peerGap=chapter2PeerGapV1({
@@ -959,6 +972,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </li>)}</ul>
        <small>原表の概数標本数 {relatedOriginal2024?.available?relatedOriginal2024.n:'—'}世帯。費目平均支出÷同一公表セルの平均可処分所得。本人との割合差・削減額・見直し候補額は計算しません。</small>
       </div>}
+      {related50manItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
+       data-section={'OFFICIAL_RELATED_MIDDLE_SINGLE_'+x.category}
+       data-peer-related-range-category={x.category}>
+       <summary>同年代・同年収帯の関連公表費目を見る（2024年）</summary>
+       <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。診断カテゴリそのものの平均ではありません。</p>
+       <ul>{related50manItems.map(item=><li key={item.code}>
+        <span>{item.label}：<b>{item.ratePctLow.toFixed(2)}{item.ratePctLow===item.ratePctHigh?'':' ～ '+item.ratePctHigh.toFixed(2)}%</b>
+         （月 {money(item.monthlyMeanLowYen)}{item.monthlyMeanLowYen===item.monthlyMeanHighYen?'':' ～ '+money(item.monthlyMeanHighYen)}）</span>
+        <small>{item.scope}</small>
+       </li>)}</ul>
+       <small>同一交差表の50万円階級{relatedOriginal50man2024?.available?relatedOriginal50man2024.sourceRows:0}区分を個別確認（最小概数標本{relatedOriginal50man2024?.available?relatedOriginal50man2024.minCellSample:'—'}世帯）。各原表セルの参考率の最小～最大であり、個人の分布幅でも複数階級を合算した公式平均でもありません。本人との差額・削減額には反映しません。</small>
+      </details>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
        <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
        <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
