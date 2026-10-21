@@ -43,6 +43,7 @@ type Props={
  onChapter3?:(goal:string|null)=>void;
  initialChapter3Goal?:string|null;
  consultFromChapter3?:boolean;
+ chapter3ConsultTopic?:string|null;
  chapter3Error?:string;
 };
 
@@ -260,7 +261,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false,chapter3Error=''}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false,chapter3ConsultTopic=null,chapter3Error=''}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
@@ -271,6 +272,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
  const [goal,setGoal]=useState<string|null>(initialChapter3Goal);
  const [showLine,setShowLine]=useState(consultFromChapter3);
+ const [consultEntryFromChapter3,setConsultEntryFromChapter3]=useState(consultFromChapter3);
  const [showCoverageLine,setShowCoverageLine]=useState(false);
  const [coverageCopyError,setCoverageCopyError]=useState('');
  const [shareStatus,setShareStatus]=useState('');
@@ -382,6 +384,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   }
  }
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
+  setConsultEntryFromChapter3(false);
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
   onEvent?.('chapter2_v31_consultation_modal_opened',{placement,goal:goal??null});
   setShowLine(true);
@@ -1054,8 +1057,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  </div>}
  {showLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowLine(false)}>
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
-   <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
-   <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
+   <span className="c2v2-kicker">{consultEntryFromChapter3?'NEXT QUEST / YOUR STRATEGY':'NEXT QUEST / LIFE PLAN'}</span>
+   <h2 id="c2v2-modal-title">{consultEntryFromChapter3?'この作戦を相談する':'ライフプラン相談の案内へ'}</h2>
+   {consultEntryFromChapter3&&chapter3ConsultTopic&&<p className="c2v2-talk">今回の相談テーマ：{chapter3ConsultTopic}</p>}
    <p>{pilotNoExternalActions?'これは調査用の案内画面です。公式LINEへの移動や相談予約は行われません。':'公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。'}</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
    <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで無料相談の案内を受け取る →</button>
