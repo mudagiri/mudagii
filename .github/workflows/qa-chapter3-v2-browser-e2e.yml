@@ -9,6 +9,7 @@ on:
       - 'MudagiriAppV2.tsx'
       - 'ResultScreenChapter2V32.tsx'
       - 'chapter3-v2/**'
+      - 'scripts/package-chapter3-v2-github-pages.mjs'
       - '.github/workflows/qa-chapter3-v2-browser-e2e.yml'
   workflow_dispatch:
 
@@ -35,12 +36,18 @@ jobs:
           npm run build
           test -f dist/index.html
           ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
-      - name: Assemble same-origin isolated Chapters 1/2/3 (no deployment)
+      - name: Assemble compact standalone GitHub Pages bundle (no deployment)
+        run: node scripts/package-chapter3-v2-github-pages.mjs
+      - name: Serve the exact Pages-ready bundle with shared static assets
         run: |
-          mkdir -p preview/pilot/chapter2-v32/pilot/money-type
-          cp -R dist/. preview/
-          cp -R dist/. preview/pilot/chapter2-v32/
-          cp -R dist/. preview/pilot/chapter2-v32/pilot/money-type/
+          mkdir -p preview
+          cp -R github-pages-chapter3-v2-bundle/. preview/
+          test -f preview/chapter3-v2-preview.html
+          test -f preview/pilot/chapter2-v32/index.html
+          test -f preview/pilot/chapter2-v32/pilot/money-type/index.html
+          test ! -d preview/pilot/chapter2-v32/assets
+          test ! -d preview/pilot/chapter2-v32/pilot/money-type/assets
+          test -d preview/assets
       - name: Install browser automation runner
         run: npm install --no-save --package-lock=false playwright@1.55.0
       - name: Start local static preview
