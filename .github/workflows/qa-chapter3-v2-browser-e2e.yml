@@ -1,0 +1,72 @@
+name: Chapter3 V2 Real Browser Journey (Isolated)
+
+on:
+  pull_request:
+    paths:
+      - 'qa-chapter3-v2-browser.mjs'
+      - 'Chapter3V2Pilot.tsx'
+      - 'chapter3-v2-pilot.css'
+      - 'MudagiriAppV2.tsx'
+      - 'ResultScreenChapter2V32.tsx'
+      - 'chapter3-v2/**'
+      - '.github/workflows/qa-chapter3-v2-browser-e2e.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chapter3-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container: {image: "mcr.microsoft.com/playwright:v1.55.0-noble"}
+    env:
+      VITE_CHAPTER2_V32: "1"
+      VITE_CHAPTER3_V2: "1"
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Build with Chapter3 V2 opt-in, no GAS and no analytics
+        run: |
+          npm run build
+          test -f dist/index.html
+          ! grep -R -l -E 'script.google.com/macros/s/.+/exec' dist/assets/*.js
+      - name: Assemble same-origin isolated Chapters 1/2/3 (no deployment)
+        run: |
+          mkdir -p preview/pilot/chapter2-v32/pilot/money-type
+          cp -R dist/. preview/
+          cp -R dist/. preview/pilot/chapter2-v32/
+          cp -R dist/. preview/pilot/chapter2-v32/pilot/money-type/
+      - name: Install browser automation runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Start local static preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/chapter3-v2-e2e.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v32/pilot/money-type/ >/dev/null; then exit 0; fi
+            sleep 0.4
+          done
+          cat /tmp/chapter3-v2-e2e.log
+          exit 1
+      - name: Chromium Chapter1→Chapter2→Chapter3 real click E2E
+        env:
+          BROWSER_ENGINE: chromium
+          INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"
+        run: node qa-chapter3-v2-browser.mjs
+      - name: iPhone-like WebKit Chapter1→Chapter2→Chapter3 E2E
+        env:
+          BROWSER_ENGINE: webkit
+          INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"
+        run: node qa-chapter3-v2-browser.mjs
+      - name: Save synthetic-only screenshots and browser reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-v2-browser-qa-screens
+          path: integration-v32-mobile-qa/
+          retention-days: 14
+          if-no-files-found: warn
