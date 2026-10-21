@@ -472,7 +472,7 @@ await clickButton(/診断結果を見る/);
  await page.locator('.c2v2-root').waitFor({state:'visible'});
  const c2Modal=page.getByRole('dialog',{name:'ライフプラン相談の案内へ'});
  await c2Modal.waitFor({state:'visible'});
- assert.match(await c2Modal.innerText(),/友だち追加だけでは予約は確定しません/);
+ assert.match(await c2Modal.innerText(),/調査用の案内画面です。公式LINEへの移動や相談予約は行われません/);
  await page.getByRole('button',{name:'今は結果を見る'}).click();
  await c2Modal.waitFor({state:'hidden'});
  assert.equal(outgoing.length,0,'No GAS/analytics/LINE network requests in isolated Chapter3 preview');
