@@ -6,6 +6,9 @@ import ResultScreenChapter2V2 from './ResultScreenChapter2V2';
 import ResultScreenChapter2V3 from './ResultScreenChapter2V3';
 import ResultScreenChapter2V31 from './ResultScreenChapter2V31';
 import ResultScreenChapter2V32 from './ResultScreenChapter2V32';
+import Chapter3V2Pilot from './Chapter3V2Pilot';
+// @ts-ignore Isolated Chapter 3 V2 JS adapter; this prototype is deliberately gated.
+import {buildChapter3HandoffFromV5,C3_HANDOFF_CONSENT} from './chapter3-v2/handoff-adapter.mjs';
 import {chapter2V2Enabled,readChapter1HandoffV1} from './chapter2-v2-contract';
 import {chapter1LinkageV1,validatedChapter1LinkageV1,type Chapter1LinkageV1} from './chapter1-linkage-v1';
 import {lineLeadIdV1} from './line-lead-id-v1';
@@ -43,6 +46,8 @@ export type CompletedV3={
 export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:Record<string,unknown>)=>void;onEvent?:(n:string,p?:Record<string,unknown>)=>void;persistence?:PersistenceV3}){
  // V1 remains the default; V2 is enabled explicitly for previews or release builds.
  const chapter2V32=(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter2v32')==='1')||(import.meta as any).env?.VITE_CHAPTER2_V32==='1';
+ // Independent Chapter 3 V2 pilot is opt-in, never the default public result.
+ const chapter3V2Pilot=chapter2V32&&((typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter3v2')==='1')||(import.meta as any).env?.VITE_CHAPTER3_V2==='1');
  // Prototype only; V32 diagnosis logic, default UI and external handoff stay unchanged.
  const answerCheckEnabled=chapter2V32&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter12check')==='1';
  const chapter2V31=(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('chapter2v31')==='1')||(import.meta as any).env?.VITE_CHAPTER2_V31==='1';
@@ -55,6 +60,10 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
  const [resumeChoice,setResumeChoice]=useState(()=>!restored&&!!draft);
  const [resumeOffered]=useState(()=>!restored&&!!draft);
  const [result,setResult]=useState<any>(null);
+ const [chapter3Handoff,setChapter3Handoff]=useState<any>(null);
+ const [chapter3Goal,setChapter3Goal]=useState<string|null>(null);
+ const [chapter3Error,setChapter3Error]=useState('');
+ const [chapter3ConsultReturn,setChapter3ConsultReturn]=useState(false);
  const [diagnosisId,setDiagnosisId]=useState(()=>restored?.diagnosisId??draft?.diagnosisId??(typeof window==='undefined'?'server':newDiagnosisId()));
  const [anonymousUserId]=useState(()=>restored?.anonymousUserId??draft?.anonymousUserId??(typeof window==='undefined'?'server':getOrCreateAnonymousUserId()));
  const store=useMemo(()=>persistence??(typeof window!=='undefined'?productionPersistenceV3(new LocalPersistenceV3()):undefined),[persistence]);
@@ -157,7 +166,42 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
 
  const ResultComponent:any=chapter2V32&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V32:(chapter2V31&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V31:(chapter2V3&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V3:(chapter2V2&&result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenChapter2V2:(result?.version==='MUDAGIRI_RESULT_VM_V5_0'?ResultScreenV5:ResultScreenV4))));
 
- if(result)return <ResultComponent vm={result} chapter1={chapter2V2?readChapter1HandoffV1(anonymousUserId):null} answerCheckEnabled={answerCheckEnabled} answerCheckAnonymousUserId={answerCheckEnabled?anonymousUserId:null} onEvent={emit} onBeforeExternal={()=>{const active=typeof window!=='undefined'?readActiveResultV1():null;if(!active||active.diagnosisId!==diagnosisId)throw new Error('active result missing before external navigation')}} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={(ctx:any)=>{
+ if(result&&chapter3V2Pilot&&chapter3Handoff)return <Chapter3V2Pilot
+  handoff={chapter3Handoff}
+  onBack={()=>{setChapter3Handoff(null);window.scrollTo({top:0,behavior:'auto'})}}
+  onConsult={()=>{setChapter3ConsultReturn(true);setChapter3Handoff(null);window.scrollTo({top:0,behavior:'auto'})}}
+  onEvent={emit}
+ />;
+
+ if(result)return <ResultComponent
+  pilotNoExternalActions={chapter3V2Pilot}
+  chapter3Error={chapter3Error}
+  initialChapter3Goal={chapter3Goal}
+  consultFromChapter3={chapter3ConsultReturn}
+  onChapter3={chapter3V2Pilot?(goal:string|null)=>{
+   // Build the opt-in projection only after the player's actual button click.
+   // The Chapter1 handoff is identity-checked against the active anonymous ID.
+   const source=readChapter1HandoffV1(anonymousUserId);
+   const check=buildChapter3HandoffFromV5({
+     consent:C3_HANDOFF_CONSENT,
+     anonymousUserId,diagnosisId,chapter2Vm:result,
+     chapter2Goal:goal,
+     chapter1Handoff:source,
+     createdAt:new Date().toISOString(),
+   });
+   if(!check.ok){
+    setChapter3Error('データを安全に引き継げませんでした。第2章の結果を確認してから、もう一度試してね。');
+    emit('chapter3_v2_entry_blocked',{reason:check.error});
+    return;
+   }
+   setChapter3Error('');
+   setChapter3Goal(goal);
+   setChapter3ConsultReturn(false);
+   setChapter3Handoff(check.handoff);
+   emit('chapter3_v2_entry_succeeded',{goalSelected:!!goal,hasVerifiedJob:!!check.handoff.chapter1});
+   window.scrollTo({top:0,behavior:'auto'});
+  }:undefined}
+  vm={result} chapter1={chapter2V2?readChapter1HandoffV1(anonymousUserId):null} answerCheckEnabled={answerCheckEnabled} answerCheckAnonymousUserId={answerCheckEnabled?anonymousUserId:null} onEvent={emit} onBeforeExternal={()=>{const active=typeof window!=='undefined'?readActiveResultV1():null;if(!active||active.diagnosisId!==diagnosisId)throw new Error('active result missing before external navigation')}} onRestart={()=>{const nextId=typeof window==='undefined'?'server':newDiagnosisId();if(typeof window!=='undefined')clearResumeStateV1();onEvent?.('journey_restarted',{from:'result'});store?.appendEvent(eventV3(anonymousUserId,diagnosisId,'journey_restarted',{from:'result'}));setRestored(null);setResult(null);setChapter3Handoff(null);setChapter3Goal(null);setChapter3ConsultReturn(false);setChapter3Error('');setToneMode('serious');setDiagnosisId(nextId);window.scrollTo({top:0,behavior:'auto'})}} onLine={(ctx:any)=>{
    const payload={...ctx,anonymousUserId,diagnosisId,confirmedMonthly:result.potential?.confirmedA??result.improvement?.monthly??0,potentialLower:result.potential?.lower??result.improvement?.monthly??0,potentialUpper:result.potential?.upper??result.improvement?.monthly??0,futureGoal:ctx?.goal??null};
    void Promise.resolve(store?.saveLead?.({leadId:lineLeadIdV1(diagnosisId,ctx?.handoffCode,ctx?.placement),anonymousUserId,diagnosisId,createdAt:new Date().toISOString(),stage:'anonymous',source:'result_line_cta',toneMode,chapter1Link:validatedChapter1LinkageV1(result.chapter1Link),typeCode:result.type.code,typeName:result.type.name,typeAxes:result.type.axes,typeStrength:result.type.axisStrength,annualIncomeBand:result.annualIncomeBand,profile:result.profile??null,rawExpenses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{known:x.known,amount:x.amount,applicability:x.applicability}])),appraisal:Object.fromEntries(result.rows.filter((x:any)=>x.appraisal).map((x:any)=>[x.category,x.appraisal])),finalStatuses:Object.fromEntries(result.rows.map((x:any)=>[x.category,{status:x.status,reducible:x.reducible,attentionFlag:x.attentionFlag}])),needsReview:result.rows.filter((x:any)=>x.status==='review').map((x:any)=>x.category),protectedCategories:result.rows.filter((x:any)=>x.status==='protect').map((x:any)=>x.category),battleTargets:result.battleTargets.map((x:any)=>x.category),monthlyImprovement:result.improvement.monthly,firstQuest:ctx?.firstQuest??null,ctaPlacement:ctx?.placement??null,handoffCode:ctx?.handoffCode??null,consultPrimary:ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',consultSelectedTopic:ctx?.consultSelectedTopic??ctx?.consultPrimary??result.consultRoute?.primary??'lifeplan',insuranceReview:ctx?.insuranceReview??result.consultRoute?.insuranceReview??false,homeStructure:ctx?.homeStructure??null,solarEligible:ctx?.solarEligible??false,consultRoute:result.consultRoute??null,goal:ctx?.goal??null})).catch(()=>{});
    // Coverage intent must reach the official LINE handler without forwarding
