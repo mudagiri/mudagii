@@ -85,8 +85,10 @@ export function planNextAction(parsed,input){
    if(cUpper>0)tags.push("c2_c_not_cash");
  }else if(goal==="time"){
    consultTopic="働き方と時間のバランス";
-   actionId=detail==="work"?"work_time":"find_time_use";
-   firstStep=detail==="work"?"仕事で減らせそうな予定を一つ探す":"今週、自分の時間を使った活動を一つ書く";
+   if(detail==="work"){actionId="work_time";firstStep="今の仕事で調整できそうな予定を一つ探す";}
+   else if(detail==="home"){actionId="home_time";firstStep="家事・育児などで他の人に分担を相談できそうな作業を一つ書く";}
+   else if(detail==="move"){actionId="move_time";firstStep="今週最も時間を使った移動の回数と所要時間を確かめる";}
+   else {actionId="find_time_use";firstStep="今週、自分の時間を使った活動を一つ書く";}
    if(detail==="unknown")question="時間を使う先は仕事・家事・移動・その他のどれ？";
  }else if(goal==="travel"){
    consultTopic="趣味と旅の資金計画";actionId="travel_budget";firstStep="叶えたい旅行・趣味の予定と必要費用を一つ書く";
