@@ -71,9 +71,9 @@ export default function MudagiriAppV2({onLine,onEvent,persistence}:{onLine?:(x?:
 
  const emit=useCallback((name:string,data?:Record<string,unknown>)=>{
    onEvent?.(name,data);
-   if(chapter2V32||chapter2V31)trackMudagiriProductEvent('chapter2',name,data);
+   if(!chapter3V2Pilot&&(chapter2V32||chapter2V31))trackMudagiriProductEvent('chapter2',name,data);
    store?.appendEvent(eventV3(anonymousUserId,diagnosisId,name,data));
- },[onEvent,store,anonymousUserId,diagnosisId,chapter2V31,chapter2V32]);
+ },[onEvent,store,anonymousUserId,diagnosisId,chapter2V31,chapter2V32,chapter3V2Pilot]);
 
  useEffect(()=>{if(resumeOffered&&draft)emit('journey_resume_offered',{scene:draft.scene})},[resumeOffered,draft,emit]);
 
