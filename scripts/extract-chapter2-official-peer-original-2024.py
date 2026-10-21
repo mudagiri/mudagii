@@ -99,16 +99,21 @@ def extract(path, household):
                 work=str(cells.get("F",""))
                 age=str(cells.get("H",""))
                 mode=str(cells.get("I",""))
+                target_ages=("30歳未満","30～39","40～49","50～59","60～69","70～79")
+                expense_item=item in {x for labels in CODES.values() for x in labels}
+                sample_row=(mode=="集計世帯数（概数）" and item=="0_総数")
                 if (("勤労者世帯" in work or work.startswith("1_"))
-                    and ("30～39" in age or "40～49" in age or "50～59" in age)
-                    and (item in {x for labels in CODES.values() for x in labels}
-                         or "集計世帯数" in item)):
+                    and any(label in age for label in target_ages)
+                    and (expense_item or sample_row)):
+                    all_income_columns={
+                        c:v for c,v in cells.items()
+                        if c and 13<=sum((ord(letter)-64)*26**i
+                          for i,letter in enumerate(reversed(c)))<=56
+                    }
                     candidates.append({
                         "sourceRow":node.attrib.get("r"),
                         "F_worker":work,"H_headAge":age,"I_measure":mode,
-                        "K_item":item,
-                        "grossBands":{c:cells.get(c,"")
-                          for c in ("M","N","R","S","T","AA","AB","AC","BB","BC","BD")}
+                        "K_item":item,"grossBands":all_income_columns,
                     })
                 root.clear()
     return {
