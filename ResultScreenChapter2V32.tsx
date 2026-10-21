@@ -39,6 +39,10 @@ type Props={
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
  onBeforeExternal?:()=>void;
+ /** Isolated Chapter 3 V2 entry — only supplied by an explicit preview parent. */
+ onChapter3?:(goal:string|null)=>void;
+ initialChapter3Goal?:string|null;
+ consultFromChapter3?:boolean;
 };
 
 const ART={
@@ -255,7 +259,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
@@ -264,8 +268,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
- const [goal,setGoal]=useState<string|null>(null);
- const [showLine,setShowLine]=useState(false);
+ const [goal,setGoal]=useState<string|null>(initialChapter3Goal);
+ const [showLine,setShowLine]=useState(consultFromChapter3);
  const [showCoverageLine,setShowCoverageLine]=useState(false);
  const [coverageCopyError,setCoverageCopyError]=useState('');
  const [shareStatus,setShareStatus]=useState('');
@@ -1001,6 +1005,17 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </details>
   </section>
 
+
+  {onChapter3&&<section className="c2v2-card c2v31-goals" data-section="CHAPTER3_V2_ENTRY" aria-label="未来への冒険">
+   <span className="c2v2-kicker">CHAPTER III ／ 未来の航路【隔離プレビュー】</span>
+   <h2>次は、未来へ進む番だよ。</h2>
+   <p>第1章で知った自分の戦い方と、今回の家計の手がかりを連れていこう。もう答えた目的地は、聞き直さないよ。</p>
+   <p className="c2v2-note">第3章で使うのはJOB・STYLEと12カテゴリの確認状況、見直し機会・未確定候補。金額を実際に貯めたお金とは扱いません。第2章から直接相談することもできます。</p>
+   <button type="button" className="c2v2-primary" onClick={()=>{
+    onEvent?.('chapter3_v2_entry_requested',{from:'chapter2_v32',goalSelected:!!goal});
+    onChapter3(goal);
+   }}>⚑ 未来の地図をひらく →</button>
+  </section>}
 
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
