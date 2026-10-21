@@ -15,7 +15,7 @@ ok(main.includes("consent:C3_HANDOFF_CONSENT"),'explicit entry action requiremen
 ok(main.includes("const source=readChapter1HandoffV1(anonymousUserId)"),'only valid C1 source');
 ok(main.includes("chapter2Goal:goal"),'C2 selected goal forwarded');
 ok(main.includes("chapter2Vm:result"),'live V5 VM forwarded');
-ok(main.includes("chapter3Handoff&&"),'pilot mounted only with validated handoff');
+ok(main.includes("if(result&&chapter3V2Pilot&&chapter3Handoff)"),'pilot mounted only with validated handoff');
 ok(main.includes("pilotNoExternalActions={chapter3V2Pilot}"),'pilot mode prevents C2 outbound actions');
 ok(result.includes("onChapter3?:(goal:string|null)=>void"),'result opt-in callback');
 ok(result.includes("initialChapter3Goal"),'return path preserves C2 goal');
