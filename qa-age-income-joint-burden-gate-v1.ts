@@ -46,7 +46,7 @@ assert.equal(otherAge.available,false,'2024 original single under30 550-600万�
 assert.equal(otherAge.reason,'JOINT_SOURCE_CELL_MISSING');
 const small=resolve2024SingleWorkerPeerBurdenV1(63,'500_599','food');
 assert.equal(small.available,false,'n=30 approximate in one of two original subcells is below conservative 50');
-assert.equal(small.reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(small.reason,'JOINT_SOURCE_CELL_MISSING','single age60s 500〜599 lacks two valid original 50万円 published income cells');
 assert.equal(resolve2024SingleWorkerPeerBurdenV1(35,'600plus','food').available,false);
 assert.equal(resolve2024SingleWorkerPeerBurdenV1(75,'400_499','food').available,false);
 assert.equal(resolveJointBurdenV1(input,[{...fixture,verifiedOfficialCell:false}]).reason,'RAW_CELLS_NOT_VERIFIED');
