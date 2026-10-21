@@ -107,6 +107,7 @@ def extract(path, household):
                 sample_row=(mode=="集計世帯数（概数）" and item=="0_総数")
                 if (("勤労者世帯" in work or work.startswith("1_"))
                     and any(label in age for label in target_ages)
+                    and age.endswith("（10歳階級2）")
                     and (expense_item or sample_row)):
                     all_income_columns={
                         c:v for c,v in cells.items()
