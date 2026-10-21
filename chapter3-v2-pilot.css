@@ -29,3 +29,9 @@
 .c3v2 button:focus-visible{outline:3px solid #f7d488;outline-offset:3px}
 @media(max-width:390px){.c3v2-shell{padding-left:12px;padding-right:12px}.c3v2-panel{padding:14px}.c3v2-choice-grid{gap:7px}.c3v2-choice{padding:9px;font-size:13px}.c3v2-job{width:67px;height:80px}.c3v2-guide img{width:60px;height:60px}}
 @media(prefers-reduced-motion:reduce){.c3v2 *{transition:none!important;animation:none!important}}
+
+/* Draft 0.9: first-view insight precedes the action; uncertainty stays readable. */
+.c3v2-insight{margin:0 0 16px;color:#f4e9c7;font-size:15px;line-height:1.78;font-weight:500;letter-spacing:.005em}
+.c3v2-uncertainty{font-size:12px;line-height:1.65;color:#c2d5dd;background:#10283a;border:1px solid #46657a;padding:11px 13px;border-radius:10px;margin:0 0 18px}
+.c3v2-uncertainty strong{display:block;color:#e5d39e;font-size:12px;margin-bottom:2px}
+@media(max-width:390px){.c3v2-insight{font-size:14px;line-height:1.73}.c3v2-result-hero strong{font-size:18px}}
