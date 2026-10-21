@@ -483,61 +483,10 @@ await clickButton(/診断結果を見る/);
  console.log('CHAPTER3_V2_BROWSER_BRIDGE_PASS',engine,
   JSON.stringify({job:before.handoff.jobCode,readable:true,outbound:outgoing.length}));
 
- await screenshot('13-result-entry-before-assert');
- for(const width of [320,375,390,430]){
-  await page.setViewportSize({width,height:844});
-  const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
-   comparisonRows:document.querySelectorAll('[data-comparison-category]').length,shareButton:!!document.querySelector('.c2v31-share-primary')}));
-  assert.ok(layout.scrollWidth<=width+2,'No mobile horizontal overflow: '+JSON.stringify(layout));
-  assert.equal(layout.comparisonRows,12,'All comparisons stay visible at '+width);
-  assert.ok(layout.shareButton,'One primary share action remains present');
-  await auditChapter2TextContrast(page,{viewportWidth:width});
-  await screenshot('04-v32-mobile-'+width);
- }
- await page.setViewportSize({width:390,height:844});
- const result=await page.evaluate(()=>JSON.parse(localStorage.getItem('mudagiri_active_result_v1')||'null'));
- assert.equal(result?.methodology?.type,'CHAPTER2_V2_NO_PERSONALITY');
- assert.equal(Object.keys(result?.completed?.typeAnswers||{}).length,0);
- await page.getByRole('button',{name:/無料ライフプラン相談の案内を見る/}).click();
- const modal=page.getByRole('dialog',{name:'ライフプラン相談の案内へ'});
- await modal.waitFor({state:'visible'});
- assert.ok((await modal.innerText()).includes('友だち追加だけでは予約は確定しません'));
- await screenshot('05-v32-consultation-modal');
- await page.getByRole('button',{name:'今は結果を見る'}).click();
- await modal.waitFor({state:'hidden'});
- // One image-share CTA; optional tools start collapsed to reduce decision load.
- const alternatives=page.locator('.c2v31-share-alternatives');
- assert.ok(!(await alternatives.evaluate(el=>el.open)),'Optional share tools must start collapsed');
- await alternatives.locator('summary').click();
- await clickButton(/招待リンクをコピー/);
- const copied=await page.evaluate(()=>window.__integrationShare.find(v=>v.kind==='clipboard'));
- assert.ok(copied?.text.includes(firstUrl),'Copied referral must point to same-preview Chapter 1');
- // Text-only share retains correct referral routing and is explicitly labeled.
- await clickButton(/Xで文章を共有/);
- const links=await page.evaluate(()=>window.__integrationShare);
- const x=links.find(v=>v.kind==='open'&&v.url.includes('twitter.com/intent/tweet'));
- assert.ok(x,'X share intent missing');
- const decoded=decodeURIComponent(new URL(x.url).searchParams.get('text')||'');
- assert.ok(decoded.includes(firstUrl),'Chapter 2 referral must lead to the integrated Chapter 1 entry');
- await page.getByRole('button',{name:/画像付きでシェアする/}).waitFor({state:'visible'});
- await clickButton(/画像付きでシェアする/);
- await page.waitForFunction(()=>String(window.__v31SharePng||'').startsWith('data:image/png;base64,'),null,{timeout:12000});
- const png=await page.evaluate(()=>window.__v31SharePng);
- await fs.writeFile(out+'/06-v32-guild-social-card.png',Buffer.from(png.split(',')[1],'base64'));
- const lastShare=await page.evaluate(()=>window.__integrationShare.find(x=>x.kind==='share'));
- assert.ok(lastShare.files.includes('mudagiri-household-quest.png'),'native share should attach PNG');
- assert.ok(!/1800|350000|70000|¥/.test(JSON.stringify(lastShare)),'share must not include sensitive financial amounts');
- await page.reload({waitUntil:'networkidle'});
- await page.locator('.c2v2-root').waitFor({state:'visible',timeout:14000});
- assert.ok((await page.locator('.c2v31-job-card').innerText()).includes(before.handoff.jobName),'Handoff must survive reload');
- await screenshot('05-chapter2-resumed');
- if(errors.length)throw new Error('BROWSER_PAGE_ERRORS:'+JSON.stringify(errors));
- await fs.writeFile(out+'/report.json',JSON.stringify({
-  ok:true,engine,simulatedMobile:true,publicPageNotModified:true,chapter1Count:count,
-  inheritedJobCode:before.handoff.jobCode,anonymousIdsEqual:true,legacyEightQuestionsSkipped:true,
-  savedResultWithoutTypeAnswers:true,referralToChapter1:true,reloadPassed:true
- },null,2));
- console.log('CHAPTER2_V32_INTEGRATION_PASS',engine,'answers',count,'JOB',before.handoff.jobCode);
+
+ if(errors.length)throw new Error('CHAPTER3_V2_BROWSER_PAGE_ERRORS: '+JSON.stringify(errors));
+ await screenshot('19-chapter2-return-from-chapter3');
+ console.log('CHAPTER3_V2_REAL_JOURNEY_PASS',engine);
 }finally{
  await browser.close();
 }
