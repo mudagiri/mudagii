@@ -142,6 +142,50 @@ try{
  await selectGross('');
  assert.equal(await peers().count(),0,'Unselecting exact income must revoke peer');
  assert.equal(await matchStatus.count(),0,'Clearing selection also clears contextual status');
+ // Switching the isolated QA fixture to the original 500–599万円 group
+ // must not reuse the previous 1000+ high-income columns or confirmation.
+ await page.locator('#qa-head-age').selectOption('35');
+ await page.locator('#qa-gross-band').selectOption('500_599');
+ const middleWorker=page.locator('#c2v32-worker-status-confirm');
+ const middleHead=page.locator('#c2v32-head-age-confirm');
+ await middleWorker.waitFor({state:'visible'});
+ await middleHead.waitFor({state:'visible'});
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),0,
+  'Middle-income related official items are not visible before population gates');
+ await middleWorker.check();
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),0,
+  'Middle-income requires household head age confirmation too');
+ await middleHead.check();
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),7,
+  '30s multi 500–599 official original supports all seven related public fee groups');
+ const midComm=page.locator('[data-peer-related-range-category="mobile"]');
+ await midComm.locator('summary').click();
+ assert.ok((await midComm.innerText()).includes('2.92 ～ 2.94%'),
+  'Official 500–550 and 550–600 communication cell rates are a range, not synthetic mean');
+ assert.ok((await midComm.innerText()).includes('合算した公式平均でもありません'),
+  'Do not mislabel two 50万円 cell means as one 100万円-band official average');
+ assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,
+  'Official related category range never becomes claimed savings');
+
+ // Single-person official worker cells: head age follows respondent age.
+ await page.locator('#qa-household-type').selectOption('single');
+ const singleWorker=page.locator('#c2v32-worker-status-confirm');
+ await singleWorker.waitFor({state:'visible'});
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),0,
+  'Single original public fee rates need worker status gate');
+ await singleWorker.check();
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),6,
+  '30s single 400–499 original has six related groups; education is not a single-person comparable');
+ assert.equal(await page.locator('[data-peer-related-range-category="childEducation"]').count(),0,
+  'Do not invent single-household children education expenses');
+ const singleComm=page.locator('[data-peer-related-range-category="mobile"]');
+ await singleComm.locator('summary').click();
+ assert.ok((await singleComm.innerText()).includes('2.74 ～ 3.07%'),
+  'Single worker age30s original communication 400–450/450–500 rates match raw source');
+ await singleWorker.uncheck();
+ assert.equal(await page.locator('[data-peer-related-range-category]').count(),0,
+  'Revoking worker-status confirmation hides all related ranges');
+
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:844});
   const scrollWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
