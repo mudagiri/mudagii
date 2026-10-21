@@ -25,6 +25,7 @@ export const AGE_INCOME_JOINT_SOURCE_V1={
 // Require >=50 approximate sampled households for each narrow original
 // age×income class; stricter than our previous 2025 income-only n>=30.
 import {OBSERVED_2024_MULTI_WORKER_CELLS} from './age-income-joint-multi-2024-official-v1';
+import {OFFICIAL_2024_ORIGINAL_50MAN_WORKER_CELLS_V2} from './official-2024-50man-aligned-worker-v2';
 import {OBSERVED_2024_HIGH_MULTI_WORKER_CELLS} from './age-income-joint-high-2024-official-v1';
 
 export const AGE_INCOME_JOINT_MIN_SAMPLE=50;
@@ -109,28 +110,10 @@ export function resolveJointBurdenV1(input:JointBurdenInputV1,rows:readonly Join
  * For multi-family households, head age may not match respondent's age;
  * those official cross cells are NOT in this dataset.
  */
-const OBSERVED_2024_SINGLE_WORKER_CELLS:readonly (readonly [string,string,number,number,number,number,number,number])[]=[
- ["30歳未満（10歳階級2）","400～450万円",120,233091,35816,8957,2484,952],
- ["30歳未満（10歳階級2）","450～500万円",130,243596,37367,8700,1936,2583],
- ["30歳未満（10歳階級2）","500～550万円",80,284441,40874,9376,3031,757],
- ["30歳未満（10歳階級2）","550～600万円",70,309716,34099,5842,1195,778],
- ["30～39（10歳階級2）","400～450万円",80,245650,62223,11445,1765,1133],
- ["30～39（10歳階級2）","450～500万円",100,271421,40265,10448,1712,1135],
- ["30～39（10歳階級2）","500～550万円",80,248002,44099,10635,1782,1136],
- ["30～39（10歳階級2）","550～600万円",90,421635,51309,11733,1578,1315],
- ["40～49（10歳階級2）","400～450万円",60,248914,29375,9582,2252,934],
- ["40～49（10歳階級2）","450～500万円",70,247879,40524,12612,2002,1203],
- ["40～49（10歳階級2）","500～550万円",60,292434,49170,10884,1581,1438],
- ["40～49（10歳階級2）","550～600万円",70,299450,46262,10167,1371,754],
- ["50～59（10歳階級2）","400～450万円",80,240423,46201,11547,1862,1544],
- ["50～59（10歳階級2）","450～500万円",60,281980,48413,12292,1583,1131],
- ["50～59（10歳階級2）","500～550万円",60,256815,44555,12989,3805,1407],
- ["50～59（10歳階級2）","550～600万円",70,288926,53055,12761,2831,1418],
- ["60～69（10歳階級2）","400～450万円",100,233822,46015,12185,1801,1560],
- ["60～69（10歳階級2）","450～500万円",60,248716,59187,14556,1455,1143],
- ["60～69（10歳階級2）","500～550万円",50,283323,52152,12300,6680,1289],
- ["60～69（10歳階級2）","550～600万円",30,323212,58783,12491,1206,1395],
-] as const;
+const OBSERVED_2024_SINGLE_WORKER_CELLS:readonly (readonly [string,string,number,number,number,number,number,number])[]=
+ OFFICIAL_2024_ORIGINAL_50MAN_WORKER_CELLS_V2
+  .filter(row=>row[0]==='single')
+  .map(row=>[row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]] as const);
 export const VERIFIED_2024_JOINT_BURDEN_CELLS_V1:readonly JointAgeIncomeRowV1[]=
  [
  ...OBSERVED_2024_SINGLE_WORKER_CELLS.map(([ageBand,grossAnnualIncomeBand,approximateSample,
