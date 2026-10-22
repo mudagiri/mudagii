@@ -2,6 +2,9 @@
 
 作成：2026-10-22 JST。現行の第1・第2章本番リポジトリ`mudagiri/mudagii`は変更しない。
 
+
+> **2026-10-23 更新**：公開ワークフローはChromium/WebKitの全章通しQAと160件の自動チェックがPASSした固定SHA `a860bc8f40883dbdaff0259afce3d42df48dc4fe`を参照する方式に変更。PR #77へ以後変更が入っても、未検証の試作を自動で公開しない。GitHubの接続先に新しいリポジトリへのアクセスが付与された場合は、ワークフローファイルの配置はこのチャットから実行できる。**新しいリポジトリの作成そのものとPagesの設定はまだ未実施。**
+
 ## 現時点での状態
 
 公開素材一式は GitHub Actions によって生成できる。PR #77はDraft、公開URLは未発行。
@@ -10,7 +13,7 @@
 ## 実際のライブURLを作る手順（ユーザー操作が必要）
 
 1. GitHubでログインし、**New repository** からオーナー`mudagiri`で公開リポジトリ **`mudagiri.github.io`** を新規作成する（既存所有/使用状況を先に確認）。**Public**、README付きでよい。
-2. 作成した`mudagiri.github.io`内に **`.github/workflows/deploy.yml`** を追加。内容はソースPR #77に用意した[テンプレート](https://github.com/mudagiri/mudagii/blob/feat/chapter3-v2-bridge-isolated-20261021/docs/github-pages-chapter3-demo-workflow.yml)を**全文コピー**する。
+2. 作成した`mudagiri.github.io`内に **`.github/workflows/deploy.yml`** を追加。GitHub連携から新リポジトリの編集権限が確認できればこちらで配置可能。そうでない場合は内容をソースPR #77に用意した[テンプレート](https://github.com/mudagiri/mudagii/blob/feat/chapter3-v2-bridge-isolated-20261021/docs/github-pages-chapter3-demo-workflow.yml)を**全文コピー**する。
 3. その新しいリポジトリの **Settings → Pages → Build and deployment** で**GitHub Actions**を選ぶ。
 4. 新しいリポジトリの **Actions → Chapter3 V2 Independent GitHub Pages Demo → Run workflow** を手動実行する。
 5. 成功したらリポジトリのPages画面に表示された実URLを確認し、**`/chapter3-v2-preview.html`** にアクセスする。**URLは今この時点では未生成であり推測値を本番リンクとして伝えない。**
