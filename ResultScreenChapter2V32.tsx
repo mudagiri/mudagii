@@ -779,6 +779,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
+   {vm.profile?.householdSize===1&&vm.profile?.singlePeerGrossBand2024==='under400'&&
+    <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
+     入口で選んだ「400万円未満」は受け取ったよ。ただし現在の検証済み2024年交差集計では、この年収帯と同年代の参考率はまだ出せないため、推計で埋めないよ。
+    </p>}
    {vm.profile?.householdSize===1&&<details open={!vm.profile?.singlePeerGrossBand2024} className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
     <summary>同年代・単身・同所得帯と比べる（任意）</summary>
     <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
@@ -789,7 +793,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>月手取りから年収を推定せず、2024年の公式交差集計を確認できる区分だけ同年代の参考率を示すよ。入口で入力した年収帯はプロフィールに保持される場合があるけれど、ここで選び直しても確定改善額・共有カードには反映しないよ。</p>
+    <p>入口で選んだ額面年収帯を引き継いでいるよ。ここで変えても表示だけの更新で、診断判定・確定改善額・共有カードは変わらない。月手取りから額面年収を推定せず、2024年の公式交差集計を確認できる区分だけ同年代の参考率を示すよ。</p>
     {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
       {singleHasAvailablePeerSource
        ?headWorkerConfirmed
