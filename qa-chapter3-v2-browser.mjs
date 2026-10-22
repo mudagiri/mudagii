@@ -191,8 +191,8 @@ const grossPrimary=page.locator('[data-section="PROFILE_GROSS_ANNUAL_PRIMARY"]')
 const grossStepVisible=await grossPrimary.count()>0;
 if(grossStepVisible){
  await page.getByRole('heading',{name:'あなたの額面年収は？'}).waitFor({state:'visible'});
- await page.locator('#profile-annual-peer-band').selectOption('500_599');
- assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'500_599','C2 primary gross band selected in official profile step');
+ await page.locator('#profile-annual-peer-band').selectOption('unknown');
+ assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'unknown','C2 allows gross-income unknown without fabricating cohort peer data');
  await screenshot('06b-primary-gross-income');
  await clickButton(/次へ/);
 }
