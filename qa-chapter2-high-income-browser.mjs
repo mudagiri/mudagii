@@ -51,6 +51,11 @@ try{
  assert.match(await page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]').innerText(),/12カテゴリの判定状況/,
   'Completed quest must not claim that every unknown spending category was fully appraised');
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
+ const compareCondition=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
+ assert.match(await compareCondition.innerText(),/45歳 · 二人以上の世帯全体 · 1,000万円以上（未細分化）/,
+  'Entry high-income bracket is inherited without guessing a fine source cell');
+ assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),0);
+ assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),1);
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
@@ -66,8 +71,12 @@ try{
  },null,{timeout:7000});
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1,
   'Income selector must be reachable immediately after the comparison guide');
- await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"] summary').click();
+ await page.locator('[data-section="MULTI_PEER_CONDITION_EDIT"] summary').click();
+ assert.equal(await page.locator('#c2v32-multi-income').inputValue(),'1000plus',
+  'Result inherits the broad income cohort without re-requesting it');
  await selectGross('1500plus');
+ assert.match(await compareCondition.innerText(),/45歳 · 二人以上の世帯全体 · 1,500万円以上/,
+  'Fine-grained year band chosen in this result updates the condition heading');
  await worker.waitFor({state:'visible'});
  await head.waitFor({state:'visible'});
  await matchStatus.waitFor({state:'visible'});
@@ -142,6 +151,18 @@ try{
  await selectGross('');
  assert.equal(await peers().count(),0,'Unselecting exact income must revoke peer');
  assert.equal(await matchStatus.count(),0,'Clearing selection also clears contextual status');
+ // The main edit control can also change a previously chosen broad band,
+ // but this is result-only; an old 1000+ fine class must not leak through.
+ await page.locator('#c2v32-multi-income').selectOption('800_999');
+ assert.match(await compareCondition.innerText(),/800～999万円/,
+  'A user-initiated comparison edit updates the compact inherited condition');
+ assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),0,
+  'Hidden old fine-income selection is cleared after changing broad comparison cohort');
+ assert.equal(await page.locator('[data-peer-condition-edit="multi"]').count(),1,
+  'Exactly one optional edit panel manages multi income bands');
+ assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,
+  'Editing the reference cohort cannot turn differences into confirmed savings');
+
  // Switching the isolated QA fixture to the original 500–599万円 group
  // must not reuse the previous 1000+ high-income columns or confirmation.
  await page.locator('#qa-head-age').selectOption('35');

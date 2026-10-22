@@ -260,11 +260,19 @@ await clickButton(/診断結果を見る/);
  // Explicit gross annual income was entered in the profile and automatically
  // persisted through scan, appraisal and the Chapter 2 battle into the result.
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
+ const comparisonSummary=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
+ assert.equal(await comparisonSummary.count(),1,'One visible condition summary instead of a duplicate income question');
+ assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 400～499万円/,
+  'Entry annual band must be visible before any result-only edits');
+ assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),1);
+ assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),0);
  assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),1,
   'Chosen profile income should activate statistical reference on initial result render');
  assert.equal(await singleIncomeOpt.evaluate(el=>el.open),false,
   'A previously answered income bracket needs no duplicate expanded question');
+ assert.match(await singleIncomeOpt.locator(':scope > summary').innerText(),/比較条件を変更する/,
+  'User sees an optional edit, not a second requested gross-income answer');
  assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
  const cohortScopeDetails=page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]');
  assert.equal(await cohortScopeDetails.count(),1,'All unavailable category reasons are discoverable in one optional detail');
@@ -344,6 +352,8 @@ await clickButton(/診断結果を見る/);
  // Profile-prefilled band keeps this edit control collapsed until requested.
  if(!(await singleIncomeOpt.evaluate(el=>el.open)))await singleIncomeOpt.locator('summary').click();
  await page.locator('#c2v32-single-income').selectOption('500_599');
+ assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 500～599万円/,
+  'The displayed comparison condition updates immediately after optional local edit');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
  const age50=await page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way').innerText();
  assert.ok(age50.includes('12.2% ～ 15.9%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
@@ -361,6 +371,8 @@ await clickButton(/診断結果を見る/);
 
 
  await page.locator('#c2v32-single-income').selectOption('');
+ assert.match(await comparisonSummary.innerText(),/年収帯は未回答/,
+  'Clearing a local peer override removes the reference label, not the frozen savings amount');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
   'Clearing gross salary removes all same-cell references even with worker declaration');
