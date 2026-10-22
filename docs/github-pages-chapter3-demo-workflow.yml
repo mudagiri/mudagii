@@ -1,0 +1,63 @@
+# TEMPLATE ONLY. Copy this file as .github/workflows/deploy.yml
+# in a NEW public GitHub repository named mudagiri.github.io.
+# This file does not deploy from the existing mudagii repository.
+name: Chapter3 V2 Independent GitHub Pages Demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Chapter3 isolated source
+        uses: actions/checkout@v4
+        with:
+          repository: mudagiri/mudagii
+          ref: feat/chapter3-v2-bridge-isolated-20261021
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Build demo in local-only mode
+        env:
+          VITE_CHAPTER2_V32: "1"
+          VITE_CHAPTER3_V2: "1"
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+          node scripts/package-chapter3-v2-github-pages.mjs
+          test -f github-pages-chapter3-v2-bundle/chapter3-v2-preview.html
+          test -f github-pages-chapter3-v2-bundle/pilot/chapter2-v32/pilot/money-type/index.html
+          test -f github-pages-chapter3-v2-bundle/pilot/chapter2-v32/index.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload isolated preview site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: github-pages-chapter3-v2-bundle
+
+      - name: Publish Pages from this new demo repository ONLY
+        id: deployment
+        uses: actions/deploy-pages@v4
