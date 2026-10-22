@@ -48,7 +48,22 @@ async function screenshot(name){
  await page.screenshot({path:out+'/'+name+'.png',fullPage:true,timeout:15000});
 }
 async function clickButton(pattern){const button=page.getByRole('button',{name:pattern}).first();await button.waitFor({state:'visible',timeout:12000});await button.click();}
-async function waitHeading(name){await page.getByRole('heading',{name}).first().waitFor({state:'visible',timeout:12000});}
+async function waitHeading(name){
+ try{
+  await page.getByRole('heading',{name}).first().waitFor({state:'visible',timeout:12000});
+ }catch(error){
+  const actual=await page.evaluate(()=>({
+   location:location.href,
+   heading:[...document.querySelectorAll('h1,h2,h3')].filter(x=>x.getClientRects().length).map(x=>x.textContent?.trim()).slice(0,20),
+   buttons:[...document.querySelectorAll('button')].filter(x=>x.getClientRects().length).map(x=>x.textContent?.trim()).slice(0,35),
+   scene:[...document.querySelectorAll('[class*=pre-step-]')].map(x=>x.className).slice(0,10),
+   excerpt:document.body.innerText.slice(0,700)
+  }));
+  console.error('PROFILE_WAIT_HEADING_DIAGNOSTIC',JSON.stringify({expected:name,actual,pageErrors:errors}));
+  await page.screenshot({path:out+'/QA-profile-timeout.png',fullPage:false,timeout:10000}).catch(()=>{});
+  throw error;
+ }
+}
 try{
  await page.goto(firstUrl,{waitUntil:'networkidle'});
  await page.evaluate(()=>{localStorage.clear();sessionStorage.clear()});
@@ -160,7 +175,12 @@ await waitHeading('今の住まいは？');
 await screenshot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
-
+ // Housing subtype uses requestAnimationFrame to advance; capture the actual
+ // state before waiting on the next income scene instead of guessing it happened.
+ console.log('C2_HOUSING_SELECTED',JSON.stringify(await page.evaluate(()=>({
+   scene:document.querySelector('.pre-profile-v4')?.className,
+   visibleHeading:[...document.querySelectorAll('h1,h2,h3')].filter(x=>x.getClientRects().length).map(x=>x.textContent?.trim()).slice(0,7)
+ }))));
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
 const entryGross=page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]');
