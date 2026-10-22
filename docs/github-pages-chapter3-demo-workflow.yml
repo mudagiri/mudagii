@@ -26,7 +26,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mudagiri/mudagii
-          ref: feat/chapter3-v2-bridge-isolated-20261021
+          # Frozen QA PASS SHA. Do not automatically publish newer Draft PR commits.
+          ref: a860bc8f40883dbdaff0259afce3d42df48dc4fe
           persist-credentials: false
 
       - name: Set up Node
@@ -44,6 +45,9 @@ jobs:
           VITE_MONEY_PERSONALITY_DATA_COHORT: "PILOT"
         run: |
           npm ci --ignore-scripts
+          node scripts/qa-chapter3-v2-counterfactual.mjs
+          node scripts/qa-chapter3-v2-handoff.mjs
+          node scripts/qa-chapter3-v2-result-narrative.mjs
           npm run build
           node scripts/package-chapter3-v2-github-pages.mjs
           test -f github-pages-chapter3-v2-bundle/chapter3-v2-preview.html
