@@ -27,6 +27,11 @@ const GOALS=[
  {id:'time',name:'自由な時間を増やしたい',symbol:'⏳'},
  {id:'undecided',name:'まだ決めていない',symbol:'🗺️'},
 ] as const;
+const GOAL_GROUPS=[
+ {heading:'暮らしを守る',hint:'住まい・家族・安心のこと',ids:['home','family','safety','retirement']},
+ {heading:'できることを増やす',hint:'収入・資産・新しい挑戦',ids:['income','invest','challenge']},
+ {heading:'自分の時間を楽しむ',hint:'趣味・旅・使える時間',ids:['travel','time']},
+] as const;
 const HORIZONS=[
  {id:'near',title:'1〜3年以内',caption:'近い未来'},
  {id:'middle',title:'4〜10年くらい',caption:'少し先'},
@@ -142,10 +147,18 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
       <button type="button" className="c3v2-link" onClick={()=>{setSelectNewGoal(true);setGoal(inherited)}}>目的地を変える</button>
      </div>}
     {(!inherited||selectNewGoal)&&<>
-     <div className="c3v2-choice-grid">
-      {GOALS.map(x=><button key={x.id} type="button" className={'c3v2-choice'+(goal===x.id?' selected':'')}
-        aria-pressed={goal===x.id} onClick={()=>setGoal(x.id)}><span aria-hidden="true">{x.symbol}</span>{x.name}</button>)}
-     </div>
+     <p className="c3v2-muted">どの道を選んでも大丈夫。迷ったら「まだ決めていない」で進めるよ。</p>
+     {GOAL_GROUPS.map(group=><div className="c3v2-goal-group" key={group.heading}>
+       <div className="c3v2-goal-head"><strong>{group.heading}</strong><small>{group.hint}</small></div>
+       <div className="c3v2-choice-grid">
+         {GOALS.filter(x=>(group.ids as readonly string[]).includes(x.id)).map(x=><button key={x.id} type="button"
+           className={'c3v2-choice'+(goal===x.id?' selected':'')}
+           aria-pressed={goal===x.id} onClick={()=>setGoal(x.id)}><span aria-hidden="true">{x.symbol}</span>{x.name}</button>)}
+       </div>
+     </div>)}
+     <div className="c3v2-goal-undecided">{GOALS.filter(x=>x.id==='undecided').map(x=><button key={x.id} type="button"
+       className={'c3v2-choice c3v2-choice--wide'+(goal===x.id?' selected':'')} aria-pressed={goal===x.id}
+       onClick={()=>setGoal(x.id)}><span aria-hidden="true">{x.symbol}</span>{x.name}</button>)}</div>
      <button type="button" className="c3v2-btn c3v2-btn--gold" onClick={proceedGoal}>この旗を立てる →</button>
     </>}
    </section>}
@@ -182,7 +195,7 @@ export default function Chapter3V2Pilot({handoff,onBack,onConsult,onEvent}:Props
     <button className="c3v2-btn c3v2-btn--gold" type="button" onClick={()=>{
       announce('consult_preview',{topic:plan?.consultTopic??'future'});
       onConsult(plan?.consultTopic??'今後の優先事項');
-    }}>第2章の相談窓口を確認する →</button>
+    }}>この作戦を相談する →</button>
     <button className="c3v2-link" type="button" onClick={onBack}>第2章の戦果へ戻る</button>
     <small className="c3v2-muted">これは診断試作。具体的な金融商品や収入増加の可否を判定するものではありません。</small>
    </section>}
