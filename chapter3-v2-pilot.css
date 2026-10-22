@@ -35,3 +35,11 @@
 .c3v2-uncertainty{font-size:12px;line-height:1.65;color:#c2d5dd;background:#10283a;border:1px solid #46657a;padding:11px 13px;border-radius:10px;margin:0 0 18px}
 .c3v2-uncertainty strong{display:block;color:#e5d39e;font-size:12px;margin-bottom:2px}
 @media(max-width:390px){.c3v2-insight{font-size:14px;line-height:1.73}.c3v2-result-hero strong{font-size:18px}}
+
+/* Intent groups reduce a long flat ten-choice menu without imposing ranking. */
+.c3v2-goal-group{margin:0 0 15px;}
+.c3v2-goal-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 8px;}
+.c3v2-goal-head strong{font-size:14px;color:#f7df99;}
+.c3v2-goal-head small{font-size:11px;color:#adc4d0;}
+.c3v2-goal-group .c3v2-choice-grid{margin-bottom:0;}
+.c3v2-goal-undecided{margin:0 0 18px;}
