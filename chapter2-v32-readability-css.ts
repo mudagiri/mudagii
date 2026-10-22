@@ -615,4 +615,58 @@ export const V32READABILITYCSS = `
 @media(max-width:350px){
  .c2v32-rpg .c2v32-peer-3way{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Four-lens disclosure audit: show the official source applicability once.
+   Do NOT imply seven related categories have directly comparable averages. */
+.c2v32-rpg .c2v32-coverage-legend{
+ display:grid;gap:5px;margin:12px 0 3px;padding:11px 12px;
+ background:#eef5eb;color:#1d4239;border:1.5px solid #a5bca9;
+ border-radius:10px;
+}
+.c2v32-rpg .c2v32-coverage-legend>strong{
+ font-size:15px;line-height:1.5;font-weight:950;color:#153d34;
+}
+.c2v32-rpg .c2v32-coverage-legend>span{
+ display:block;font-size:13px;line-height:1.6;font-weight:750;
+ color:#29483f;padding-left:10px;border-left:3px solid #a2b3a8;
+ overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-coverage-legend>small{
+ display:block;font-size:12px!important;line-height:1.65!important;
+ color:#385349!important;margin-top:4px;
+}
+/* High-income reference had seven long OPEN related-fee cards by default.
+   Make high/middle/single equally concise and keep a real public source
+   number visible without falsely calling it the diagnosis-category mean. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary{
+ display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:3px;
+ min-height:52px;padding:8px 4px;
+ color:#164d3f!important;font-size:13px!important;line-height:1.55!important;
+ font-weight:850!important;cursor:pointer;touch-action:manipulation;
+ overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary b{
+ color:#12493c!important;font-size:clamp(14px,4vw,16px)!important;
+ font-weight:950!important;font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary small{
+ color:#38584d!important;font-size:12px!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-related-open-hint{
+ margin-left:auto;white-space:nowrap;color:#23604d!important;
+ font-size:12px!important;font-weight:950!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income[open] .c2v32-related-open-hint{opacity:.8}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary:focus-visible{
+ outline:3px solid #146b5b;outline-offset:2px;border-radius:6px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-related-public-detail:not([open]){
+ padding-top:0;padding-bottom:0;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-coverage-legend{padding:9px 8px}
+ .c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary{
+  font-size:12px!important;line-height:1.5!important;
+ }
+}
 `;

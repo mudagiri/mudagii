@@ -780,7 +780,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <div className="c2v32-peer-guide" data-section="JOINT_PEER_COMPARISON_GUIDE">
     <strong>比べるのは「同年代 × 世帯区分 × 額面年収帯」</strong>
     <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
-    <small>※二人以上は家族人数の完全一致ではありません。食費・光熱水道・日用品の3費目も、診断の支出範囲が公表費目と完全に一致する保証はありません。特に日用品は公式の「家事雑貨＋家事用消耗品」だけを参考にしています。</small>
+    <small>※二人以上は家族人数まで一致した平均ではありません。食費・光熱水道・日用品も公表費目と診断の対象範囲が異なる場合があります。日用品は「家事雑貨＋家事用消耗品」に限定しています。</small>
+    <div className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"
+      aria-label="12カテゴリに対する公式統計の対応範囲">
+      <strong>12カテゴリの比較データの使い方</strong>
+      <span>食費・光熱水道・日用品：条件が合えば同じ交差表の公表率を参考表示</span>
+      <span>ほかの7カテゴリ：似ている公表費目だけを「関連参考」として区別</span>
+      <span>サブスク・自己投資：直接対応する単独の公表費目なし</span>
+      <small>年収・年齢・勤労状況・標本数が合わなければ、公表率は表示しません。比較差＝ムダ・削減可能額ではありません。</small>
+    </div>
    </div>
    <section className="c2v32-peer-condition-summary" data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"
     aria-label="入口から引き継いだ比較条件" style={{border:'1px solid #977644',borderRadius:12,
@@ -871,7 +879,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
    </details>
    {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
-    <div className="c2v32-income-burden-head"><span>比較の主役は「同年代 × 同世帯 × 同所得帯」。あなたの手取り割合は補助情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
+    <div className="c2v32-income-burden-head"><span>比較対象は「同年代 × 単身／二人以上 × 額面年収帯」。あなたの手取り割合は別の情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
     <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
@@ -1019,20 +1027,28 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <p data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</p>
        </div>
       </details>}
-      {relatedPublicItems.length>0&&<div className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
+      {relatedPublicItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-related-public-detail"
        data-section={'OFFICIAL_RELATED_PEER_'+x.category} data-peer-related-rate-category={x.category}>
-       <strong>同じ属性の公式統計にある「関連費目」の参考率</strong>
+       <summary>関連公表費目の参考（診断項目の平均ではない）：
+        <b>{relatedPublicItems[0].label} {relatedPublicItems[0].officialRelatedRatePct.toFixed(2)}%</b>
+        {relatedPublicItems.length>1&&<small>ほか{relatedPublicItems.length-1}費目</small>}
+        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
+       </summary>
        <div className="c2v32-worker-rate-head"><span>全国・二人以上の勤労者世帯／2024年</span><strong>公表費目（診断の平均とは別）</strong></div>
        <ul>{relatedPublicItems.map(item=><li key={item.code}>
         <span>{item.label}：<b>{item.officialRelatedRatePct.toFixed(2)}%</b> （月 {money(item.averageMonthlyExpenseYen)}）</span>
         <small>{item.scope}</small>
        </li>)}</ul>
        <small>原表の概数標本数 {relatedOriginal2024?.available?relatedOriginal2024.n:'—'}世帯。費目平均支出÷同一公表セルの平均可処分所得。本人との割合差・削減額・見直し候補額は計算しません。</small>
-      </div>}
+      </details>}
       {related50manItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
        data-section={'OFFICIAL_RELATED_MIDDLE_SINGLE_'+x.category}
        data-peer-related-range-category={x.category}>
-       <summary>同年代・同年収帯の関連公表費目を見る（2024年）</summary>
+       <summary>関連公表費目の参考（診断項目の平均ではない）：
+        <b>{related50manItems[0].label} {related50manItems[0].ratePctLow.toFixed(2)}{related50manItems[0].ratePctLow===related50manItems[0].ratePctHigh?'':' ～ '+related50manItems[0].ratePctHigh.toFixed(2)}%</b>
+        {related50manItems.length>1&&<small>ほか{related50manItems.length-1}費目</small>}
+        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
+       </summary>
        <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。診断カテゴリそのものの平均ではありません。</p>
        <ul>{related50manItems.map(item=><li key={item.code}>
         <span>{item.label}：<b>{item.ratePctLow.toFixed(2)}{item.ratePctLow===item.ratePctHigh?'':' ～ '+item.ratePctHigh.toFixed(2)}%</b>
