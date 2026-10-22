@@ -341,6 +341,8 @@ await clickButton(/診断結果を見る/);
   assert.ok(incomeHeading>=63,'Sticky navigation must not hide the income reference heading: '+incomeHeading);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
+ // Profile-prefilled band keeps this edit control collapsed until requested.
+ if(!(await singleIncomeOpt.evaluate(el=>el.open)))await singleIncomeOpt.locator('summary').click();
  await page.locator('#c2v32-single-income').selectOption('500_599');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
  const age50=await page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way').innerText();
