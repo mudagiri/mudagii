@@ -161,16 +161,18 @@ await screenshot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
 
+await waitHeading('あなたの額面年収は？');
+const entryGross=page.locator('[data-section="PROFILE_GROSS_ANNUAL_PRIMARY"]');
+assert.equal(await entryGross.count(),1,'Annual gross band is a visible primary profile step');
+assert.equal(await page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]').count(),0,'Old hidden gross income input is gone');
+assert.equal(await page.locator('.pre-step-annualIncome .profile-primary-cta').isDisabled(),true,
+ 'A real income band or explicit unknown answer must be selected');
+await page.locator('#profile-annual-peer-band').selectOption('400_499');
+assert.equal(await page.locator('.pre-step-annualIncome .profile-primary-cta').isEnabled(),true);
+await screenshot('07a-single-annual-gross');
+await clickButton(/次へ/);
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
-const entryGross=page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]');
-assert.equal(await entryGross.count(),1,'Entry offers optional annual gross bracket without new required step');
-assert.equal(await entryGross.evaluate(el=>el.open),false,'Optional entry income must start collapsed');
-await entryGross.locator('summary').click();
-await page.locator('#profile-annual-peer-band').selectOption('400_499');
-assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'400_499');
-await page.locator('#profile-annual-peer-band').selectOption('');
-await entryGross.locator('summary').click();
 await screenshot('07-single-income');
 await clickButton(/次へ/);
 
@@ -255,14 +257,14 @@ await clickButton(/診断結果を見る/);
  const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 JOB identity survives the handoff');
  const resultText=await page.locator('.c2v32-rpg').innerText();
- // Optional income-class lens must not add a required question to Chapter 1/2.
- // Single-person results can inspect the actual official 2025 table without
- // guessing annual gross salary from net take-home.
+ // Explicit gross annual income was entered in the profile and automatically
+ // persisted through scan, appraisal and the Chapter 2 battle into the result.
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
  assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
- assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'No peer income reference before explicit user choice');
- assert.equal(await singleIncomeOpt.evaluate(el=>el.open),true,
-  'Gross income selection must be visible, not hidden under collapsed details');
+ assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),1,
+  'Chosen profile income should activate statistical reference on initial result render');
+ assert.equal(await singleIncomeOpt.evaluate(el=>el.open),false,
+  'A previously answered income bracket needs no duplicate expanded question');
  assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
  const cohortScopeDetails=page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]');
  assert.equal(await cohortScopeDetails.count(),1,'All unavailable category reasons are discoverable in one optional detail');
@@ -273,7 +275,8 @@ await clickButton(/診断結果を見る/);
  await cohortScopeDetails.locator('summary').click();
  assert.equal(await page.locator('.c2v32-rpg').getByText('あなたの手取り換算',{exact:false}).count(),0,
   'Never print synthetic own-denominator proxies as statistical burden rates');
- await page.locator('#c2v32-single-income').selectOption('400_499');
+ assert.equal(await page.locator('#c2v32-single-income').inputValue(),'400_499',
+  'Gross income 400–499万円 chosen at entrance is inherited without re-entry');
  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
  // A matching income and age class does not establish worker-household scope.
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
