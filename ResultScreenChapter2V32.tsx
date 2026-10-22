@@ -795,25 +795,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      公式の同条件参考率は世帯主年齢・勤労状況・統計の標本数まで一致したときだけ表示するよ。
     </small>
    </section>
-   <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
-    <summary>ほかの9カテゴリの関連公表費目と、直接比較できない理由</summary>
-    <p>同じ年代・年収帯でも統計と診断の費目範囲は違うよ。原本で確認できる関連費目率は、各カテゴリのカードに参考資料として別表示するよ。</p>
-    <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
-     <li key={x.category} data-peer-coverage-category={x.category}>
-      <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
-      <span>{x.userNotice}</span>
-     </li>)}</ul>
-    <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
-   </details>
-   {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
-    <div className="c2v32-income-burden-head"><span>比較の主役は「同年代 × 同世帯 × 同所得帯」。あなたの手取り割合は補助情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
-    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
-    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
-   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&!singleGrossBand&&vm.profile?.singlePeerGrossBand2024==='under400'&&
-    <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
-     入口で選んだ「400万円未満」は受け取ったよ。ただし現在の検証済み2024年交差集計では、この年収帯と同年代の参考率はまだ出せないため、推計で埋めないよ。
-    </p>}
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin"
     data-section="SINGLE_INCOME_CLASS_OPTIN" data-peer-condition-edit="single">
     <summary>{singleGrossBand||vm.profile?.singlePeerGrossBand2024==='under400'
@@ -879,6 +860,25 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <p>年収帯の選び直しは任意だよ。1,000万円以上の詳細区分が必要な場合だけ追加確認してね。
       この画面の参考値だけが変わり、プロフィール・診断結果・確定改善額・共有カード・LINEには反映しません。</p>
     </details>}
+   <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
+    <summary>ほかの9カテゴリの関連公表費目と、直接比較できない理由</summary>
+    <p>同じ年代・年収帯でも統計と診断の費目範囲は違うよ。原本で確認できる関連費目率は、各カテゴリのカードに参考資料として別表示するよ。</p>
+    <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
+     <li key={x.category} data-peer-coverage-category={x.category}>
+      <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
+      <span>{x.userNotice}</span>
+     </li>)}</ul>
+    <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
+   </details>
+   {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
+    <div className="c2v32-income-burden-head"><span>比較の主役は「同年代 × 同世帯 × 同所得帯」。あなたの手取り割合は補助情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
+    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
+    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
+   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
+   {vm.profile?.householdSize===1&&!singleGrossBand&&vm.profile?.singlePeerGrossBand2024==='under400'&&
+    <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
+     入口で選んだ「400万円未満」は受け取ったよ。ただし現在の検証済み2024年交差集計では、この年収帯と同年代の参考率はまだ出せないため、推計で埋めないよ。
+    </p>}
    {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
      <label htmlFor="c2v32-head-age-confirm">
