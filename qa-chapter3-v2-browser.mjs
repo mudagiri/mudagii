@@ -181,16 +181,31 @@ await clickButton(/民間賃貸/);
    scene:document.querySelector('.pre-profile-v4')?.className,
    visibleHeading:[...document.querySelectorAll('h1,h2,h3')].filter(x=>x.getClientRects().length).map(x=>x.textContent?.trim()).slice(0,7)
  }))));
+// PR #51 (our base release candidate) added an explicit gross annual-income
+// step after housing. GitHub Actions checks out PR merge ref, not bare head.
+const grossPrimary=page.locator('[data-section="PROFILE_GROSS_ANNUAL_PRIMARY"]');
+const grossStepVisible=await grossPrimary.count()>0;
+if(grossStepVisible){
+ await page.getByRole('heading',{name:'あなたの額面年収は？'}).waitFor({state:'visible'});
+ await page.locator('#profile-annual-peer-band').selectOption('500_599');
+ assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'500_599','C2 primary gross band selected in official profile step');
+ await screenshot('06b-primary-gross-income');
+ await clickButton(/次へ/);
+}
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
 const entryGross=page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]');
-assert.equal(await entryGross.count(),1,'Entry offers optional annual gross bracket without new required step');
-assert.equal(await entryGross.evaluate(el=>el.open),false,'Optional entry income must start collapsed');
-await entryGross.locator('summary').click();
-await page.locator('#profile-annual-peer-band').selectOption('400_499');
-assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'400_499');
-await page.locator('#profile-annual-peer-band').selectOption('');
-await entryGross.locator('summary').click();
+if(grossStepVisible){
+ assert.equal(await entryGross.count(),0,'C2 must not ask twice for gross income after primary step');
+}else{
+ assert.equal(await entryGross.count(),1,'Legacy C2 gross band remains optional');
+ assert.equal(await entryGross.evaluate(el=>el.open),false,'Optional income defaults collapsed');
+ await entryGross.locator('summary').click();
+ await page.locator('#profile-annual-peer-band').selectOption('400_499');
+ assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'400_499');
+ await page.locator('#profile-annual-peer-band').selectOption('');
+ await entryGross.locator('summary').click();
+}
 await screenshot('07-single-income');
 await clickButton(/次へ/);
 
