@@ -265,6 +265,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
+ const [multiGrossOverride,setMultiGrossOverride]=useState<string|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
  const [goal,setGoal]=useState<string|null>(null);
  const [showLine,setShowLine]=useState(false);
@@ -286,28 +287,31 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   return ()=>{mounted=false};
  },[chapter1?.jobCode]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
+ const multiCohort=vm.profile?.householdSize>1&&vm.profile?.diagnosisScope==='household';
+ // Never mutate the saved profile: result-only comparison lenses are display inputs.
+ const comparisonProfile=multiCohort&&multiGrossOverride!==null
+  ?{...vm.profile,annualIncomeBand:multiGrossOverride}:vm.profile;
  const incomeBurdenInput=buildIncomeBurdenLensV1(vm.profile,Array.isArray(vm.rows)?vm.rows:[]);
  const incomeBurden=incomeBurdenInput.available?incomeBurdenInput:null;
  // Official income-class view is separate from the frozen primary household-size
  // comparator. No synthetic income factor and never a savings estimate.
  const incomeFoodReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :resolveFoodIncomeReferenceForProfileV1(vm.profile);
+  :resolveFoodIncomeReferenceForProfileV1(comparisonProfile);
  const incomeEnergyReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :energyIncomeReferenceForProfileV1(vm.profile);
+  :energyIncomeReferenceForProfileV1(comparisonProfile);
  const incomeDailyReference=vm.profile?.householdSize===1
   ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :dailyIncomeReferenceForProfileV1(vm.profile);
- const workerBurdenReference=workerBurdenReferenceForProfileV1(vm.profile,singleGrossBand);
+  :dailyIncomeReferenceForProfileV1(comparisonProfile);
+ const workerBurdenReference=workerBurdenReferenceForProfileV1(comparisonProfile,singleGrossBand);
  const scopedWorkerCategory=(category:string)=>
   workerBurdenReference.available&&['food','energy','daily'].includes(category)
    ?workerBurdenReference.categories[category as WorkerBurdenCategory]??null:null;
  // Official age×gross-income comparison is age-of-HOUSEHOLD-HEAD for
  // multi-person households. The respondent must opt in only if their age
  // equals head's age; do not infer employment status or potential savings.
- const multiCohort=vm.profile?.householdSize>1&&vm.profile?.diagnosisScope==='household';
- const multiGrossBand=multiCohort?vm.profile?.annualIncomeBand??null:null;
+ const multiGrossBand=multiCohort?comparisonProfile?.annualIncomeBand??null:null;
  const rawProfileAge=typeof vm.profile?.age==='number'?vm.profile.age:null;
  const householdAnnualBandLabel=multiCohort&&multiGrossBand==='1000plus'
   ?({'1000_1249':'1,000～1,249万円','1250_1499':'1,250～1,499万円',
@@ -787,7 +791,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      {rawProfileAge===null?'年齢未入力':`${rawProfileAge}歳`} · {resultHouseholdLabel} · {resultGrossLabel}
     </strong>
     <small style={{display:'block',fontSize:12,lineHeight:1.65,color:'#d8e8e7',marginTop:4}}>
-     入口で選んだ条件を引き継いでいるよ。変更や追加の確認が必要な場合だけ下で操作できるよ。
+     入口の回答を引き継いだ比較条件だよ。変更したい場合だけ下の「比較条件を変更」を開いてね。
      公式の同条件参考率は世帯主年齢・勤労状況・統計の標本数まで一致したときだけ表示するよ。
     </small>
    </section>
@@ -831,13 +835,27 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        :'この年代と年収帯は標本数などの条件を満たさないため、同条件の率を表示できません。年収帯だけの参考とは区別します。'}
      </p>}
    </details>}
-   {multiCohort&&multiGrossBand==='1000plus'&&
-    <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"
-     data-peer-condition-edit="multi-high">
-     <summary>{multiHighGrossBand
-      ?'比較条件の詳しい年収区分を変更する（任意）'
-      :'年収1,000万円以上を詳しく確認する（任意・公式比較の精度向上）'}</summary>
-     <label htmlFor="c2v32-multi-high-income">入口で選んだ1,000万円以上を細分化</label>
+   {multiCohort&&<details className="c2v32-income-food-single-optin"
+     data-section="MULTI_PEER_CONDITION_EDIT" data-peer-condition-edit="multi">
+     <summary>{multiGrossBand==='1000plus'&&!multiHighGrossBand
+      ?'年収1,000万円以上を詳しく確認する（任意）'
+      :'比較条件を変更する（任意）'}</summary>
+     <label htmlFor="c2v32-multi-income">世帯全体の額面年収帯（入口の回答を引継ぎ）</label>
+     <select id="c2v32-multi-income" value={multiGrossBand??'unknown'} onChange={e=>{
+      setMultiGrossOverride(e.target.value);
+      setMultiHighGrossBand(null);
+     }}>
+      <option value="under500">500万円未満</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      <option value="unknown">わからない・答えたくない</option>
+     </select>
+     {multiGrossBand==='1000plus'&&<div data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"
+      data-peer-condition-edit="multi-high">
+     <label htmlFor="c2v32-multi-high-income">公式統計に合わせた詳細年収帯（任意）</label>
      <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
       onChange={e=>{
        const v=e.target.value;
@@ -857,6 +875,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         :'この年代と年収帯には、公表された参考データがあるよ。世帯主の年齢と働き方を確認すると、下の3カテゴリで比較できるよ。'
        :'この年代と年収帯は、標本数が少ないなどの理由で比較に必要な条件を満たしていないよ。同年代の率は表示せず、下には年収帯だけの参考を残すよ。'}
      </p>}
+     </div>}
+     <p>年収帯の選び直しは任意だよ。1,000万円以上の詳細区分が必要な場合だけ追加確認してね。
+      この画面の参考値だけが変わり、プロフィール・診断結果・確定改善額・共有カード・LINEには反映しません。</p>
     </details>}
    {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
