@@ -317,6 +317,20 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    '700_799':'700～799万円','800_999':'800～999万円',
   } as Record<string,string>)[String(multiGrossBand)]??null
    :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
+ // The summary reflects the entry profile (plus explicit result-only edits).
+ // No displayed condition affects CONFIRMED savings, official source values,
+ // persistent profile data, LINE, GAS, or the FROZEN scoring engine.
+ const resultGrossLabel=multiCohort
+  ?householdAnnualBandLabel??(multiGrossBand==='under500'?'500万円未満':'年収帯は未回答')
+  :vm.profile?.householdSize===1
+   ?singleGrossBand==='400_499'?'400～499万円'
+    :singleGrossBand==='500_599'?'500～599万円'
+    :singleGrossBand==='600plus'?'600万円以上'
+    :vm.profile?.singlePeerGrossBand2024==='under400'?'400万円未満'
+    :'年収帯は未回答'
+   :'個人負担のみ（世帯年収との同条件比較は対象外）';
+ const resultHouseholdLabel=multiCohort?'二人以上の世帯全体'
+  :vm.profile?.householdSize===1?'単身世帯':'個人の支出';
  const highPeerFor=(expense:JointBurdenExpense,headAgeConfirmed:boolean,headWorkerConfirmed:boolean)=>
   resolve2024HighMultiWorkerPeerBurdenV1(rawProfileAge,multiHighGrossBand,expense,headAgeConfirmed,headWorkerConfirmed);
  const highIncomePublishedReference=multiCohort&&multiGrossBand==='1000plus'&&multiHighGrossBand
@@ -764,6 +778,19 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
     <small>※二人以上は家族人数の完全一致ではありません。食費・光熱水道・日用品の3費目も、診断の支出範囲が公表費目と完全に一致する保証はありません。特に日用品は公式の「家事雑貨＋家事用消耗品」だけを参考にしています。</small>
    </div>
+   <section className="c2v32-peer-condition-summary" data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"
+    aria-label="入口から引き継いだ比較条件" style={{border:'1px solid #977644',borderRadius:12,
+     background:'rgba(19,45,53,.88)',padding:'12px 14px',margin:'12px 0'}}>
+    <span style={{display:'block',fontSize:12,color:'#f4d797',fontWeight:800,marginBottom:5}}>📋 今回の比較条件</span>
+    <strong data-section="PEER_CONDITION_CURRENT_LABEL"
+     style={{display:'block',fontSize:16,color:'#fff7e3',lineHeight:1.6,overflowWrap:'anywhere'}}>
+     {rawProfileAge===null?'年齢未入力':`${rawProfileAge}歳`} · {resultHouseholdLabel} · {resultGrossLabel}
+    </strong>
+    <small style={{display:'block',fontSize:12,lineHeight:1.65,color:'#d8e8e7',marginTop:4}}>
+     入口で選んだ条件を引き継いでいるよ。変更や追加の確認が必要な場合だけ下で操作できるよ。
+     公式の同条件参考率は世帯主年齢・勤労状況・統計の標本数まで一致したときだけ表示するよ。
+    </small>
+   </section>
    <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
     <summary>ほかの9カテゴリの関連公表費目と、直接比較できない理由</summary>
     <p>同じ年代・年収帯でも統計と診断の費目範囲は違うよ。原本で確認できる関連費目率は、各カテゴリのカードに参考資料として別表示するよ。</p>
@@ -779,13 +806,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&vm.profile?.singlePeerGrossBand2024==='under400'&&
+   {vm.profile?.householdSize===1&&!singleGrossBand&&vm.profile?.singlePeerGrossBand2024==='under400'&&
     <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
      入口で選んだ「400万円未満」は受け取ったよ。ただし現在の検証済み2024年交差集計では、この年収帯と同年代の参考率はまだ出せないため、推計で埋めないよ。
     </p>}
-   {vm.profile?.householdSize===1&&<details open={!vm.profile?.singlePeerGrossBand2024} className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>同年代・単身・同所得帯と比べる（任意）</summary>
-    <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
+   {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin"
+    data-section="SINGLE_INCOME_CLASS_OPTIN" data-peer-condition-edit="single">
+    <summary>{singleGrossBand||vm.profile?.singlePeerGrossBand2024==='under400'
+      ?'比較条件を変更する（任意）':'比較条件に年収帯を追加する（任意）'}</summary>
+    <label htmlFor="c2v32-single-income">比較に使う額面年収帯を変更</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
      setSingleGrossBand(SINGLE_INCOME_FOOD_OPTIONS.some(x=>x.value===next)?next as SingleIncomeFoodOptionV1:null);
@@ -793,7 +822,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>入口で選んだ額面年収帯を引き継いでいるよ。ここで変えても表示だけの更新で、診断判定・確定改善額・共有カードは変わらない。月手取りから額面年収を推定せず、2024年の公式交差集計を確認できる区分だけ同年代の参考率を示すよ。</p>
+    <p>入口の年収をもう一度答える必要はないよ。変更するとこの比較画面の参考値だけが更新され、プロフィール、診断判定、確定改善額、共有カード、LINEには反映しない。月手取りから年収も推定しないよ。</p>
     {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
       {singleHasAvailablePeerSource
        ?headWorkerConfirmed
@@ -803,9 +832,12 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </p>}
    </details>}
    {multiCohort&&multiGrossBand==='1000plus'&&
-    <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN">
-     <summary>自分に近い世帯と比べてみる（任意・年収1,000万円以上）</summary>
-     <label htmlFor="c2v32-multi-high-income">世帯全体の額面年収を選ぶ</label>
+    <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"
+     data-peer-condition-edit="multi-high">
+     <summary>{multiHighGrossBand
+      ?'比較条件の詳しい年収区分を変更する（任意）'
+      :'年収1,000万円以上を詳しく確認する（任意・公式比較の精度向上）'}</summary>
+     <label htmlFor="c2v32-multi-high-income">入口で選んだ1,000万円以上を細分化</label>
      <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
       onChange={e=>{
        const v=e.target.value;
