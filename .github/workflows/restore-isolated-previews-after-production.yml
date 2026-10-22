@@ -119,7 +119,13 @@ jobs:
           test -s v32-site/qa-chapter2-official-peer-category-coverage-v1.ts
           grep -q 'PEER_2024_CATEGORY_COVERAGE_AUDIT' v32-site/ResultScreenChapter2V32.tsx
           grep -q 'CHAPTER2_2024_PEER_CATEGORY_SCOPE_AUDIT_PASS' v32-site/qa-chapter2-official-peer-category-coverage-v1.ts
-          grep -q 'PROFILE_OPTIONAL_GROSS_ANNUAL' v32-site/ProfileV4Scene.tsx
+          # Explicit gross annual income is now a main RPG question BEFORE net
+          # take-home, no longer a collapsible optional detail.
+          grep -q 'PROFILE_GROSS_ANNUAL_PRIMARY' v32-site/ProfileV4Scene.tsx
+          ! grep -q 'PROFILE_OPTIONAL_GROSS_ANNUAL' v32-site/ProfileV4Scene.tsx
+          grep -q 'annualIncomeAnswered' v32-site/mudagiri-profile-v4.ts
+          test -s v32-site/qa-chapter2-profile-gross-first-v1.ts
+          grep -q 'CHAPTER2_GROSS_INCOME_FIRST_PROFILE_AND_RESULT_HANDOFF_QA_PASS' v32-site/qa-chapter2-profile-gross-first-v1.ts
           # The matched-rate panel was extracted to an independently QA'd
           # presentation component; verify both the call site and its renderer.
           test -s v32-site/Chapter2PeerComparisonCard.tsx
