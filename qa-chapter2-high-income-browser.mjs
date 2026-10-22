@@ -51,6 +51,14 @@ try{
  assert.match(await page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]').innerText(),/12カテゴリの判定状況/,
   'Completed quest must not claim that every unknown spending category was fully appraised');
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
+ const legend=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
+ assert.equal(await legend.count(),1,'One readable source-scope guide must precede all twelve enemy cards');
+ const sourceLegend=await legend.innerText();
+ for(const marker of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
+  assert.ok(sourceLegend.includes(marker),'Missing official source-scope distinction: '+marker);
+ }
+ assert.ok(!(await page.locator('[data-section="INCOME_BURDEN_CONTEXT"]').innerText()).includes('同年代 × 同世帯'),
+  'Two-or-more worker statistics are not falsely labeled exact same household size');
  const compareCondition=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
  assert.match(await compareCondition.innerText(),/45歳 · 二人以上の世帯全体 · 1,000万円以上（未細分化）/,
   'Entry high-income bracket is inherited without guessing a fine source cell');
@@ -91,6 +99,17 @@ try{
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
  assert.equal(await page.locator('[data-peer-related-rate-category]').count(),7,
   'Exactly seven additional related official public fee groups render only after cohort verification');
+ const relatedCards=page.locator('[data-peer-related-rate-category]');
+ assert.equal(await relatedCards.count(),7);
+ for(const key of ['mobile','car','insurance']){
+  const detail=page.locator('[data-peer-related-rate-category="'+key+'"]');
+  assert.equal(await detail.evaluate(el=>el.open),false,
+   'High-income related public-fee references start collapsed to avoid seven long card blocks');
+  assert.ok((await detail.locator('summary').innerText()).includes('診断項目の平均ではない'),
+   'Source-derived related value must never be presented as official category mean');
+  await detail.locator('summary').click();
+  assert.equal(await detail.evaluate(el=>el.open),true);
+ }
  const mobileRelated=await page.locator('[data-peer-related-rate-category="mobile"]').innerText();
  assert.ok(mobileRelated.includes('通信')&&mobileRelated.includes('1.65%')&&mobileRelated.includes('15,948'),
   'Original 2024 official communication source rate is distinct from smartphone diagnosis benchmark');
