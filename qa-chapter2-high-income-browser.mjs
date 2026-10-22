@@ -51,6 +51,11 @@ try{
  assert.match(await page.locator('[data-section="HOUSEHOLD_BATTLE_RESULTS"]').innerText(),/12カテゴリの判定状況/,
   'Completed quest must not claim that every unknown spending category was fully appraised');
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
+ const compareCondition=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
+ assert.match(await compareCondition.innerText(),/45歳 · 二人以上の世帯全体 · 1,000万円以上（未細分化）/,
+  'Entry high-income bracket is inherited without guessing a fine source cell');
+ assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),0);
+ assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),1);
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
@@ -68,6 +73,8 @@ try{
   'Income selector must be reachable immediately after the comparison guide');
  await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"] summary').click();
  await selectGross('1500plus');
+ assert.match(await compareCondition.innerText(),/45歳 · 二人以上の世帯全体 · 1,500万円以上/,
+  'Fine-grained year band chosen in this result updates the condition heading');
  await worker.waitFor({state:'visible'});
  await head.waitFor({state:'visible'});
  await matchStatus.waitFor({state:'visible'});
