@@ -183,6 +183,10 @@ await clickButton(/民間賃貸/);
  }))));
 // PR #51 (our base release candidate) added an explicit gross annual-income
 // step after housing. GitHub Actions checks out PR merge ref, not bare head.
+// The housing auto-navigation happens in requestAnimationFrame, so checking
+// count immediately after clicking races with React state. Wait until either
+// current-release gross income or legacy take-home scene actually mounts.
+await page.waitForFunction(()=>Boolean(document.querySelector('.pre-step-annualIncome,.pre-step-income')),null,{timeout:12000});
 const grossPrimary=page.locator('[data-section="PROFILE_GROSS_ANNUAL_PRIMARY"]');
 const grossStepVisible=await grossPrimary.count()>0;
 if(grossStepVisible){
