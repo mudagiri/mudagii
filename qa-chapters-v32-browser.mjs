@@ -450,6 +450,8 @@ await clickButton(/診断結果を見る/);
  await page.locator('[data-comparison-category="energy"] > summary').click();
  const energyRowText=await page.locator('[data-comparison-category="energy"]').innerText();
  assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('あなたの支出'),'Energy row is inspectable without tapping');
+ if(!(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open)))
+  await page.locator('[data-comparison-category="food"] > summary').click();
  const sourceButton=page.locator('[data-comparison-category="food"] .c2v32-evidence-toggle').first();
  if(await sourceButton.count()){
   assert.equal(await sourceButton.getAttribute('aria-expanded'),'false','source details collapsed by default');
