@@ -9,7 +9,7 @@ import {relatedOfficial50manItems2024} from './chapter2-official-related-2024-mi
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
-import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
+import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
@@ -302,13 +302,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  // Official income-class view is separate from the frozen primary household-size
  // comparator. No synthetic income factor and never a savings estimate.
  const incomeFoodReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  ?(singleSourceGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :resolveFoodIncomeReferenceForProfileV1(comparisonProfile);
  const incomeEnergyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  ?(singleSourceGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :energyIncomeReferenceForProfileV1(comparisonProfile);
  const incomeDailyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  ?(singleSourceGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :dailyIncomeReferenceForProfileV1(comparisonProfile);
  const workerBurdenReference=workerBurdenReferenceForProfileV1(comparisonProfile,singleSourceGrossBand);
  const scopedWorkerCategory=(category:string)=>
