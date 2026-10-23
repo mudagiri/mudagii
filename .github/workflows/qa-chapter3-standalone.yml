@@ -1,0 +1,70 @@
+name: Chapter3 Standalone V3 Real Result QA
+
+on:
+  pull_request:
+    paths:
+      - 'Chapter3StandaloneV3.tsx'
+      - 'chapter3-standalone-v3.css'
+      - 'chapter3-v2/standalone-adventure.mjs'
+      - 'qa-chapter3-standalone-browser.mjs'
+      - 'scripts/qa-chapter3-standalone-core.mjs'
+      - 'src/main.tsx'
+      - 'scripts/package-chapter3-v2-github-pages.mjs'
+      - '.github/workflows/qa-chapter3-standalone.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chapter3-standalone:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    container: {image: "mcr.microsoft.com/playwright:v1.55.0-noble"}
+    env:
+      VITE_CHAPTER2_V32: '1'
+      VITE_CHAPTER3_V2: '1'
+      VITE_MUDAGIRI_GAS_URL: ''
+      VITE_MONEY_PERSONALITY_GAS_URL: ''
+      VITE_MONEY_PERSONALITY_DATA_COHORT: 'PILOT'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify 384 outcome combinations and exact output safety
+        run: node scripts/qa-chapter3-standalone-core.mjs
+      - name: Typecheck and build standalone Chapter3 with existing public app
+        run: npm run build
+      - name: Assemble real GitHub Pages static files
+        run: |
+          node scripts/package-chapter3-v2-github-pages.mjs
+          test -f github-pages-chapter3-v2-bundle/chapter3-v2-preview.html
+          grep -q 'chapter3solo=1' github-pages-chapter3-v2-bundle/chapter3-v2-preview.html
+          mkdir -p preview
+          cp -R github-pages-chapter3-v2-bundle/. preview/
+      - name: Install Playwright runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory preview >/tmp/chapter3-solo.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/chapter3-v2-preview.html >/dev/null; then exit 0; fi
+            sleep .5
+          done
+          exit 1
+      - name: Chromium actual result reachability and usability
+        env:
+          BROWSER_ENGINE: chromium
+        run: node qa-chapter3-standalone-browser.mjs
+      - name: WebKit actual result reachability and usability
+        env:
+          BROWSER_ENGINE: webkit
+        run: node qa-chapter3-standalone-browser.mjs
+      - name: Upload review screenshots even if test failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-standalone-qa-screens
+          path: chapter3-standalone-browser-qa/
+          retention-days: 14
+          if-no-files-found: warn
