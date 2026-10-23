@@ -117,7 +117,15 @@ jobs:
           ! grep -q 'あなたの手取り換算' v32-site/ResultScreenChapter2V32.tsx
           test -s v32-site/chapter2-official-peer-category-coverage-v1.ts
           test -s v32-site/qa-chapter2-official-peer-category-coverage-v1.ts
-          grep -q 'PEER_2024_CATEGORY_COVERAGE_AUDIT' v32-site/ResultScreenChapter2V32.tsx
+          # UI moved the lengthy nine-category caveat list to a compact
+          # 3/7/2 source-scope explanation behind one accessible disclosure.
+          # Keep the full 12-category official source audit in QA source.
+          ! grep -q 'PEER_2024_CATEGORY_COVERAGE_AUDIT' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'OFFICIAL_12_CATEGORY_REFERENCE_LEGEND' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'COMPARISON_REST_TOGGLE' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'showAllCategoryComparisons' v32-site/ResultScreenChapter2V32.tsx
+          grep -q 'OFFICIAL_PEER_GAP_DETAIL_' v32-site/Chapter2PeerComparisonCard.tsx
+          grep -q 'PEER_SCOPE_CAVEAT_' v32-site/ResultScreenChapter2V32.tsx
           grep -q 'CHAPTER2_2024_PEER_CATEGORY_SCOPE_AUDIT_PASS' v32-site/qa-chapter2-official-peer-category-coverage-v1.ts
           # Explicit gross annual income is now a main RPG question BEFORE net
           # take-home, no longer a collapsible optional detail.
