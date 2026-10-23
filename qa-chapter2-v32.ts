@@ -255,7 +255,7 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
 // Simplified result: keep 2 candidate amounts and one visible action;
  // the threshold math is still accessible in the optional reason disclosure.
 assert.match(candidateHtml,/>2カテゴリ<\/strong>/,'treasure shows compact count without a split phrase');
-assert.match(candidateHtml,/まず、見直し候補の理由を見る/,'when source rows exist, invite explanation before scenario numbers');
+assert.match(candidateHtml,/まず、見直し候補と最初の一歩を見る/,'When source rows exist, lead directly to a candidate action; details are optional');
 const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same prominent amount in stacked hero and treasure');
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
