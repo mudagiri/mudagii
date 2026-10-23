@@ -9,7 +9,7 @@ export type HousingSubtypeV4='private_rental'|'public_rental'|'unknown_rental'|'
 export type AnnualIncomeBandV4='under500'|'500_599'|'600_699'|'700_799'|'800_999'|'1000plus'|'unknown';
 /** Optional display-only, narrow 2024 gross bracket for single-person cohorts.
  * No use in V1 diagnosis, frozen benchmark or savings calculations. */
-export type SinglePeerGrossBand2024='under400'|'400_499'|'500_599'|'600plus'|null;
+export type SinglePeerGrossBand2024='under400'|'400_499'|'500_599'|'600_699'|'700_799'|'800_999'|'1000plus'|'600plus'|null; // 600plus is legacy only
 
 export interface ProfileV4 {
  diagnosisScope:DiagnosisScopeV4;
