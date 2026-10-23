@@ -1,0 +1,377 @@
+/* Money Personality Result V4 — mobile-first identity -> resonance -> manual -> Chapter 2.
+   Visual/narrative only. Classifier, scores and handoff semantics are unchanged. */
+
+.mpp-page--result .mpp-result{
+  padding:18px 14px 28px!important;
+}
+
+.mpp-result-v4-hero{
+  position:relative;
+  min-height:600px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:4px 0 18px;
+}
+.mpp-result-v4-hero .mpp-kicker{margin-top:2px}
+.mpp-result-v4-hero .mpp-job-no{margin-top:6px}
+.mpp-result-v4-hero .mpp-result-companion{margin:4px auto -2px}
+.mpp-result-v4-hero .mpp-result-companion .mpp-mudagiri{width:118px!important}
+.mpp-result-job-hero{
+  position:relative;
+  width:100%;
+  display:grid;
+  place-items:center;
+  margin:2px auto -4px;
+}
+.mpp-result-job-hero::before{
+  content:'';
+  position:absolute;
+  width:min(58vw,230px);
+  aspect-ratio:1;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,221,119,.12),rgba(62,214,195,.06) 46%,transparent 72%);
+  filter:blur(2px);
+  pointer-events:none;
+}
+.mpp-result-v4-hero .mpp-result-job-character{
+  width:min(58vw,230px);
+  aspect-ratio:1;
+  margin:0 auto;
+}
+.mpp-result-v4-hero .mpp-result-job-character img{
+  filter:drop-shadow(0 12px 22px rgba(0,0,0,.42));
+}
+.mpp-result-v4-hero .mpp-result-label{margin-top:0}
+.mpp-result-v4-hero h1{
+  margin:3px 0 7px!important;
+  font-size:clamp(34px,10vw,46px)!important;
+  line-height:1.08!important;
+}
+.mpp-result-v4-hero .mpp-result-hero-line{
+  margin:5px auto 12px!important;
+  max-width:350px;
+  font-size:16px!important;
+  line-height:1.58!important;
+}
+
+.mpp-result-v4-styleline{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 12px;
+}
+.mpp-result-v4-styleline span{
+  padding:5px 9px;
+  border:1px solid rgba(246,198,77,.34);
+  border-radius:999px;
+  background:rgba(2,36,43,.82);
+  color:#f6f1df;
+  font-size:10px;
+  font-weight:850;
+  line-height:1.2;
+}
+.mpp-result-v4-styleline span:first-child{
+  border-color:rgba(255,218,103,.62);
+  color:#ffe79a;
+}
+
+.mpp-result-v4-hit{
+  width:100%;
+  margin:0 auto;
+  padding:13px 13px 12px;
+  border:1px solid rgba(255,217,92,.52);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(3,58,64,.94),rgba(2,38,46,.96));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 10px 26px rgba(0,0,0,.20);
+}
+.mpp-result-v4-hit>span{
+  display:block;
+  margin-bottom:8px;
+  color:#ffd85b;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-align:left;
+}
+.mpp-result-v4-hit ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:7px;
+}
+.mpp-result-v4-hit li{
+  position:relative;
+  padding:0 0 0 24px;
+  color:#fbfdfb;
+  font-size:12.5px;
+  font-weight:760;
+  line-height:1.56;
+  text-align:left;
+}
+.mpp-result-v4-hit li::before{
+  content:'✓';
+  position:absolute;
+  left:2px;
+  top:0;
+  color:#ffda63;
+  font-weight:950;
+}
+
+.mpp-result-v4-scrollcue{
+  margin:12px 0 0;
+  padding-top:4px;
+  color:#d8e4e3;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-align:center;
+  opacity:.86;
+}
+.mpp-result-v4-scrollcue::after{
+  content:'↓';
+  display:block;
+  margin-top:2px;
+  color:#ffd75a;
+  font-size:16px;
+  line-height:1;
+}
+
+.mpp-result-v4-section-title{
+  margin:12px 0 9px;
+  color:#ffd75a;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.10em;
+  text-align:left;
+}
+.mpp-result-v4-identity{
+  margin:0 0 12px;
+  padding:14px 14px 15px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(3,47,54,.90),rgba(2,34,41,.94));
+}
+.mpp-result-v4-identity>span{
+  display:block;
+  margin-bottom:6px;
+  color:#bcd0cf;
+  font-size:10px;
+  font-weight:850;
+}
+.mpp-result-v4-identity>b{
+  display:block;
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  line-height:1.5;
+}
+.mpp-result-v4-identity p{
+  margin:8px 0 0;
+  color:#edf4f3;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.78;
+}
+
+.mpp-page--result .mpp-result-companion--tight{
+  margin:2px auto -4px!important;
+}
+.mpp-page--result .mpp-result-companion--tight .mpp-mudagiri{
+  width:92px!important;
+}
+.mpp-page--result .mpp-dialogue{
+  margin-top:0!important;
+}
+
+.mpp-page--result .mpp-style-synthesis,
+.mpp-page--result .mpp-result-profile,
+.mpp-page--result .mpp-analysis-details,
+.mpp-page--result .mpp-one-action,
+.mpp-page--result .mpp-next-quest{
+  scroll-margin-top:16px;
+}
+
+.mpp-page--result .mpp-result-profile{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+}
+.mpp-page--result .mpp-result-profile>div:first-child{
+  grid-column:1 / -1;
+}
+.mpp-page--result .mpp-result-profile>div:nth-child(4){
+  grid-column:1 / -1;
+}
+
+.mpp-result-v4-chapter-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:20px 0 8px;
+  color:#ffd75a;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.1em;
+}
+.mpp-result-v4-chapter-label::before,
+.mpp-result-v4-chapter-label::after{
+  content:'';
+  height:1px;
+  flex:1 1 auto;
+  background:linear-gradient(90deg,transparent,rgba(255,215,90,.52));
+}
+.mpp-result-v4-chapter-label::after{transform:scaleX(-1)}
+
+/* SSR opening card: the Result itself is the reward. */
+.mpp-result-ssr-card{
+  width:min(100%,430px);
+  min-height:0;
+  margin:0 auto 12px;
+  padding:15px 16px 16px;
+  overflow:hidden;
+  border:2px solid rgba(255,215,90,.72);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 50% 27%,rgba(184,135,255,.20),transparent 38%),
+    radial-gradient(circle at 50% 2%,rgba(255,225,128,.10),transparent 31%),
+    linear-gradient(180deg,rgba(2,52,60,.98),rgba(1,31,38,.99));
+  box-shadow:
+    0 26px 65px rgba(0,0,0,.44),
+    0 0 0 1px rgba(255,244,190,.11) inset,
+    0 0 44px rgba(255,212,89,.10);
+  isolation:isolate;
+  transform-origin:50% 18%;
+  animation:mppSsrCardReveal 1.05s cubic-bezier(.18,.82,.22,1) both;
+}
+.mpp-result-ssr-card::before{
+  content:'';
+  position:absolute;
+  inset:-35%;
+  z-index:-1;
+  pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0 15%,rgba(255,225,128,.10) 19%,transparent 23% 48%,rgba(115,219,255,.08) 53%,transparent 58% 100%);
+  animation:mppSsrAuraSpin 9s linear infinite;
+}
+.mpp-result-ssr-card::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:8;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.28) 47%,rgba(255,231,148,.16) 52%,transparent 69%);
+  transform:translateX(-135%);
+  animation:mppSsrCardShine 1.25s .55s ease-out both;
+}
+.mpp-result-ssr-badge{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:0 auto 8px;
+  color:#ffe58b;
+  text-shadow:0 0 18px rgba(255,215,90,.24);
+}
+.mpp-result-ssr-badge b{
+  display:grid;
+  place-items:center;
+  min-width:42px;
+  min-height:24px;
+  padding:3px 8px;
+  border:1px solid rgba(255,229,139,.72);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,216,92,.20),rgba(255,183,39,.07));
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.12em;
+}
+.mpp-result-ssr-badge span{
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.16em;
+  opacity:.86;
+}
+.mpp-result-ssr-card .mpp-kicker{font-size:9px;opacity:.74}
+.mpp-result-ssr-card .mpp-job-no{font-size:11px;letter-spacing:.16em}
+.mpp-result-ssr-card .mpp-result-job-hero{margin-top:0}
+.mpp-result-ssr-card .mpp-result-v4-hit{
+  margin-top:4px;
+  background:linear-gradient(180deg,rgba(3,57,65,.86),rgba(2,35,43,.93));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.mpp-result-card-share{
+  width:min(100%,430px);
+  margin:0 auto 18px!important;
+  border-color:rgba(255,215,90,.45)!important;
+  color:#fff6d5!important;
+  background:linear-gradient(180deg,rgba(29,31,32,.92),rgba(10,12,13,.96))!important;
+}
+
+@keyframes mppSsrCardReveal{
+  0%{opacity:0;transform:perspective(900px) rotateY(-72deg) scale(.78) translateY(18px);filter:brightness(.55) blur(2px)}
+  55%{opacity:1;transform:perspective(900px) rotateY(7deg) scale(1.025) translateY(-2px);filter:brightness(1.16) blur(0)}
+  76%{transform:perspective(900px) rotateY(-2deg) scale(.992)}
+  100%{opacity:1;transform:perspective(900px) rotateY(0) scale(1);filter:none}
+}
+@keyframes mppSsrCardShine{
+  0%{transform:translateX(-135%);opacity:0}
+  25%{opacity:.8}
+  100%{transform:translateX(135%);opacity:0}
+}
+@keyframes mppSsrAuraSpin{to{transform:rotate(360deg)}}
+
+/* Optical audit 2026-10-05:
+   IDLE_01 alpha bbox height 466, LISTEN 572, IDLE_02 580 on their source canvases.
+   Same CSS box therefore looked dramatically different. Normalize to the median visible height (572).
+   Motion remains on the image; optical correction is applied to the fixed question-stage wrapper. */
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01']{--mdg-optical-scale:1.2275}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN']{--mdg-optical-scale:1}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{--mdg-optical-scale:.9862}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_01'],
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='LISTEN'],
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri[data-pose='IDLE_02']{
+  transform:scale(var(--mdg-optical-scale,1))!important;
+  transform-origin:50% 50%!important;
+  justify-self:center!important;
+}
+
+@media(max-width:430px){
+  .mpp-page--result .mpp-result{padding:14px 12px 26px!important}
+  .mpp-result-v4-hero{min-height:550px;padding-top:2px}
+  .mpp-result-v4-hero .mpp-result-job-character{width:min(62vw,230px)}
+  .mpp-result-v4-hero h1{font-size:34px!important}
+  .mpp-result-v4-hero .mpp-result-hero-line{font-size:15px!important;line-height:1.55!important}
+  .mpp-result-v4-hit{padding:12px 11px 11px}
+  .mpp-result-v4-hit li{font-size:12px;line-height:1.52}
+  .mpp-result-v4-identity>b{font-size:15px}
+  .mpp-result-v4-identity p{font-size:12.5px}
+  .mpp-page--result .mpp-result-profile{grid-template-columns:1fr!important}
+  .mpp-page--result .mpp-result-profile>div:first-child,
+  .mpp-page--result .mpp-result-profile>div:nth-child(4){grid-column:auto}
+  .mpp-result-ssr-card{min-height:0;padding:13px 12px 14px;border-radius:24px}
+  .mpp-result-ssr-card .mpp-result-job-character{width:min(57vw,220px)}
+  .mpp-result-ssr-card .mpp-result-v4-hit li{font-size:11.5px;line-height:1.48}
+
+  /* Make enough room for the normalized IDLE_01 visual without clipping or colliding with speech. */
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion.has-talk{
+    height:90px!important;
+    min-height:90px!important;
+    max-height:90px!important;
+    flex-basis:90px!important;
+    grid-template-columns:84px minmax(0,1fr)!important;
+    overflow:visible!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mpp-result-ssr-card{animation:none}
+  .mpp-result-ssr-card::before,.mpp-result-ssr-card::after{animation:none}
+}

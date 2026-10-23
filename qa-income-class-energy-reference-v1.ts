@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1,INCOME_CLASS_ENERGY_SOURCE_VERSION} from './income-class-energy-reference-v1';
+const base={diagnosisScope:'household' as const,householdSize:4,annualIncomeBand:'500_599' as const};
+const mid=energyIncomeReferenceForProfileV1(base);
+assert.ok(mid?.available);
+assert.equal(mid?.source.table,'第4-2表');
+assert.equal(mid?.source.category,'光熱・水道');
+assert.equal(mid?.source.population,'全国・二人以上の世帯（就業状態を限定しない）');
+assert.equal(mid?.monthlyLowYen,24795); // 550~600: 297541/12
+assert.equal(mid?.monthlyHighYen,24965); // 500~550: 299574/12
+assert.deepEqual(mid?.coveredPublishedBrackets,['500～550万円','550～600万円']);
+assert.equal(mid?.matchedCells,2);
+assert.equal(mid?.minSampleHouseholds,390);
+assert.equal(mid?.modelEstimate,false);
+assert.equal(mid?.impactsSaving,false);
+const high=energyIncomeReferenceForProfileV1({...base,annualIncomeBand:'1000plus'});
+assert.equal(high?.monthlyLowYen,26568);
+assert.equal(high?.monthlyHighYen,27836);
+assert.equal(high?.matchedCells,3);
+const low=energyIncomeReferenceForProfileV1({...base,annualIncomeBand:'under500'});
+assert.equal(low?.matchedCells,7);
+assert.equal(low?.monthlyLowYen,20784);
+assert.equal(low?.monthlyHighYen,25335);
+assert.equal(energyIncomeReferenceForProfileV1({...base,annualIncomeBand:'unknown'}),null);
+assert.equal(energyIncomeReferenceForProfileV1({...base,diagnosisScope:'personal'}),null,'Personal expense cannot be set against whole-household official income class');
+assert.equal(energyIncomeReferenceForProfileV1({...base,householdSize:1}),null,'Single income bracket is opted in only');
+const single=singleEnergyReferenceForExplicitAnnualBracketV1('400_499');
+assert.equal(single?.monthlyLowYen,12354);
+assert.equal(single?.monthlyHighYen,12354);
+assert.equal(single?.source.table,'第12表');
+assert.equal(single?.source.population,'全国・単身世帯（就業状態を限定しない）');
+const singleHigh=singleEnergyReferenceForExplicitAnnualBracketV1('600plus');
+assert.equal(singleHigh?.monthlyLowYen,12342);
+assert.equal(singleHigh?.matchedCells,1);
+assert.equal(singleEnergyReferenceForExplicitAnnualBracketV1('unknown' as any),null,'Unknown choice cannot create fabricated reference');
+assert.match(INCOME_CLASS_ENERGY_SOURCE_VERSION,/FIES_2025/);
+console.log('OFFICIAL_2025_INCOME_ENERGY_REFERENCE_QA_PASS');

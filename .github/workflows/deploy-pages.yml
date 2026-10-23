@@ -55,8 +55,61 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  chapter12-v32-gate:
+    name: Release V3.2 integrated UI gate (Chrome and WebKit)
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+    env:
+      VITE_CHAPTER2_V32: "1"
+      VITE_MUDAGIRI_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_GAS_URL: ""
+      VITE_MONEY_PERSONALITY_DATA_COHORT: PILOT
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Build and validate V3.2 release mode
+        run: |
+          npm run build
+          npm run qa:public-chapter12-entry
+          npx --yes tsx@4.20.6 qa-chapter2-v32.ts
+          npx --yes tsx@4.20.6 qa-comparable-income-matrix-v1.ts
+      - name: Prepare static same-origin Chapter 1 to 2 QA
+        run: |
+          mkdir -p release-preview
+          cp -R dist/. release-preview/
+          mkdir -p release-preview/pilot/chapter2-v32/pilot/money-type
+          cp -R dist/. release-preview/pilot/chapter2-v32/
+          cp -R dist/. release-preview/pilot/chapter2-v32/pilot/money-type/
+      - name: Install browser runner
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+      - name: Start release QA preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory release-preview >/tmp/mudagiri-release-v32.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4173/pilot/chapter2-v32/pilot/money-type/ >/dev/null; then exit 0; fi
+            sleep 0.4
+          done
+          cat /tmp/mudagiri-release-v32.log
+          exit 1
+      - name: Chrome latest Chapter 1 to Chapter 2 release QA
+        env:
+          BROWSER_ENGINE: chromium
+          INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"
+        run: node qa-chapters-v32-browser.mjs
+      - name: iPhone WebKit latest Chapter 1 to Chapter 2 release QA
+        env:
+          BROWSER_ENGINE: webkit
+          INTEGRATION_URL: "http://127.0.0.1:4173/pilot/chapter2-v32/"
+        run: node qa-chapters-v32-browser.mjs
+
   build:
-    needs: visual-gate
+    needs: [visual-gate, chapter12-v32-gate]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,10 +120,23 @@ jobs:
           node-version: 22
       - name: Install exact dependencies
         run: npm ci
-      - name: Build
+      - name: Build latest public Chapter 1 + Chapter 2
         env:
+          # The V3.2 browser QA enables this flag; production must use the same release mode.
+          VITE_CHAPTER2_V32: "1"
           VITE_MUDAGIRI_GAS_URL: ${{ secrets.VITE_MUDAGIRI_GAS_URL }}
-        run: npm run build
+          VITE_MONEY_PERSONALITY_GAS_URL: ${{ secrets.VITE_MONEY_PERSONALITY_GAS_URL || vars.VITE_MONEY_PERSONALITY_GAS_URL }}
+          VITE_MONEY_PERSONALITY_DATA_COHORT: PUBLIC
+        run: |
+          # Prevent a silent PUBLIC launch whose personality records never reach
+          # the dedicated backend. No secret value is printed to the log.
+          test "$VITE_CHAPTER2_V32" = "1" || { echo "::error::Chapter 2 V3.2 release mode is disabled"; exit 1; }
+          test -n "$VITE_MONEY_PERSONALITY_GAS_URL" || { echo "::error::Dedicated Chapter 1 GAS endpoint is not configured"; exit 1; }
+          test -n "$VITE_MUDAGIRI_GAS_URL" || { echo "::error::Existing Chapter 2 GAS endpoint is not configured"; exit 1; }
+          test "$VITE_MONEY_PERSONALITY_GAS_URL" != "$VITE_MUDAGIRI_GAS_URL" || { echo "::error::Chapter 1 and Chapter 2 GAS endpoints must remain separate"; exit 1; }
+          # Read-only GET verifies the dedicated backend/version before PUBLIC cohort deployment.
+          node scripts/check-money-personality-gas-health.mjs
+          npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

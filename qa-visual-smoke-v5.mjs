@@ -23,12 +23,16 @@ await page.addInitScript(()=>{
 page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
 const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
+const legacyResultUrl=new URL(base);legacyResultUrl.searchParams.set('mode','household');
 
 const report=[];
 async function metrics(name,{allowVertical=false}={}){
   await page.waitForTimeout(60);
   const m=await page.evaluate(({allowVertical})=>{
     const visible=(el)=>{
+      // A closed native <details> does not expose descendant controls to users.
+      // CSS geometry alone can still report an off-screen select as 'visible'.
+      if(el.closest('details:not([open])'))return false;
       const s=getComputedStyle(el);
       const r=el.getBoundingClientRect();
       return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0&&r.width>0&&r.height>0;
@@ -74,7 +78,7 @@ async function waitHeading(name){
   await h.waitFor({state:'visible'});
 }
 async function startPersonal(){
-  await page.goto(base,{waitUntil:'networkidle'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'networkidle'});
   await shot('01-opening');
   await clickButton(/無料で冒険をはじめる/);
   await waitHeading('今回チェックするのは？');
@@ -87,7 +91,7 @@ async function startPersonal(){
 }
 
 async function clearJourney(){
-  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'domcontentloaded'});
   await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();});
   await page.reload({waitUntil:'networkidle'});
 }

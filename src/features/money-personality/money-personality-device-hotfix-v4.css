@@ -1,0 +1,153 @@
+/* Device hotfix V4 — real Android/Custom Tab issues only. No scoring logic changes. */
+
+/* 1) Measurement companion: one stable size, one stable lane, never overlap question copy. */
+.mpp-measurement-companion,
+.mpp-measurement-companion.has-talk{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  height:96px!important;
+  min-height:96px!important;
+  max-height:96px!important;
+  margin:0 0 12px!important;
+  padding:0 16px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  overflow:visible!important;
+  transform:none!important;
+  z-index:6!important;
+}
+.mpp-measurement-companion:not(.has-talk){
+  justify-content:flex-start!important;
+}
+.mpp-measurement-companion > .mpp-mudagiri,
+.mpp-measurement-companion .mpp-mudagiri--question{
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 92px!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  height:92px!important;
+  min-height:92px!important;
+  max-height:92px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:end center!important;
+  transform:none!important;
+}
+.mpp-measurement-companion .mpp-mudagiri--question img,
+.mpp-measurement-companion > .mpp-mudagiri img{
+  display:block!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  height:92px!important;
+  min-height:92px!important;
+  max-height:92px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+.mpp-progress-talk{
+  position:relative!important;
+  inset:auto!important;
+  flex:1 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:250px!important;
+  margin:0 0 7px!important;
+  padding:10px 12px!important;
+  align-self:flex-end!important;
+  white-space:normal!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  line-break:strict!important;
+  line-height:1.55!important;
+  transform:none!important;
+  z-index:7!important;
+}
+.mpp-progress-talk::before{
+  left:-7px!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:17px!important;
+}
+.mpp-question-card{
+  position:relative!important;
+  z-index:2!important;
+  margin-top:0!important;
+}
+
+/* Keep the separator using the exact same companion geometry. */
+.mpp-separator + *{position:relative}
+
+/* 2) Result must be a normal document, not a one-screen game panel. */
+html:has(.mpp-page--result),
+body:has(.mpp-page--result),
+#root:has(.mpp-page--result){
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  touch-action:auto!important;
+  overscroll-behavior-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.mpp-page--result{
+  position:relative!important;
+  display:block!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+  touch-action:auto!important;
+  overscroll-behavior:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom))!important;
+}
+.mpp-page--result .mpp-result{
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:auto!important;
+  margin-bottom:40px!important;
+}
+
+@media(max-width:430px){
+  .mpp-measurement-companion,
+  .mpp-measurement-companion.has-talk{
+    height:92px!important;
+    min-height:92px!important;
+    max-height:92px!important;
+    padding-inline:14px!important;
+    gap:8px!important;
+  }
+  .mpp-measurement-companion > .mpp-mudagiri,
+  .mpp-measurement-companion .mpp-mudagiri--question,
+  .mpp-measurement-companion .mpp-mudagiri--question img,
+  .mpp-measurement-companion > .mpp-mudagiri img{
+    width:88px!important;
+    min-width:88px!important;
+    max-width:88px!important;
+    height:88px!important;
+    min-height:88px!important;
+    max-height:88px!important;
+    flex-basis:88px!important;
+  }
+  .mpp-progress-talk{
+    max-width:235px!important;
+    margin-bottom:5px!important;
+    font-size:11px!important;
+    padding:9px 11px!important;
+  }
+}
