@@ -1098,7 +1098,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       </div>
      </React.Fragment>;
     })}
-   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>
+   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
    <p className="c2v22-ledger-footnote">※統計上の比較差は確定改善額・見直し候補上限に加えないよ。各項目の出典は開いて確認できるよ。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
