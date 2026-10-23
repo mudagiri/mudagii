@@ -274,13 +274,17 @@ await clickButton(/診断結果を見る/);
  assert.match(await singleIncomeOpt.locator(':scope > summary').innerText(),/比較条件を変更する/,
   'User sees an optional edit, not a second requested gross-income answer');
  assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
- const cohortScopeDetails=page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]');
- assert.equal(await cohortScopeDetails.count(),1,'All unavailable category reasons are discoverable in one optional detail');
- await cohortScopeDetails.locator('summary').click();
- assert.equal(await cohortScopeDetails.locator('[data-peer-coverage-category]').count(),9,
-  'Nine category limitations are displayed, not falsely claimed as cross-tab peers');
- assert.ok((await cohortScopeDetails.innerText()).includes('サブスクだけの公式平均はないよ'));
- await cohortScopeDetails.locator('summary').click();
+ const sourceGuide=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
+ assert.equal(await sourceGuide.count(),1,'One global source-scope explanation replaces nine duplicated category paragraphs');
+ assert.equal(await sourceGuide.evaluate(el=>el.open),false,'Methodological detail begins collapsed');
+ assert.equal(await page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]').count(),0,
+  'Nine repeated long scope paragraphs do not compete with twelve category results');
+ await sourceGuide.locator('summary').click();
+ const sourceText=await sourceGuide.innerText();
+ for(const word of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
+  assert.ok(sourceText.includes(word),'Missing optional statistical scope: '+word);
+ }
+ await sourceGuide.locator('summary').click();
  assert.equal(await page.locator('.c2v32-rpg').getByText('あなたの手取り換算',{exact:false}).count(),0,
   'Never print synthetic own-denominator proxies as statistical burden rates');
  assert.equal(await page.locator('#c2v32-single-income').inputValue(),'400_499',
@@ -317,13 +321,21 @@ await clickButton(/診断結果を見る/);
  const sameAgeFood40=await sameAge40.innerText();
  assert.ok(sameAgeFood40.includes('2024年全国家計構造調査'),'Official e-Stat source must open on request');
  const primaryPeerFood=await page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way').innerText();
- assert.ok(primaryPeerFood.includes('同条件の全国参考率')&&primaryPeerFood.includes('14.8% ～ 17.8%'),
+ assert.ok(primaryPeerFood.includes('全国の参考率')&&primaryPeerFood.includes('14.8% ～ 17.8%'),
   'The true 2024 same-cohort burden rate must be in the primary comparison cell');
- const peerGapText=await page.locator('[data-section="OFFICIAL_PEER_GAP_food"]').innerText();
- assert.ok(peerGapText.includes('+2.2pt ～ +5.2pt'),'Official 2024 gap uses signed 0.1 percentage points');
- assert.ok(peerGapText.includes('+¥7,700 ～ +¥18,200'),'Monthly yen gap uses own take-home with signed endpoints');
- assert.ok(peerGapText.includes('地域は未反映')&&peerGapText.includes('削減可能額'),
-  'National-only gap must not become a fake regional saving');
+ const gapCard=page.locator('[data-section="OFFICIAL_PEER_GAP_food"]');
+ const collapsedPeer=await gapCard.innerText();
+ assert.ok(collapsedPeer.includes('+2.2pt ～ +5.2pt'),'Official 2024 point gap stays visible');
+ assert.ok(!collapsedPeer.includes('+¥7,700 ～ +¥18,200'),
+  'Speculative yen conversion is not an extra primary result metric');
+ const gapDisclosure=page.locator('[data-section="OFFICIAL_PEER_GAP_DETAIL_food"]');
+ assert.equal(await gapDisclosure.evaluate(el=>el.open),false,'Full statistical explanation is optional, not repeated upfront');
+ await gapDisclosure.locator('summary').click();
+ const peerGapText=await gapCard.innerText();
+ assert.ok(peerGapText.includes('+¥7,700 ～ +¥18,200'),'Optional yen conversion preserves exact prior computation');
+ assert.ok(peerGapText.includes('地域・費目内訳')&&peerGapText.includes('削減可能額'),
+  'All scope and no-saving conditions survive in expandable methodology');
+ await gapDisclosure.locator('summary').click();
  assert.equal(await page.locator('[data-comparison-story="food"]').count(),0,
   'Hide conflicting age-only yen comparison story when true peer is available');
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
@@ -378,6 +390,17 @@ await clickButton(/診断結果を見る/);
   'Clearing gross salary removes all same-cell references even with worker declaration');
  if(await singleIncomeOpt.evaluate(el=>el.open)) await singleIncomeOpt.locator('summary').click();
 
+ assert.equal(await page.locator('[data-section="NEXT_QUEST"]').count(),0,
+  'Duplicate first-action recap is removed');
+ assert.equal(await page.locator('[data-section="FIRST_REVIEW_ACTION"]').count(),0,
+  'One action is visible in the primary candidate card, not repeated below');
+ const futureMath=page.locator('.c2v32-future-method');
+ assert.equal(await futureMath.count(),1);
+ assert.equal(await futureMath.evaluate(el=>el.open),false,'Long future reward math is folded until requested');
+ const candidateMethod=page.locator('[data-section="PRIMARY_CANDIDATE_REASON"]');
+ assert.equal(await candidateMethod.evaluate(el=>el.open),false,'Reason and basis are optional after the concrete first step');
+ assert.match(await page.locator('[data-section="CANDIDATE_BREAKDOWN"]').innerText(),/まず確かめる/,
+  'Primary concrete action remains visible before any taps');
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
  assert.ok(cUpper>0,'Synthetic food case must surface an unconfirmed review candidate');
