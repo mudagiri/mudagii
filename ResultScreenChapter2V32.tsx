@@ -415,6 +415,36 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    (x.known===true?200:0)+(['food','energy','daily'].includes(x.category)?100:0);
  };
  const rankedShown=[...shown].sort((a:any,b:any)=>visualPriority(b)-visualPriority(a));
+ // Additional CHECK signals only. These are national public-cohort percentage
+ // point differences, not a second budget or saving pool. Never sum with cUpper.
+ // Each category must pass the same official 2024 population and amount scope
+ // gates as its detailed three-way card.
+ const peerReviewSignals=rankedShown.flatMap((x:any)=>{
+  if(x.category!=='food'&&x.category!=='energy'&&x.category!=='daily')return [];
+  const source=peerReferenceFor(x.category);
+  const expense=incomeBurden?.categories?.find((v:any)=>v.category===x.category);
+  const actual=expense?.monthlyAmount??null;
+  const comparable=comparisonAvailable(x);
+  const target=comparable?comparisonTargetAmount(x):null;
+  const sameScope=actual!==null&&x.known===true&&
+   Number.isFinite(Number(x.amount))&&Math.abs(Number(actual)-Number(x.amount))<1&&
+   (!comparable||target!==null&&Math.abs(Number(target)-Number(x.amount))<1);
+  const comparison=chapter2PeerGapV1({
+   ownMonthlyExpenseYen:sameScope?Number(actual):null,
+   ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null,
+   peerPctLow:source?.available?source.ratePctLow:null,
+   peerPctHigh:source?.available?source.ratePctHigh:null,
+   sameExpenseScopeConfirmed:sameScope,sourceVerified:source?.available===true,
+  });
+  if(!comparison.available||comparison.gapPointsLow<=0)return [];
+  return [{
+   category:x.category,label:x.label||x.category,
+   ownPct:comparison.ownPct,peerPctLow:comparison.peerPctLow,peerPctHigh:comparison.peerPctHigh,
+   gapPointsLow:comparison.gapPointsLow,gapPointsHigh:comparison.gapPointsHigh,
+   gapYenLow:comparison.gapYenLow,gapYenHigh:comparison.gapYenHigh,
+   overlapsCurrentCandidate:nonnegative(x.cUpper)>0,
+  }];
+ });
  // This optional lineage was validated against the anonymousUserId when it
  // was written by the diagnosis journey. Do not infer STYLE from spending.
  const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
@@ -847,6 +877,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </label>
      <p>自営業・無職・不明ならチェック不要。回答は比較画面内だけに使うよ。</p>
     </div>}
+   {peerReviewSignals.length>0&&<section className="c2v32-reference-signals" data-section="PEER_REVIEW_SIGNALS">
+    <strong>🔎 比較から見つかった追加の確認ポイント</strong>
+    <p>統計と比べて負担割合が高い項目が{peerReviewSignals.length}件。<b>差がある＝減らせる、ではない</b>けど、内訳を見直す手がかりになるよ。</p>
+    <div>{peerReviewSignals.map(x=><details key={x.category} data-peer-review-signal={x.category}>
+     <summary><b>{x.label}</b><span>あなた {x.ownPct.toFixed(1)}% ／ 全国参考 {x.peerPctLow.toFixed(1)}{x.peerPctLow===x.peerPctHigh?'':'～'+x.peerPctHigh.toFixed(1)}%</span></summary>
+     <p>参考との差：＋{x.gapPointsLow.toFixed(1)}{x.gapPointsLow===x.gapPointsHigh?'':'～'+x.gapPointsHigh.toFixed(1)}pt</p>
+     <p>本人の月手取りに置き換えた参考差：{money(x.gapYenLow)}{x.gapYenLow===x.gapYenHigh?'':'～'+money(x.gapYenHigh)}／月。</p>
+     <small>参考差であり、節約の見込額・別枠の改善上限ではありません。
+      {x.overlapsCurrentCandidate?' 既存の見直し候補と重なるため、合算しないよ。':' 未確定の見直し候補に自動加算しません。'}
+      全国の2024年同一交差集計を利用。地域・世帯人数や用途の完全一致は未確認です。</small>
+    </details>)}</div>
+   </section>}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
     <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
      <summary>{anyJointRateAvailable?'比較の仕組み・統計の対象を見る（任意）':'年収帯だけの参考について（年齢・地域は未反映）'}</summary>
