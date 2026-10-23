@@ -20,6 +20,12 @@ try{
  assert.equal(await page.locator('[data-chapter3-standalone="true"]').count(),1);
  assert.equal(await page.locator('[data-testid="chapter3-question"]').count(),0,'starts with meaningful opening');
  await snap('01-opening');
+ // The result screen must be discoverable without traversing Ch1 or Ch2.
+ await page.getByRole('button',{name:/リザルト画面のサンプルを先に見る/}).click();
+ await page.locator('[data-testid="chapter3-result"]').waitFor({state:'visible'});
+ assert.match(await page.locator('[data-testid="chapter3-result"]').innerText(),/架空の回答例による結果サンプル/);
+ await snap('01b-visible-result-sample');
+ await page.getByRole('button',{name:/もう一度、未来を選び直す/}).click();
  await page.getByRole('button',{name:/冒険に出る/}).click();
  const titles=[
   /未来の自分に、どんな景色を見せたい/,
