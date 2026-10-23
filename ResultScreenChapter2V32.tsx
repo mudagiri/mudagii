@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
+import type {SinglePeerGrossBand2024} from './mudagiri-profile-v4';
 import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
 import {relatedOfficialExpenseItems2024} from './chapter2-official-related-2024-high-v1';
@@ -8,7 +9,7 @@ import {relatedOfficial50manItems2024} from './chapter2-official-related-2024-mi
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
-import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
+import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
@@ -261,9 +262,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [showAllCategoryComparisons,setShowAllCategoryComparisons]=useState(false);
- const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
-  ['400_499','500_599','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
-   ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
+ const [singleGrossBand,setSingleGrossBand]=useState<SinglePeerGrossBand2024>(
+  ['under400','400_499','500_599','600_699','700_799','800_999','1000plus','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
+   ?vm.profile.singlePeerGrossBand2024 as SinglePeerGrossBand2024:null);
+ // Higher-income bands are collected faithfully, but unsupported verified
+ // single-person 2024 cells must NEVER be substituted with 600plus averages.
+ const singleSourceGrossBand:SingleIncomeFoodOptionV1|null=
+  singleGrossBand==='400_499'||singleGrossBand==='500_599'||singleGrossBand==='600plus'?singleGrossBand:null;
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
  const [multiGrossOverride,setMultiGrossOverride]=useState<string|null>(null);
@@ -297,15 +302,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  // Official income-class view is separate from the frozen primary household-size
  // comparator. No synthetic income factor and never a savings estimate.
  const incomeFoodReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
+  ?(singleSourceGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :resolveFoodIncomeReferenceForProfileV1(comparisonProfile);
  const incomeEnergyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
+  ?(singleSourceGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :energyIncomeReferenceForProfileV1(comparisonProfile);
  const incomeDailyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
+  ?(singleSourceGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
   :dailyIncomeReferenceForProfileV1(comparisonProfile);
- const workerBurdenReference=workerBurdenReferenceForProfileV1(comparisonProfile,singleGrossBand);
+ const workerBurdenReference=workerBurdenReferenceForProfileV1(comparisonProfile,singleSourceGrossBand);
  const scopedWorkerCategory=(category:string)=>
   workerBurdenReference.available&&['food','energy','daily'].includes(category)
    ?workerBurdenReference.categories[category as WorkerBurdenCategory]??null:null;
@@ -328,10 +333,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const resultGrossLabel=multiCohort
   ?householdAnnualBandLabel??(multiGrossBand==='under500'?'500万円未満':'年収帯は未回答')
   :vm.profile?.householdSize===1
-   ?singleGrossBand==='400_499'?'400～499万円'
+   ?singleGrossBand==='under400'?'400万円未満'
+    :singleGrossBand==='400_499'?'400～499万円'
     :singleGrossBand==='500_599'?'500～599万円'
-    :singleGrossBand==='600plus'?'600万円以上'
-    :vm.profile?.singlePeerGrossBand2024==='under400'?'400万円未満'
+    :singleGrossBand==='600_699'?'600～699万円'
+    :singleGrossBand==='700_799'?'700～799万円'
+    :singleGrossBand==='800_999'?'800～999万円'
+    :singleGrossBand==='1000plus'?'1,000万円以上'
+    :singleGrossBand==='600plus'?'600万円以上（旧回答）'
     :'年収帯は未回答'
    :'個人負担のみ（世帯年収との同条件比較は対象外）';
  const resultHouseholdLabel=multiCohort?'二人以上の世帯全体'
@@ -345,13 +354,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    ?highIncomePublishedReference?.available===true
    :resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available);
  const singleHasAvailablePeerSource=vm.profile?.householdSize===1&&
-  resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleGrossBand,'food').available;
+  resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleSourceGrossBand,'food').available;
  const peerRateFor=(expense:JointBurdenExpense)=>multiCohort&&multiGrossBand==='1000plus'
   ?highPeerFor(expense,multiHeadAgeConfirmed,headWorkerConfirmed)
   :resolve2024DeclaredWorkerPeerV1({
    household:multiCohort?'multi':'single',
    age:multiCohort?rawProfileAge:vm.profile?.householdSize===1?rawProfileAge:null,
-   grossBand:multiCohort?multiGrossBand:singleGrossBand,
+   grossBand:multiCohort?multiGrossBand:singleSourceGrossBand,
    expense,headAgeConfirmed:!multiCohort||multiHeadAgeConfirmed,
    headWorkerConfirmed,
   });
@@ -375,7 +384,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     })
   :vm.profile?.householdSize===1
    ?relatedOfficial50manItems2024({
-      household:'single',headAge:rawProfileAge,grossBand:singleGrossBand,
+      household:'single',headAge:rawProfileAge,grossBand:singleSourceGrossBand,
       headAgeConfirmed:true,headWorkerConfirmed,
      }):null;
  // Verified peer statistics are a separate comparison, NOT a verified monthly
@@ -692,6 +701,21 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </div>
     <small className="c2v32-breakdown-footnote">※平均との差をそのまま削減額にはしていません。</small>
    </section>}
+   {shown.length>0&&<section className="c2v32-battleboard" data-section="CATEGORY_BATTLEBOARD" aria-label="全12カテゴリの戦況">
+    <strong>⚔ 12カテゴリの戦況</strong>
+    <p>候補だけではなく、守る支出も含めて一覧で確認できるよ。</p>
+    <div className="c2v32-battleboard-grid">
+     {rankedShown.map((x:any)=>{
+      const st=STATUS[x.v5Status]??STATUS.review;
+      return <button key={x.category} type="button" className="c2v32-battleboard-item"
+       data-battleboard-category={x.category}
+       onClick={()=>{setShowAllCategoryComparisons(true);jumpToSection('CATEGORY_COMPARISON_OVERVIEW');}}>
+       <strong>{x.label||x.category}</strong><small>{st.mark} {st.name}</small>
+      </button>;
+     })}
+    </div>
+    <small>タップで比較一覧へ。統計との差は確認の手がかりで、確定改善額ではないよ。</small>
+   </section>}
    {/* The primary candidate card already contains the next action. */}
   </section>
 
@@ -810,10 +834,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <label htmlFor="c2v32-single-income">比較に使う額面年収帯を変更</label>
     <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
      const next=e.target.value;
-     setSingleGrossBand(SINGLE_INCOME_FOOD_OPTIONS.some(x=>x.value===next)?next as SingleIncomeFoodOptionV1:null);
+     setSingleGrossBand(['under400','400_499','500_599','600_699','700_799','800_999','1000plus','600plus'].includes(next)
+      ?next as SinglePeerGrossBand2024:null);
     }}>
      <option value="">選ばずに進む</option>
-     {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
+     <option value="under400">400万円未満</option>
+     <option value="400_499">400～499万円</option>
+     <option value="500_599">500～599万円</option>
+     <option value="600_699">600～699万円</option>
+     <option value="700_799">700～799万円</option>
+     <option value="800_999">800～999万円</option>
+     <option value="1000plus">1,000万円以上</option>
+     {singleGrossBand==='600plus'&&<option value="600plus">600万円以上（旧回答）</option>}
     </select>
     <p className="c2v32-edit-note">この画面の比較値だけ変更。診断額・LINEは変わらないよ。</p>
     {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
@@ -874,9 +906,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p>月手取り {money(Number(incomeBurden.monthlyTakeHome))}。入力した{incomeBurden.knownCategoryCount}カテゴリ分の割合だよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&!singleGrossBand&&vm.profile?.singlePeerGrossBand2024==='under400'&&
+   {vm.profile?.householdSize===1&&singleGrossBand&&!singleHasAvailablePeerSource&&
     <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
-     入口で選んだ「400万円未満」は受け取ったよ。ただし現在の検証済み2024年交差集計では、この年収帯と同年代の参考率はまだ出せないため、推計で埋めないよ。
+     年収帯「{resultGrossLabel}」は受け取ったよ。ただし現在の検証済み2024年公表セルでは、この年収帯・同年代・単身の条件を満たす参考率を確認できないため、推計で埋めないよ。入口で年収を答え直す必要はありません。
     </p>}
    {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
     <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
