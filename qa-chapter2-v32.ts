@@ -42,7 +42,7 @@ if(verifiedPositive.available){
  const withExpense=renderToStaticMarkup(React.createElement(Chapter2PeerComparisonCard,{
   category:'food',label:'食費',gap:verifiedPositive,householdLabel:'二人以上',ownMonthlyExpenseYen:100000
  }));
- assert.match(withExpense,/今回のあなたの支出：/);
+ assert.match(withExpense,/あなたの支出/);
  assert.match(withExpense,/¥100,000／月/);
  assert.match(withExpense,/data-peer-three-way-category="food"/);
  assert.doesNotMatch(withExpense,/見直し候補：月最大/);
@@ -168,7 +168,7 @@ assert.match(multiVerifiedAgeInput,/id="c2v32-worker-status-confirm" type="check
 assert.match(multiVerifiedAgeInput,/勤労者世帯の参考率を表示する/);
 assert.doesNotMatch(multiVerifiedAgeInput,/data-age-income-worker-peer-category=/,
  'Multi-person peer reference is disabled until household-head age and salary-worker status are confirmed');
-assert.match(multiVerifiedAgeInput,/回答は画面表示だけに使い、保存・送信しません/);
+assert.match(multiVerifiedAgeInput,/回答は比較画面内だけに使うよ/);
 const multiUnsupportedAge=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,age:27},
 }}));
@@ -188,14 +188,14 @@ assert.match(multiUpperOpenEnded,/value="1250_1499"/);
 assert.match(multiUpperOpenEnded,/value="1500plus"/);
 assert.doesNotMatch(multiUpperOpenEnded,/data-age-income-worker-peer-category=/,
  'Do not assume which 1000plus published bracket applies without explicit selection');
-assert.match(multiUpperOpenEnded,/診断結果・LINEへ保存や送信はしません/);
+assert.match(multiUpperOpenEnded,/比較表示のみ変更。確定改善額・未確定上限はそのまま/);
 const coResidentIndividual=renderToStaticMarkup(React.createElement(ResultScreenChapter2V32,{vm:{
  ...makeVm(0,0),profile:{...incomeProfile,age:35,diagnosisScope:'personal'},
 }}));
 assert.doesNotMatch(coResidentIndividual,/data-section="MULTI_PEER_HEAD_AGE_CONFIRM"/,
  'Individual income should never be compared to household-income-based official peer group');
 
-for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','NEXT_QUEST','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
+for(const marker of ['data-result-version="v32"','POTENTIAL_HERO','POTENTIAL_TREASURE','FUTURE_REWARDS','HOUSEHOLD_BATTLE_RESULTS','CONSULTATION_CTA_TOP','MP_BG_01_GUILD_HALL','MP_BG_02_JOB_UNLOCK','MP_BG_03_NEXT_QUEST']){
  assert.ok(uncertain.includes(marker),'missing section or asset '+marker);
 }
 assert.match(uncertain,/月 最大 ¥17,854/);
@@ -203,11 +203,11 @@ assert.match(uncertain,/¥214,248/);
 assert.match(uncertain,/¥1,071,240/);
 assert.match(uncertain,/¥2,142,480/);
 assert.match(uncertain,/未確定/);
-assert.match(uncertain,/実際の削減額や将来の結果を保証するものではなく/);
+assert.match(uncertain,/実際の節約額・将来の結果を保証するものではなく/);
 assert.match(uncertain,/data-section="CANDIDATE_EVIDENCE_JUMP"/,'the entry CTA must point to reasoning, not speculative horizon');
 assert.doesNotMatch(uncertain,/data-section="FUTURE_REWARD_JUMP"/,'old future-first hero cue must be removed');
 assert.match(uncertain,/見直し候補を確認する/,'no invented evidence promise when reviewUpper has no source rows');
-assert.match(uncertain,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/);
+assert.match(uncertain,/未確定の候補を/,'unrealized future premise must be in the primary sentence');
 assert.match(uncertain,/10年間で積み重ねたら/);
 assert.match(uncertain,/未来の戦利品<\/h2>/,'readable RPG heading stays clean');
 assert.doesNotMatch(uncertain,/未来の戦利品（仮定）|未確定の仮定/,'stiff parenthetical should not return');
@@ -252,9 +252,8 @@ const candidateHtml=renderToStaticMarkup(React.createElement(ResultScreenChapter
  firstQuest:{category:'mobile',label:'通信費',nextAction:'料金プランを確認'}
 }}));
 
-// Four-lens UX contract: total and largest item's reason remain visible.
-// All other candidates are accessible in a compact disclosure BEFORE
-// annualization; the complete detail lives in the one 12-category ledger.
+// Simplified result: keep 2 candidate amounts and one visible action;
+ // the threshold math is still accessible in the optional reason disclosure.
 assert.match(candidateHtml,/>2カテゴリ<\/strong>/,'treasure shows compact count without a split phrase');
 assert.match(candidateHtml,/まず、見直し候補の理由を見る/,'when source rows exist, invite explanation before scenario numbers');
 const treasureMarkup=candidateHtml.slice(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"'),candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
@@ -262,11 +261,11 @@ assert.doesNotMatch(treasureMarkup,/最大 ¥17,854/,'avoid repeating the same p
 assert.match(candidateHtml,/CANDIDATE_BREAKDOWN/);
 assert.match(candidateHtml,/宝箱の中身はこれ/);
 assert.equal((candidateHtml.match(/data-candidate-category=/g)||[]).length,2,'all contributor amounts must remain in result HTML');
-const breakdownHTML=candidateHtml.slice(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'),candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"'));
-for(const label of ['通信費','食費','最大 ¥5,500','最大 ¥12,354','候補になった理由：','確かめること：','スマホ料金プランを確認','食費の内訳を確認','月額・未確定','まだ削減できると決まった金額ではない']){
+const breakdownHTML=candidateHtml.slice(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'),candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
+for(const label of ['通信費','食費','最大 ¥5,500','最大 ¥12,354','候補になった理由','まず確かめる：','スマホ料金プランを確認','食費の内訳を確認','月額・未確定','参考上限']){
  assert.ok(breakdownHTML.includes(label),'missing candidate evidence '+label);
 }
-assert.equal((breakdownHTML.match(/候補になった理由：/g)||[]).length,1,'only the top candidate repeats detail before the definitive 12-category list');
+assert.equal((breakdownHTML.match(/候補になった理由/g)||[]).length,1,'only the top candidate repeats detail before the definitive 12-category list');
 assert.match(breakdownHTML,/今回の入力：/,'largest candidate shows actual expense');
 assert.match(breakdownHTML,/¥54,000/,'largest candidate food expense remains visible');
 assert.match(breakdownHTML,/¥37,860/,'largest food comparison clearly remains non-saving context');
@@ -278,12 +277,11 @@ assert.ok(candidateHtml.includes('data-comparison-category="mobile"'),'secondary
 assert.ok(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"')<candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.ok(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(candidateHtml.indexOf('data-section="FUTURE_REWARDS"')<candidateHtml.indexOf('data-section="CONSULTATION_CTA_TOP"'));
-assert.match(candidateHtml,/FIRST_REVIEW_ACTION/);
-assert.match(candidateHtml,/最初に確かめるなら/);
-assert.match(candidateHtml,/食費の内訳を確認/);
-assert.ok(candidateHtml.indexOf('data-section="FIRST_REVIEW_ACTION"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
-assert.match(candidateHtml,/もし見直し候補を/);
-assert.match(candidateHtml,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/,'future values describe a conditional scenario, not earned returns');
+assert.doesNotMatch(candidateHtml,/FIRST_REVIEW_ACTION|data-section="NEXT_QUEST"/,
+ 'Repeated first-action cards are removed from the initial result');
+assert.match(candidateHtml,/まず確かめる/,'The concrete primary action is visible in the candidate itself');
+assert.match(candidateHtml,/PRIMARY_CANDIDATE_REASON/,'Why this candidate was selected remains available on demand');
+assert.match(candidateHtml,/未確定の候補を/,'Future reward math remains explicitly hypothetical');
 assert.match(candidateHtml,/本当に見直せるか、一緒に確かめよう/);
 assert.match(candidateHtml,/「いつかやりたいこと」を、今日できる一歩に変える作戦/,'small next step framed positively, not fear of old age');
 assert.match(empty,/「いつかやりたいこと」を、今日できる小さな一歩につなげよう/,'no savings candidates still receives a voluntary action');
@@ -403,10 +401,10 @@ assert.match(overview,/40代・2人以上世帯/,'V5 basis shown adjacent');
 assert.match(overview,/生命保険文化センターの調査（2024年）/,'V5 research provenance accurate');
 assert.doesNotMatch(overview,/¥1,200.*節約済み/,'confirmed opportunity is not a realized saving');
 
-assert.equal((monsterHtml.match(/class="c2v32-optional-detail"/g)||[]).length,3,'optional deep exploration does not interrupt main decision path');
+assert.equal((monsterHtml.match(/class="c2v32-optional-detail"/g)||[]).length,2,'Remove redundant first-step, retaining atlas and goal optional details');
 assert.match(monsterHtml,/data-optional="enemy-atlas"/);
 assert.match(monsterHtml,/data-optional="future-goal"/);
-assert.match(monsterHtml,/data-optional="first-step"/);
+assert.doesNotMatch(monsterHtml,/data-optional="first-step"/,'No repeated first-step CTA');
 for(const enemy of Object.values(ENEMY_ASSETS)){
  assert.ok(monsterHtml.includes(enemy.name),'named enemy is missing: '+enemy.name);
  assert.ok(monsterHtml.includes(enemy.normal),'official enemy image is missing: '+enemy.id);
@@ -419,7 +417,7 @@ assert.match(monsterHtml,/「守る」「そのままでOK」も、今回の戦�
 assert.doesNotMatch(empty,/「守る」「そのままでOK」も、今回の戦果だ/,'no claim of positive categories without actual assessed rows');
 assert.match(empty,/まずは今できることを1つ、確かめよう/,'a first step should still exist for zero verified positive categories');
 assert.doesNotMatch(monsterHtml,/人生がうまくいかない人|学習性無力感|ワースト1/,'no shaming or diagnosis-by-headline');
-assert.match(monsterHtml,/まだ確定した金額じゃないよ。実際に減らせるかは確認してから。/,'future scenario is clearly conditional across category cases');
+assert.match(monsterHtml,/未確定の候補を/,'future scenario is explicitly a hypothetical, not realized savings');
 const source=(await import('node:fs')).readFileSync('ResultScreenChapter2V32.tsx','utf8');
 assert.match(source,/reviewUpper\*120/);
 assert.match(source,/createQuestShareCard\(chapter1\?\.jobCode\)/);
