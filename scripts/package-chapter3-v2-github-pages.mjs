@@ -26,7 +26,7 @@ assert.notEqual(deepHtml,source,'Cannot add stable root base to Vite HTML');
 await mkdir(join(target,'pilot/chapter2-v32/pilot/money-type'),{recursive:true});
 await writeFile(join(target,'pilot/chapter2-v32/index.html'),deepHtml,'utf8');
 await writeFile(join(target,'pilot/chapter2-v32/pilot/money-type/index.html'),deepHtml,'utf8');
-const entry="<!doctype html><html lang=\"ja\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>ムダギリ診断・第3章V2｜隔離プレビュー</title><style>body{background:#0b1727;color:#f7edd0;font:16px/1.8 system-ui,sans-serif;margin:0;padding:24px}main{max-width:600px;margin:6vh auto;background:#152c40;border:1px solid #84734b;border-radius:17px;padding:24px}h1{font-size:clamp(22px,6vw,32px);line-height:1.4}a{display:block;background:#edc76d;color:#1b2030;font-weight:800;text-decoration:none;border-radius:10px;padding:12px 15px;margin-top:18px;text-align:center}small{display:block;color:#b8cddd;margin-top:15px}</style></head><body><main><p>CHAPTER III · ISOLATED PILOT</p><h1>⚔️ ムダギリ診断<br>未来の航路 V2</h1><p>第1章のお金の性格診断から第2章の家計クエストを経て、第3章の未来の作戦書まで、ひと続きで確認できる試作です。</p><p>このプレビューでは家計データを外部GAS・分析サービスに送信しません。実際の家計情報や個人情報を入力せず、架空の数字で確認してください。</p><a href=\"./pilot/chapter2-v32/pilot/money-type/\">第1章から試す →</a><a href=\"./pilot/chapter2-v32/\">第2章から試す →</a><small>開発確認用・本番未反映。相談ボタンは確認用モーダルのみで予約は確定しません。金融商品の適合性を判定しません。</small></main></body></html>";
+const entry="<!doctype html><html lang=\"ja\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>ムダギリ診断・第3章V2｜隔離プレビュー</title><style>body{background:#0b1727;color:#f7edd0;font:16px/1.8 system-ui,sans-serif;margin:0;padding:24px}main{max-width:600px;margin:6vh auto;background:#152c40;border:1px solid #84734b;border-radius:17px;padding:24px}h1{font-size:clamp(22px,6vw,32px);line-height:1.4}a{display:block;background:#edc76d;color:#1b2030;font-weight:800;text-decoration:none;border-radius:10px;padding:12px 15px;margin-top:18px;text-align:center}small{display:block;color:#b8cddd;margin-top:15px}</style></head><body><main><p>CHAPTER III · ISOLATED PILOT</p><h1>⚔️ ムダギリ診断<br>未来の航路 V2</h1><p>第1章のお金の性格診断から第2章の家計クエストを経て、第3章の未来の作戦書まで、ひと続きで確認できる試作です。</p><p>このプレビューでは家計データを外部GAS・分析サービスに送信しません。実際の家計情報や個人情報を入力せず、架空の数字で確認してください。</p><a href=\"./?chapter3solo=1\">⚔ 第3章だけを直接遊ぶ →</a><a href=\"./pilot/chapter2-v32/pilot/money-type/\">第1章から試す →</a><a href=\"./pilot/chapter2-v32/\">第2章から試す →</a><small>開発確認用・本番未反映。相談ボタンは確認用モーダルのみで予約は確定しません。金融商品の適合性を判定しません。</small></main></body></html>";
 await writeFile(join(target,'chapter3-v2-preview.html'),entry,'utf8');
 await writeFile(join(target,'.nojekyll'),'','utf8');
 for(const p of ['index.html','chapter3-v2-preview.html','pilot/chapter2-v32/index.html',
@@ -45,7 +45,7 @@ await writeFile(join(target,'CHAPTER3_V2_PREVIEW_NOTES.txt'),[
  'Designed for a separate GitHub Pages user-site root repository, with URL path /.',
  'All deep HTML routes use root-relative /assets with <base href="/">; no 3x asset duplication.',
  'A project Pages site under /repo-name/ requires explicit source routing fixes.',
- 'Open /chapter3-v2-preview.html on the separate site. Use synthetic inputs.',
+ 'Open /chapter3-v2-preview.html or /?chapter3solo=1 for a direct Chapter3 result.',
  'A GitHub artifact ZIP by itself is NOT a live URL.',
 ].join('\n'),'utf8');
 console.log('CHAPTER3_V2_GITHUB_PAGES_BUNDLE_PASS',JSON.stringify({
