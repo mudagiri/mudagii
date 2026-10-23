@@ -267,9 +267,15 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
   'Only the four highest-priority categories occupy the initial screen');
  assert.equal(await categoryRest.getAttribute('aria-expanded'),'false');
+ const initialCompactHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
+ if(engine==='chromium')await screenshot('13a-four-priority-initial');
  await categoryRest.click();
  assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
   'One tap exposes every category comparison and related fee evidence');
+ const expandedDetailHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
+ assert.ok(expandedDetailHeight-initialCompactHeight>=650,
+  'Default first-four view must materially reduce scrolling: '+initialCompactHeight+' -> '+expandedDetailHeight);
+ console.log('CHAPTER2_FOUR_FIRST_SCREEN_HEIGHT',engine,initialCompactHeight,expandedDetailHeight);
  assert.equal(await categoryRest.getAttribute('aria-expanded'),'true');
 
  assert.equal(await comparisonSummary.count(),1,'One visible condition summary instead of a duplicate income question');
