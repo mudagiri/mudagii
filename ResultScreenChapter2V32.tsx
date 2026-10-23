@@ -648,7 +648,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
     <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>まず最優先の1件から</small></div>
-    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
+    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} は、内容確認前の参考上限だよ。</p>
     <div className="c2v32-breakdown-entries">{candidates.slice(0,1).map((x:any)=>{
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
@@ -657,11 +657,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
        <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
       </div>
-      {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
-       {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月 <small>（平均との差がそのまま削減額になるわけではありません）</small></>}
-      </p>}
-      <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
-      <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <p className="c2v32-breakdown-action"><b>まず確かめる：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <details className="c2v32-candidate-method" data-section="PRIMARY_CANDIDATE_REASON">
+       <summary>候補になった理由・比較目安を見る</summary>
+       {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
+        {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月</>}
+       </p>}
+       <p className="c2v32-breakdown-reason">{candidateReason(x)}</p>
+       <small>差額がそのまま削減額ではないよ。金額は内容の確認前の参考上限だよ。</small>
+      </details>
      </div>;
     })}
     {candidates.length>1&&<details className="c2v32-more-candidates" data-section="OTHER_CANDIDATE_SUMMARIES">
@@ -676,18 +680,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      })}</div>
     </details>}
     </div>
-    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
+    <small className="c2v32-breakdown-footnote">※平均との差をそのまま削減額にはしていません。</small>
    </section>}
-   {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
-    <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
-    <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-   </div>}
+   {/* The primary candidate card already contains the next action. */}
   </section>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
    <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>全部</span>毎月減らせたら？<small>まだ確定した金額じゃないよ。実際に減らせるかは確認してから。</small></p>}
+   {reviewUpper>0&&<p className="c2v32-future-condition">未確定の候補を<span>全部</span>毎月減らせた場合の仮定だよ。</p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
@@ -697,7 +698,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
-    <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
+    <details className="c2v32-future-method"><summary>未来の数字の計算条件を見る</summary>
+     <p className="c2v3-future-footnote">未確定の候補（月最大 {money(reviewUpper)}）をすべて毎月減らせた場合の単純累計（12・60・120か月）。実際の節約額・将来の結果を保証するものではなく、運用益も含みません。</p>
+    </details>
    </div>:<div className="c2v3-future-empty">
     <strong>見直し候補の金額は、まだ特定できていない。</strong>
     <p>無理にムダを決めず、確認できることから進めよう。</p>
@@ -1074,7 +1077,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </div>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※「あなたの割合」は月手取りへの割合。「同年代×世帯区分×同所得帯」は総務省「2024年全国家計構造調査」の勤労者世帯の同一交差セルが存在する場合の参考率です。年齢だけ・年収だけの平均金額をあなたの手取りで割って同条件の平均と呼びません。平均との差をムダ額・改善額・月額バッファには加えません。</p>
+   <p className="c2v22-ledger-footnote">※統計上の比較差は確定改善額・見直し候補上限に加えないよ。各項目の出典は開いて確認できるよ。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>
