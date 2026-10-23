@@ -218,6 +218,8 @@ assert.doesNotMatch(uncertain,/<span class="c2v31-quest-crest"/,'do not stack re
 const markupOnly=uncertain.replace(/<style>[\s\S]*?<\/style>/,'');
 assert.ok(markupOnly.indexOf('data-section="POTENTIAL_HERO"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
 assert.ok(markupOnly.indexOf('data-section="POTENTIAL_TREASURE"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'));
+assert.ok(markupOnly.indexOf('data-section="CATEGORY_ENCYCLOPEDIA"')<markupOnly.indexOf('data-section="FUTURE_REWARDS"'),
+ 'All twelve category outcomes are now before future projections');
 assert.ok(markupOnly.indexOf('data-section="FUTURE_REWARDS"')<markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"'));
 assert.ok(markupOnly.indexOf('data-section="HOUSEHOLD_BATTLE_RESULTS"')<markupOnly.indexOf('data-section="CONSULTATION_CTA_TOP"'));
 assert.ok(!uncertain.includes('確認済みの戦利品'),'do not claim confirmed positive saving when it is zero');
@@ -356,11 +358,13 @@ assert.match(monsterHtml,/ENEMY_BATTLE_PREVIEW/);
 assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
 assert.match(monsterHtml,/data-section="CATEGORY_COMPARISON_OVERVIEW"/,'all 12 comparison rows must be available without expanding atlas');
 assert.equal((monsterHtml.match(/data-comparison-category=/g)||[]).length,12,
- 'All twelve frozen category cards are preserved even though only four are visible initially');
-assert.match(monsterHtml,/data-section="COMPARISON_REST_TOGGLE"/,
- 'One visible button exposes the remaining eight category comparisons without altering data');
-assert.match(monsterHtml,/aria-expanded="false"/,
- 'Detailed category rows are initially collapsed to reduce scrolling');
+ 'All twelve frozen category cards appear in the one consolidated atlas');
+assert.doesNotMatch(monsterHtml,/data-section="COMPARISON_REST_TOGGLE"/,
+ 'Do not hide eight categories behind another global expansion button');
+assert.match(monsterHtml,/class="c2v22-comparison-row c2v32-category-accordion"/,
+ 'Every category is a compact individually expandable result');
+assert.match(monsterHtml,/data-section="CATEGORY_ALL_VISIBLE_NOTE"/,
+ 'Summary explicitly states that all categories are present');
 assert.match(candidateHtml,/OTHER_REFERENCE_/,'unmatched secondary comparisons stay discoverable in optional disclosure');
 assert.match(candidateHtml,/c2v32-auxiliary-comparisons/,'extra narratives must not clutter the first glance');
 assert.match(monsterHtml,/c2v32-single-next-action/,'each flagged row gets one concise next action');
