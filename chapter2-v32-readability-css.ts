@@ -785,4 +785,50 @@ export const V32READABILITYCSS = `
  font-size:15px;font-weight:950;line-height:1.5;cursor:pointer;touch-action:manipulation;
 }
 .c2v32-rpg .c2v32-expand-rest:focus-visible{outline:3px solid #0e968e;outline-offset:2px}
+
+/* Compact 12-category battleboard near treasure: the full picture is visible
+   before the long evidence cards; every status is from frozen V5, no new amounts. */
+.c2v32-rpg .c2v32-battleboard{
+ margin:12px 0 4px;padding:11px 10px 10px;
+ border:1.5px solid #d4bd7d;border-radius:12px;
+ background:linear-gradient(145deg,rgba(10,48,52,.98),rgba(17,42,51,.98));
+ color:#fff3d2;
+}
+.c2v32-rpg .c2v32-battleboard>strong{
+ display:block;font-size:17px;line-height:1.45;
+ color:#ffedbc;font-weight:950;margin:0 0 4px;
+}
+.c2v32-rpg .c2v32-battleboard>p{
+ font-size:13px!important;line-height:1.55!important;
+ color:#e9efdf!important;margin:0 0 10px!important;
+}
+.c2v32-rpg .c2v32-battleboard-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+}
+.c2v32-rpg .c2v32-battleboard-item{
+ display:grid;align-content:center;min-width:0;min-height:56px;
+ padding:7px 8px;border-radius:8px;border:1px solid #738f85;
+ background:#eff2e8;color:#203b39;text-align:left;
+ cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-battleboard-item strong{
+ font-size:13px!important;line-height:1.35;color:#1e4140;
+ font-weight:950;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-battleboard-item small{
+ display:block;font-size:12px!important;line-height:1.45!important;
+ font-weight:800;color:#466050;
+}
+.c2v32-rpg .c2v32-battleboard-item:focus-visible{
+ outline:3px solid #ffe6a2;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-battleboard>small{
+ display:block;color:#e7eddc!important;font-size:12px!important;
+ line-height:1.65!important;margin:8px 1px 0;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-battleboard-grid{gap:5px}
+ .c2v32-rpg .c2v32-battleboard-item{padding:6px 5px;min-height:55px}
+ .c2v32-rpg .c2v32-battleboard-item strong{font-size:12px!important}
+}
 `;
