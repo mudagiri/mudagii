@@ -355,7 +355,12 @@ assert.equal((monsterHtml.match(/class="c2v2-entry c2v32-enemy-record"/g)||[]).l
 assert.match(monsterHtml,/ENEMY_BATTLE_PREVIEW/);
 assert.match(monsterHtml,/ENEMY_FULL_GALLERY/);
 assert.match(monsterHtml,/data-section="CATEGORY_COMPARISON_OVERVIEW"/,'all 12 comparison rows must be available without expanding atlas');
-assert.equal((monsterHtml.match(/data-comparison-category=/g)||[]).length,12,'all 12 category amounts/benchmarks immediately readable');
+assert.equal((monsterHtml.match(/data-comparison-category=/g)||[]).length,12,
+ 'All twelve frozen category cards are preserved even though only four are visible initially');
+assert.match(monsterHtml,/data-section="COMPARISON_REST_TOGGLE"/,
+ 'One visible button exposes the remaining eight category comparisons without altering data');
+assert.match(monsterHtml,/aria-expanded="false"/,
+ 'Detailed category rows are initially collapsed to reduce scrolling');
 assert.match(candidateHtml,/OTHER_REFERENCE_/,'unmatched secondary comparisons stay discoverable in optional disclosure');
 assert.match(candidateHtml,/c2v32-auxiliary-comparisons/,'extra narratives must not clutter the first glance');
 assert.match(monsterHtml,/c2v32-single-next-action/,'each flagged row gets one concise next action');
