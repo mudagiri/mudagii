@@ -70,6 +70,14 @@ try{
   'Entry high-income bracket is inherited without guessing a fine source cell');
  assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),0);
  assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),1);
+ const categoryRest=page.locator('[data-section="COMPARISON_REST_TOGGLE"]');
+ assert.equal(await categoryRest.count(),1);
+ assert.equal(await page.locator('[data-comparison-category]').count(),12);
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
+  'Synthetic high-income result starts with only four essential comparisons');
+ await categoryRest.click();
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
+  'All verified original categories can be expanded with a single action');
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
