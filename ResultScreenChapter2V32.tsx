@@ -260,6 +260,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
+ const [showAllCategoryComparisons,setShowAllCategoryComparisons]=useState(false);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
   ['400_499','500_599','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
    ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
@@ -395,7 +396,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const filtered=rows.filter((x:any)=>x&&x.category);
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
+
  const shown=filtered;
+ // Presentation-only prioritization: confirmed diagnostic statuses and
+ // source/upper candidate values remain completely unchanged.
+ const visualPriority=(x:any)=>{
+  const statusPoints=({cut:6000,optimize:5000,inspect:4000,protect:3000,ok:2000,na:0} as Record<string,number>)[x.v5Status]??1000;
+  return (nonnegative(x.cUpper)>0?100000+nonnegative(x.cUpper):0)+statusPoints+
+   (x.known===true?200:0)+(['food','energy','daily'].includes(x.category)?100:0);
+ };
+ const rankedShown=[...shown].sort((a:any,b:any)=>visualPriority(b)-visualPriority(a));
  // This optional lineage was validated against the anonymousUserId when it
  // was written by the diagnosis journey. Do not infer STYLE from spending.
  const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
@@ -609,7 +619,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump c2v21-evidence-jump" data-section="CANDIDATE_EVIDENCE_JUMP"
     onClick={()=>{onEvent?.('chapter2_v21_candidate_evidence_jump_clicked',{target:candidates.length?'candidate_breakdown':'treasure_report'});
      document.querySelector(candidates.length?'[data-section="CANDIDATE_BREAKDOWN"]':'[data-section="POTENTIAL_TREASURE"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}>
-    {candidates.length?'✦ まず、見直し候補の理由を見る ↓':'✦ 見直し候補を確認する ↓'}
+    {candidates.length?'✦ まず、見直し候補と最初の一歩を見る ↓':'✦ 見直し候補を確認する ↓'}
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   <nav className="c2v32-result-shortcuts" aria-label="結果画面の見たい場所へ移動" data-section="RESULT_SHORTCUTS">
@@ -617,7 +627,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span aria-hidden="true">⚔</span>{candidates.length?'見直し候補':'宝箱'}
    </button>
    <button type="button" onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    <span aria-hidden="true">📖</span>同条件比較
+    <span aria-hidden="true">📖</span>12カテゴリ
    </button>
    <button type="button" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>
     <span aria-hidden="true">⚑</span>相談する
@@ -648,7 +658,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
     <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>まず最優先の1件から</small></div>
-    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
+    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} は、内容確認前の参考上限だよ。</p>
     <div className="c2v32-breakdown-entries">{candidates.slice(0,1).map((x:any)=>{
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
@@ -657,11 +667,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
        <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
       </div>
-      {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
-       {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月 <small>（平均との差がそのまま削減額になるわけではありません）</small></>}
-      </p>}
-      <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
-      <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <p className="c2v32-breakdown-action"><b>まず確かめる：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <details className="c2v32-candidate-method" data-section="PRIMARY_CANDIDATE_REASON">
+       <summary>候補になった理由・比較目安を見る</summary>
+       {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
+        {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月</>}
+       </p>}
+       <p className="c2v32-breakdown-reason">{candidateReason(x)}</p>
+       <small>差額がそのまま削減額ではないよ。金額は内容の確認前の参考上限だよ。</small>
+      </details>
      </div>;
     })}
     {candidates.length>1&&<details className="c2v32-more-candidates" data-section="OTHER_CANDIDATE_SUMMARIES">
@@ -676,18 +690,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      })}</div>
     </details>}
     </div>
-    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
+    <small className="c2v32-breakdown-footnote">※平均との差をそのまま削減額にはしていません。</small>
    </section>}
-   {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
-    <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
-    <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-   </div>}
+   {/* The primary candidate card already contains the next action. */}
   </section>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
    <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>全部</span>毎月減らせたら？<small>まだ確定した金額じゃないよ。実際に減らせるかは確認してから。</small></p>}
+   {reviewUpper>0&&<p className="c2v32-future-condition">未確定の候補を<span>全部</span>毎月減らせた場合の仮定だよ。</p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
@@ -697,7 +708,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
-    <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
+    <details className="c2v32-future-method"><summary>未来の数字の計算条件を見る</summary>
+     <p className="c2v3-future-footnote">未確定の候補（月最大 {money(reviewUpper)}）をすべて毎月減らせた場合の単純累計（12・60・120か月）。実際の節約額・将来の結果を保証するものではなく、運用益も含みません。</p>
+    </details>
    </div>:<div className="c2v3-future-empty">
     <strong>見直し候補の金額は、まだ特定できていない。</strong>
     <p>無理にムダを決めず、確認できることから進めよう。</p>
@@ -745,7 +758,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
    {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
     onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    同年代・同世帯・同所得帯の比較条件から見る ↓
+    12カテゴリの支出と比較の目安を見る ↓
    </button>}
   </section>
   <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
@@ -762,33 +775,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
-  <section className="c2v2-card c2v31-followup" data-section="NEXT_QUEST">
-   <details className="c2v32-optional-detail" data-optional="first-step">
-    <summary>最初の確認ポイントをもう一度見る</summary>
-   {next?<div className="c2v2-quest">
-    <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
-    <div><b>{(ENEMY_ASSETS as Record<string,any>)[next.category]?.name||next.label}</b><small>{next.label||next.category}</small><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
-    {next.aAmount>0&&<strong>確認済み：月 {money(Number(next.aAmount))}</strong>}</div>
-   </div>:<div className="c2v2-quest"><img src={ART.guide} alt="" loading="lazy"/><p>無理にムダを探さなくてもOK。今の状態を守るところから始めよう。</p></div>}
-   </details>
-  </section>
+  {/* The first step appears already in the treasure report and the consultation.
+       Remove a second redundant standalone card. */}
 
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
-   <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
-   <div className="c2v32-peer-guide" data-section="JOINT_PEER_COMPARISON_GUIDE">
-    <strong>比べるのは「同年代 × 世帯区分 × 額面年収帯」</strong>
-    <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
-    <small>※二人以上は家族人数まで一致した平均ではありません。食費・光熱水道・日用品も公表費目と診断の対象範囲が異なる場合があります。日用品は「家事雑貨＋家事用消耗品」に限定しています。</small>
-    <div className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"
-      aria-label="12カテゴリに対する公式統計の対応範囲">
-      <strong>12カテゴリの比較データの使い方</strong>
-      <span>食費・光熱水道・日用品：条件が合えば同じ交差表の公表率を参考表示</span>
-      <span>ほかの7カテゴリ：似ている公表費目だけを「関連参考」として区別</span>
-      <span>サブスク・自己投資：直接対応する単独の公表費目なし</span>
-      <small>年収・年齢・勤労状況・標本数が合わなければ、公表率は表示しません。比較差＝ムダ・削減可能額ではありません。</small>
-    </div>
+   <p className="c2v22-ledger-intro">あなたの支出と比べ方を12カテゴリで確認。気になる敵だけ詳しく見よう。</p>
+   <div className="c2v32-peer-guide c2v32-peer-guide--compact" data-section="JOINT_PEER_COMPARISON_GUIDE">
+    <strong>同年代 × 世帯区分 × 額面年収帯で比べる</strong>
+    <p>参考データは3種類。<b>同じ公表区分の3費目</b>／<b>関連公表費目のみ7カテゴリ</b>／<b>単独の公表費目なし2カテゴリ</b>。差は削減額ではないよ。</p>
+    <details className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND">
+     <summary>どの統計と比較しているかを見る</summary>
+     <p>食費・光熱水道・日用品：年齢・単身／二人以上・額面年収帯が同時に公表された原表セルから、公式の関連費目支出率を表示。診断の支出範囲との完全一致は保証できません。</p>
+     <p>ほかの7カテゴリ：公表費目は似ているものの対象範囲が異なるため、「関連参考」に限ります。サブスク・自己投資は直接対応する単独の公表費目がありません。</p>
+     <p>世帯主年齢・勤労状況・標本数が一致した場合のみ同年代の参考率を表示。二人以上の人数や地域は完全一致ではありません。</p>
+     <small>出典：総務省「2024年全国家計構造調査」第1-29-1表。本人割合は支出÷月手取り、全国参考率は同じ公表セルの平均費目支出÷平均可処分所得。差額＝ムダ・削減額ではありません。</small>
+    </details>
    </div>
    <section className="c2v32-peer-condition-summary" data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"
     aria-label="入口から引き継いだ比較条件" style={{border:'1px solid #977644',borderRadius:12,
@@ -798,10 +801,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      style={{display:'block',fontSize:16,color:'#fff7e3',lineHeight:1.6,overflowWrap:'anywhere'}}>
      {rawProfileAge===null?'年齢未入力':`${rawProfileAge}歳`} · {resultHouseholdLabel} · {resultGrossLabel}
     </strong>
-    <small style={{display:'block',fontSize:12,lineHeight:1.65,color:'#d8e8e7',marginTop:4}}>
-     入口の回答を引き継いだ比較条件だよ。変更したい場合だけ下の「比較条件を変更」を開いてね。
-     公式の同条件参考率は世帯主年齢・勤労状況・統計の標本数まで一致したときだけ表示するよ。
-    </small>
+    <small className="c2v32-peer-condition-caption">入口の回答を引き継いだよ。必要なら下から変更できる。</small>
    </section>
    {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin"
     data-section="SINGLE_INCOME_CLASS_OPTIN" data-peer-condition-edit="single">
@@ -815,7 +815,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <option value="">選ばずに進む</option>
      {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
     </select>
-    <p>入口の年収をもう一度答える必要はないよ。変更するとこの比較画面の参考値だけが更新され、プロフィール、診断判定、確定改善額、共有カード、LINEには反映しない。月手取りから年収も推定しないよ。</p>
+    <p className="c2v32-edit-note">この画面の比較値だけ変更。診断額・LINEは変わらないよ。</p>
     {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
       {singleHasAvailablePeerSource
        ?headWorkerConfirmed
@@ -855,7 +855,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <option value="1250_1499">1,250～1,499万円</option>
       <option value="1500plus">1,500万円以上</option>
      </select>
-     <p>あなたと同じ年代・世帯年収の参考を探すよ。月手取りから年収を推測せず、この選択は画面表示だけに使い、診断結果・LINEへ保存や送信はしません。</p>
+     <p className="c2v32-edit-note">公表統計に合わせるための任意の細分化だよ。</p>
      {multiHighGrossBand&&<p className="c2v32-high-income-match-status"
        data-section="MULTI_HIGH_INCOME_MATCH_STATUS" role="status" aria-live="polite">
       {highIncomePublishedReference?.available===true
@@ -865,22 +865,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        :'この年代と年収帯は、標本数が少ないなどの理由で比較に必要な条件を満たしていないよ。同年代の率は表示せず、下には年収帯だけの参考を残すよ。'}
      </p>}
      </div>}
-     <p>年収帯の選び直しは任意だよ。1,000万円以上の詳細区分が必要な場合だけ追加確認してね。
-      この画面の参考値だけが変わり、プロフィール・診断結果・確定改善額・共有カード・LINEには反映しません。</p>
+     <p className="c2v32-edit-note">比較表示のみ変更。確定改善額・未確定上限はそのまま。</p>
     </details>}
-   <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
-    <summary>ほかの9カテゴリの関連公表費目と、直接比較できない理由</summary>
-    <p>同じ年代・年収帯でも統計と診断の費目範囲は違うよ。原本で確認できる関連費目率は、各カテゴリのカードに参考資料として別表示するよ。</p>
-    <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
-     <li key={x.category} data-peer-coverage-category={x.category}>
-      <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
-      <span>{x.userNotice}</span>
-     </li>)}</ul>
-    <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
-   </details>
+   {/* Nine detailed category source disclaimers are already available inside the
+        relevant category cards. Don't repeat them before the results. */}
    {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
-    <div className="c2v32-income-burden-head"><span>比較対象は「同年代 × 単身／二人以上 × 額面年収帯」。あなたの手取り割合は別の情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
-    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
+    <div className="c2v32-income-burden-head"><span>今回入力した家計の支出</span><strong>月 {money(incomeBurden.knownMonthlyExpenses)} ／ 手取りの {incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</strong></div>
+    <p>月手取り {money(Number(incomeBurden.monthlyTakeHome))}。入力した{incomeBurden.knownCategoryCount}カテゴリ分の割合だよ。</p>
     {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
    </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
    {vm.profile?.householdSize===1&&!singleGrossBand&&vm.profile?.singlePeerGrossBand2024==='under400'&&
@@ -895,7 +886,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <span><strong>入力した{rawProfileAge}歳は、世帯主の年齢です</strong>
        <small>一致する場合のみチェック（同年代×同年収の参考を表示する）</small></span>
      </label>
-     <p>公式統計は「世帯主の年齢」を使うよ。別の家族の年齢なら、チェックせずに進んでね。全国の勤労者世帯の参考で、確定した削減額ではありません。</p>
+     <p>別の家族の年齢ならチェックしなくてOK。</p>
     </div>}
    {(multiHasAvailablePeerSource||singleHasAvailablePeerSource)&&
     <div className="c2v32-peer-age-confirm" data-section="PEER_WORKER_STATUS_CONFIRM">
@@ -905,7 +896,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <span><strong>世帯主は会社員・公務員など、給与を受け取る立場です</strong>
        <small>当てはまる場合のみチェック（勤労者世帯の参考率を表示する）</small></span>
      </label>
-     <p>この統計は世帯主が雇用されている世帯が対象だよ。世帯主が自営業・無職などの場合や、分からない場合はチェックしないでね。回答は画面表示だけに使い、保存・送信しません。</p>
+     <p>自営業・無職・不明ならチェック不要。回答は比較画面内だけに使うよ。</p>
     </div>}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
     <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
@@ -936,8 +927,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
      </details>
     </details>}
+   {shown.length&&shown.length>4&&<p className="c2v32-comparison-preview-note" data-section="CATEGORY_FOUR_PREVIEW_NOTE">
+    まず、確認優先度の高い4カテゴリ。残り{shown.length-4}カテゴリも下のボタンで見られるよ。
+   </p>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
-    {shown.map((x:any)=>{
+    {rankedShown.map((x:any,index:number)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      const comparable=comparisonAvailable(x);
@@ -986,7 +980,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       :delta>0?`${what}より月 ${money(delta)} 多め`
       :delta<0?`${what}より月 ${money(-delta)} 少なめ`
       :`${what}と同程度`;
-     return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+     return <React.Fragment key={x.category}>
+      {index===4&&<button type="button" className="c2v32-expand-rest"
+       data-section="COMPARISON_REST_TOGGLE" aria-expanded={showAllCategoryComparisons}
+       onClick={()=>setShowAllCategoryComparisons(!showAllCategoryComparisons)}>
+       {showAllCategoryComparisons?'▲ 残りのカテゴリを閉じる':`＋ 残り${rankedShown.length-4}カテゴリをまとめて見る`}
+      </button>}
+      <div hidden={index>=4&&!showAllCategoryComparisons} className="c2v22-comparison-row"
+       data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+
       <div className="c2v22-comparison-head">
        {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
        <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
@@ -1093,10 +1095,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
        <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
       </div>}
-     </div>;
+      </div>
+     </React.Fragment>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※「あなたの割合」は月手取りへの割合。「同年代×世帯区分×同所得帯」は総務省「2024年全国家計構造調査」の勤労者世帯の同一交差セルが存在する場合の参考率です。年齢だけ・年収だけの平均金額をあなたの手取りで割って同条件の平均と呼びません。平均との差をムダ額・改善額・月額バッファには加えません。</p>
+   <p className="c2v22-ledger-footnote">※統計上の比較差は確定改善額・見直し候補上限に加えないよ。各項目の出典は開いて確認できるよ。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
     <summary>敵キャラと詳しい説明を見る（任意）</summary>

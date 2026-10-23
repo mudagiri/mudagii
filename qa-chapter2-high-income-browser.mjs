@@ -40,8 +40,8 @@ async function assertRate(pct){
  assert.ok(text.includes(pct),`Food official reference should be ${pct}, got ${text.slice(0,500)}`);
  assert.equal(await peers().count(),3,'All 3 original public expenses are visible');
  assert.ok(text.includes('あなたの負担率'),'Own monthly take-home ratio is visible in the matched peer card');
- assert.ok(text.includes('2024年'),'Original published source year appears in the primary card');
- assert.ok(text.includes('今回のあなたの支出：'),'Actual spend is visible alongside matched ratios');
+ assert.ok((await primary.textContent()).includes('2024年'),'Verified source year stays documented in optional card method');
+ assert.ok(text.includes('あなたの支出'),'Actual spend is visible alongside matched ratios');
  assert.equal(await page.locator('[data-comparison-category="food"] .c2v32-merged-values').count(),0,
   'Once the 3-way card is verified, hide the old duplicate two-column comparison');
 }
@@ -53,10 +53,16 @@ try{
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
  const legend=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
  assert.equal(await legend.count(),1,'One readable source-scope guide must precede all twelve enemy cards');
+ assert.equal(await legend.evaluate(el=>el.open),false,
+  'Complete official source-scope explanation is hidden by default');
+ assert.equal(await page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]').count(),0,
+  'Do not duplicate category-by-category methodology before the actual results');
+ await legend.locator('summary').click();
  const sourceLegend=await legend.innerText();
  for(const marker of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
-  assert.ok(sourceLegend.includes(marker),'Missing official source-scope distinction: '+marker);
+  assert.ok(sourceLegend.includes(marker),'Missing optional official source-scope evidence: '+marker);
  }
+ await legend.locator('summary').click();
  assert.ok(!(await page.locator('[data-section="INCOME_BURDEN_CONTEXT"]').innerText()).includes('同年代 × 同世帯'),
   'Two-or-more worker statistics are not falsely labeled exact same household size');
  const compareCondition=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
@@ -64,6 +70,14 @@ try{
   'Entry high-income bracket is inherited without guessing a fine source cell');
  assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),0);
  assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),1);
+ const categoryRest=page.locator('[data-section="COMPARISON_REST_TOGGLE"]');
+ assert.equal(await categoryRest.count(),1);
+ assert.equal(await page.locator('[data-comparison-category]').count(),12);
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
+  'Synthetic high-income result starts with only four essential comparisons');
+ await categoryRest.click();
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
+  'All verified original categories can be expanded with a single action');
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
@@ -71,7 +85,7 @@ try{
  // Result shortcuts must lead ABOVE the optional income and head-of-household
  // controls, not directly to the category cards (which would conceal them).
  const compareShortcut=page.locator('[data-section="RESULT_SHORTCUTS"] button').nth(1);
- assert.match(await compareShortcut.innerText(),/同条件比較/);
+ assert.match(await compareShortcut.innerText(),/12カテゴリ/);
  await compareShortcut.click();
  await page.waitForFunction(()=>{
   const guide=document.querySelector('[data-section="JOINT_PEER_COMPARISON_GUIDE"]');
@@ -125,8 +139,18 @@ try{
  const threeWayText=await foodThreeWay.innerText();
  assert.ok(threeWayText.includes('16.0%')&&threeWayText.includes('13.7%')&&threeWayText.includes('+2.3pt'),
   'User rate, official matching cohort rate and signed percentage-point gap are visible together');
- assert.ok((await page.locator('[data-section="OFFICIAL_PEER_GAP_food"]').innerText()).includes('統計上の比較差'),
-  'Percent gap is not treated as a confirmed saving');
+ const gapCard=page.locator('[data-section="OFFICIAL_PEER_GAP_food"]');
+ assert.ok((await gapCard.innerText()).includes('統計上の差'),
+  'Upfront percent-point difference is not a confirmed saving');
+ const gapMethod=page.locator('[data-section="OFFICIAL_PEER_GAP_DETAIL_food"]');
+ assert.equal(await gapMethod.evaluate(el=>el.open),false,
+  'Long yen conversion and statistical disclaimers are hidden until requested');
+ assert.ok(!(await gapCard.innerText()).includes('参考率との差を、あなたの月手取りで機械的に換算すると'),
+  'Default food card does not display the extra yen-conversion paragraph');
+ await gapMethod.locator('summary').click();
+ assert.ok((await gapCard.innerText()).includes('削減可能額'),
+  'Expanded calculation preserves no-saving warning');
+ await gapMethod.locator('summary').click();
 
  assert.ok((await matchStatus.innerText()).includes('比較の準備ができたよ'),
   'After both confirmations show a visible completion cue at the income selector');
