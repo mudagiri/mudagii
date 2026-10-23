@@ -18,7 +18,7 @@ for(const w of WISHES)for(const o of WALLS)for(const sh of SHIELDS)for(const t o
  ok(r.todayAction.length>18,'specific first-step for '+o.id+'/'+t.id);
  ok(r.discovery.length>70,'meaningful tradeoff and rationale');
  ok(r.milestones.every(x=>x.detail.length>20),'milestone is actionable and not purely decoration');
- ok(r.dimensions.every(x=>!/\d{2,}/.test(x.status)),'no spurious financial metrics');
+ ok(r.dimensions.every(x=>!/円|%|収益率|節約額|資産総額/.test(x.status)),'no spurious money or suitability metrics (minutes are legitimate)');
  ok(r.safeToShare.requiresExplicitAction,'no automatic sharing');
  names.add(r.routeCode);actions.add(r.todayAction);
 }
