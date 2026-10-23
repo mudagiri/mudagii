@@ -388,15 +388,19 @@ await clickButton(/診断結果を見る/);
  assert.ok(age50.includes('12.2% ～ 15.9%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No extra savings buffer before worker employment status and expense match');
- await page.locator('#c2v32-single-income').selectOption('600plus');
- await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
- const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
- const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
- assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
- assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'600+ broad-worker cell available with sample size 39 and warning');
- assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,'600plus single gross is broader than approved 2024 age-income source rows');
- assert.ok((await page.locator('[data-section="SINGLE_PEER_MATCH_STATUS"]').innerText()).includes('標本数などの条件'),
-  'Give explicit reason for unavailable matched cohort');
+ for(const band of ['600_699','700_799','800_999','1000plus']){
+  await page.locator('#c2v32-single-income').selectOption(band);
+  assert.equal(await page.locator('#c2v32-single-income').inputValue(),band,
+   'A single person should not be collapsed into a misleading annual 600+ bucket');
+  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
+   'Unverified 2024 age×income source cannot be invented for '+band);
+  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').count(),0,
+   'A broad 2025 600+ rate must never impersonate exact selected single gross '+band);
+  assert.ok((await page.locator('[data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED"]').innerText()).includes('推計で埋めない'),
+   'Missing exact age-income source is explained honestly');
+ }
+ assert.match(await comparisonSummary.innerText(),/1,000万円以上/,
+  'High single gross bracket is explicitly kept and visible in result conditions');
 
 
  await page.locator('#c2v32-single-income').selectOption('');
@@ -406,6 +410,17 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
   'Clearing gross salary removes all same-cell references even with worker declaration');
  if(await singleIncomeOpt.evaluate(el=>el.open)) await singleIncomeOpt.locator('summary').click();
+
+ const battleBoard=page.locator('[data-section="CATEGORY_BATTLEBOARD"]');
+ assert.equal(await battleBoard.count(),1,'Compact complete battleboard is accessible near reward');
+ assert.equal(await battleBoard.locator('[data-battleboard-category]').count(),12,
+  'All 12 category states are visible rather than hiding 8 behind extensive lower detail');
+ assert.ok((await battleBoard.innerText()).includes('自己投資')&&(await battleBoard.innerText()).includes('住居費'),
+  'Battleboard shows non-candidate categories as well');
+ const boardItem=battleBoard.locator('[data-battleboard-category="rent"]');
+ if(await boardItem.count())await boardItem.click();
+ assert.equal(await page.locator('[data-section="COMPARISON_REST_TOGGLE"]').getAttribute('aria-expanded'),'true',
+  'Battleboard navigation opens all detailed rows for the chosen topic');
 
  assert.equal(await page.locator('[data-section="NEXT_QUEST"]').count(),0,
   'Duplicate first-action recap is removed');
