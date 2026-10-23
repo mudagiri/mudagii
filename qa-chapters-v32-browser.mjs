@@ -360,11 +360,14 @@ await clickButton(/診断結果を見る/);
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
+ await page.locator('[data-comparison-category="daily"] > summary').click();
  await page.locator('[data-age-income-worker-peer-category="daily"] summary').click();
  assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
   'Official housewares+consumables comparison is narrower than all daily goods');
 
- // WCAG AA gate against computed rendered colors in the income comparison.
+ // Reopen food after inspecting daily; only one detailed category is open at once.
+ await page.locator('[data-comparison-category="food"] > summary').click();
+  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
  if(engine==='chromium'){
   await page.locator('[data-comparison-category="food"] .c2v32-worker-rate-card--age-income').scrollIntoViewIfNeeded();
