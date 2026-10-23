@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import {WISHES,WALLS,SHIELDS,TOOLS,createAdventureResult} from '../chapter3-v2/standalone-adventure.mjs';
+let passed=0;
+const ok=(x,m)=>{assert.ok(x,m);passed++};
+const base={wish:'invest',wall:'money',shield:'living',tool:'records'};
+const primary=createAdventureResult(base);
+ok(primary.ok,'complete input produces a result');
+ok(primary.routeCode==='RESOURCE_MAP','money barrier sets evidence-safe cash planning');
+ok(!('milestones' in primary),'no 7/30/90 timeline or deferred decision');
+ok(primary.decision.timing==='now','decision takes place on the result screen');
+ok(primary.decision.routes.includes('self')&&primary.decision.routes.includes('consult'),'two voluntary actions available now');
+ok(primary.decision.selfAction===primary.todayAction,'self route acts on the same individual result');
+ok(primary.dimensions.length===4,'money, time, trust, skills honest labels');
+ok(primary.evidence.includes('未接続'),'solo does not claim C1/C2 linkage');
+ok(primary.caveat.includes('投資可能資金'),'investment not a suitability verdict');
+ok(!JSON.stringify(primary).includes('monthlySavings'),'no fake monthly savings');
+const names=new Set(),actions=new Set();
+for(const w of WISHES)for(const o of WALLS)for(const sh of SHIELDS)for(const t of TOOLS){
+ const r=createAdventureResult({wish:w.id,wall:o.id,shield:sh.id,tool:t.id});
+ ok(r.ok,'all allowed paths render');
+ ok(r.todayAction.length>18,'specific first-step for '+o.id+'/'+t.id);
+ ok(r.discovery.length>70,'meaningful tradeoff and rationale');
+ ok(!('milestones' in r),'no delayed timeline for '+o.id+'/'+t.id);
+ ok(r.decision.timing==='now'&&r.decision.selfAction===r.todayAction,'result allows decision right now');
+ ok(r.dimensions.every(x=>!/円|%|収益率|節約額|資産総額/.test(x.status)),'no spurious money or suitability metrics (minutes are legitimate)');
+ ok(r.safeToShare.requiresExplicitAction,'no automatic sharing');
+ names.add(r.routeCode);actions.add(r.todayAction);
+}
+ok(names.size===4,'obstacle yields four substantially different routes');
+ok(actions.size===WALLS.length*TOOLS.length,'16 distinct barrier x resource actions');
+for(const field of ['wish','wall','shield','tool']){
+ const wrong={...base,[field]:'INVALID'};
+ ok(!createAdventureResult(wrong).ok,'invalid '+field+' rejected');
+}
+const ref=createAdventureResult(base);
+ok(createAdventureResult({...base,wall:'time'}).routeCode!==ref.routeCode,'barrier changes route');
+ok(createAdventureResult({...base,shield:'family'}).discovery!==ref.discovery,'protect condition changes interpretation');
+ok(createAdventureResult({...base,tool:'person'}).todayAction!==ref.todayAction,'chosen actual resource changes first action');
+const trustNow=createAdventureResult({...base,wall:'trust',tool:'time'});
+ok(trustNow.todayAction.includes('判断に不可欠な情報'),'information overload route picks a concrete decision criterion');
+ok(!/7日後|30日後|90日後|今週30分|30分使って/.test(JSON.stringify(trustNow)),'no waiting-framed plan in trust case');
+ok(createAdventureResult({...base,wish:'home'}).headline!==ref.headline,'future choice changes contextual headline');
+console.log('CHAPTER3_STANDALONE_CORE_PASS',JSON.stringify({passed,failed:0,combinations:WISHES.length*WALLS.length*SHIELDS.length*TOOLS.length,distinctActions:actions.size}));

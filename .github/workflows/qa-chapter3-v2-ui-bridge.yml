@@ -1,0 +1,68 @@
+name: QA Chapter3 V2 Opt-in UI Bridge
+
+on:
+  pull_request:
+    paths:
+      - 'Chapter3V2Pilot.tsx'
+      - 'chapter3-v2-pilot.css'
+      - 'chapter3-v2/**'
+      - 'MudagiriAppV2.tsx'
+      - 'ResultScreenChapter2V32.tsx'
+      - 'scripts/qa-chapter3-v2-*'
+      - 'scripts/package-chapter3-v2-github-pages.mjs'
+      - '.github/workflows/qa-chapter3-v2-ui-bridge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chapter3-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Typecheck and build isolated Chapter3 pilot
+        env:
+          VITE_CHAPTER2_V32: "1"
+          VITE_CHAPTER3_V2: "1"
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+        run: npm run build
+      - name: Syntax and decision QA
+        run: |
+          node --check chapter3-v2/decision-core.mjs
+          node --check chapter3-v2/handoff-adapter.mjs
+          node scripts/qa-chapter3-v2-counterfactual.mjs
+          node scripts/qa-chapter3-v2-handoff.mjs
+          node scripts/qa-chapter3-v2-result-narrative.mjs
+      - name: Real V5 builder handoff QA
+        run: npx --yes tsx@4.20.6 scripts/qa-chapter3-v2-realvm.ts
+      - name: UI bridge static protection assertions
+        run: node scripts/qa-chapter3-v2-bridge-guard.mjs
+      - name: Assemble standalone GitHub Pages preview package (DO NOT DEPLOY)
+        env:
+          VITE_CHAPTER2_V32: "1"
+          VITE_CHAPTER3_V2: "1"
+          VITE_MUDAGIRI_GAS_URL: ""
+          VITE_MONEY_PERSONALITY_GAS_URL: ""
+        run: node scripts/package-chapter3-v2-github-pages.mjs
+      - name: Upload isolated GitHub Pages-ready static bundle (NOT a public deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-v2-github-pages-ready
+          path: github-pages-chapter3-v2-bundle/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preview build artifact (NOT a public deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter3-v2-isolated-preview-build
+          path: dist/
+          retention-days: 7
