@@ -26,7 +26,7 @@ export const SHIELDS=[
 ];
 export const TOOLS=[
  {id:'records',title:'記録・契約・明細を調べられる',caption:'手元の情報を確認する'},
- {id:'time',title:'今週30分だけなら使える',caption:'短い時間から試してみる'},
+ {id:'time',title:'今、少しなら時間を使える',caption:'この場で一つ決める'},
  {id:'person',title:'一人、相談できる人がいる',caption:'確認したいことを聞ける'},
  {id:'unknown',title:'今は使えそうなものが分からない',caption:'ここから探す'}
 ];
@@ -50,25 +50,25 @@ const SHIELD_INSIGHT={
 const ACTIONS={
  money:{
    records:'次の3か月の予定支出を3つ書き、必ず払うものと調整できるものを分ける。',
-   time:'30分で「近いうちに使う予定のお金」を一つだけ確認し、金額と時期をメモする。',
+   time:'今、近いうちに使う予定のお金を一つ選び、確認が必要なのは金額か時期かを決める。',
    person:'相談できる人に「今後3か月の支払い予定を整理したい」と伝え、確認項目を一つ聞く。',
    unknown:'請求書や口座明細を1つ見つけ、次の支払日だけ確認する。'
  },
  time:{
    records:'直近7日分の予定を見て、繰り返し発生する作業を一つ探す。',
-   time:'今週の予定表に、未来のための30分を一枠だけ確保する。',
+   time:'今日の予定を見て、少しでも自分で変えられそうな予定を一つ選ぶ。',
    person:'一人で抱えている作業を一つ挙げ、他の人に相談できるか確かめる。',
    unknown:'今週、一番時間を使ったことを一つだけ記録する。'
  },
  trust:{
    records:'候補を比較する前に「費用・リスク・やめやすさ」の3点を紙に書く。',
-   time:'30分使って、信頼できる一次情報を1つ確認し、分からないことを一つ残す。',
+   time:'迷っている選択肢を一つ選び、判断に不可欠な情報を一つだけ決める。',
    person:'相談できる人に「この選択のデメリットは何か」を一つ聞く。',
    unknown:'気になっている選択肢を一つ書き、判断に欠けている情報を一つ挙げる。'
  },
  fog:{
    records:'過去に自分が「やってよかった」と思った選択を一つ探して理由を書く。',
-   time:'30分使って、興味のある未来を一つ試せる小さな行動を決める。',
+   time:'今いちばん試してみたい未来を一つ選び、最初の小さな行動を決める。',
    person:'一人に「最近、自分が楽しそうに話していたことは何か」を聞く。',
    unknown:'「増やしたいもの・守りたいもの」をそれぞれ一つ書いて並べる。'
  }
@@ -103,7 +103,7 @@ export function createAdventureResult(choices){
   'ここでは収入・資産・借入・投資への適合性を判定していない。';
  const dimensions=[
   {key:'money',name:'お金',status:choices.wall==='money'?'使う予定の確認が先':'家計の実数は未確認'},
-  {key:'time',name:'時間',status:choices.tool==='time'?'30分使えるという本人の選択':'実際に確保できる時間は未確認'},
+  {key:'time',name:'時間',status:choices.tool==='time'?'今は少し時間を使えるという本人の選択':'実際に確保できる時間は未確認'},
   {key:'trust',name:'信用・つながり',status:choices.tool==='person'?'相談相手がいるという本人の選択':'相談先・信用力は未評価'},
   {key:'human',name:'経験・スキル',status:choices.tool==='records'?'確認できる記録があるという本人の選択':'実際の技能・経験は未評価'}
  ];
@@ -114,11 +114,7 @@ export function createAdventureResult(choices){
   todayAction:step,
   shield:SHIELDS.find(x=>x.id===choices.shield).title,
   toolLabel:selectedTool.title,
-  milestones:[
-   {when:'7日後',title:'一手を実行',detail:step},
-   {when:'30日後',title:'変化を検証',detail:'動かせた条件と、まだ分からない条件を一つずつ書き直す。'},
-   {when:'90日後',title:'道を選び直す',detail:'実際の記録に基づき、この作戦を続けるか別の選択肢へ進むか判断する。'}
-  ],
+  decision:{timing:'now',selfAction:step,consultationTopic:CONSULT[choices.wall],routes:['self','consult']},
   dimensions,
   consultation:CONSULT[choices.wall],
   caveat:moneyNote,
