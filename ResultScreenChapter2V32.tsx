@@ -719,89 +719,6 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {/* The primary candidate card already contains the next action. */}
   </section>
 
-  <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
-   <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
-   <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">未確定の候補を<span>全部</span>毎月減らせた場合の仮定だよ。</p>}
-   {reviewUpper>0?<div className="c2v3-rewards">
-    <div className="c2v3-reward-mini c2v31-reward-mini">
-     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
-     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(reviewUpper*60)}</strong></div>
-    </div>
-    <div className="c2v3-reward-ten c2v31-reward-ten">
-     <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
-     <TreasureChest className="c2v31-ten-chest"/>
-    </div>
-    <details className="c2v32-future-method"><summary>未来の数字の計算条件を見る</summary>
-     <p className="c2v3-future-footnote">未確定の候補（月最大 {money(reviewUpper)}）をすべて毎月減らせた場合の単純累計（12・60・120か月）。実際の節約額・将来の結果を保証するものではなく、運用益も含みません。</p>
-    </details>
-   </div>:<div className="c2v3-future-empty">
-    <strong>見直し候補の金額は、まだ特定できていない。</strong>
-    <p>無理にムダを決めず、確認できることから進めよう。</p>
-   </div>}
-  </section>
-  <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
-
-
-  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
-  {answerCheckEnabled&&<Chapter12AnswerCheckCard
-   enabled={answerCheckEnabled} chapter1={chapter1}
-   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
-   rows={vm?.rows} demo={answerCheckDemo}
-  />}
-
-  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS" data-observation-kind={recognition?.kind??"no_supported_observation"}>
-   <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリの判定状況</small></div>
-   <h2>今回の戦果</h2>
-   <div className="c2v2-counts c2v31-counts">
-    {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
-     <span>{STATUS[key].mark}<br/>{STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
-    </div>)}
-   </div>
-   {(nonnegative(counts.ok)>0||nonnegative(counts.na)>0)&&<p className="c2v31-remaining-counts">ほかに、問題なし {nonnegative(counts.ok)}件・対象外 {nonnegative(counts.na)}件</p>}
-   {featured.length>0&&<div className="c2v32-enemy-encounters" data-section="ENEMY_BATTLE_PREVIEW">
-    <h3>今回出会った敵たち</h3>
-    <div className="c2v32-enemy-preview-grid">{featured.map((x:any)=>{
-     const monster=(ENEMY_ASSETS as Record<string,any>)[x.category];
-     const status=STATUS[x.v5Status]??STATUS.review;
-     return <div key={x.category} className="c2v32-enemy-preview">
-      {monster?.normal?<img src={monster.normal} alt={monster.name} loading="lazy"/>:<span aria-hidden="true">⚔️</span>}
-      <strong>{monster?.name||x.label||x.category}</strong>
-      <small>{x.label||x.category} ／ {status.name}</small>
-     </div>;
-    })}</div>
-   </div>}
-   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="回答から確認できた改善額。節約済みかは別途確認が必要">
-    <div className="c2v31-confirmed-heading">回答から確認できた改善額</div>
-    <div className="c2v31-confirmed-content">
-     <CoinPouch className="c2v31-coin-art"/>
-     <div className="c2v31-confirmed-amount"><span>毎月</span><strong>{money(confirmed)}</strong></div>
-    </div>
-    <span className="c2v31-confirmed-caption">{confirmed>0?'回答で確認した改善額。実行・節約済みかは別途確認が必要です。':'回答から確認できた改善額はまだありません'}</span>
-   </section>
-   <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
-   {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
-    onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    12カテゴリの支出と比較の目安を見る ↓
-   </button>}
-  </section>
-  <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
-   ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
-   :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！')}/>
-  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
-
-  <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
-   <span className="c2v31-next-head">⚑ NEXT QUEST</span>
-   <h2>次の冒険は、<br/>未来の作戦会議。</h2>
-   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」が本当に見直せるか、一緒に確かめよう。「いつかやりたいこと」を、今日できる一歩に変える作戦も考えよう。</>:'無理に削らず、今の家計を守りながら考えよう。「いつかやりたいこと」を、今日できる小さな一歩につなげよう。'}</p>
-   <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
-   <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
-   <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
-  </section>
-
-  {/* The first step appears already in the treasure report and the consultation.
-       Remove a second redundant standalone card. */}
-
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
@@ -1144,6 +1061,89 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
    </details>
   </section>
+
+  <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
+   <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
+   <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
+   {reviewUpper>0&&<p className="c2v32-future-condition">未確定の候補を<span>全部</span>毎月減らせた場合の仮定だよ。</p>}
+   {reviewUpper>0?<div className="c2v3-rewards">
+    <div className="c2v3-reward-mini c2v31-reward-mini">
+     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
+     <div><span className="c2v31-coin-symbol" aria-hidden="true">✦ ✦</span><small>5年間</small><strong>{money(reviewUpper*60)}</strong></div>
+    </div>
+    <div className="c2v3-reward-ten c2v31-reward-ten">
+     <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
+     <TreasureChest className="c2v31-ten-chest"/>
+    </div>
+    <details className="c2v32-future-method"><summary>未来の数字の計算条件を見る</summary>
+     <p className="c2v3-future-footnote">未確定の候補（月最大 {money(reviewUpper)}）をすべて毎月減らせた場合の単純累計（12・60・120か月）。実際の節約額・将来の結果を保証するものではなく、運用益も含みません。</p>
+    </details>
+   </div>:<div className="c2v3-future-empty">
+    <strong>見直し候補の金額は、まだ特定できていない。</strong>
+    <p>無理にムダを決めず、確認できることから進めよう。</p>
+   </div>}
+  </section>
+  <MudagiriBeat pose="explain" line={reviewUpper>0?"この未来の金額は、全部見直せた場合の話。無理に全部斬らなくていいぞ！":"今は数字を作らず、分かっている支出を大切にしていこう！"}/>
+
+
+  {/* Experimental answer-check: enabled only for preview; complete same-person proof required. */}
+  {answerCheckEnabled&&<Chapter12AnswerCheckCard
+   enabled={answerCheckEnabled} chapter1={chapter1}
+   anonymousUserId={answerCheckAnonymousUserId} diagnosisId={vm?.diagnosisId}
+   rows={vm?.rows} demo={answerCheckDemo}
+  />}
+
+  <section className="c2v31-battle-report c2v2-card" data-section="HOUSEHOLD_BATTLE_RESULTS" data-observation-kind={recognition?.kind??"no_supported_observation"}>
+   <div className="c2v31-section-heading"><span>⚔ BATTLE REPORT</span><small>12カテゴリの判定状況</small></div>
+   <h2>今回の戦果</h2>
+   <div className="c2v2-counts c2v31-counts">
+    {(['cut','optimize','protect','inspect'] as const).map(key=><div key={key}>
+     <span>{STATUS[key].mark}<br/>{STATUS[key].name}</span><strong>{nonnegative(counts[key])}<small>件</small></strong>
+    </div>)}
+   </div>
+   {(nonnegative(counts.ok)>0||nonnegative(counts.na)>0)&&<p className="c2v31-remaining-counts">ほかに、問題なし {nonnegative(counts.ok)}件・対象外 {nonnegative(counts.na)}件</p>}
+   {featured.length>0&&<div className="c2v32-enemy-encounters" data-section="ENEMY_BATTLE_PREVIEW">
+    <h3>今回出会った敵たち</h3>
+    <div className="c2v32-enemy-preview-grid">{featured.map((x:any)=>{
+     const monster=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     const status=STATUS[x.v5Status]??STATUS.review;
+     return <div key={x.category} className="c2v32-enemy-preview">
+      {monster?.normal?<img src={monster.normal} alt={monster.name} loading="lazy"/>:<span aria-hidden="true">⚔️</span>}
+      <strong>{monster?.name||x.label||x.category}</strong>
+      <small>{x.label||x.category} ／ {status.name}</small>
+     </div>;
+    })}</div>
+   </div>}
+   <section className="c2v31-reward-confirmed" data-section="CONFIRMED_REWARD" aria-label="回答から確認できた改善額。節約済みかは別途確認が必要">
+    <div className="c2v31-confirmed-heading">回答から確認できた改善額</div>
+    <div className="c2v31-confirmed-content">
+     <CoinPouch className="c2v31-coin-art"/>
+     <div className="c2v31-confirmed-amount"><span>毎月</span><strong>{money(confirmed)}</strong></div>
+    </div>
+    <span className="c2v31-confirmed-caption">{confirmed>0?'回答で確認した改善額。実行・節約済みかは別途確認が必要です。':'回答から確認できた改善額はまだありません'}</span>
+   </section>
+   <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
+   {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
+    onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
+    12カテゴリの支出と比較の目安を見る ↓
+   </button>}
+  </section>
+  <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
+   ?'「守る」「そのままでOK」も、今回の戦果だ。全部直さなくていい。まずは今できることを1つ！'
+   :'全部いっぺんに直さなくていい。まずは今できることを1つ、確かめよう！')}/>
+  <CoverageAwarenessCard rows={rows} onConsultCoverage={consultCoverage} pilotNoExternalActions={pilotNoExternalActions&&!coverageDryRun}/>
+
+  <section className="c2v2-card c2v2-decision c2v3-decision c2v31-nextgate" data-section="CONSULTATION_CTA_TOP">
+   <span className="c2v31-next-head">⚑ NEXT QUEST</span>
+   <h2>次の冒険は、<br/>未来の作戦会議。</h2>
+   <p>{primaryCandidate?<>「{primaryCandidate.label||primaryCandidate.category}」が本当に見直せるか、一緒に確かめよう。「いつかやりたいこと」を、今日できる一歩に変える作戦も考えよう。</>:'無理に削らず、今の家計を守りながら考えよう。「いつかやりたいこと」を、今日できる小さな一歩につなげよう。'}</p>
+   <div className="c2v31-destinations" aria-hidden="true"><span>住まい</span><span>教育</span><span>老後</span><span>夢の実現</span></div>
+   <button className="c2v2-primary" onClick={()=>consultation('after_rewards')}>無料ライフプラン相談の案内を見る →</button>
+   <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
+  </section>
+
+  {/* The first step appears already in the treasure report and the consultation.
+       Remove a second redundant standalone card. */}
 
   <section className="c2v2-card c2v31-goals" data-section="GOAL_QUEST">
    <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>
