@@ -609,7 +609,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump c2v21-evidence-jump" data-section="CANDIDATE_EVIDENCE_JUMP"
     onClick={()=>{onEvent?.('chapter2_v21_candidate_evidence_jump_clicked',{target:candidates.length?'candidate_breakdown':'treasure_report'});
      document.querySelector(candidates.length?'[data-section="CANDIDATE_BREAKDOWN"]':'[data-section="POTENTIAL_TREASURE"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}>
-    {candidates.length?'✦ まず、見直し候補の理由を見る ↓':'✦ 見直し候補を確認する ↓'}
+    {candidates.length?'✦ まず、見直し候補と最初の一歩を見る ↓':'✦ 見直し候補を確認する ↓'}
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   <nav className="c2v32-result-shortcuts" aria-label="結果画面の見たい場所へ移動" data-section="RESULT_SHORTCUTS">
@@ -617,7 +617,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span aria-hidden="true">⚔</span>{candidates.length?'見直し候補':'宝箱'}
    </button>
    <button type="button" onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    <span aria-hidden="true">📖</span>同条件比較
+    <span aria-hidden="true">📖</span>12カテゴリ
    </button>
    <button type="button" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>
     <span aria-hidden="true">⚑</span>相談する
