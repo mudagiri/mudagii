@@ -47,9 +47,13 @@ try{
  const firstAction=await page.locator('[data-testid="chapter3-first-action"]').innerText();
  assert.match(headline,/資産形成/);
  assert.match(firstAction,/3か月/);
- assert.match(await result.innerText(),/7日後/);
- assert.match(await result.innerText(),/30日後/);
- assert.match(await result.innerText(),/90日後/);
+ assert.equal(await result.locator('[data-testid="chapter3-decide-now"]').count(),1,'result offers a decision now');
+ assert.match(await result.innerText(),/この場で、次の進み方を決めよう/);
+ assert.doesNotMatch(await result.innerText(),/7日後|30日後|90日後/,'no delayed milestones as decision defaults');
+ await result.getByRole('button',{name:/この一手で自分で進む/}).click();
+ const decision=await result.getByRole('status').innerText();
+ assert.match(decision,/自分で進む道を選んだ/);
+ assert.ok(decision.includes(firstAction),'chosen route carries specific first action, not a generic reminder');
  assert.match(await result.innerText(),/第2章家計戦果は、この単独プレビューでは未接続/);
  await snap('02-complete-result');
  for(const width of [320,375,390,430]){
@@ -71,11 +75,11 @@ try{
  await page.getByRole('button',{name:/自分や大切な人との時間を増やしたい/}).click();
  await page.getByRole('button',{name:/目の前のことで時間が足りない/}).click();
  await page.getByRole('button',{name:/今しかない楽しみ/}).click();
- await page.getByRole('button',{name:/今週30分だけなら使える/}).click();
+ await page.getByRole('button',{name:/今、少しなら時間を使える/}).click();
  await result.waitFor({state:'visible'});
  const secondAction=await page.locator('[data-testid="chapter3-first-action"]').innerText();
  assert.notEqual(firstAction,secondAction,'meaningful different action across routes');
- assert.match(secondAction,/30分/);
+ assert.match(secondAction,/今日の予定/);
  await snap('03-other-result');
  assert.equal(external.length,0,'no external GAS, analytics, LINE or appointment requests');
  assert.equal(errors.length,0,'no browser runtime errors: '+JSON.stringify(errors));
