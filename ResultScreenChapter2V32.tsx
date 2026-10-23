@@ -260,6 +260,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
+ const [showAllCategoryComparisons,setShowAllCategoryComparisons]=useState(false);
  const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
   ['400_499','500_599','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
    ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
@@ -395,7 +396,16 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const filtered=rows.filter((x:any)=>x&&x.category);
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
+
  const shown=filtered;
+ // Presentation-only prioritization: confirmed diagnostic statuses and
+ // source/upper candidate values remain completely unchanged.
+ const visualPriority=(x:any)=>{
+  const statusPoints=({cut:6000,optimize:5000,inspect:4000,protect:3000,ok:2000,na:0} as Record<string,number>)[x.v5Status]??1000;
+  return (nonnegative(x.cUpper)>0?100000+nonnegative(x.cUpper):0)+statusPoints+
+   (x.known===true?200:0)+(['food','energy','daily'].includes(x.category)?100:0);
+ };
+ const rankedShown=[...shown].sort((a:any,b:any)=>visualPriority(b)-visualPriority(a));
  // This optional lineage was validated against the anonymousUserId when it
  // was written by the diagnosis journey. Do not infer STYLE from spending.
  const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
@@ -917,8 +927,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
      </details>
     </details>}
+   {shown.length&&shown.length>4&&<p className="c2v32-comparison-preview-note" data-section="CATEGORY_FOUR_PREVIEW_NOTE">
+    まず、確認優先度の高い4カテゴリ。残り{shown.length-4}カテゴリも下のボタンで見られるよ。
+   </p>}
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
-    {shown.map((x:any)=>{
+    {rankedShown.map((x:any,index:number)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      const comparable=comparisonAvailable(x);
@@ -967,7 +980,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       :delta>0?`${what}より月 ${money(delta)} 多め`
       :delta<0?`${what}より月 ${money(-delta)} 少なめ`
       :`${what}と同程度`;
-     return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+     return <React.Fragment key={x.category}>
+      {index===4&&<button type="button" className="c2v32-expand-rest"
+       data-section="COMPARISON_REST_TOGGLE" aria-expanded={showAllCategoryComparisons}
+       onClick={()=>setShowAllCategoryComparisons(!showAllCategoryComparisons)}>
+       {showAllCategoryComparisons?'▲ 残りのカテゴリを閉じる':`＋ 残り${rankedShown.length-4}カテゴリをまとめて見る`}
+      </button>}
+      <div hidden={index>=4&&!showAllCategoryComparisons} className="c2v22-comparison-row"
+       data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+
       <div className="c2v22-comparison-head">
        {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
        <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
@@ -1074,9 +1095,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
        <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
       </div>}
-     </div>;
+      </div>
+     </React.Fragment>;
     })}
-   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
+   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>
    <p className="c2v22-ledger-footnote">※統計上の比較差は確定改善額・見直し候補上限に加えないよ。各項目の出典は開いて確認できるよ。</p>
    <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
    <details className="c2v32-optional-detail" data-optional="enemy-atlas">
