@@ -731,21 +731,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     </div>
     <small className="c2v32-breakdown-footnote">※平均との差をそのまま削減額にはしていません。</small>
    </section>}
-   {shown.length>0&&<section className="c2v32-battleboard" data-section="CATEGORY_BATTLEBOARD" aria-label="全12カテゴリの戦況">
-    <strong>⚔ 12カテゴリの戦況</strong>
-    <p>候補だけではなく、守る支出も含めて一覧で確認できるよ。</p>
-    <div className="c2v32-battleboard-grid">
-     {rankedShown.map((x:any)=>{
-      const st=STATUS[x.v5Status]??STATUS.review;
-      return <button key={x.category} type="button" className="c2v32-battleboard-item"
-       data-battleboard-category={x.category}
-       onClick={()=>{setShowAllCategoryComparisons(true);jumpToSection('CATEGORY_COMPARISON_OVERVIEW');}}>
-       <strong>{x.label||x.category}</strong><small>{st.mark} {st.name}</small>
-      </button>;
-     })}
-    </div>
-    <small>タップで比較一覧へ。統計との差は確認の手がかりで、確定改善額ではないよ。</small>
-   </section>}
+   {/* All 12 categories now appear in the one consolidated atlas just below.
+        Do not duplicate them as a second battle-board navigation grid. */}
    {/* The primary candidate card already contains the next action. */}
   </section>
 
