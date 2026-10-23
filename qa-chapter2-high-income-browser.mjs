@@ -70,14 +70,15 @@ try{
   'Entry high-income bracket is inherited without guessing a fine source cell');
  assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),0);
  assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),1);
- const categoryRest=page.locator('[data-section="COMPARISON_REST_TOGGLE"]');
- assert.equal(await categoryRest.count(),1);
- assert.equal(await page.locator('[data-comparison-category]').count(),12);
- assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
-  'Synthetic high-income result starts with only four essential comparisons');
- await categoryRest.click();
+ const allRows=page.locator('[data-comparison-category]');
+ assert.equal(await allRows.count(),12);
  assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
-  'All verified original categories can be expanded with a single action');
+  'All 12 categories have a readable compact summary without one global reveal');
+ assert.equal(await page.locator('[data-section="COMPARISON_REST_TOGGLE"]').count(),0);
+ assert.equal(await page.locator('[data-section="CATEGORY_BATTLEBOARD"]').count(),0);
+ await page.locator('[data-comparison-category="food"] > summary').click();
+ assert.equal(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open),true,
+  'User opens source evidence only in the category they want to inspect');
  assert.equal(await peers().count(),0,'Frozen 1000plus bucket cannot auto-choose a public income column');
  assert.equal(await head.count(),0,'Head-age confirmation is not shown until supported original cell is selected');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,
@@ -116,6 +117,7 @@ try{
  const relatedCards=page.locator('[data-peer-related-rate-category]');
  assert.equal(await relatedCards.count(),7);
  for(const key of ['mobile','car','insurance']){
+  await page.locator('[data-comparison-category="'+key+'"] > summary').click();
   const detail=page.locator('[data-peer-related-rate-category="'+key+'"]');
   assert.equal(await detail.evaluate(el=>el.open),false,
    'High-income related public-fee references start collapsed to avoid seven long card blocks');
@@ -222,6 +224,8 @@ try{
  await middleHead.check();
  assert.equal(await page.locator('[data-peer-related-range-category]').count(),7,
   '30s multi 500–599 official original supports all seven related public fee groups');
+ if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
+  await page.locator('[data-comparison-category="mobile"] > summary').click();
  const midComm=page.locator('[data-peer-related-range-category="mobile"]');
  await midComm.locator('summary').click();
  assert.ok((await midComm.innerText()).includes('2.92 ～ 2.94%'),
@@ -242,6 +246,8 @@ try{
   '30s single 400–499 original has six related groups; education is not a single-person comparable');
  assert.equal(await page.locator('[data-peer-related-range-category="childEducation"]').count(),0,
   'Do not invent single-household children education expenses');
+ if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
+  await page.locator('[data-comparison-category="mobile"] > summary').click();
  const singleComm=page.locator('[data-peer-related-range-category="mobile"]');
  await singleComm.locator('summary').click();
  assert.ok((await singleComm.innerText()).includes('2.74 ～ 3.07%'),
