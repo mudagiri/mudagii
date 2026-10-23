@@ -60,7 +60,7 @@ if(verifiedNegative.available){
  }));
  assert.match(card,/-13.3pt ～ -2.8pt/);
  assert.match(card,/−¥66,500 ～ −¥14,000/);
- assert.match(card,/全国参考/);
+ assert.match(card,/全国の参考率/);
 }
 // The three-way presentation must never render for age/income-only marginals,
 // missing worker confirmation, missing head-of-household age, or scope mismatch.
@@ -271,8 +271,8 @@ assert.match(breakdownHTML,/¥54,000/,'largest candidate food expense remains vi
 assert.match(breakdownHTML,/¥37,860/,'largest food comparison clearly remains non-saving context');
 assert.match(breakdownHTML,/data-section="OTHER_CANDIDATE_SUMMARIES"/,'other candidates have an optional compact disclosure');
 assert.match(breakdownHTML,/ほか1件の見直し候補を見る/,'other candidate count visible');
-assert.match(breakdownHTML,/平均との差がそのまま削減額になるわけではありません/,'no inference of savings');
-assert.equal((breakdownHTML.match(/確かめること：/g)||[]).length,1,'top candidate has one immediate check, other details appear in ledger');
+assert.match(breakdownHTML,/差額がそのまま削減額ではないよ/,'No unsupported savings inference survives in the optional evidence');
+assert.equal((breakdownHTML.match(/まず確かめる：/g)||[]).length,1,'One visible concrete next action precedes optional source details');
 assert.ok(candidateHtml.includes('data-comparison-category="mobile"'),'secondary mobile details remain in 12-category ledger');
 assert.ok(candidateHtml.indexOf('data-section="POTENTIAL_TREASURE"')<candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"'));
 assert.ok(candidateHtml.indexOf('data-section="CANDIDATE_BREAKDOWN"')<candidateHtml.indexOf('data-section="FUTURE_REWARDS"'));
