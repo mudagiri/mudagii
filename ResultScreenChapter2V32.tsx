@@ -261,7 +261,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
- const [showAllCategoryComparisons,setShowAllCategoryComparisons]=useState(false);
+ const [expandedCategory,setExpandedCategory]=useState<string|null>(null);
  const [singleGrossBand,setSingleGrossBand]=useState<SinglePeerGrossBand2024>(
   ['under400','400_499','500_599','600_699','700_799','800_999','1000plus','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
    ?vm.profile.singlePeerGrossBand2024 as SinglePeerGrossBand2024:null);
@@ -959,9 +959,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
      </details>
     </details>}
-   {shown.length&&shown.length>4&&<p className="c2v32-comparison-preview-note" data-section="CATEGORY_FOUR_PREVIEW_NOTE">
-    まず、確認優先度の高い4カテゴリ。残り{shown.length-4}カテゴリも下のボタンで見られるよ。
-   </p>}
+   <p className="c2v32-comparison-preview-note" data-section="CATEGORY_ALL_VISIBLE_NOTE">
+    全{rankedShown.length}カテゴリの結果を優先順に表示。気になる敵をタップすると、数値の根拠と次の一歩を確認できるよ。
+   </p>
    {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
     {rankedShown.map((x:any,index:number)=>{
      const status=STATUS[x.v5Status]??STATUS.review;
@@ -1013,19 +1013,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       :delta<0?`${what}より月 ${money(-delta)} 少なめ`
       :`${what}と同程度`;
      return <React.Fragment key={x.category}>
-      {index===4&&<button type="button" className="c2v32-expand-rest"
-       data-section="COMPARISON_REST_TOGGLE" aria-expanded={showAllCategoryComparisons}
-       onClick={()=>setShowAllCategoryComparisons(!showAllCategoryComparisons)}>
-       {showAllCategoryComparisons?'▲ 残りのカテゴリを閉じる':`＋ 残り${rankedShown.length-4}カテゴリをまとめて見る`}
-      </button>}
-      <div hidden={index>=4&&!showAllCategoryComparisons} className="c2v22-comparison-row"
+      <details className="c2v22-comparison-row c2v32-category-accordion"
+       open={expandedCategory===x.category}
        data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
 
-      <div className="c2v22-comparison-head">
+      <summary className="c2v22-comparison-head c2v32-category-summary"
+       onClick={e=>{e.preventDefault();setExpandedCategory(expandedCategory===x.category?null:x.category);}}>
        {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
        <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
+       <div className="c2v32-category-quick-metrics">
+        <span className="c2v32-category-quick-own">{x.known&&Number.isFinite(Number(x.amount))?money(Number(x.amount))+'/月':'未入力'}</span>
+        {shareOfTakeHome!==null&&<span>手取りの {Number(shareOfTakeHome).toFixed(1)}%</span>}
+        {peerGap.available?<span className="c2v32-category-quick-peer">同年代の参考 {peerGap.peerPctLow.toFixed(1)}{peerGap.peerPctLow===peerGap.peerPctHigh?'':'～'+peerGap.peerPctHigh.toFixed(1)}%</span>:null}
+        {nonnegative(x.cUpper)>0&&<b className="c2v32-category-quick-candidate">見直し候補 最大{money(nonnegative(x.cUpper))}（未確定）</b>}
+       </div>
        <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
-      </div>
+       <span className="c2v32-category-arrow" aria-hidden="true">▾</span>
+      </summary>
       {peerGap.available
        ?<Chapter2PeerComparisonCard category={x.category}
          label={x.label||x.category} gap={peerGap}
@@ -1127,7 +1131,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
        <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
       </div>}
-      </div>
+      </details>
      </React.Fragment>;
     })}
    </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
