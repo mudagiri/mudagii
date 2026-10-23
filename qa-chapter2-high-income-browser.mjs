@@ -77,7 +77,7 @@ try{
  // Result shortcuts must lead ABOVE the optional income and head-of-household
  // controls, not directly to the category cards (which would conceal them).
  const compareShortcut=page.locator('[data-section="RESULT_SHORTCUTS"] button').nth(1);
- assert.match(await compareShortcut.innerText(),/同条件比較/);
+ assert.match(await compareShortcut.innerText(),/12カテゴリ/);
  await compareShortcut.click();
  await page.waitForFunction(()=>{
   const guide=document.querySelector('[data-section="JOINT_PEER_COMPARISON_GUIDE"]');
