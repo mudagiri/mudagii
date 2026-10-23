@@ -50,7 +50,7 @@ try{
  assert.match(await result.innerText(),/7日後/);
  assert.match(await result.innerText(),/30日後/);
  assert.match(await result.innerText(),/90日後/);
- assert.match(await result.innerText(),/実データは、この単独プレビューでは未接続/);
+ assert.match(await result.innerText(),/第2章家計戦果は、この単独プレビューでは未接続/);
  await snap('02-complete-result');
  for(const width of [320,375,390,430]){
   await page.setViewportSize({width,height:844});
