@@ -261,23 +261,25 @@ await clickButton(/診断結果を見る/);
  // persisted through scan, appraisal and the Chapter 2 battle into the result.
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
  const comparisonSummary=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
- const categoryRest=page.locator('[data-section="COMPARISON_REST_TOGGLE"]');
- assert.equal(await categoryRest.count(),1,'An explicit toggle exposes all twelve instead of starting with a ten-screen ledger');
- assert.equal(await page.locator('[data-comparison-category]').count(),12,'All canonical categories and values remain rendered');
- assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
-  'Only the four highest-priority categories occupy the initial screen');
- assert.equal(await categoryRest.getAttribute('aria-expanded'),'false');
- const initialCompactHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
- if(engine==='chromium')await screenshot('13a-four-priority-initial');
- await categoryRest.click();
- assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
-  'One tap exposes every category comparison and related fee evidence');
- const expandedDetailHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
- assert.ok(expandedDetailHeight-initialCompactHeight>=650,
-  'Default first-four view must materially reduce scrolling: '+initialCompactHeight+' -> '+expandedDetailHeight);
- console.log('CHAPTER2_FOUR_FIRST_SCREEN_HEIGHT',engine,initialCompactHeight,expandedDetailHeight);
- assert.equal(await categoryRest.getAttribute('aria-expanded'),'true');
-
+ const atlas=page.locator('[data-section="CATEGORY_ENCYCLOPEDIA"]');
+ const categories=page.locator('[data-comparison-category]');
+ assert.equal(await categories.count(),12,'All 12 canonical outcomes remain intact');
+ assert.equal(await categories.filter({visible:true}).count(),12,
+  'Every category is visible as a compact summary before any expansion');
+ assert.equal(await page.locator('[data-section="COMPARISON_REST_TOGGLE"]').count(),0,
+  'A second hidden batch is not allowed');
+ assert.equal(await page.locator('[data-section="CATEGORY_BATTLEBOARD"]').count(),0,
+  'No duplicated twelve-category navigation grid');
+ assert.ok((await atlas.innerText()).includes('全12カテゴリ'),
+  'The single atlas explicitly shows all categories');
+ assert.equal(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open),false,
+  'Category evidence is folded until the user requests it');
+ assert.equal(await page.locator('[data-comparison-category="rent"]').isVisible(),true,
+  'A nonpriority category stays visible by name and value');
+ assert.ok((await atlas.boundingBox()).y < (await page.locator('[data-section="FUTURE_REWARDS"]').boundingBox()).y,
+  'All category outcomes appear before future projection cards');
+ await page.locator('[data-comparison-category="food"] > summary').click();
+ assert.equal(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open),true);
  assert.equal(await comparisonSummary.count(),1,'One visible condition summary instead of a duplicate income question');
  assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 400～499万円/,
   'Entry annual band must be visible before any result-only edits');
@@ -411,17 +413,9 @@ await clickButton(/診断結果を見る/);
   'Clearing gross salary removes all same-cell references even with worker declaration');
  if(await singleIncomeOpt.evaluate(el=>el.open)) await singleIncomeOpt.locator('summary').click();
 
- const battleBoard=page.locator('[data-section="CATEGORY_BATTLEBOARD"]');
- assert.equal(await battleBoard.count(),1,'Compact complete battleboard is accessible near reward');
- assert.equal(await battleBoard.locator('[data-battleboard-category]').count(),12,
-  'All 12 category states are visible rather than hiding 8 behind extensive lower detail');
- assert.ok((await battleBoard.innerText()).includes('自己投資')&&(await battleBoard.innerText()).includes('住居費'),
-  'Battleboard shows non-candidate categories as well');
- const boardItem=battleBoard.locator('[data-battleboard-category="rent"]');
- if(await boardItem.count())await boardItem.click();
- assert.equal(await page.locator('[data-section="COMPARISON_REST_TOGGLE"]').getAttribute('aria-expanded'),'true',
-  'Battleboard navigation opens all detailed rows for the chosen topic');
-
+ assert.equal(await page.locator('[data-section="CATEGORY_BATTLEBOARD"]').count(),0);
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
+  'All categories stay accessible without a global toggle');
  assert.equal(await page.locator('[data-section="NEXT_QUEST"]').count(),0,
   'Duplicate first-action recap is removed');
  assert.equal(await page.locator('[data-section="FIRST_REVIEW_ACTION"]').count(),0,
@@ -449,7 +443,8 @@ await clickButton(/診断結果を見る/);
  const artCount=await cats.locator('img.c2v23-comparison-enemy').count();
  assert.ok(artCount>=10,'Most official enemy artwork in category ledger');
  const foodRowText=await page.locator('[data-comparison-category="food"]').innerText();
- assert.ok(foodRowText.includes('食費')&&foodRowText.includes('比較条件：'),'Food reference and comparison criteria visible');
+ assert.ok(foodRowText.includes('食費'),'Food is always identifiable, even while its evidence is collapsed');
+ await page.locator('[data-comparison-category="energy"] > summary').click();
  const energyRowText=await page.locator('[data-comparison-category="energy"]').innerText();
  assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('あなたの支出'),'Energy row is inspectable without tapping');
  const sourceButton=page.locator('[data-comparison-category="food"] .c2v32-evidence-toggle').first();
