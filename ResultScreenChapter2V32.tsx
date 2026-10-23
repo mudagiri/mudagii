@@ -748,7 +748,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
    {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
     onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    同年代・同世帯・同所得帯の比較条件から見る ↓
+    12カテゴリの支出と比較の目安を見る ↓
    </button>}
   </section>
   <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
