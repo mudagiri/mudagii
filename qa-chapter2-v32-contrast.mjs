@@ -64,9 +64,10 @@ export async function auditChapter2TextContrast(page,{requireWorker=false,viewpo
    classes.push(
     ['worker-evidence-trigger','.c2v22-comparison-ledger .c2v32-peer-evidence>summary'],
     ['worker-evidence-source','.c2v22-comparison-ledger .c2v32-peer-evidence[open] .c2v32-peer-evidence-body p'],
-    ['worker-gap-number','.c2v22-comparison-ledger .c2v32-peer-gap-card>strong'],
-    ['worker-gap-yen','.c2v22-comparison-ledger .c2v32-peer-gap-card>p b'],
-    ['worker-gap-caveat','.c2v22-comparison-ledger .c2v32-peer-gap-card>small']
+    ['worker-gap-number','.c2v22-comparison-ledger .c2v32-peer-metric--difference>strong'],
+    ['worker-own-expense','.c2v22-comparison-ledger .c2v32-peer-own-amount>b'],
+    ['worker-reference-number','.c2v22-comparison-ledger .c2v32-peer-metric:nth-child(2)>strong'],
+    ['worker-gap-caveat','.c2v22-comparison-ledger .c2v32-peer-metric--difference>small']
    );
   }else if(requireWorker||document.querySelector('.c2v32-worker-rate-card')){
    classes.push(
