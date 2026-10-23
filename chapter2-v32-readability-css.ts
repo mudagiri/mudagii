@@ -767,4 +767,22 @@ export const V32READABILITYCSS = `
  .c2v32-rpg .c2v32-peer-guide--compact{padding:8px}
  .c2v32-rpg .c2v32-peer-gap-card--three-way{padding:8px 6px}
 }
+
+/* Category progressive disclosure: four relevant cards first, eight on demand.
+   Preserve all twelve data rows in DOM but use the browser's hidden semantics. */
+.c2v32-rpg .c2v32-comparison-preview-note{
+ margin:9px 0 8px!important;font-size:13px!important;line-height:1.6!important;
+ color:#f6e8be!important;font-weight:850;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v22-comparison-row[hidden]{
+ display:none!important;
+}
+.c2v32-rpg .c2v32-expand-rest{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;min-height:52px;margin:12px 0;padding:10px 11px;
+ border:1.5px solid #caa66b;border-radius:10px;
+ background:linear-gradient(125deg,#164941,#20434b);color:#fff2bd;
+ font-size:15px;font-weight:950;line-height:1.5;cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-expand-rest:focus-visible{outline:3px solid #0e968e;outline-offset:2px}
 `;
