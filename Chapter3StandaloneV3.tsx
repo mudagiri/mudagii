@@ -31,6 +31,7 @@ export default function Chapter3StandaloneV3(){
  const [showConsult,setShowConsult]=useState(false);
  const [sampleMode,setSampleMode]=useState(false);
  const [showDetail,setShowDetail]=useState(false);
+ const [chosenRoute,setChosenRoute]=useState<null|'self'>(null);
  const [imageVisible,setImageVisible]=useState(true);
  const report=useMemo(()=>createAdventureResult(answers),[answers]);
  const finished=step>=STEPS.length;
@@ -41,9 +42,10 @@ export default function Chapter3StandaloneV3(){
  };
  const choose=(key:StepKey,id:string)=>{
   setAnswers(prev=>({...prev,[key]:id}));
+  setChosenRoute(null);
   setStep(i=>i+1);
  };
- const restart=()=>{setAnswers(initial);setStep(-1);setSampleMode(false);setShowConsult(false);setShowDetail(false);window.scrollTo({top:0,behavior:'auto'});};
+ const restart=()=>{setChosenRoute(null);setAnswers(initial);setStep(-1);setSampleMode(false);setShowConsult(false);setShowDetail(false);window.scrollTo({top:0,behavior:'auto'});};
  return <main className="c3s-root" data-chapter3-standalone="true">
   <div className="c3s-background" aria-hidden="true"/>
   <div className="c3s-wrap">
@@ -86,17 +88,26 @@ export default function Chapter3StandaloneV3(){
       <p className="c3s-route-name">{report.routeTitle}</p>
       <p className="c3s-headline" data-testid="chapter3-result-headline">{report.headline}</p>
       <div className="c3s-result-block"><span className="c3s-overline">なぜ、このルートなのか</span><p>{report.discovery}</p></div>
-      <div className="c3s-reward"><small>✦ 最初に手に入れた作戦</small><strong data-testid="chapter3-first-action">{report.todayAction}</strong></div>
+      <div className="c3s-reward"><small>✦ 今、選べる最初の一手</small><strong data-testid="chapter3-first-action">{report.todayAction}</strong></div>
       <div className="c3s-shield"><span>🛡 守りたいもの</span><strong>{report.shield}</strong></div>
       <button className="c3s-disclosure" onClick={()=>setShowDetail(x=>!x)} aria-expanded={showDetail}>4つの準備資源を確認する {showDetail?'−':'＋'}</button>
       {showDetail&&<div className="c3s-capital">
         {report.dimensions.map((x:any)=><div key={x.key}><strong>{x.name}</strong><span>{x.status}</span></div>)}
       </div>}
-      <div className="c3s-timeline"><span className="c3s-overline">これからの冒険の地図</span>
-        {report.milestones.map((x:any)=><div className="c3s-milestone" key={x.when}><b>{x.when}</b><div><strong>{x.title}</strong><p>{x.detail}</p></div></div>)}
+      <div className="c3s-decision" data-testid="chapter3-decide-now">
+        <span className="c3s-overline">NOW / ここで道を選ぶ</span>
+        <h3>この場で、次の進み方を決めよう。</h3>
+        <p>いつか動くための計画ではなく、今の自分で選ぶ一手。自分で始めるか、相談して具体化するかは自由だよ。</p>
+        <button className="c3s-mainbtn" type="button" onClick={()=>setShowConsult(true)}>この作戦を相談する →</button>
+        <button className="c3s-outline" type="button" onClick={()=>setChosenRoute('self')}>この一手で自分で進む →</button>
+        {chosenRoute==='self'&&<div className="c3s-decision-confirmed" role="status">
+          <strong>⚑ 自分で進む道を選んだ</strong>
+          <p>最初にやること：{report.decision.selfAction}</p>
+          <small>取り組んだこと自体はまだ記録されていません。いつ実行するかを押し付けず、この一手から始めよう。</small>
+        </div>}
+        <small className="c3s-preview-caution">※単独試作では相談の予約は行いません。相談ボタンはテーマ確認のみ。</small>
       </div>
       <p className="c3s-caveat">{report.caveat} {report.evidence}</p>
-      <button className="c3s-mainbtn" onClick={()=>setShowConsult(true)}>この作戦を相談する →</button>
       <button className="c3s-outline" onClick={restart}>もう一度、未来を選び直す</button>
       <small>結果は今回選んだ4つの回答に基づく整理。資産や能力の測定結果ではありません。</small>
     </section>}
