@@ -29,6 +29,7 @@ export default function Chapter3StandaloneV3(){
  const [step,setStep]=useState(-1);
  const [answers,setAnswers]=useState<Answers>(initial);
  const [showConsult,setShowConsult]=useState(false);
+ const [sampleMode,setSampleMode]=useState(false);
  const [showDetail,setShowDetail]=useState(false);
  const [imageVisible,setImageVisible]=useState(true);
  const report=useMemo(()=>createAdventureResult(answers),[answers]);
@@ -42,7 +43,7 @@ export default function Chapter3StandaloneV3(){
   setAnswers(prev=>({...prev,[key]:id}));
   setStep(i=>i+1);
  };
- const restart=()=>{setAnswers(initial);setStep(-1);setShowConsult(false);setShowDetail(false);window.scrollTo({top:0,behavior:'auto'});};
+ const restart=()=>{setAnswers(initial);setStep(-1);setSampleMode(false);setShowConsult(false);setShowDetail(false);window.scrollTo({top:0,behavior:'auto'});};
  return <main className="c3s-root" data-chapter3-standalone="true">
   <div className="c3s-background" aria-hidden="true"/>
   <div className="c3s-wrap">
@@ -58,7 +59,8 @@ export default function Chapter3StandaloneV3(){
       <p>進むのを止めている壁と、絶対に守りたいもの。<br/>この2つで、取るべき作戦は変わる。</p>
       <div className="c3s-guide">{imageVisible&&<img src={mascot} alt="ムダギリくん" onError={()=>setImageVisible(false)}/>}<p>今回はボクと「未来の戦い方」を選ぼう。4つの分かれ道の先に、自分だけの作戦書があるよ。</p></div>
       <div className="c3s-intro-points"><span>⚔ 4つの場面を選ぶ</span><span>✦ 未来の作戦書を獲得</span></div>
-      <button className="c3s-mainbtn" onClick={()=>setStep(0)}>冒険に出る <span>→</span></button>
+      <button className="c3s-mainbtn" onClick={()=>{setSampleMode(false);setStep(0)}}>冒険に出る <span>→</span></button>
+      <button className="c3s-outline" onClick={()=>{setAnswers({wish:'challenge',wall:'time',shield:'joy',tool:'time'});setSampleMode(true);setStep(STEPS.length);}}>リザルト画面のサンプルを先に見る</button>
       <small>これは自己整理用の冒険体験。資金余力・収入・投資適合性は診断しません。</small>
     </section>}
    {step>=0&&!finished&&<section className="c3s-panel" data-testid="chapter3-question">
@@ -77,6 +79,7 @@ export default function Chapter3StandaloneV3(){
       </div>
     </section>}
    {finished&&report.ok&&<section className="c3s-panel c3s-result" data-testid="chapter3-result">
+      {sampleMode&&<p className="c3s-notice">これは架空の回答例による結果サンプルです。あなた自身の診断結果ではありません。</p>}
       <div className="c3s-overline">QUEST CLEAR · 未来攻略の作戦書</div>
       <div className="c3s-scene c3s-scene--result" aria-hidden="true"><span className="c3s-scene-glyph">✧ ⚑ ✧</span></div>
       <h2 className="c3s-result-name">{report.adventurerTitle}</h2>
