@@ -244,14 +244,18 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
       value={draft.annualIncomeAnswered?(draft.singlePeerGrossBand2024??'unknown'):''}
       onChange={e=>{
        const v=e.target.value;
-       patch({singlePeerGrossBand2024:v==='under400'||v==='400_499'||v==='500_599'||v==='600plus'?v:null,
+       patch({singlePeerGrossBand2024:v==='under400'||v==='400_499'||v==='500_599'||v==='600_699'||v==='700_799'||v==='800_999'||v==='1000plus'||v==='600plus'?v:null,
         annualIncomeBand:'unknown',annualIncomeAnswered:true});
       }}>
       <option value="" disabled>年収帯を選んでね</option>
       <option value="under400">400万円未満</option>
       <option value="400_499">400～499万円</option>
       <option value="500_599">500～599万円</option>
-      <option value="600plus">600万円以上</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      {draft.singlePeerGrossBand2024==='600plus'&&<option value="600plus">600万円以上（旧回答・再選択推奨）</option>}
       <option value="unknown">わからない・答えたくない</option>
      </select>
      :<select id="profile-annual-peer-band" aria-label="家族全体の額面世帯年収"
