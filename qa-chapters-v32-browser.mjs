@@ -261,6 +261,17 @@ await clickButton(/診断結果を見る/);
  // persisted through scan, appraisal and the Chapter 2 battle into the result.
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
  const comparisonSummary=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
+ const categoryRest=page.locator('[data-section="COMPARISON_REST_TOGGLE"]');
+ assert.equal(await categoryRest.count(),1,'An explicit toggle exposes all twelve instead of starting with a ten-screen ledger');
+ assert.equal(await page.locator('[data-comparison-category]').count(),12,'All canonical categories and values remain rendered');
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),4,
+  'Only the four highest-priority categories occupy the initial screen');
+ assert.equal(await categoryRest.getAttribute('aria-expanded'),'false');
+ await categoryRest.click();
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
+  'One tap exposes every category comparison and related fee evidence');
+ assert.equal(await categoryRest.getAttribute('aria-expanded'),'true');
+
  assert.equal(await comparisonSummary.count(),1,'One visible condition summary instead of a duplicate income question');
  assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 400～499万円/,
   'Entry annual band must be visible before any result-only edits');
