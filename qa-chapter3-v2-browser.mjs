@@ -14,6 +14,8 @@ const browser=await (engine==='webkit'?webkit:chromium).launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,locale:'ja-JP',colorScheme:'dark'});
 const page=await context.newPage();
 const errors=[];
+const missingPreviewAssets=new Set();
+page.on('response',response=>{if(response.status()===404)missingPreviewAssets.add(new URL(response.url()).pathname)});
 page.on('pageerror',e=>errors.push(e.message));
 page.on('crash',()=>console.error('WEBKIT_RESULT_PAGE_CRASH',engine));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',engine,msg.text())});
@@ -400,6 +402,7 @@ await clickButton(/診断結果を見る/);
  await screenshot('20-chapter3-time-result');
  await ch3.getByRole('button',{name:/第2章の戦果へ戻る/}).click();
  await chapter3Entry.waitFor({state:'visible'});
+ console.log('CHAPTER3_V2_MISSING_PREVIEW_ASSETS',engine,JSON.stringify([...missingPreviewAssets]));
  assert.equal(outgoing.length,0,'No GAS/analytics/LINE network requests in isolated Chapter3 preview');
  const ch3Report={engine,job:before.handoff.jobCode,goalHome:planText.trim(),
    incomePath1:firstStep.trim(),incomePath2:secondStep.trim(),
