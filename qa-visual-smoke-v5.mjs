@@ -116,6 +116,16 @@ await shot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
 
+// Current Chapter2 V3.2 profile intentionally asks gross annual income before
+// monthly take-home for singles. 'Unknown' is a valid explicit answer; it must
+// never be inferred from the amount entered on the next screen.
+await waitHeading('あなたの額面年収は？');
+const annualIncome=page.locator('#profile-annual-peer-band');
+await annualIncome.selectOption('unknown');
+if(await annualIncome.inputValue()!=='unknown')throw new Error('GROSS_INCOME_UNKNOWN_SELECTION_NOT_RETAINED');
+await shot('06a-single-annual-income',{allowVertical:true});
+await clickButton(/次へ/);
+
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
 await shot('07-single-income');
