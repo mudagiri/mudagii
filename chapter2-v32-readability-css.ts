@@ -831,4 +831,88 @@ export const V32READABILITYCSS = `
  .c2v32-rpg .c2v32-battleboard-item{padding:6px 5px;min-height:55px}
  .c2v32-rpg .c2v32-battleboard-item strong{font-size:12px!important}
 }
+
+/* The single atlas is now ONE compact list of all twelve categories,
+   positioned directly after the actionable treasure. Detailed methodology
+   is per-category opt-in instead of hiding eight categories altogether. */
+.c2v32-rpg .c2v32-category-accordion{
+ display:block;margin:7px 0;border:1.5px solid #aec4b9;
+ border-radius:12px;padding:0 9px 7px;background:#f5f7ed;
+ overflow:visible;
+}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary{
+ display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;
+ min-height:62px;cursor:pointer;padding:8px 2px 3px;
+ list-style:none;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary::-webkit-details-marker{display:none}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary:focus-visible{
+ outline:3px solid #197765;outline-offset:3px;border-radius:8px;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-enemy{
+ width:45px!important;height:45px!important;max-width:45px!important;min-width:45px!important;
+ object-fit:contain;flex:0 0 45px;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity{flex:1 1 130px;min-width:98px}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity>strong{
+ font-size:16px!important;line-height:1.45!important;color:#193e36!important;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity>small{font-size:12px!important}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-status{
+ font-size:12px!important;flex:0 0 auto;
+}
+.c2v32-rpg .c2v32-category-quick-metrics{
+ order:5;flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;
+ gap:4px 11px;margin:0 0 2px 53px;
+}
+.c2v32-rpg .c2v32-category-quick-metrics>span{
+ color:#36534a!important;font-size:12px!important;line-height:1.5;font-weight:800;
+}
+.c2v32-rpg .c2v32-category-quick-own{
+ color:#153c34!important;font-size:16px!important;font-weight:950!important;
+ font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v32-category-quick-metrics>.c2v32-category-quick-peer{
+ color:#176452!important;font-size:12px!important;font-weight:900!important;
+}
+.c2v32-rpg .c2v32-category-quick-candidate{
+ flex:1 1 100%;color:#6c480a;font-size:12px!important;font-weight:950;
+}
+.c2v32-rpg .c2v32-category-arrow{
+ order:4;flex:0 0 16px;margin-left:auto;color:#234d43;
+ font-size:17px!important;line-height:1;transition:transform .18s ease;
+}
+.c2v32-rpg .c2v32-category-accordion[open]>.c2v32-category-summary{
+ border-bottom:1px solid #bed0c0;padding-bottom:10px;margin-bottom:8px;
+}
+.c2v32-rpg .c2v32-category-accordion[open]>.c2v32-category-summary .c2v32-category-arrow{
+ transform:rotate(180deg);
+}
+.c2v32-rpg .c2v32-reference-signals{
+ background:#153b40;border:1.5px solid #bba46e;border-radius:12px;
+ padding:12px;margin:8px 0;color:#f4f1e2;
+}
+.c2v32-rpg .c2v32-reference-signals>strong{display:block;color:#ffdfa2;font-size:15px;font-weight:900}
+.c2v32-rpg .c2v32-reference-signals>p{color:#e8f1ec;font-size:13px!important;line-height:1.65!important;margin:7px 0!important}
+.c2v32-rpg .c2v32-reference-signals details{
+ border-top:1px solid #637f78;padding:3px 0;margin:5px 0;
+}
+.c2v32-rpg .c2v32-reference-signals summary{
+ display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:4px;
+ min-height:44px;cursor:pointer;font-size:13px!important;line-height:1.55!important;color:#fef0c2!important;
+}
+.c2v32-rpg .c2v32-reference-signals summary:focus-visible{outline:3px solid #c6eadf;outline-offset:2px}
+.c2v32-rpg .c2v32-reference-signals p,
+.c2v32-rpg .c2v32-reference-signals small{
+ color:#e6f0ee!important;font-size:13px!important;line-height:1.65!important;
+}
+.c2v32-rpg .c2v32-reference-signals small{display:block;font-size:12px!important}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-category-accordion{padding:0 5px 6px}
+ .c2v32-rpg .c2v32-category-quick-metrics{margin-left:48px;gap:3px 7px}
+ .c2v32-rpg .c2v32-category-summary .c2v23-comparison-enemy{width:40px!important;height:40px!important;min-width:40px!important;max-width:40px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .c2v32-rpg .c2v32-category-arrow{transition:none}
+}
 `;
