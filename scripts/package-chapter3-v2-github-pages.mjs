@@ -28,7 +28,7 @@ let backgroundPathFixes=0;
 const oldBackgroundPrefix='./assets/mudagiri/backgrounds/money-personality/v1/';
 const rootBackgroundPrefix='/assets/mudagiri/backgrounds/money-personality/v1/';
 for(const filename of await readdir(join(target,'assets'))){
- if(!/\\.(?:js|css)$/.test(filename))continue;
+ if(!/\.(?:js|css)$/.test(filename))continue;
  const filenamePath=join(target,'assets',filename);
  const compiled=await readFile(filenamePath,'utf8');
  const found=compiled.split(oldBackgroundPrefix).length-1;
