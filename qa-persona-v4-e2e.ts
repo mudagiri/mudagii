@@ -21,6 +21,9 @@ const completeBase=(d:ProfileDraftV4)=>{
   d.housingSubtype='private_rental';
   d.monthlyTakeHome=350000;
   d.monthlyTakeHomeAnswered=true;
+  // Explicitly chose 'unknown' at the official gross-income screen. Never infer
+  // annual gross pay from the take-home amount in synthetic persona fixtures.
+  d.annualIncomeAnswered=true;
   return d;
 };
 
@@ -46,12 +49,13 @@ const run=(profile:ProfileV4, records:ExpenseRecordsV4, appraisal:FinalAppraisal
 {
   const d=completeBase(emptyProfileDraftV4());
   d.diagnosisScope='personal'; d.householdSize=1;
-  A.deepEqual(profileStepsV4(d),['scope','householdSize','prefecture','age','housing','income']);
+  A.deepEqual(profileStepsV4(d),['scope','householdSize','prefecture','age','housing','annualIncome','income']);
   const p=finalizeProfileV4(d);
   const records=emptyExpenseRecordsV4();
   setAmount(p,records,'food',50000);
   const x=run(p,records);
   A.equal(p.householdSize,1);
+  A.equal(p.annualIncomeBand,'unknown','unknown single income must not be inferred from take-home');
   A.equal(x.comparisons.food.amount,50000);
   A.equal(x.comparisons.food.engineComparableAllowed,true);
 }
@@ -85,6 +89,7 @@ const run=(profile:ProfileV4, records:ExpenseRecordsV4, appraisal:FinalAppraisal
   d.monthlyTakeHome=600000;
   const p=finalizeProfileV4(d);
   A.equal(shouldOfferAnnualIncomeCalibrationV4(p),true);
+  A.equal(p.annualIncomeBand,'unknown','gross band unknown does not fabricate a comparison cohort');
   const records=emptyExpenseRecordsV4();
   setAmount(p,records,'food',80000);
   const x=run(p,records,{food:{satisfaction:'satisfied'}});
@@ -101,7 +106,7 @@ const run=(profile:ProfileV4, records:ExpenseRecordsV4, appraisal:FinalAppraisal
   d.relationships=['children']; d.childCount=2; d.monthlyTakeHome=650000;
   const p=finalizeProfileV4(d);
   A.equal(p.adultCount,2); A.equal(p.childCount,2);
-  A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','childCount','prefecture','age','housing','income']);
+  A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','childCount','prefecture','age','housing','annualIncome','income']);
   const records=emptyExpenseRecordsV4();
   setAmount(p,records,'childEducation',90000);
   records.childEducation={...records.childEducation,metadata:{educationChildren:[{stage:'publicElementary'},{stage:'publicJuniorHigh'}]}};
