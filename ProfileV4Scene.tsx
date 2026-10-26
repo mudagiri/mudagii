@@ -37,6 +37,7 @@ const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;s
  prefecture:{dialogue:'比較相手をもう少し絞るぞ。',question:'今住んでる都道府県は？',helper:'地域差が出る支出だけ、比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  age:{dialogue:'あと少し。',question:'年齢は？',helper:'年齢で差が出る支出を、近い基準で比べます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
  housing:{dialogue:'住まいの条件を合わせよう。',question:'今の住まいは？',helper:'民営賃貸と持ち家・実家などを混ぜて比べません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q5.png`},
+ annualIncome:{dialogue:'比較する相手を選ぼう！',question:'額面の年収はどのくらい？',helper:'税金が引かれる前の年収。金額は大体でOK。わからなくても進めるよ。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金などが引かれた後。だいたいでOK。分からなくても診断できます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
 };
 
@@ -54,9 +55,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  const patch=(x:Partial<ProfileDraftV4>)=>setDraft(v=>({...v,...x}));
  const setHouseholdSize=(n:number)=>setDraft(v=>{
   const householdSize=Math.max(1,Math.min(10,n));
-  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,compositionConfirmed:false};
+  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,compositionConfirmed:false,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false};
   const childCount=v.childCount===null?null:Math.min(v.childCount,householdSize-1);
-  return {...v,householdSize,childCount};
+  return {...v,householdSize,childCount,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false};
  });
  const auto=(x:Partial<ProfileDraftV4>)=>{
   setDraft(v=>{
@@ -80,6 +81,36 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   <style>{`
    /* The canonical game HUD uses a 390px !important fixed flex panel.
       Reclaim slack INSIDE the frame; moving the panel does not solve clipping. */
+   .pre-profile-v4.pre-step-annualIncome .pre-panel{
+    overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-dialogue{
+    flex:0 0 36px!important;min-height:36px!important;max-height:36px!important;
+    margin:0 0 5px auto!important;padding:5px 9px!important;font-size:12px!important;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-panel h2{
+    min-height:29px!important;margin:3px 0 0!important;font-size:22px!important;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-helper{
+    flex:0 0 auto!important;margin:3px 0 0!important;font-size:12px!important;line-height:1.5!important;
+   }
+   .pre-profile-v4 .pre-gross-primary{
+    padding:9px 10px;margin:8px 0 3px;border:1px solid #d8b877;
+    border-radius:12px;background:#153c46;color:#f5f7ee;
+   }
+   .pre-profile-v4 .pre-gross-primary label{
+    display:block;font-size:15px;font-weight:900;color:#ffdda0;margin-bottom:5px;
+   }
+   .pre-profile-v4 .pre-gross-primary select{
+    display:block;width:100%;min-height:48px;padding:5px 7px;font-size:16px;
+    border-radius:10px;background:#fff;color:#172c2c;border:2px solid #a8d5ca;
+   }
+   .pre-profile-v4 .pre-gross-primary select:focus-visible{
+    outline:3px solid #ffe19b;outline-offset:3px;
+   }
+   .pre-profile-v4 .pre-gross-primary small{
+    display:block;color:#e8f2ef;font-size:12px;line-height:1.5;margin-top:6px;
+   }
    .pre-profile-v4.pre-step-income .pre-dialogue{
     flex:0 0 36px!important;min-height:36px!important;max-height:36px!important;
     margin:0 0 5px auto!important;padding:5px 9px!important;font-size:12px!important;
@@ -140,7 +171,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   <section className="pre-panel">
    <div className="pre-dialogue">{meta.dialogue}</div>
    <div className="pre-question-no">QUEST SETTING</div>
-   <h2>{step==='income'
+   <h2>{step==='annualIncome'
+     ?(draft.householdSize===1?'あなたの額面年収は？':'世帯全体の額面年収は？')
+     :step==='income'
      ?(draft.diagnosisScope==='household'?'家全体の毎月の手取りは？':'あなた自身の毎月の手取りは？')
      :step==='composition'&&draft.diagnosisScope==='household'
        ?'子どもと暮らしてる？'
@@ -148,8 +181,8 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    <p className="pre-helper">{meta.helper}</p>
 
    {step==='scope'&&<div className="mode-options">
-    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal',expenseSharing:null})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
-    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
+    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal',expenseSharing:null,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
+    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
    </div>}
 
    {step==='householdSize'&&<div className="profile-v4-stepper" style={{display:'grid',gridTemplateColumns:'56px minmax(0,1fr) 56px',gap:10,alignItems:'center',marginTop:10}}>
@@ -202,39 +235,49 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     </div>}
    </div>}
 
+   {step==='annualIncome'&&<div className="pre-gross-primary" data-section="PROFILE_GROSS_ANNUAL_PRIMARY">
+    <label htmlFor="profile-annual-peer-band">
+     {draft.householdSize===1?'あなた本人の額面年収':'家族全体の額面世帯年収'}
+    </label>
+    {draft.householdSize===1?
+     <select id="profile-annual-peer-band" aria-label="あなた本人の額面年収"
+      value={draft.annualIncomeAnswered?(draft.singlePeerGrossBand2024??'unknown'):''}
+      onChange={e=>{
+       const v=e.target.value;
+       patch({singlePeerGrossBand2024:v==='under400'||v==='400_499'||v==='500_599'||v==='600_699'||v==='700_799'||v==='800_999'||v==='1000plus'||v==='600plus'?v:null,
+        annualIncomeBand:'unknown',annualIncomeAnswered:true});
+      }}>
+      <option value="" disabled>年収帯を選んでね</option>
+      <option value="under400">400万円未満</option>
+      <option value="400_499">400～499万円</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      {draft.singlePeerGrossBand2024==='600plus'&&<option value="600plus">600万円以上（旧回答・再選択推奨）</option>}
+      <option value="unknown">わからない・答えたくない</option>
+     </select>
+     :<select id="profile-annual-peer-band" aria-label="家族全体の額面世帯年収"
+       value={draft.annualIncomeAnswered?draft.annualIncomeBand:''}
+       onChange={e=>patch({annualIncomeBand:e.target.value as ProfileDraftV4['annualIncomeBand'],
+        singlePeerGrossBand2024:null,annualIncomeAnswered:true})}>
+      <option value="" disabled>年収帯を選んでね</option>
+      <option value="under500">500万円未満</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      <option value="unknown">わからない・答えたくない</option>
+     </select>}
+    <small>公式統計と比べる条件を探すための質問だよ。月手取りから額面年収は推測しないし、ここでの回答はムダ額・削減額の計算には使わない。</small>
+    <small>{draft.householdSize===1?'単身世帯の公表セルと照合。対象外の年収帯では同条件の平均を出さないよ。':'世帯主年齢・勤労者区分と標本数も一致するときだけ、公式の参考率を表示するよ。'}</small>
+   </div>}
+
    {step==='income'&&<div>
     <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り"/><span>/ 月</span></div></label>
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
-    {(draft.householdSize===1||(draft.diagnosisScope==='household'&&Number(draft.householdSize)>1))&&
-     <details className="pre-annual-peer-optin" data-section="PROFILE_OPTIONAL_GROSS_ANNUAL">
-      <summary>年間の額面収入も選ぶ（任意・比較の精度UP）</summary>
-      <label htmlFor="profile-annual-peer-band"><strong>額面の年収帯</strong></label>
-      <p>同年代・近い年収帯と比べるための追加情報。手取りから年収は推定しないよ。分からなくても先に進めるし、診断の判定・削減額には使わない。</p>
-      {draft.householdSize===1?
-       <select id="profile-annual-peer-band" className="pre-select"
-        value={draft.singlePeerGrossBand2024??''}
-        onChange={e=>{
-         const v=e.target.value;
-         patch({singlePeerGrossBand2024:v==='400_499'||v==='500_599'||v==='600plus'?v:null});
-        }}>
-        <option value="">選ばない・わからない</option>
-        <option value="400_499">400〜499万円</option>
-        <option value="500_599">500〜599万円</option>
-        <option value="600plus">600万円以上（同年代の参考は限定的）</option>
-       </select>:
-       <select id="profile-annual-peer-band" className="pre-select"
-        value={draft.annualIncomeBand}
-        onChange={e=>patch({annualIncomeBand:e.target.value as ProfileDraftV4['annualIncomeBand']})}>
-        <option value="unknown">選ばない・わからない</option>
-        <option value="under500">500万円未満（同条件の公表値は限定的）</option>
-        <option value="500_599">500〜599万円</option>
-        <option value="600_699">600〜699万円</option>
-        <option value="700_799">700〜799万円</option>
-        <option value="800_999">800〜999万円</option>
-        <option value="1000plus">1,000万円以上（詳細区分は結果で確認）</option>
-       </select>}
-      <small>{draft.householdSize===1?'単身の本人年収で比較します。':'家族の収入を合わせた世帯全体の額面年収です。'}地域まで同時に一致させた公式平均ではありません。</small>
-     </details>}
    </div>}
 
    {!['scope','composition','contribution','housing'].includes(step)&&<button type="button" className="pre-primary pre-next profile-primary-cta" onClick={()=>onNext()} disabled={!valid}>次へ ▶</button>}

@@ -1,0 +1,46 @@
+name: Generate original 2024 income-aligned table
+on:
+  pull_request:
+    branches: [release/chapter12-latest-rpg-ui-first-20261016]
+    paths:
+      - scripts/generate-chapter2-2024-50man-aligned-v2.py
+      - .github/workflows/generate-chapter2-2024-50man-v2.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate-official-v2:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          persist-credentials: true
+      - name: Download official 2024 e-Stat XLSX and verify original SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mudagiri-2024-orig
+          curl -fL --retry 3 --connect-timeout 20 --max-time 180 'https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040379261&fileKind=0' -o /tmp/mudagiri-2024-orig/a010292.xlsx
+          curl -fL --retry 3 --connect-timeout 20 --max-time 180 'https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040379262&fileKind=0' -o /tmp/mudagiri-2024-orig/a010293.xlsx
+          echo '0a73765d1cda9c6c2a0ba8238e2260ee595dfbdbbbb91b67aa1abb55adf82c45  /tmp/mudagiri-2024-orig/a010292.xlsx' | sha256sum -c
+          echo '62648369c8f550afb849575d34bb4a8ed3935c7b8d7dcc8f28bde7ecbdfe16a2  /tmp/mudagiri-2024-orig/a010293.xlsx' | sha256sum -c
+      - name: Source extract and generate exact official 50万円 cells
+        shell: bash
+        run: |
+          python3 scripts/extract-chapter2-official-peer-original-2024.py --multi /tmp/mudagiri-2024-orig/a010292.xlsx --single /tmp/mudagiri-2024-orig/a010293.xlsx --output /tmp/mudagiri-2024-orig/verified.json
+          python3 scripts/generate-chapter2-2024-50man-aligned-v2.py /tmp/mudagiri-2024-orig/verified.json official-2024-50man-aligned-worker-v2.ts
+          python3 scripts/qa-extracted-official-2024-source.py /tmp/mudagiri-2024-orig/verified.json
+      - name: Commit only generated public source table to the feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add official-2024-50man-aligned-worker-v2.ts
+          if git diff --cached --quiet; then
+            echo "SOURCE_TABLE_UP_TO_DATE"
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'data(chapter2): regenerate SHA-verified official income column aligned table'
+          git push origin "HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}"

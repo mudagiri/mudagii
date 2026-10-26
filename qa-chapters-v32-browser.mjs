@@ -161,16 +161,18 @@ await screenshot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
 
+await waitHeading('あなたの額面年収は？');
+const entryGross=page.locator('[data-section="PROFILE_GROSS_ANNUAL_PRIMARY"]');
+assert.equal(await entryGross.count(),1,'Annual gross band is a visible primary profile step');
+assert.equal(await page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]').count(),0,'Old hidden gross income input is gone');
+assert.equal(await page.locator('.pre-step-annualIncome .profile-primary-cta').isDisabled(),true,
+ 'A real income band or explicit unknown answer must be selected');
+await page.locator('#profile-annual-peer-band').selectOption('400_499');
+assert.equal(await page.locator('.pre-step-annualIncome .profile-primary-cta').isEnabled(),true);
+await screenshot('07a-single-annual-gross');
+await clickButton(/次へ/);
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
-const entryGross=page.locator('[data-section="PROFILE_OPTIONAL_GROSS_ANNUAL"]');
-assert.equal(await entryGross.count(),1,'Entry offers optional annual gross bracket without new required step');
-assert.equal(await entryGross.evaluate(el=>el.open),false,'Optional entry income must start collapsed');
-await entryGross.locator('summary').click();
-await page.locator('#profile-annual-peer-band').selectOption('400_499');
-assert.equal(await page.locator('#profile-annual-peer-band').inputValue(),'400_499');
-await page.locator('#profile-annual-peer-band').selectOption('');
-await entryGross.locator('summary').click();
 await screenshot('07-single-income');
 await clickButton(/次へ/);
 
@@ -255,25 +257,57 @@ await clickButton(/診断結果を見る/);
  const inherited=await page.locator('.c2v31-job-card').innerText();
  assert.ok(inherited.includes(before.handoff.jobName),'Chapter 1 JOB identity survives the handoff');
  const resultText=await page.locator('.c2v32-rpg').innerText();
- // Optional income-class lens must not add a required question to Chapter 1/2.
- // Single-person results can inspect the actual official 2025 table without
- // guessing annual gross salary from net take-home.
+ // Explicit gross annual income was entered in the profile and automatically
+ // persisted through scan, appraisal and the Chapter 2 battle into the result.
  const singleIncomeOpt=page.locator('[data-section="SINGLE_INCOME_CLASS_OPTIN"]');
+ const comparisonSummary=page.locator('[data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"]');
+ const atlas=page.locator('[data-section="CATEGORY_ENCYCLOPEDIA"]');
+ const categories=page.locator('[data-comparison-category]');
+ assert.equal(await categories.count(),12,'All 12 canonical outcomes remain intact');
+ assert.equal(await categories.filter({visible:true}).count(),12,
+  'Every category is visible as a compact summary before any expansion');
+ assert.equal(await page.locator('[data-section="COMPARISON_REST_TOGGLE"]').count(),0,
+  'A second hidden batch is not allowed');
+ assert.equal(await page.locator('[data-section="CATEGORY_BATTLEBOARD"]').count(),0,
+  'No duplicated twelve-category navigation grid');
+ assert.ok((await atlas.innerText()).includes('全12カテゴリ'),
+  'The single atlas explicitly shows all categories');
+ assert.equal(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open),false,
+  'Category evidence is folded until the user requests it');
+ assert.equal(await page.locator('[data-comparison-category="rent"]').isVisible(),true,
+  'A nonpriority category stays visible by name and value');
+ assert.ok((await atlas.boundingBox()).y < (await page.locator('[data-section="FUTURE_REWARDS"]').boundingBox()).y,
+  'All category outcomes appear before future projection cards');
+ await page.locator('[data-comparison-category="food"] > summary').click();
+ assert.equal(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open),true);
+ assert.equal(await comparisonSummary.count(),1,'One visible condition summary instead of a duplicate income question');
+ assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 400～499万円/,
+  'Entry annual band must be visible before any result-only edits');
+ assert.equal(await page.locator('[data-peer-condition-edit="single"]').count(),1);
+ assert.equal(await page.locator('[data-peer-condition-edit="multi-high"]').count(),0);
  assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
- assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'No peer income reference before explicit user choice');
- assert.equal(await singleIncomeOpt.evaluate(el=>el.open),true,
-  'Gross income selection must be visible, not hidden under collapsed details');
+ assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),1,
+  'Chosen profile income should activate statistical reference on initial result render');
+ assert.equal(await singleIncomeOpt.evaluate(el=>el.open),false,
+  'A previously answered income bracket needs no duplicate expanded question');
+ assert.match(await singleIncomeOpt.locator(':scope > summary').innerText(),/比較条件を変更する/,
+  'User sees an optional edit, not a second requested gross-income answer');
  assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
- const cohortScopeDetails=page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]');
- assert.equal(await cohortScopeDetails.count(),1,'All unavailable category reasons are discoverable in one optional detail');
- await cohortScopeDetails.locator('summary').click();
- assert.equal(await cohortScopeDetails.locator('[data-peer-coverage-category]').count(),9,
-  'Nine category limitations are displayed, not falsely claimed as cross-tab peers');
- assert.ok((await cohortScopeDetails.innerText()).includes('サブスクだけの公式平均はないよ'));
- await cohortScopeDetails.locator('summary').click();
+ const sourceGuide=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
+ assert.equal(await sourceGuide.count(),1,'One global source-scope explanation replaces nine duplicated category paragraphs');
+ assert.equal(await sourceGuide.evaluate(el=>el.open),false,'Methodological detail begins collapsed');
+ assert.equal(await page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]').count(),0,
+  'Nine repeated long scope paragraphs do not compete with twelve category results');
+ await sourceGuide.locator('summary').click();
+ const sourceText=await sourceGuide.innerText();
+ for(const word of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
+  assert.ok(sourceText.includes(word),'Missing optional statistical scope: '+word);
+ }
+ await sourceGuide.locator('summary').click();
  assert.equal(await page.locator('.c2v32-rpg').getByText('あなたの手取り換算',{exact:false}).count(),0,
   'Never print synthetic own-denominator proxies as statistical burden rates');
- await page.locator('#c2v32-single-income').selectOption('400_499');
+ assert.equal(await page.locator('#c2v32-single-income').inputValue(),'400_499',
+  'Gross income 400–499万円 chosen at entrance is inherited without re-entry');
  await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').waitFor({state:'visible'});
  // A matching income and age class does not establish worker-household scope.
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
@@ -300,29 +334,40 @@ await clickButton(/診断結果を見る/);
  assert.equal(await sameAge40.evaluate(el=>el.open),false,'Reference evidence stays folded on first view');
  assert.ok((await sameAge40.innerText()).includes('条件・出典を見る'),'Source details are discoverable');
  const foodCardCollapsed=await page.locator('[data-comparison-category="food"]').innerText();
- assert.equal((foodCardCollapsed.match(/14\.8% ～ 25\.3%/g)||[]).length,1,
+ assert.equal((foodCardCollapsed.match(/14\.8% ～ 17\.8%/g)||[]).length,1,
   'Only one copy of the same reference rate should appear in a visible card');
  await sameAge40.locator('summary').click();
  const sameAgeFood40=await sameAge40.innerText();
  assert.ok(sameAgeFood40.includes('2024年全国家計構造調査'),'Official e-Stat source must open on request');
  const primaryPeerFood=await page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way').innerText();
- assert.ok(primaryPeerFood.includes('同条件の全国参考率')&&primaryPeerFood.includes('14.8% ～ 25.3%'),
+ assert.ok(primaryPeerFood.includes('全国の参考率')&&primaryPeerFood.includes('14.8% ～ 17.8%'),
   'The true 2024 same-cohort burden rate must be in the primary comparison cell');
- const peerGapText=await page.locator('[data-section="OFFICIAL_PEER_GAP_food"]').innerText();
- assert.ok(peerGapText.includes('-5.3pt ～ +5.2pt'),'Official 2024 gap uses signed 0.1 percentage points');
- assert.ok(peerGapText.includes('−¥18,550 ～ +¥18,200'),'Monthly yen gap uses own take-home with signed endpoints');
- assert.ok(peerGapText.includes('地域は未反映')&&peerGapText.includes('削減可能額'),
-  'National-only gap must not become a fake regional saving');
+ const gapCard=page.locator('[data-section="OFFICIAL_PEER_GAP_food"]');
+ const collapsedPeer=await gapCard.innerText();
+ assert.ok(collapsedPeer.includes('+2.2pt ～ +5.2pt'),'Official 2024 point gap stays visible');
+ assert.ok(!collapsedPeer.includes('+¥7,700 ～ +¥18,200'),
+  'Speculative yen conversion is not an extra primary result metric');
+ const gapDisclosure=page.locator('[data-section="OFFICIAL_PEER_GAP_DETAIL_food"]');
+ assert.equal(await gapDisclosure.evaluate(el=>el.open),false,'Full statistical explanation is optional, not repeated upfront');
+ await gapDisclosure.locator('summary').click();
+ const peerGapText=await gapCard.innerText();
+ assert.ok(peerGapText.includes('+¥7,700 ～ +¥18,200'),'Optional yen conversion preserves exact prior computation');
+ assert.ok(peerGapText.includes('地域・費目内訳')&&peerGapText.includes('削減可能額'),
+  'All scope and no-saving conditions survive in expandable methodology');
+ await gapDisclosure.locator('summary').click();
  assert.equal(await page.locator('[data-comparison-story="food"]').count(),0,
   'Hide conflicting age-only yen comparison story when true peer is available');
  assert.ok(sameAgeFood40.includes('本人申告によるもの'),'Worker-status match is self-declared, not independently certified');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
+ await page.locator('[data-comparison-category="daily"] > summary').click();
  await page.locator('[data-age-income-worker-peer-category="daily"] summary').click();
  assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
   'Official housewares+consumables comparison is narrower than all daily goods');
 
- // WCAG AA gate against computed rendered colors in the income comparison.
+ // Reopen food after inspecting daily; only one detailed category is open at once.
+ await page.locator('[data-comparison-category="food"] > summary').click();
+  // WCAG AA gate against computed rendered colors in the income comparison.
  await auditChapter2TextContrast(page,{requireWorker:true,viewportWidth:390});
  if(engine==='chromium'){
   await page.locator('[data-comparison-category="food"] .c2v32-worker-rate-card--age-income').scrollIntoViewIfNeeded();
@@ -338,29 +383,53 @@ await clickButton(/診断結果を見る/);
   assert.ok(incomeHeading>=63,'Sticky navigation must not hide the income reference heading: '+incomeHeading);
   await page.screenshot({path:out+'/14-income-food-official-selected.png',fullPage:false,timeout:12000});
  }
+ // Profile-prefilled band keeps this edit control collapsed until requested.
+ if(!(await singleIncomeOpt.evaluate(el=>el.open)))await singleIncomeOpt.locator('summary').click();
  await page.locator('#c2v32-single-income').selectOption('500_599');
+ assert.match(await comparisonSummary.innerText(),/35歳 · 単身世帯 · 500～599万円/,
+  'The displayed comparison condition updates immediately after optional local edit');
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'2025 income-only single rate suppressed for n=27, independently of 2024 rate');
  const age50=await page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way').innerText();
- assert.ok(age50.includes('12.2% ～ 17.8%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
+ assert.ok(age50.includes('12.2% ～ 15.9%'),'2024 official 30-39 x 500-599 income classes must be directly joined');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('同時集計した'),'Cross-tab must be visibly distinguished from separate marginal data');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No extra savings buffer before worker employment status and expense match');
- await page.locator('#c2v32-single-income').selectOption('600plus');
- await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').getByText('¥69,413',{exact:false}).waitFor({state:'visible',timeout:8000});
- const official600=await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').innerText();
- const merged600=await page.locator('[data-section="CATEGORY_COMPARISON_OVERVIEW"]').innerText();
- assert.ok(merged600.includes('¥69,413')&&official600.includes('1,000万円以上に固有の平均ではありません'),'Upper income ceiling visibly broad, never fabricated');
- assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),1,'600+ broad-worker cell available with sample size 39 and warning');
- assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,'600plus single gross is broader than approved 2024 age-income source rows');
- assert.ok((await page.locator('[data-section="SINGLE_PEER_MATCH_STATUS"]').innerText()).includes('標本数などの条件'),
-  'Give explicit reason for unavailable matched cohort');
+ for(const band of ['600_699','700_799','800_999','1000plus']){
+  await page.locator('#c2v32-single-income').selectOption(band);
+  assert.equal(await page.locator('#c2v32-single-income').inputValue(),band,
+   'A single person should not be collapsed into a misleading annual 600+ bucket');
+  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
+   'Unverified 2024 age×income source cannot be invented for '+band);
+  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_ROW"]').count(),0,
+   'A broad 2025 600+ rate must never impersonate exact selected single gross '+band);
+  assert.ok((await page.locator('[data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED"]').innerText()).includes('推計で埋めない'),
+   'Missing exact age-income source is explained honestly');
+ }
+ assert.match(await comparisonSummary.innerText(),/1,000万円以上/,
+  'High single gross bracket is explicitly kept and visible in result conditions');
 
 
  await page.locator('#c2v32-single-income').selectOption('');
+ assert.match(await comparisonSummary.innerText(),/年収帯は未回答/,
+  'Clearing a local peer override removes the reference label, not the frozen savings amount');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),0,'Clear choice removes secondary reference');
  assert.equal(await page.locator('[data-age-income-worker-peer-category="food"]').count(),0,
   'Clearing gross salary removes all same-cell references even with worker declaration');
  if(await singleIncomeOpt.evaluate(el=>el.open)) await singleIncomeOpt.locator('summary').click();
 
+ assert.equal(await page.locator('[data-section="CATEGORY_BATTLEBOARD"]').count(),0);
+ assert.equal(await page.locator('[data-comparison-category]:visible').count(),12,
+  'All categories stay accessible without a global toggle');
+ assert.equal(await page.locator('[data-section="NEXT_QUEST"]').count(),0,
+  'Duplicate first-action recap is removed');
+ assert.equal(await page.locator('[data-section="FIRST_REVIEW_ACTION"]').count(),0,
+  'One action is visible in the primary candidate card, not repeated below');
+ const futureMath=page.locator('.c2v32-future-method');
+ assert.equal(await futureMath.count(),1);
+ assert.equal(await futureMath.evaluate(el=>el.open),false,'Long future reward math is folded until requested');
+ const candidateMethod=page.locator('[data-section="PRIMARY_CANDIDATE_REASON"]');
+ assert.equal(await candidateMethod.evaluate(el=>el.open),false,'Reason and basis are optional after the concrete first step');
+ assert.match(await page.locator('[data-section="CANDIDATE_BREAKDOWN"]').innerText(),/まず確かめる/,
+  'Primary concrete action remains visible before any taps');
  const candidateText=await page.locator('.c2v32-hero-teaser strong').innerText();
  const cUpper=Number(candidateText.replace(/[^0-9]/g,''));
  assert.ok(cUpper>0,'Synthetic food case must surface an unconfirmed review candidate');
@@ -377,9 +446,12 @@ await clickButton(/診断結果を見る/);
  const artCount=await cats.locator('img.c2v23-comparison-enemy').count();
  assert.ok(artCount>=10,'Most official enemy artwork in category ledger');
  const foodRowText=await page.locator('[data-comparison-category="food"]').innerText();
- assert.ok(foodRowText.includes('食費')&&foodRowText.includes('比較条件：'),'Food reference and comparison criteria visible');
+ assert.ok(foodRowText.includes('食費'),'Food is always identifiable, even while its evidence is collapsed');
+ await page.locator('[data-comparison-category="energy"] > summary').click();
  const energyRowText=await page.locator('[data-comparison-category="energy"]').innerText();
  assert.ok(energyRowText.includes('光熱')&&energyRowText.includes('あなたの支出'),'Energy row is inspectable without tapping');
+ if(!(await page.locator('[data-comparison-category="food"]').evaluate(el=>el.open)))
+  await page.locator('[data-comparison-category="food"] > summary').click();
  const sourceButton=page.locator('[data-comparison-category="food"] .c2v32-evidence-toggle').first();
  if(await sourceButton.count()){
   assert.equal(await sourceButton.getAttribute('aria-expanded'),'false','source details collapsed by default');

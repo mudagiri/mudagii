@@ -36,7 +36,12 @@ assert.ok(row('childEducation').officialItems.includes('210108_教育'));
 assert.ok(row('daily').scopeCaveat.includes('シャンプー'),'Daily FROZEN input is broader than two official items');
 assert.equal(row('arbitrary').status,'no_separate_official_item','Unknown category must fail closed');
 const ui=fs.readFileSync('ResultScreenChapter2V32.tsx','utf8');
-assert.ok(ui.includes('data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"'));
+assert.ok(!ui.includes('data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"'),
+ 'The nine repeated category caveats no longer occupy a second block ahead of the ledger');
+assert.ok(ui.includes('OFFICIAL_12_CATEGORY_REFERENCE_LEGEND'),
+ 'The 3/7/2 public-source-scope guide stays discoverable');
+assert.ok(ui.includes('c2v32-coverage-legend'),
+ 'Full population and source explanation is one on-demand disclosure');
 assert.ok(ui.includes("chapter2OfficialPeerCoverageV1(x.category).userNotice"));
 assert.ok(ui.includes('PEER_SCOPE_CAVEAT_'));
 assert.ok(!ui.includes('peerReferenceFor(x.category)?.eligibleForReviewBuffer===true'),

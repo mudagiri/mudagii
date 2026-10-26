@@ -18,12 +18,15 @@ export default function CoverageAwarenessCard({rows,onConsultCoverage,pilotNoExt
     <p>{insight.text}</p>
    </div>
   </div>
-  <div className="c2v32-cover-reasons" aria-label="保障を確認する3つの理由">
-   <div><strong>医療の変化</strong><span>{noContractAssumed?'公的保障や勤務先の制度は、今の治療にどこまで対応する？':'通院・薬物療法など、今の治療に給付条件が合っている？'}</span></div>
-   <div><strong>暮らしの変化</strong><span>家族・仕事・収入が変わっても、必要な備えになっている？</span></div>
-   <div><strong>保険料・重複</strong><span>{noContractAssumed?'公的保障も含め、備えと費用を整理できている？':'保険料と保障内容のバランスや重複はない？'}</span></div>
-  </div>
-  <p className="c2v32-cover-caution">古い保険が無意味とは限らない。今の契約を解約・変更する前に、給付条件や継続する利点も確かめよう。</p>
+  <details className="c2v32-cover-summary-details" data-section="COVERAGE_REASONS_DETAILS">
+   <summary>保障を確かめる3つの理由を見る</summary>
+   <div className="c2v32-cover-reasons" aria-label="保障を確認する3つの理由">
+    <div><strong>医療の変化</strong><span>{noContractAssumed?'公的保障や勤務先の制度は、今の治療にどこまで対応する？':'通院・薬物療法など、今の治療に給付条件が合っている？'}</span></div>
+    <div><strong>暮らしの変化</strong><span>家族・仕事・収入が変わっても、必要な備えになっている？</span></div>
+    <div><strong>保険料・重複</strong><span>{noContractAssumed?'公的保障も含め、備えと費用を整理できている？':'保険料と保障内容のバランスや重複はない？'}</span></div>
+   </div>
+   <p className="c2v32-cover-caution">古い保険が無意味とは限らない。今の契約を解約・変更する前に、給付条件や継続する利点も確かめよう。</p>
+  </details>
   <div className="c2v32-cover-next"><span>まずはこれだけ ›</span><strong>{insight.next}</strong></div>
   {onConsultCoverage&&<div className="c2v32-cover-consult">
     <button type="button" className="c2v32-cover-consult-button" onClick={()=>pilotNoExternalActions?setPilotFeedback(true):onConsultCoverage()} data-cta="COVERAGE_LINE_CONSULT">

@@ -615,4 +615,304 @@ export const V32READABILITYCSS = `
 @media(max-width:350px){
  .c2v32-rpg .c2v32-peer-3way{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Four-lens disclosure audit: show the official source applicability once.
+   Do NOT imply seven related categories have directly comparable averages. */
+.c2v32-rpg .c2v32-coverage-legend{
+ display:grid;gap:5px;margin:12px 0 3px;padding:11px 12px;
+ background:#eef5eb;color:#1d4239;border:1.5px solid #a5bca9;
+ border-radius:10px;
+}
+.c2v32-rpg .c2v32-coverage-legend>strong{
+ font-size:15px;line-height:1.5;font-weight:950;color:#153d34;
+}
+.c2v32-rpg .c2v32-coverage-legend>span{
+ display:block;font-size:13px;line-height:1.6;font-weight:750;
+ color:#29483f;padding-left:10px;border-left:3px solid #a2b3a8;
+ overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-coverage-legend>small{
+ display:block;font-size:12px!important;line-height:1.65!important;
+ color:#385349!important;margin-top:4px;
+}
+/* High-income reference had seven long OPEN related-fee cards by default.
+   Make high/middle/single equally concise and keep a real public source
+   number visible without falsely calling it the diagnosis-category mean. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary{
+ display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:3px;
+ min-height:52px;padding:8px 4px;
+ color:#164d3f!important;font-size:13px!important;line-height:1.55!important;
+ font-weight:850!important;cursor:pointer;touch-action:manipulation;
+ overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary b{
+ color:#12493c!important;font-size:clamp(14px,4vw,16px)!important;
+ font-weight:950!important;font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary small{
+ color:#38584d!important;font-size:12px!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-related-open-hint{
+ margin-left:auto;white-space:nowrap;color:#23604d!important;
+ font-size:12px!important;font-weight:950!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income[open] .c2v32-related-open-hint{opacity:.8}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary:focus-visible{
+ outline:3px solid #146b5b;outline-offset:2px;border-radius:6px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-related-public-detail:not([open]){
+ padding-top:0;padding-bottom:0;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-coverage-legend{padding:9px 8px}
+ .c2v32-rpg .c2v22-comparison-ledger .c2v32-worker-rate-card--age-income>summary{
+  font-size:12px!important;line-height:1.5!important;
+ }
+}
+
+/* V3.2 lean result: one 3/7/2 legend, clear conditions, optional source detail. */
+.c2v32-rpg .c2v32-peer-guide--compact{padding:9px 11px;margin:8px 0 10px;border-width:1px}
+.c2v32-rpg .c2v32-peer-guide--compact>strong{font-size:15px;line-height:1.5}
+.c2v32-rpg .c2v32-peer-guide--compact>p{
+ font-size:13px!important;line-height:1.55!important;margin:5px 0!important;
+}
+.c2v32-rpg .c2v32-peer-guide--compact>p b{color:#fff0c0;font-weight:850}
+.c2v32-rpg .c2v32-peer-guide .c2v32-coverage-legend{
+ background:transparent;color:#e4f4ef;border:0;border-top:1px solid #647e74;
+ padding:2px 0 0;margin:7px 0 0;border-radius:0;display:block;
+}
+.c2v32-rpg .c2v32-coverage-legend>summary{
+ cursor:pointer;display:flex;align-items:center;min-height:44px;font-size:13px;
+ color:#ffdf99!important;font-weight:850;line-height:1.55;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-coverage-legend>summary:focus-visible{outline:3px solid #a3ebda;outline-offset:2px}
+.c2v32-rpg .c2v32-coverage-legend>p,
+.c2v32-rpg .c2v32-coverage-legend>small{
+ color:#e1ebe7!important;font-size:13px!important;line-height:1.65!important;
+ padding:0;margin:6px 0!important;
+}
+.c2v32-rpg .c2v32-peer-condition-caption{display:block;color:#d2e7e2!important;font-size:12px!important;margin-top:3px}
+.c2v32-rpg .c2v32-income-food-single-optin .c2v32-edit-note{font-size:12px!important;line-height:1.55!important}
+.c2v32-rpg .c2v32-income-burden--compact{padding:9px 10px!important;margin:8px 0!important}
+.c2v32-rpg .c2v32-income-burden--compact .c2v32-income-burden-head{gap:4px}
+.c2v32-rpg .c2v32-income-burden--compact>p{
+ font-size:12px!important;line-height:1.6!important;margin:5px 0!important;
+}
+.c2v32-rpg .c2v32-peer-age-confirm{margin:6px 0!important;padding:8px 10px!important}
+.c2v32-rpg .c2v32-peer-age-confirm>label{min-height:44px!important;gap:9px!important}
+.c2v32-rpg .c2v32-peer-age-confirm>p{font-size:12px!important;margin:1px 0 0!important}
+.c2v32-rpg .c2v32-peer-gap-card--three-way{padding:10px 9px;margin:5px 0 7px}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-gap-heading{
+ margin-bottom:6px!important;font-size:14px!important;
+}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-own-amount{
+ padding:5px 8px!important;margin:0 0 6px!important;font-size:13px!important;
+}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-3way{
+ gap:5px;margin-bottom:6px;
+}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-metric{
+ padding:7px 7px;gap:2px;
+}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-metric>span{font-size:12px!important}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-metric>strong{font-size:clamp(17px,4.8vw,22px)!important}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-metric--difference{
+ display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:3px 8px;
+ padding:7px 9px;
+}
+.c2v32-rpg .c2v32-peer-gap-card--three-way .c2v32-peer-metric--difference>small{
+ flex:0 0 100%;margin:0;font-size:12px!important;line-height:1.5;
+}
+.c2v32-rpg .c2v32-peer-gap-method{border-top:1px solid #cad4cb;margin-top:8px}
+.c2v32-rpg .c2v32-peer-gap-method>summary{
+ min-height:44px;display:flex;align-items:center;cursor:pointer;
+ color:#255a4f!important;font-size:13px!important;font-weight:850!important;line-height:1.5!important;
+}
+.c2v32-rpg .c2v32-peer-gap-method>summary:focus-visible{outline:3px solid #27806d;outline-offset:2px}
+.c2v32-rpg .c2v32-peer-gap-method .c2v32-peer-gap-translation{
+ display:grid;gap:4px;background:#f2eee0;border-radius:8px;
+ padding:9px;color:#264f44!important;font-size:13px!important;
+}
+.c2v32-rpg .c2v32-peer-gap-method .c2v32-peer-gap-translation b{
+ color:#274e42;font-size:clamp(18px,5vw,22px);
+}
+.c2v32-rpg .c2v32-peer-gap-method .c2v32-peer-gap-disclaimer{
+ color:#3d554d!important;font-size:13px!important;line-height:1.7!important;
+}
+.c2v32-rpg .c2v32-candidate-method,
+.c2v32-rpg .c2v32-future-method,
+.c2v32-rpg .c2v32-cover-summary-details{
+ margin:6px 0;border-top:1px solid rgba(178,161,116,.45);padding-top:2px;
+}
+.c2v32-rpg .c2v32-candidate-method>summary,
+.c2v32-rpg .c2v32-future-method>summary,
+.c2v32-rpg .c2v32-cover-summary-details>summary{
+ display:flex;min-height:44px;align-items:center;cursor:pointer;
+ color:#f0d797;font-size:13px;line-height:1.6;font-weight:900;
+}
+.c2v32-rpg .c2v32-cover-summary-details>summary{color:#c0e9de}
+.c2v32-rpg .c2v32-candidate-method>summary:focus-visible,
+.c2v32-rpg .c2v32-future-method>summary:focus-visible,
+.c2v32-rpg .c2v32-cover-summary-details>summary:focus-visible{
+ outline:3px solid #a0e3d5;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-candidate-method .c2v32-breakdown-basis,
+.c2v32-rpg .c2v32-candidate-method .c2v32-breakdown-reason{
+ font-size:13px!important;line-height:1.65!important;
+}
+.c2v32-rpg .c2v32-candidate-method>small{display:block;color:#dfe7e1!important;font-size:12px!important}
+.c2v32-rpg .c2v32-future-method .c2v3-future-footnote{margin-top:4px!important}
+.c2v32-rpg .c2v32-cover-summary-details .c2v32-cover-caution{font-size:13px!important;margin:5px 0!important}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-peer-guide--compact{padding:8px}
+ .c2v32-rpg .c2v32-peer-gap-card--three-way{padding:8px 6px}
+}
+
+/* Category progressive disclosure: four relevant cards first, eight on demand.
+   Preserve all twelve data rows in DOM but use the browser's hidden semantics. */
+.c2v32-rpg .c2v32-comparison-preview-note{
+ margin:9px 0 8px!important;font-size:13px!important;line-height:1.6!important;
+ color:#f6e8be!important;font-weight:850;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v22-comparison-row[hidden]{
+ display:none!important;
+}
+.c2v32-rpg .c2v32-expand-rest{
+ display:flex;align-items:center;justify-content:center;
+ width:100%;min-height:52px;margin:12px 0;padding:10px 11px;
+ border:1.5px solid #caa66b;border-radius:10px;
+ background:linear-gradient(125deg,#164941,#20434b);color:#fff2bd;
+ font-size:15px;font-weight:950;line-height:1.5;cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-expand-rest:focus-visible{outline:3px solid #0e968e;outline-offset:2px}
+
+/* Compact 12-category battleboard near treasure: the full picture is visible
+   before the long evidence cards; every status is from frozen V5, no new amounts. */
+.c2v32-rpg .c2v32-battleboard{
+ margin:12px 0 4px;padding:11px 10px 10px;
+ border:1.5px solid #d4bd7d;border-radius:12px;
+ background:linear-gradient(145deg,rgba(10,48,52,.98),rgba(17,42,51,.98));
+ color:#fff3d2;
+}
+.c2v32-rpg .c2v32-battleboard>strong{
+ display:block;font-size:17px;line-height:1.45;
+ color:#ffedbc;font-weight:950;margin:0 0 4px;
+}
+.c2v32-rpg .c2v32-battleboard>p{
+ font-size:13px!important;line-height:1.55!important;
+ color:#e9efdf!important;margin:0 0 10px!important;
+}
+.c2v32-rpg .c2v32-battleboard-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
+}
+.c2v32-rpg .c2v32-battleboard-item{
+ display:grid;align-content:center;min-width:0;min-height:56px;
+ padding:7px 8px;border-radius:8px;border:1px solid #738f85;
+ background:#eff2e8;color:#203b39;text-align:left;
+ cursor:pointer;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-battleboard-item strong{
+ font-size:13px!important;line-height:1.35;color:#1e4140;
+ font-weight:950;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v32-battleboard-item small{
+ display:block;font-size:12px!important;line-height:1.45!important;
+ font-weight:800;color:#466050;
+}
+.c2v32-rpg .c2v32-battleboard-item:focus-visible{
+ outline:3px solid #ffe6a2;outline-offset:2px;
+}
+.c2v32-rpg .c2v32-battleboard>small{
+ display:block;color:#e7eddc!important;font-size:12px!important;
+ line-height:1.65!important;margin:8px 1px 0;
+}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-battleboard-grid{gap:5px}
+ .c2v32-rpg .c2v32-battleboard-item{padding:6px 5px;min-height:55px}
+ .c2v32-rpg .c2v32-battleboard-item strong{font-size:12px!important}
+}
+
+/* The single atlas is now ONE compact list of all twelve categories,
+   positioned directly after the actionable treasure. Detailed methodology
+   is per-category opt-in instead of hiding eight categories altogether. */
+.c2v32-rpg .c2v32-category-accordion{
+ display:block;margin:7px 0;border:1.5px solid #aec4b9;
+ border-radius:12px;padding:0 9px 7px;background:#f5f7ed;
+ overflow:visible;
+}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary{
+ display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;
+ min-height:62px;cursor:pointer;padding:8px 2px 3px;
+ list-style:none;touch-action:manipulation;
+}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary::-webkit-details-marker{display:none}
+.c2v32-rpg .c2v32-category-accordion>.c2v32-category-summary:focus-visible{
+ outline:3px solid #197765;outline-offset:3px;border-radius:8px;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-enemy{
+ width:45px!important;height:45px!important;max-width:45px!important;min-width:45px!important;
+ object-fit:contain;flex:0 0 45px;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity{flex:1 1 130px;min-width:98px}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity>strong{
+ font-size:16px!important;line-height:1.45!important;color:#193e36!important;
+}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-identity>small{font-size:12px!important}
+.c2v32-rpg .c2v32-category-summary .c2v23-comparison-status{
+ font-size:12px!important;flex:0 0 auto;
+}
+.c2v32-rpg .c2v32-category-quick-metrics{
+ order:5;flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;
+ gap:4px 11px;margin:0 0 2px 53px;
+}
+.c2v32-rpg .c2v32-category-quick-metrics>span{
+ color:#36534a!important;font-size:12px!important;line-height:1.5;font-weight:800;
+}
+.c2v32-rpg .c2v32-category-quick-own{
+ color:#153c34!important;font-size:16px!important;font-weight:950!important;
+ font-variant-numeric:tabular-nums;
+}
+.c2v32-rpg .c2v32-category-quick-metrics>.c2v32-category-quick-peer{
+ color:#176452!important;font-size:12px!important;font-weight:900!important;
+}
+.c2v32-rpg .c2v32-category-quick-candidate{
+ flex:1 1 100%;color:#6c480a;font-size:12px!important;font-weight:950;
+}
+.c2v32-rpg .c2v32-category-arrow{
+ order:4;flex:0 0 16px;margin-left:auto;color:#234d43;
+ font-size:17px!important;line-height:1;transition:transform .18s ease;
+}
+.c2v32-rpg .c2v32-category-accordion[open]>.c2v32-category-summary{
+ border-bottom:1px solid #bed0c0;padding-bottom:10px;margin-bottom:8px;
+}
+.c2v32-rpg .c2v32-category-accordion[open]>.c2v32-category-summary .c2v32-category-arrow{
+ transform:rotate(180deg);
+}
+.c2v32-rpg .c2v32-reference-signals{
+ background:#153b40;border:1.5px solid #bba46e;border-radius:12px;
+ padding:12px;margin:8px 0;color:#f4f1e2;
+}
+.c2v32-rpg .c2v32-reference-signals>strong{display:block;color:#ffdfa2;font-size:15px;font-weight:900}
+.c2v32-rpg .c2v32-reference-signals>p{color:#e8f1ec;font-size:13px!important;line-height:1.65!important;margin:7px 0!important}
+.c2v32-rpg .c2v32-reference-signals details{
+ border-top:1px solid #637f78;padding:3px 0;margin:5px 0;
+}
+.c2v32-rpg .c2v32-reference-signals summary{
+ display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:4px;
+ min-height:44px;cursor:pointer;font-size:13px!important;line-height:1.55!important;color:#fef0c2!important;
+}
+.c2v32-rpg .c2v32-reference-signals summary:focus-visible{outline:3px solid #c6eadf;outline-offset:2px}
+.c2v32-rpg .c2v32-reference-signals p,
+.c2v32-rpg .c2v32-reference-signals small{
+ color:#e6f0ee!important;font-size:13px!important;line-height:1.65!important;
+}
+.c2v32-rpg .c2v32-reference-signals small{display:block;font-size:12px!important}
+@media(max-width:350px){
+ .c2v32-rpg .c2v32-category-accordion{padding:0 5px 6px}
+ .c2v32-rpg .c2v32-category-quick-metrics{margin-left:48px;gap:3px 7px}
+ .c2v32-rpg .c2v32-category-summary .c2v23-comparison-enemy{width:40px!important;height:40px!important;min-width:40px!important;max-width:40px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .c2v32-rpg .c2v32-category-arrow{transition:none}
+}
 `;

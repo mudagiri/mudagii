@@ -1,12 +1,15 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {buildIncomeBurdenLensV1} from './income-burden-lens-v1';
 import {chapter2PeerGapV1} from './chapter2-official-peer-gap-v1';
+import type {SinglePeerGrossBand2024} from './mudagiri-profile-v4';
 import Chapter2PeerComparisonCard from './Chapter2PeerComparisonCard';
 import {CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1,chapter2OfficialPeerCoverageV1} from './chapter2-official-peer-category-coverage-v1';
+import {relatedOfficialExpenseItems2024} from './chapter2-official-related-2024-high-v1';
+import {relatedOfficial50manItems2024} from './chapter2-official-related-2024-middle-single-v1';
 import {twoReferenceLensV1} from './chapter2-two-reference-lens-v1';
 import {workerBurdenReferenceForProfileV1,type WorkerBurdenCategory} from './income-class-worker-burden-rate-v1';
 import {resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,ageBandForObserved2024V1,type JointBurdenExpense,type HighGrossBand2024V1} from './age-income-joint-burden-gate-v1';
-import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,SINGLE_INCOME_FOOD_OPTIONS,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
+import {resolveFoodIncomeReferenceForProfileV1,singleFoodReferenceForExplicitAnnualBracketV1,type SingleIncomeFoodOptionV1} from './income-class-food-reference-v1';
 import {energyIncomeReferenceForProfileV1,singleEnergyReferenceForExplicitAnnualBracketV1} from './income-class-energy-reference-v1';
 import {dailyIncomeReferenceForProfileV1,singleDailyReferenceForExplicitAnnualBracketV1} from './income-class-daily-reference-v1';
 import {ENEMY_ASSETS} from './enemy-assets-v1';
@@ -264,11 +267,17 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
 export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false,chapter3ConsultTopic=null,chapter3Error=''}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
- const [singleGrossBand,setSingleGrossBand]=useState<SingleIncomeFoodOptionV1|null>(
-  ['400_499','500_599','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
-   ?vm.profile.singlePeerGrossBand2024 as SingleIncomeFoodOptionV1:null);
+ const [expandedCategory,setExpandedCategory]=useState<string|null>(null);
+ const [singleGrossBand,setSingleGrossBand]=useState<SinglePeerGrossBand2024>(
+  ['under400','400_499','500_599','600_699','700_799','800_999','1000plus','600plus'].includes(String(vm?.profile?.singlePeerGrossBand2024))
+   ?vm.profile.singlePeerGrossBand2024 as SinglePeerGrossBand2024:null);
+ // Higher-income bands are collected faithfully, but unsupported verified
+ // single-person 2024 cells must NEVER be substituted with 600plus averages.
+ const singleSourceGrossBand:SingleIncomeFoodOptionV1|null=
+  singleGrossBand==='400_499'||singleGrossBand==='500_599'||singleGrossBand==='600plus'?singleGrossBand:null;
  const [multiHeadAgeConfirmed,setMultiHeadAgeConfirmed]=useState(false);
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
+ const [multiGrossOverride,setMultiGrossOverride]=useState<string|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
  const [goal,setGoal]=useState<string|null>(initialChapter3Goal);
  const [showLine,setShowLine]=useState(consultFromChapter3);
@@ -291,28 +300,31 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   return ()=>{mounted=false};
  },[chapter1?.jobCode]);
  const rows=Array.isArray(vm.rows)?vm.rows:[];
+ const multiCohort=vm.profile?.householdSize>1&&vm.profile?.diagnosisScope==='household';
+ // Never mutate the saved profile: result-only comparison lenses are display inputs.
+ const comparisonProfile=multiCohort&&multiGrossOverride!==null
+  ?{...vm.profile,annualIncomeBand:multiGrossOverride}:vm.profile;
  const incomeBurdenInput=buildIncomeBurdenLensV1(vm.profile,Array.isArray(vm.rows)?vm.rows:[]);
  const incomeBurden=incomeBurdenInput.available?incomeBurdenInput:null;
  // Official income-class view is separate from the frozen primary household-size
  // comparator. No synthetic income factor and never a savings estimate.
  const incomeFoodReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :resolveFoodIncomeReferenceForProfileV1(vm.profile);
+  ?(singleSourceGrossBand?singleFoodReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  :resolveFoodIncomeReferenceForProfileV1(comparisonProfile);
  const incomeEnergyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :energyIncomeReferenceForProfileV1(vm.profile);
+  ?(singleSourceGrossBand?singleEnergyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  :energyIncomeReferenceForProfileV1(comparisonProfile);
  const incomeDailyReference=vm.profile?.householdSize===1
-  ?(singleGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleGrossBand):null)
-  :dailyIncomeReferenceForProfileV1(vm.profile);
- const workerBurdenReference=workerBurdenReferenceForProfileV1(vm.profile,singleGrossBand);
+  ?(singleSourceGrossBand?singleDailyReferenceForExplicitAnnualBracketV1(singleSourceGrossBand):null)
+  :dailyIncomeReferenceForProfileV1(comparisonProfile);
+ const workerBurdenReference=workerBurdenReferenceForProfileV1(comparisonProfile,singleSourceGrossBand);
  const scopedWorkerCategory=(category:string)=>
   workerBurdenReference.available&&['food','energy','daily'].includes(category)
    ?workerBurdenReference.categories[category as WorkerBurdenCategory]??null:null;
  // Official age×gross-income comparison is age-of-HOUSEHOLD-HEAD for
  // multi-person households. The respondent must opt in only if their age
  // equals head's age; do not infer employment status or potential savings.
- const multiCohort=vm.profile?.householdSize>1&&vm.profile?.diagnosisScope==='household';
- const multiGrossBand=multiCohort?vm.profile?.annualIncomeBand??null:null;
+ const multiGrossBand=multiCohort?comparisonProfile?.annualIncomeBand??null:null;
  const rawProfileAge=typeof vm.profile?.age==='number'?vm.profile.age:null;
  const householdAnnualBandLabel=multiCohort&&multiGrossBand==='1000plus'
   ?({'1000_1249':'1,000～1,249万円','1250_1499':'1,250～1,499万円',
@@ -322,6 +334,24 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    '700_799':'700～799万円','800_999':'800～999万円',
   } as Record<string,string>)[String(multiGrossBand)]??null
    :singleGrossBand==='400_499'?'400～499万円':singleGrossBand==='500_599'?'500～599万円':null;
+ // The summary reflects the entry profile (plus explicit result-only edits).
+ // No displayed condition affects CONFIRMED savings, official source values,
+ // persistent profile data, LINE, GAS, or the FROZEN scoring engine.
+ const resultGrossLabel=multiCohort
+  ?householdAnnualBandLabel??(multiGrossBand==='under500'?'500万円未満':'年収帯は未回答')
+  :vm.profile?.householdSize===1
+   ?singleGrossBand==='under400'?'400万円未満'
+    :singleGrossBand==='400_499'?'400～499万円'
+    :singleGrossBand==='500_599'?'500～599万円'
+    :singleGrossBand==='600_699'?'600～699万円'
+    :singleGrossBand==='700_799'?'700～799万円'
+    :singleGrossBand==='800_999'?'800～999万円'
+    :singleGrossBand==='1000plus'?'1,000万円以上'
+    :singleGrossBand==='600plus'?'600万円以上（旧回答）'
+    :'年収帯は未回答'
+   :'個人負担のみ（世帯年収との同条件比較は対象外）';
+ const resultHouseholdLabel=multiCohort?'二人以上の世帯全体'
+  :vm.profile?.householdSize===1?'単身世帯':'個人の支出';
  const highPeerFor=(expense:JointBurdenExpense,headAgeConfirmed:boolean,headWorkerConfirmed:boolean)=>
   resolve2024HighMultiWorkerPeerBurdenV1(rawProfileAge,multiHighGrossBand,expense,headAgeConfirmed,headWorkerConfirmed);
  const highIncomePublishedReference=multiCohort&&multiGrossBand==='1000plus'&&multiHighGrossBand
@@ -331,13 +361,13 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    ?highIncomePublishedReference?.available===true
    :resolve2024MultiWorkerPeerBurdenV1(rawProfileAge,multiGrossBand,'food',true).available);
  const singleHasAvailablePeerSource=vm.profile?.householdSize===1&&
-  resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleGrossBand,'food').available;
+  resolve2024SingleWorkerPeerBurdenV1(rawProfileAge,singleSourceGrossBand,'food').available;
  const peerRateFor=(expense:JointBurdenExpense)=>multiCohort&&multiGrossBand==='1000plus'
   ?highPeerFor(expense,multiHeadAgeConfirmed,headWorkerConfirmed)
   :resolve2024DeclaredWorkerPeerV1({
    household:multiCohort?'multi':'single',
    age:multiCohort?rawProfileAge:vm.profile?.householdSize===1?rawProfileAge:null,
-   grossBand:multiCohort?multiGrossBand:singleGrossBand,
+   grossBand:multiCohort?multiGrossBand:singleSourceGrossBand,
    expense,headAgeConfirmed:!multiCohort||multiHeadAgeConfirmed,
    headWorkerConfirmed,
   });
@@ -347,6 +377,23 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const peerReferenceFor=(category:string)=>category==='food'||category==='energy'||category==='daily'
   ?jointPeerReferenceByCategory[category]:null;
  const anyJointRateAvailable=Object.values(jointPeerReferenceByCategory).some(x=>x.available);
+ // Seven extra official public fee groups, ONLY same original joint cell.
+ // These are related items, not diagnosis-category benchmark/confirmed savings.
+ const relatedOriginal2024=multiCohort&&multiGrossBand==='1000plus'
+  ?relatedOfficialExpenseItems2024({
+     household:'multi',headAge:rawProfileAge,gross:multiHighGrossBand,
+     headAgeConfirmed:multiHeadAgeConfirmed,headWorkerConfirmed,
+    }):null;
+ const relatedOriginal50man2024=multiCohort&&multiGrossBand!=='1000plus'
+  ?relatedOfficial50manItems2024({
+     household:'multi',headAge:rawProfileAge,grossBand:multiGrossBand,
+     headAgeConfirmed:multiHeadAgeConfirmed,headWorkerConfirmed,
+    })
+  :vm.profile?.householdSize===1
+   ?relatedOfficial50manItems2024({
+      household:'single',headAge:rawProfileAge,grossBand:singleSourceGrossBand,
+      headAgeConfirmed:true,headWorkerConfirmed,
+     }):null;
  // Verified peer statistics are a separate comparison, NOT a verified monthly
  // savings opportunity (worker status and identical expense mix not confirmed).
  const independentReferenceClues:{category:string;label:string;gap:number;method:'verified_age_income'}[]=[];
@@ -365,7 +412,46 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const filtered=rows.filter((x:any)=>x&&x.category);
  const highlighted=filtered.filter((x:any)=>['cut','optimize','inspect'].includes(x.v5Status));
  const featured=(highlighted.length?highlighted:filtered).slice(0,3);
+
  const shown=filtered;
+ // Presentation-only prioritization: confirmed diagnostic statuses and
+ // source/upper candidate values remain completely unchanged.
+ const visualPriority=(x:any)=>{
+  const statusPoints=({cut:6000,optimize:5000,inspect:4000,protect:3000,ok:2000,na:0} as Record<string,number>)[x.v5Status]??1000;
+  return (nonnegative(x.cUpper)>0?100000+nonnegative(x.cUpper):0)+statusPoints+
+   (x.known===true?200:0)+(['food','energy','daily'].includes(x.category)?100:0);
+ };
+ const rankedShown=[...shown].sort((a:any,b:any)=>visualPriority(b)-visualPriority(a));
+ // Additional CHECK signals only. These are national public-cohort percentage
+ // point differences, not a second budget or saving pool. Never sum with cUpper.
+ // Each category must pass the same official 2024 population and amount scope
+ // gates as its detailed three-way card.
+ const peerReviewSignals=rankedShown.flatMap((x:any)=>{
+  if(x.category!=='food'&&x.category!=='energy'&&x.category!=='daily')return [];
+  const source=peerReferenceFor(x.category);
+  const expense=incomeBurden?.categories?.find((v:any)=>v.category===x.category);
+  const actual=expense?.monthlyAmount??null;
+  const comparable=comparisonAvailable(x);
+  const target=comparable?comparisonTargetAmount(x):null;
+  const sameScope=actual!==null&&x.known===true&&
+   Number.isFinite(Number(x.amount))&&Math.abs(Number(actual)-Number(x.amount))<1&&
+   (!comparable||target!==null&&Math.abs(Number(target)-Number(x.amount))<1);
+  const comparison=chapter2PeerGapV1({
+   ownMonthlyExpenseYen:sameScope?Number(actual):null,
+   ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null,
+   peerPctLow:source?.available?source.ratePctLow:null,
+   peerPctHigh:source?.available?source.ratePctHigh:null,
+   sameExpenseScopeConfirmed:sameScope,sourceVerified:source?.available===true,
+  });
+  if(!comparison.available||comparison.gapPointsLow<=0)return [];
+  return [{
+   category:x.category,label:x.label||x.category,
+   ownPct:comparison.ownPct,peerPctLow:comparison.peerPctLow,peerPctHigh:comparison.peerPctHigh,
+   gapPointsLow:comparison.gapPointsLow,gapPointsHigh:comparison.gapPointsHigh,
+   gapYenLow:comparison.gapYenLow,gapYenHigh:comparison.gapYenHigh,
+   overlapsCurrentCandidate:nonnegative(x.cUpper)>0,
+  }];
+ });
  // This optional lineage was validated against the anonymousUserId when it
  // was written by the diagnosis journey. Do not infer STYLE from spending.
  const verifiedChapter1Style=validatedChapter1LinkageV1(vm?.chapter1Link)?.chapter1StyleCode??null;
@@ -580,7 +666,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    {reviewUpper>0?<button type="button" className="c2v2-scroll-cue c2v31-scroll-cue c2v32-reward-jump c2v21-evidence-jump" data-section="CANDIDATE_EVIDENCE_JUMP"
     onClick={()=>{onEvent?.('chapter2_v21_candidate_evidence_jump_clicked',{target:candidates.length?'candidate_breakdown':'treasure_report'});
      document.querySelector(candidates.length?'[data-section="CANDIDATE_BREAKDOWN"]':'[data-section="POTENTIAL_TREASURE"]')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}}>
-    {candidates.length?'✦ まず、見直し候補の理由を見る ↓':'✦ 見直し候補を確認する ↓'}
+    {candidates.length?'✦ まず、見直し候補と最初の一歩を見る ↓':'✦ 見直し候補を確認する ↓'}
    </button>:<span className="c2v2-scroll-cue c2v31-scroll-cue">▼ ギルドからの報告を読む</span>}
   </section>
   <nav className="c2v32-result-shortcuts" aria-label="結果画面の見たい場所へ移動" data-section="RESULT_SHORTCUTS">
@@ -588,7 +674,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
     <span aria-hidden="true">⚔</span>{candidates.length?'見直し候補':'宝箱'}
    </button>
    <button type="button" onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    <span aria-hidden="true">📖</span>同条件比較
+    <span aria-hidden="true">📖</span>12カテゴリ
    </button>
    <button type="button" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>
     <span aria-hidden="true">⚑</span>相談する
@@ -619,7 +705,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    </aside>}
    {candidates.length>0&&<section className="c2v32-candidate-breakdown" data-section="CANDIDATE_BREAKDOWN" aria-label="改善できるかもしれない金額の内訳">
     <div className="c2v32-breakdown-title"><span>⚔ 宝箱の中身はこれ！</span><small>まず最優先の1件から</small></div>
-    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} の内訳。<strong>まだ削減できると決まった金額ではないよ。</strong></p>
+    <p className="c2v32-breakdown-intro">月最大 {money(reviewUpper)} は、内容確認前の参考上限だよ。</p>
     <div className="c2v32-breakdown-entries">{candidates.slice(0,1).map((x:any)=>{
      const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
      return <div className="c2v32-breakdown-entry" data-candidate-category={x.category} key={x.category}>
@@ -628,11 +714,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <div className="c2v32-breakdown-name"><strong>{x.label||x.category}</strong><small>{enemy?.name||'見直し候補'}</small></div>
        <div className="c2v32-breakdown-amount"><strong>最大 {money(nonnegative(x.cUpper))}</strong><small>月額・未確定</small></div>
       </div>
-      {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
-       {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月 <small>（平均との差がそのまま削減額になるわけではありません）</small></>}
-      </p>}
-      <p className="c2v32-breakdown-reason"><b>候補になった理由：</b>{candidateReason(x)}</p>
-      <p className="c2v32-breakdown-action"><b>確かめること：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <p className="c2v32-breakdown-action"><b>まず確かめる：</b>{x.nextAction||'支出の内訳や契約を確認する'}</p>
+      <details className="c2v32-candidate-method" data-section="PRIMARY_CANDIDATE_REASON">
+       <summary>候補になった理由・比較目安を見る</summary>
+       {x.known===true&&Number.isFinite(Number(x.amount))&&Number(x.amount)>0&&<p className="c2v32-breakdown-basis"><b>今回の入力：</b>{money(Number(x.amount))}/月
+        {Number.isFinite(Number(x.comparable))&&Number(x.comparable)>0&&x.cMethod!=='mobile'&&<> ／ <b>比較の目安：</b>{money(Number(x.comparable))}/月</>}
+       </p>}
+       <p className="c2v32-breakdown-reason">{candidateReason(x)}</p>
+       <small>差額がそのまま削減額ではないよ。金額は内容の確認前の参考上限だよ。</small>
+      </details>
      </div>;
     })}
     {candidates.length>1&&<details className="c2v32-more-candidates" data-section="OTHER_CANDIDATE_SUMMARIES">
@@ -647,18 +737,372 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      })}</div>
     </details>}
     </div>
-    <p className="c2v32-breakdown-footnote">※すべて確認前の参考上限。平均・基準との差額をそのままムダ額・改善額にはしていません。12カテゴリの比較一覧で、比較目安と条件を確認できるよ。</p>
+    <small className="c2v32-breakdown-footnote">※平均との差をそのまま削減額にはしていません。</small>
    </section>}
-   {primaryCandidate&&<div className="c2v32-first-action c2v32-first-action--compact" data-section="FIRST_REVIEW_ACTION">
-    <span>⚔ 最初に確かめるなら：{primaryCandidate.label||primaryCandidate.category}</span>
-    <p>{primaryCandidate.nextAction||'契約や支出の内訳を確認しよう。'}</p>
-   </div>}
+   {/* All 12 categories now appear in the one consolidated atlas just below.
+        Do not duplicate them as a second battle-board navigation grid. */}
+   {/* The primary candidate card already contains the next action. */}
+  </section>
+
+  <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
+   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
+   <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
+   <p className="c2v22-ledger-intro">あなたの支出と比べ方を12カテゴリで確認。気になる敵だけ詳しく見よう。</p>
+   <div className="c2v32-peer-guide c2v32-peer-guide--compact" data-section="JOINT_PEER_COMPARISON_GUIDE">
+    <strong>同年代 × 世帯区分 × 額面年収帯で比べる</strong>
+    <p>参考データは3種類。<b>同じ公表区分の3費目</b>／<b>関連公表費目のみ7カテゴリ</b>／<b>単独の公表費目なし2カテゴリ</b>。差は削減額ではないよ。</p>
+    <details className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND">
+     <summary>どの統計と比較しているかを見る</summary>
+     <p>食費・光熱水道・日用品：年齢・単身／二人以上・額面年収帯が同時に公表された原表セルから、公式の関連費目支出率を表示。診断の支出範囲との完全一致は保証できません。</p>
+     <p>ほかの7カテゴリ：公表費目は似ているものの対象範囲が異なるため、「関連参考」に限ります。サブスク・自己投資は直接対応する単独の公表費目がありません。</p>
+     <p>世帯主年齢・勤労状況・標本数が一致した場合のみ同年代の参考率を表示。二人以上の人数や地域は完全一致ではありません。</p>
+     <small>出典：総務省「2024年全国家計構造調査」第1-29-1表。本人割合は支出÷月手取り、全国参考率は同じ公表セルの平均費目支出÷平均可処分所得。差額＝ムダ・削減額ではありません。</small>
+    </details>
+   </div>
+   <section className="c2v32-peer-condition-summary" data-section="PEER_COMPARISON_CONDITIONS_SUMMARY"
+    aria-label="入口から引き継いだ比較条件" style={{border:'1px solid #977644',borderRadius:12,
+     background:'rgba(19,45,53,.88)',padding:'12px 14px',margin:'12px 0'}}>
+    <span style={{display:'block',fontSize:12,color:'#f4d797',fontWeight:800,marginBottom:5}}>📋 今回の比較条件</span>
+    <strong data-section="PEER_CONDITION_CURRENT_LABEL"
+     style={{display:'block',fontSize:16,color:'#fff7e3',lineHeight:1.6,overflowWrap:'anywhere'}}>
+     {rawProfileAge===null?'年齢未入力':`${rawProfileAge}歳`} · {resultHouseholdLabel} · {resultGrossLabel}
+    </strong>
+    <small className="c2v32-peer-condition-caption">入口の回答を引き継いだよ。必要なら下から変更できる。</small>
+   </section>
+   {vm.profile?.householdSize===1&&<details className="c2v32-income-food-single-optin"
+    data-section="SINGLE_INCOME_CLASS_OPTIN" data-peer-condition-edit="single">
+    <summary>{singleGrossBand||vm.profile?.singlePeerGrossBand2024==='under400'
+      ?'比較条件を変更する（任意）':'比較条件に年収帯を追加する（任意）'}</summary>
+    <label htmlFor="c2v32-single-income">比較に使う額面年収帯を変更</label>
+    <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
+     const next=e.target.value;
+     setSingleGrossBand(['under400','400_499','500_599','600_699','700_799','800_999','1000plus','600plus'].includes(next)
+      ?next as SinglePeerGrossBand2024:null);
+    }}>
+     <option value="">選ばずに進む</option>
+     <option value="under400">400万円未満</option>
+     <option value="400_499">400～499万円</option>
+     <option value="500_599">500～599万円</option>
+     <option value="600_699">600～699万円</option>
+     <option value="700_799">700～799万円</option>
+     <option value="800_999">800～999万円</option>
+     <option value="1000plus">1,000万円以上</option>
+     {singleGrossBand==='600plus'&&<option value="600plus">600万円以上（旧回答）</option>}
+    </select>
+    <p className="c2v32-edit-note">この画面の比較値だけ変更。診断額・LINEは変わらないよ。</p>
+    {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
+      {singleHasAvailablePeerSource
+       ?headWorkerConfirmed
+        ?'同年代・単身・同額面年収帯の参考率を食費・光熱水道・日用品で表示中。'
+        :'この年代と年収帯には公表データがあるよ。世帯主の働き方を確認すると同条件の率を表示できるよ。'
+       :'この年代と年収帯は標本数などの条件を満たさないため、同条件の率を表示できません。年収帯だけの参考とは区別します。'}
+     </p>}
+   </details>}
+   {multiCohort&&<details className="c2v32-income-food-single-optin"
+     data-section="MULTI_PEER_CONDITION_EDIT" data-peer-condition-edit="multi">
+     <summary>{multiGrossBand==='1000plus'&&!multiHighGrossBand
+      ?'年収1,000万円以上を詳しく確認する（任意）'
+      :'比較条件を変更する（任意）'}</summary>
+     <label htmlFor="c2v32-multi-income">世帯全体の額面年収帯（入口の回答を引継ぎ）</label>
+     <select id="c2v32-multi-income" value={multiGrossBand??'unknown'} onChange={e=>{
+      setMultiGrossOverride(e.target.value);
+      setMultiHighGrossBand(null);
+     }}>
+      <option value="under500">500万円未満</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      <option value="unknown">わからない・答えたくない</option>
+     </select>
+     {multiGrossBand==='1000plus'&&<div data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"
+      data-peer-condition-edit="multi-high">
+     <label htmlFor="c2v32-multi-high-income">公式統計に合わせた詳細年収帯（任意）</label>
+     <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
+      onChange={e=>{
+       const v=e.target.value;
+       setMultiHighGrossBand(v==='1000_1249'||v==='1250_1499'||v==='1500plus'?v:null);
+      }}>
+      <option value="">選ばずに進む</option>
+      <option value="1000_1249">1,000～1,249万円</option>
+      <option value="1250_1499">1,250～1,499万円</option>
+      <option value="1500plus">1,500万円以上</option>
+     </select>
+     <p className="c2v32-edit-note">公表統計に合わせるための任意の細分化だよ。</p>
+     {multiHighGrossBand&&<p className="c2v32-high-income-match-status"
+       data-section="MULTI_HIGH_INCOME_MATCH_STATUS" role="status" aria-live="polite">
+      {highIncomePublishedReference?.available===true
+       ?multiHeadAgeConfirmed&&headWorkerConfirmed
+        ?'比較の準備ができたよ。下の食費・光熱水道・日用品で、同年代×同年収帯の参考率を確認できるよ。'
+        :'この年代と年収帯には、公表された参考データがあるよ。世帯主の年齢と働き方を確認すると、下の3カテゴリで比較できるよ。'
+       :'この年代と年収帯は、標本数が少ないなどの理由で比較に必要な条件を満たしていないよ。同年代の率は表示せず、下には年収帯だけの参考を残すよ。'}
+     </p>}
+     </div>}
+     <p className="c2v32-edit-note">比較表示のみ変更。確定改善額・未確定上限はそのまま。</p>
+    </details>}
+   {/* Nine detailed category source disclaimers are already available inside the
+        relevant category cards. Don't repeat them before the results. */}
+   {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
+    <div className="c2v32-income-burden-head"><span>今回入力した家計の支出</span><strong>月 {money(incomeBurden.knownMonthlyExpenses)} ／ 手取りの {incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</strong></div>
+    <p>月手取り {money(Number(incomeBurden.monthlyTakeHome))}。入力した{incomeBurden.knownCategoryCount}カテゴリ分の割合だよ。</p>
+    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
+   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
+   {vm.profile?.householdSize===1&&singleGrossBand&&!singleHasAvailablePeerSource&&
+    <p className="c2v32-income-burden-unavailable" data-section="PROFILE_GROSS_ANNUAL_UNSUPPORTED">
+     年収帯「{resultGrossLabel}」は受け取ったよ。ただし現在の検証済み2024年公表セルでは、この年収帯・同年代・単身の条件を満たす参考率を確認できないため、推計で埋めないよ。入口で年収を答え直す必要はありません。
+    </p>}
+   {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
+    <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
+     <label htmlFor="c2v32-head-age-confirm">
+      <input id="c2v32-head-age-confirm" type="checkbox" checked={multiHeadAgeConfirmed}
+       onChange={e=>setMultiHeadAgeConfirmed(e.target.checked)}/>
+      <span><strong>入力した{rawProfileAge}歳は、世帯主の年齢です</strong>
+       <small>一致する場合のみチェック（同年代×同年収の参考を表示する）</small></span>
+     </label>
+     <p>別の家族の年齢ならチェックしなくてOK。</p>
+    </div>}
+   {(multiHasAvailablePeerSource||singleHasAvailablePeerSource)&&
+    <div className="c2v32-peer-age-confirm" data-section="PEER_WORKER_STATUS_CONFIRM">
+     <label htmlFor="c2v32-worker-status-confirm">
+      <input id="c2v32-worker-status-confirm" type="checkbox" checked={headWorkerConfirmed}
+       onChange={e=>setHeadWorkerConfirmed(e.target.checked)}/>
+      <span><strong>世帯主は会社員・公務員など、給与を受け取る立場です</strong>
+       <small>当てはまる場合のみチェック（勤労者世帯の参考率を表示する）</small></span>
+     </label>
+     <p>自営業・無職・不明ならチェック不要。回答は比較画面内だけに使うよ。</p>
+    </div>}
+   {peerReviewSignals.length>0&&<section className="c2v32-reference-signals" data-section="PEER_REVIEW_SIGNALS">
+    <strong>🔎 比較から見つかった追加の確認ポイント</strong>
+    <p>統計と比べて負担割合が高い項目が{peerReviewSignals.length}件。<b>差がある＝減らせる、ではない</b>けど、内訳を見直す手がかりになるよ。</p>
+    <div>{peerReviewSignals.map(x=><details key={x.category} data-peer-review-signal={x.category}>
+     <summary><b>{x.label}</b><span>あなた {x.ownPct.toFixed(1)}% ／ 全国参考 {x.peerPctLow.toFixed(1)}{x.peerPctLow===x.peerPctHigh?'':'～'+x.peerPctHigh.toFixed(1)}%</span></summary>
+     <p>参考との差：＋{x.gapPointsLow.toFixed(1)}{x.gapPointsLow===x.gapPointsHigh?'':'～'+x.gapPointsHigh.toFixed(1)}pt</p>
+     <p>本人の月手取りに置き換えた参考差：{money(x.gapYenLow)}{x.gapYenLow===x.gapYenHigh?'':'～'+money(x.gapYenHigh)}／月。</p>
+     <small>参考差であり、節約の見込額・別枠の改善上限ではありません。
+      {x.overlapsCurrentCandidate?' 既存の見直し候補と重なるため、合算しないよ。':' 未確定の見直し候補に自動加算しません。'}
+      全国の2024年同一交差集計を利用。地域・世帯人数や用途の完全一致は未確認です。</small>
+    </details>)}</div>
+   </section>}
+   {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
+    <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
+     <summary>{anyJointRateAvailable?'比較の仕組み・統計の対象を見る（任意）':'年収帯だけの参考について（年齢・地域は未反映）'}</summary>
+     <span className="c2v2-kicker">比較基準の説明</span>
+     <h3>年齢・世帯の目安と、年収帯の参考を一緒に見る</h3>
+     <p>{anyJointRateAvailable
+   ?<>プロフィールと同じ年代・年収帯を照合した<strong>2024年の公式交差集計を優先</strong>して、食費・光熱費・日用品に表示しています。本人の手取り割合も横に並べたよ。</>
+   :<>年収 {incomeFoodReference.profileBandLabel}の全国参考を下のカテゴリ別カードで見られるよ。年齢を同時に照合できない場合は、その違いを明記しています。</>}</p>
+     <p className="c2v32-income-food-note">{anyJointRateAvailable
+   ?'※2024年の年齢×年収の交差集計は、2025年の年収帯のみの参考値とは別の統計です。両者を混ぜて平均を作りません。参考差をムダ額・削減額・見直し候補額に加えない。'
+   :'※年齢・世帯の目安と2025年の年収帯参考は別々の統計で、両方を満たす世帯の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。'}</p>
+     <p className="c2v32-income-scope-warning">{incomeFoodReference.scopeWarning}</p>
+     <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
+     <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同年代×同年収帯の平均負担率：</b>{anyJointRateAvailable
+     ?<>総務省「2024年全国家計構造調査」第1-29-1表から、年齢・世帯年収を同時集計した<strong>全国の勤労者{multiCohort?'二人以上':'単身'}世帯</strong>の参考率を表示。世帯主が勤労者世帯に当てはまると確認した場合だけ表示します。各世帯の負担率の平均でも削減可能額でもありません。</>
+     :multiCohort&&!multiHeadAgeConfirmed&&multiHasAvailablePeerSource
+      ?<>入力した年齢が世帯主の年齢なら、上のチェックから参考率を確認できるよ。確認なしに「同世代の平均」は表示しません。</>
+     :!headWorkerConfirmed&&(multiHasAvailablePeerSource||singleHasAvailablePeerSource)
+      ?<>原表は勤労者世帯の統計だよ。世帯主の働き方が一致するときだけ、上のチェックから同年代×同年収帯の参考率を表示できます。</>
+      :<>2024年の公式交差集計で、プロフィールに対応する十分な標本数・年収区分を確認できていません。所得帯だけの2025年参考率を同年代の平均として代用しません。</>}</p>
+     <details className="c2v32-income-food-sources">
+      <summary>使っている統計と対象範囲</summary>
+      <p>出典：総務省「家計調査」（{incomeFoodReference.source?.year}年）、{incomeFoodReference.source?.table}。全国・{incomeFoodReference.source?.population}。食費は「食料」、光熱費は「光熱・水道」、日用品は「家事雑貨（4.4）＋家事用消耗品（4.5）」から作成。</p>
+      <p>{incomeFoodReference.scopeWarning} 年収帯の幅が広い場合の範囲は、異なる公表所得階級の平均支出の最小～最大であり、個人差の分布幅ではありません。</p>
+      <p>食費：対象の年収階級 {incomeFoodReference.incomeBandLabels.join('、')}（{incomeFoodReference.matchedIncomeCells}区分・最小集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯）。年額を12で割り円単位に丸めています。</p>
+      {incomeEnergyReference&&<p>光熱費：対象の年収階級 {incomeEnergyReference.coveredPublishedBrackets.join('、')}（{incomeEnergyReference.matchedCells}区分・最小集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯）。</p>}
+      {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
+     </details>
+    </details>}
+   <p className="c2v32-comparison-preview-note" data-section="CATEGORY_ALL_VISIBLE_NOTE">
+    全{rankedShown.length}カテゴリの結果を優先順に表示。気になる敵をタップすると、数値の根拠と次の一歩を確認できるよ。
+   </p>
+   {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
+    {rankedShown.map((x:any,index:number)=>{
+     const status=STATUS[x.v5Status]??STATUS.review;
+     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
+     const comparable=comparisonAvailable(x);
+     const referenceAmount=comparisonReferenceAmount(x);
+     const compareAmount=comparable?comparisonTargetAmount(x):null;
+     const noNumber=nonNumericBasis(x);
+     const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
+     // Income-class references remain independent of the primary comparable.
+     const incomeRange=x.category==='food'&&incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null
+      ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
+      :x.category==='energy'&&incomeEnergyReference
+       ?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
+       :x.category==='daily'&&incomeDailyReference
+        ?{low:incomeDailyReference.monthlyLowYen,high:incomeDailyReference.monthlyHighYen}
+        :null;
+     const burdenRow=incomeBurden?.categories?.find((a:any)=>a.category===x.category);
+     const ownScopeAmount=burdenRow?.monthlyAmount??null;
+     const sameScope=ownScopeAmount!==null&&Number.isFinite(Number(x?.amount))
+      &&x.known===true&&Math.abs(Number(ownScopeAmount)-Number(x.amount))<1
+      &&(!comparable||compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1);
+     const lens=twoReferenceLensV1({
+      currentAmountYen:x.known===true&&x.amount!==null&&Number.isFinite(Number(x.amount))?Number(x.amount):null,
+      primaryReferenceYen:comparable&&compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1?referenceAmount:null,
+      incomeReferenceLowYen:incomeRange?.low??null,incomeReferenceHighYen:incomeRange?.high??null,
+      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
+     });
+     const workerCategory=scopedWorkerCategory(x.category);
+     const sameAgeIncomePeer=peerReferenceFor(x.category);
+     const relatedPublicItems=relatedOriginal2024?.available
+      ?relatedOriginal2024.items.filter(item=>item.category===x.category):[];
+     const related50manItems=relatedOriginal50man2024?.available
+      ?relatedOriginal50man2024.items.filter(item=>item.category===x.category):[];
+     const peerUserShare=sameScope?lens.ownPct:null;
+
+     const peerGap=chapter2PeerGapV1({
+      ownMonthlyExpenseYen:sameScope?Number(ownScopeAmount):null,
+      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null,
+      peerPctLow:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctLow:null,
+      peerPctHigh:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctHigh:null,
+      sameExpenseScopeConfirmed:sameScope,
+      sourceVerified:sameAgeIncomePeer?.available===true,
+     });
+     const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
+     const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
+     const deltaDescription=(delta:number|null,what:string)=>delta===null?''
+      :delta>0?`${what}より月 ${money(delta)} 多め`
+      :delta<0?`${what}より月 ${money(-delta)} 少なめ`
+      :`${what}と同程度`;
+     return <React.Fragment key={x.category}>
+      <details className="c2v22-comparison-row c2v32-category-accordion"
+       open={expandedCategory===x.category}
+       data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
+
+      <summary className="c2v22-comparison-head c2v32-category-summary"
+       onClick={e=>{e.preventDefault();setExpandedCategory(expandedCategory===x.category?null:x.category);}}>
+       {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
+       <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
+       <div className="c2v32-category-quick-metrics">
+        <span className="c2v32-category-quick-own">{x.known&&Number.isFinite(Number(x.amount))?money(Number(x.amount))+'/月':'未入力'}</span>
+        {shareOfTakeHome!==null&&<span>手取りの {Number(shareOfTakeHome).toFixed(1)}%</span>}
+        {peerGap.available?<span className="c2v32-category-quick-peer">同年代の参考 {peerGap.peerPctLow.toFixed(1)}{peerGap.peerPctLow===peerGap.peerPctHigh?'':'～'+peerGap.peerPctHigh.toFixed(1)}%</span>:null}
+        {nonnegative(x.cUpper)>0&&<b className="c2v32-category-quick-candidate">見直し候補 最大{money(nonnegative(x.cUpper))}（未確定）</b>}
+       </div>
+       <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
+       <span className="c2v32-category-arrow" aria-hidden="true">▾</span>
+      </summary>
+      {peerGap.available
+       ?<Chapter2PeerComparisonCard category={x.category}
+         label={x.label||x.category} gap={peerGap}
+         ownMonthlyExpenseYen={Number(ownScopeAmount)}
+         householdLabel={multiCohort?'二人以上':'単身'}/>
+       :<>
+      <div className="c2v22-comparison-values c2v32-merged-values">
+       <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
+        {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
+       </span>
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{sameAgeIncomePeer?.available?'同年代×世帯区分×同年収帯の参考負担率':comparable?'属性別の支出目安（同条件の平均ではない）':'判定の手がかり'}</small>
+        <b>{sameAgeIncomePeer?.available
+          ?sameAgeIncomePeer.ratePctLow?.toFixed(1)+(sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1))+'%'
+          :comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
+        {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
+       </span>
+      </div>
+       </>}
+      {sameAgeIncomePeer?.available&&!peerGap.available&&<p className="c2v32-peer-scope-unmatched"
+       data-peer-3way-unavailable={x.category}>
+       同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
+      </p>}
+      {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
+       <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
+        <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
+       <small>年収帯だけの支出参考であり、同年代の平均負担率ではありません。</small>
+      </div>}
+      {sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-peer-evidence" data-age-income-worker-peer-category={x.category}>
+       <summary>この参考率の条件・出典を見る（2024年・全国）</summary>
+       <div className="c2v32-peer-evidence-body">
+        <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>。原表{sameAgeIncomePeer.usedCells}区分の値で、複数階級の参考幅は個々の世帯の分布幅ではありません。</p>
+        <p>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。同じセルの平均費目支出 ÷ 平均可処分所得。概数標本数50世帯以上のセルのみ採用。世帯主の就労形態は本人申告によるもの。</p>
+        <p data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</p>
+       </div>
+      </details>}
+      {relatedPublicItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-related-public-detail"
+       data-section={'OFFICIAL_RELATED_PEER_'+x.category} data-peer-related-rate-category={x.category}>
+       <summary>関連公表費目の参考（診断項目の平均ではない）：
+        <b>{relatedPublicItems[0].label} {relatedPublicItems[0].officialRelatedRatePct.toFixed(2)}%</b>
+        {relatedPublicItems.length>1&&<small>ほか{relatedPublicItems.length-1}費目</small>}
+        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
+       </summary>
+       <div className="c2v32-worker-rate-head"><span>全国・二人以上の勤労者世帯／2024年</span><strong>公表費目（診断の平均とは別）</strong></div>
+       <ul>{relatedPublicItems.map(item=><li key={item.code}>
+        <span>{item.label}：<b>{item.officialRelatedRatePct.toFixed(2)}%</b> （月 {money(item.averageMonthlyExpenseYen)}）</span>
+        <small>{item.scope}</small>
+       </li>)}</ul>
+       <small>原表の概数標本数 {relatedOriginal2024?.available?relatedOriginal2024.n:'—'}世帯。費目平均支出÷同一公表セルの平均可処分所得。本人との割合差・削減額・見直し候補額は計算しません。</small>
+      </details>}
+      {related50manItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
+       data-section={'OFFICIAL_RELATED_MIDDLE_SINGLE_'+x.category}
+       data-peer-related-range-category={x.category}>
+       <summary>関連公表費目の参考（診断項目の平均ではない）：
+        <b>{related50manItems[0].label} {related50manItems[0].ratePctLow.toFixed(2)}{related50manItems[0].ratePctLow===related50manItems[0].ratePctHigh?'':' ～ '+related50manItems[0].ratePctHigh.toFixed(2)}%</b>
+        {related50manItems.length>1&&<small>ほか{related50manItems.length-1}費目</small>}
+        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
+       </summary>
+       <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。診断カテゴリそのものの平均ではありません。</p>
+       <ul>{related50manItems.map(item=><li key={item.code}>
+        <span>{item.label}：<b>{item.ratePctLow.toFixed(2)}{item.ratePctLow===item.ratePctHigh?'':' ～ '+item.ratePctHigh.toFixed(2)}%</b>
+         （月 {money(item.monthlyMeanLowYen)}{item.monthlyMeanLowYen===item.monthlyMeanHighYen?'':' ～ '+money(item.monthlyMeanHighYen)}）</span>
+        <small>{item.scope}</small>
+       </li>)}</ul>
+       <small>同一交差表の50万円階級{relatedOriginal50man2024?.available?relatedOriginal50man2024.sourceRows:0}区分を個別確認（最小概数標本{relatedOriginal50man2024?.available?relatedOriginal50man2024.minCellSample:'—'}世帯）。各原表セルの参考率の最小～最大であり、個人の分布幅でも複数階級を合算した公式平均でもありません。本人との差額・削減額には反映しません。</small>
+      </details>}
+      {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
+       <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
+       <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
+       <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
+       <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
+      </details>}
+      {!sameAgeIncomePeer?.available&&(lens.primaryDeltaYen!==null||incomeRange&&lens.incomeDeltaYen!==null)&&
+       <details className="c2v32-auxiliary-comparisons" data-section={'OTHER_REFERENCE_'+x.category}>
+        <summary>ほかの比較目安を見る（同条件の平均ではありません）</summary>
+      {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
+      {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
+       <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
+      </p>}
+       </details>}
+      {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
+       <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
+       <button type="button" className="c2v32-evidence-toggle"
+        aria-expanded={comparisonEvidence===x.category}
+        aria-controls={'c2v32-evidence-'+x.category}
+        onClick={()=>{setComparisonEvidence(comparisonEvidence===x.category?null:x.category);
+         onEvent?.('chapter2_v32_comparison_evidence_toggled',{category:x.category});}}>
+        {comparisonEvidence===x.category?'出典を閉じる ↑':'出典と比較の注意点を見る ↓'}
+       </button>
+       <div id={'c2v32-evidence-'+x.category} hidden={comparisonEvidence!==x.category} className="c2v32-comparison-evidence">
+        {differs&&<p>別の基準による参考支出：{referenceAmount===null?'―':money(referenceAmount)}/月（{x.comparisonAmountLabel||'比較対象額'}）。同年代×世帯区分×年収帯の平均ではありません。</p>}
+        <p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
+        <p>比較の目安との差は、そのままムダ額・節約額ではありません。</p>
+        {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
+       </div>
+      </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
+
+      {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
+       <span>⚔ <b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b></span>
+       <small>まず確認：{x.nextAction||candidateReason(x)}</small>
+       <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
+      </div>}
+      </details>
+     </React.Fragment>;
+    })}
+   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
+   <p className="c2v22-ledger-footnote">※統計上の比較差は確定改善額・見直し候補上限に加えないよ。各項目の出典は開いて確認できるよ。</p>
+   <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
+   <details className="c2v32-optional-detail" data-optional="enemy-atlas">
+    <summary>敵キャラと詳しい説明を見る（任意）</summary>
+    <p>上の比較一覧が結果の基本だよ。ここからは12体のキャラと回答の理由を、好きなものだけ詳しく見られるぞ。</p>
+    {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
+    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
+   </details>
   </section>
 
   <section className="c2v31-future c2v3-future" data-section="FUTURE_REWARDS" aria-label="未来の戦利品">
    <div className="c2v31-section-heading"><span>⌛ FUTURE REWARD</span><small>戦利品を積み重ねると…</small></div>
    <h2>{reviewUpper>0?'未来の戦利品':'未来の作戦は、ここから。'}</h2>
-   {reviewUpper>0&&<p className="c2v32-future-condition">もし見直し候補を<span>全部</span>毎月減らせたら？<small>まだ確定した金額じゃないよ。実際に減らせるかは確認してから。</small></p>}
+   {reviewUpper>0&&<p className="c2v32-future-condition">未確定の候補を<span>全部</span>毎月減らせた場合の仮定だよ。</p>}
    {reviewUpper>0?<div className="c2v3-rewards">
     <div className="c2v3-reward-mini c2v31-reward-mini">
      <div><span className="c2v31-coin-symbol" aria-hidden="true">✦</span><small>1年間</small><strong>{money(reviewUpper*12)}</strong></div>
@@ -668,7 +1112,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      <div className="c2v31-ten-details"><span>✦ 10年間で積み重ねたら ✦</span><strong>{money(reviewUpper*120)}</strong><small className="c2v31-ten-qualifier">月 最大 {money(reviewUpper)} をすべて改善できた場合</small></div>
      <TreasureChest className="c2v31-ten-chest"/>
     </div>
-    <p className="c2v3-future-footnote">※未確定の見直し候補（月最大 {money(reviewUpper)}）をすべて改善でき、その状態が毎月続いた場合の単純累計。実際の削減額や将来の結果を保証するものではなく、運用益も含みません。</p>
+    <details className="c2v32-future-method"><summary>未来の数字の計算条件を見る</summary>
+     <p className="c2v3-future-footnote">未確定の候補（月最大 {money(reviewUpper)}）をすべて毎月減らせた場合の単純累計（12・60・120か月）。実際の節約額・将来の結果を保証するものではなく、運用益も含みません。</p>
+    </details>
    </div>:<div className="c2v3-future-empty">
     <strong>見直し候補の金額は、まだ特定できていない。</strong>
     <p>無理にムダを決めず、確認できることから進めよう。</p>
@@ -716,7 +1162,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v2-note c2v31-accounting-note">※平均との差を改善額にはせず、未確定候補も合算していません。「確認できた改善額」は本人の回答に基づくもので、契約変更・解約などが完了した実績ではありません。</p>
    {shown.length>0&&<button type="button" className="c2v22-ledger-jump" data-section="COMPARISON_OVERVIEW_JUMP"
     onClick={()=>jumpToSection('JOINT_PEER_COMPARISON_GUIDE')}>
-    同年代・同世帯・同所得帯の比較条件から見る ↓
+    12カテゴリの支出と比較の目安を見る ↓
    </button>}
   </section>
   <MudagiriBeat pose="proud" line={recognition?.line??(filtered.some((x:any)=>x.v5Status==='protect'||x.v5Status==='ok')
@@ -733,268 +1179,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <small>LINEで相談内容を確認できます。追加だけでは予約は確定しません。</small>
   </section>
 
-  <section className="c2v2-card c2v31-followup" data-section="NEXT_QUEST">
-   <details className="c2v32-optional-detail" data-optional="first-step">
-    <summary>最初の確認ポイントをもう一度見る</summary>
-   {next?<div className="c2v2-quest">
-    <img src={(ENEMY_ASSETS as Record<string,any>)[next.category]?.normal||ART.quest} alt="" loading="lazy"/>
-    <div><b>{(ENEMY_ASSETS as Record<string,any>)[next.category]?.name||next.label}</b><small>{next.label||next.category}</small><p>{next.nextAction||'この支出の内訳を確認しよう。'}</p>
-    {next.aAmount>0&&<strong>確認済み：月 {money(Number(next.aAmount))}</strong>}</div>
-   </div>:<div className="c2v2-quest"><img src={ART.guide} alt="" loading="lazy"/><p>無理にムダを探さなくてもOK。今の状態を守るところから始めよう。</p></div>}
-   </details>
-  </section>
-
-  <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
-   <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
-   <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
-   <p className="c2v22-ledger-intro">12体の敵と、あなたの支出・判定をまとめたぞ。数字で比べられる項目は条件も表示。比べられない項目は使い方から判断するよ。</p>
-   <div className="c2v32-peer-guide" data-section="JOINT_PEER_COMPARISON_GUIDE">
-    <strong>比べるのは「同年代 × 世帯区分 × 額面年収帯」</strong>
-    <p>あなたは「支出 ÷ 月手取り」で計算。比べる相手は全国の<strong>同じ年代（10歳区分）・単身／二人以上・同じ額面年収帯の勤労者世帯</strong>。2024年の原表に十分な標本がある場合、食費・光熱水道・日用品について「同一交差セルの平均支出 ÷ 平均可処分所得」を参考として表示します。</p>
-    <small>※二人以上は家族人数の完全一致ではありません。食費・光熱水道・日用品の3費目も、診断の支出範囲が公表費目と完全に一致する保証はありません。特に日用品は公式の「家事雑貨＋家事用消耗品」だけを参考にしています。</small>
-   </div>
-   <details className="c2v32-optional-detail c2v32-peer-coverage-audit" data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT">
-    <summary>ほかの9カテゴリは、なぜ同条件の平均が出ないの？</summary>
-    <p>同じ年代・年収の統計表に数字があっても、対象費目の範囲が違えば「あなたと同条件の平均」とは呼べないよ。比べられない理由を確認できるようにしたよ。</p>
-    <ul>{CHAPTER2_2024_PEER_COVERAGE_AUDIT_V1.filter(x=>x.status!=='official_cross_reference_with_scope_warning').map(x=>
-     <li key={x.category} data-peer-coverage-category={x.category}>
-      <strong>{shown.find((r:any)=>r.category===x.category)?.label??x.category}</strong>
-      <span>{x.userNotice}</span>
-     </li>)}</ul>
-    <small>出典：総務省「2024年全国家計構造調査」第1-29表の収支項目分類。契約・用途・母集団の違いを未解決のまま架空の同条件比率を作りません。</small>
-   </details>
-   {incomeBurden?<section className="c2v32-income-burden c2v32-income-burden--compact" data-section="INCOME_BURDEN_CONTEXT" aria-label="比較一覧の手取り基準">
-    <div className="c2v32-income-burden-head"><span>比較の主役は「同年代 × 同世帯 × 同所得帯」。あなたの手取り割合は補助情報</span><strong>あなたの月手取り {money(Number(incomeBurden.monthlyTakeHome))}</strong></div>
-    <p>入力済み{incomeBurden.knownCategoryCount}カテゴリ：月 {money(incomeBurden.knownMonthlyExpenses)}（手取りの <b>{incomeBurden.expenseShareOfTakeHomePct?.toFixed(1)??'—'}%</b>）。同条件の公式統計が確認できる食費・光熱費・日用品は、対象世帯の平均可処分所得を分母にした負担率と比較するよ。確認できないカテゴリは平均負担率を作らず、本人の割合と別条件の参考目安を区別して表示するよ。</p>
-    {(incomeBurden.missingCategoryCount>0||incomeBurden.bundledContributionExcluded)&&<small>※未確定{incomeBurden.missingCategoryCount}カテゴリ{incomeBurden.bundledContributionExcluded?'／まとめ払いは内訳未配分':''}。家計支出の全体比率とは限りません。</small>}
-   </section>:<p className="c2v32-income-burden-unavailable" data-section="INCOME_BURDEN_CONTEXT">月手取りが未入力なので割合は表示しないよ。金額と比較の目安はこのまま確認できる。</p>}
-   {vm.profile?.householdSize===1&&<details open={!vm.profile?.singlePeerGrossBand2024} className="c2v32-income-food-single-optin" data-section="SINGLE_INCOME_CLASS_OPTIN">
-    <summary>同年代・単身・同所得帯と比べる（任意）</summary>
-    <label htmlFor="c2v32-single-income">額面の年間収入を選ぶ</label>
-    <select id="c2v32-single-income" value={singleGrossBand??''} onChange={e=>{
-     const next=e.target.value;
-     setSingleGrossBand(SINGLE_INCOME_FOOD_OPTIONS.some(x=>x.value===next)?next as SingleIncomeFoodOptionV1:null);
-    }}>
-     <option value="">選ばずに進む</option>
-     {SINGLE_INCOME_FOOD_OPTIONS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}
-    </select>
-    <p>月手取りから年収を推定せず、2024年の公式交差集計を確認できる区分だけ同年代の参考率を示すよ。入口で入力した年収帯はプロフィールに保持される場合があるけれど、ここで選び直しても確定改善額・共有カードには反映しないよ。</p>
-    {singleGrossBand&&<p className="c2v32-high-income-match-status" role="status" data-section="SINGLE_PEER_MATCH_STATUS" aria-live="polite">
-      {singleHasAvailablePeerSource
-       ?headWorkerConfirmed
-        ?'同年代・単身・同額面年収帯の参考率を食費・光熱水道・日用品で表示中。'
-        :'この年代と年収帯には公表データがあるよ。世帯主の働き方を確認すると同条件の率を表示できるよ。'
-       :'この年代と年収帯は標本数などの条件を満たさないため、同条件の率を表示できません。年収帯だけの参考とは区別します。'}
-     </p>}
-   </details>}
-   {multiCohort&&multiGrossBand==='1000plus'&&
-    <details className="c2v32-income-food-single-optin" data-section="MULTI_HIGH_INCOME_CLASS_OPTIN">
-     <summary>自分に近い世帯と比べてみる（任意・年収1,000万円以上）</summary>
-     <label htmlFor="c2v32-multi-high-income">世帯全体の額面年収を選ぶ</label>
-     <select id="c2v32-multi-high-income" value={multiHighGrossBand??''}
-      onChange={e=>{
-       const v=e.target.value;
-       setMultiHighGrossBand(v==='1000_1249'||v==='1250_1499'||v==='1500plus'?v:null);
-      }}>
-      <option value="">選ばずに進む</option>
-      <option value="1000_1249">1,000～1,249万円</option>
-      <option value="1250_1499">1,250～1,499万円</option>
-      <option value="1500plus">1,500万円以上</option>
-     </select>
-     <p>あなたと同じ年代・世帯年収の参考を探すよ。月手取りから年収を推測せず、この選択は画面表示だけに使い、診断結果・LINEへ保存や送信はしません。</p>
-     {multiHighGrossBand&&<p className="c2v32-high-income-match-status"
-       data-section="MULTI_HIGH_INCOME_MATCH_STATUS" role="status" aria-live="polite">
-      {highIncomePublishedReference?.available===true
-       ?multiHeadAgeConfirmed&&headWorkerConfirmed
-        ?'比較の準備ができたよ。下の食費・光熱水道・日用品で、同年代×同年収帯の参考率を確認できるよ。'
-        :'この年代と年収帯には、公表された参考データがあるよ。世帯主の年齢と働き方を確認すると、下の3カテゴリで比較できるよ。'
-       :'この年代と年収帯は、標本数が少ないなどの理由で比較に必要な条件を満たしていないよ。同年代の率は表示せず、下には年収帯だけの参考を残すよ。'}
-     </p>}
-    </details>}
-   {multiHasAvailablePeerSource&&householdAnnualBandLabel&&
-    <div className="c2v32-peer-age-confirm" data-section="MULTI_PEER_HEAD_AGE_CONFIRM">
-     <label htmlFor="c2v32-head-age-confirm">
-      <input id="c2v32-head-age-confirm" type="checkbox" checked={multiHeadAgeConfirmed}
-       onChange={e=>setMultiHeadAgeConfirmed(e.target.checked)}/>
-      <span><strong>入力した{rawProfileAge}歳は、世帯主の年齢です</strong>
-       <small>一致する場合のみチェック（同年代×同年収の参考を表示する）</small></span>
-     </label>
-     <p>公式統計は「世帯主の年齢」を使うよ。別の家族の年齢なら、チェックせずに進んでね。全国の勤労者世帯の参考で、確定した削減額ではありません。</p>
-    </div>}
-   {(multiHasAvailablePeerSource||singleHasAvailablePeerSource)&&
-    <div className="c2v32-peer-age-confirm" data-section="PEER_WORKER_STATUS_CONFIRM">
-     <label htmlFor="c2v32-worker-status-confirm">
-      <input id="c2v32-worker-status-confirm" type="checkbox" checked={headWorkerConfirmed}
-       onChange={e=>setHeadWorkerConfirmed(e.target.checked)}/>
-      <span><strong>世帯主は会社員・公務員など、給与を受け取る立場です</strong>
-       <small>当てはまる場合のみチェック（勤労者世帯の参考率を表示する）</small></span>
-     </label>
-     <p>この統計は世帯主が雇用されている世帯が対象だよ。世帯主が自営業・無職などの場合や、分からない場合はチェックしないでね。回答は画面表示だけに使い、保存・送信しません。</p>
-    </div>}
-   {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
-    <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
-     <summary>{anyJointRateAvailable?'比較の仕組み・統計の対象を見る（任意）':'年収帯だけの参考について（年齢・地域は未反映）'}</summary>
-     <span className="c2v2-kicker">比較基準の説明</span>
-     <h3>年齢・世帯の目安と、年収帯の参考を一緒に見る</h3>
-     <p>{anyJointRateAvailable
-   ?<>プロフィールと同じ年代・年収帯を照合した<strong>2024年の公式交差集計を優先</strong>して、食費・光熱費・日用品に表示しています。本人の手取り割合も横に並べたよ。</>
-   :<>年収 {incomeFoodReference.profileBandLabel}の全国参考を下のカテゴリ別カードで見られるよ。年齢を同時に照合できない場合は、その違いを明記しています。</>}</p>
-     <p className="c2v32-income-food-note">{anyJointRateAvailable
-   ?'※2024年の年齢×年収の交差集計は、2025年の年収帯のみの参考値とは別の統計です。両者を混ぜて平均を作りません。参考差をムダ額・削減額・見直し候補額に加えない。'
-   :'※年齢・世帯の目安と2025年の年収帯参考は別々の統計で、両方を満たす世帯の平均ではありません。参考差をムダ額・削減額・見直し候補額に加えない。'}</p>
-     <p className="c2v32-income-scope-warning">{incomeFoodReference.scopeWarning}</p>
-     <p className="c2v32-income-source-inline">出典：総務省「家計調査」（2025年）・{incomeFoodReference.source?.table}／全国の年収階級別集計。</p>
-     <p className="c2v32-worker-source-inline" data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"><b>同年代×同年収帯の平均負担率：</b>{anyJointRateAvailable
-     ?<>総務省「2024年全国家計構造調査」第1-29-1表から、年齢・世帯年収を同時集計した<strong>全国の勤労者{multiCohort?'二人以上':'単身'}世帯</strong>の参考率を表示。世帯主が勤労者世帯に当てはまると確認した場合だけ表示します。各世帯の負担率の平均でも削減可能額でもありません。</>
-     :multiCohort&&!multiHeadAgeConfirmed&&multiHasAvailablePeerSource
-      ?<>入力した年齢が世帯主の年齢なら、上のチェックから参考率を確認できるよ。確認なしに「同世代の平均」は表示しません。</>
-     :!headWorkerConfirmed&&(multiHasAvailablePeerSource||singleHasAvailablePeerSource)
-      ?<>原表は勤労者世帯の統計だよ。世帯主の働き方が一致するときだけ、上のチェックから同年代×同年収帯の参考率を表示できます。</>
-      :<>2024年の公式交差集計で、プロフィールに対応する十分な標本数・年収区分を確認できていません。所得帯だけの2025年参考率を同年代の平均として代用しません。</>}</p>
-     <details className="c2v32-income-food-sources">
-      <summary>使っている統計と対象範囲</summary>
-      <p>出典：総務省「家計調査」（{incomeFoodReference.source?.year}年）、{incomeFoodReference.source?.table}。全国・{incomeFoodReference.source?.population}。食費は「食料」、光熱費は「光熱・水道」、日用品は「家事雑貨（4.4）＋家事用消耗品（4.5）」から作成。</p>
-      <p>{incomeFoodReference.scopeWarning} 年収帯の幅が広い場合の範囲は、異なる公表所得階級の平均支出の最小～最大であり、個人差の分布幅ではありません。</p>
-      <p>食費：対象の年収階級 {incomeFoodReference.incomeBandLabels.join('、')}（{incomeFoodReference.matchedIncomeCells}区分・最小集計世帯数 {incomeFoodReference.minCellSampleHouseholds}世帯）。年額を12で割り円単位に丸めています。</p>
-      {incomeEnergyReference&&<p>光熱費：対象の年収階級 {incomeEnergyReference.coveredPublishedBrackets.join('、')}（{incomeEnergyReference.matchedCells}区分・最小集計世帯数 {incomeEnergyReference.minSampleHouseholds}世帯）。</p>}
-      {incomeDailyReference&&<p>日用品：同じ年収階級で「家事雑貨（4.4）」と「家事用消耗品（4.5）」を年額で合計して月額に換算。「日用品」という単一の公式平均ではありません。</p>}
-     </details>
-    </details>}
-   {shown.length?<div className="c2v22-comparison-ledger" data-section="CATEGORY_COMPARISON_OVERVIEW" aria-label="12カテゴリの支出・比較目安・比較条件の一覧">
-    {shown.map((x:any)=>{
-     const status=STATUS[x.v5Status]??STATUS.review;
-     const enemy=(ENEMY_ASSETS as Record<string,any>)[x.category];
-     const comparable=comparisonAvailable(x);
-     const referenceAmount=comparisonReferenceAmount(x);
-     const compareAmount=comparable?comparisonTargetAmount(x):null;
-     const noNumber=nonNumericBasis(x);
-     const differs=comparable&&x.known&&x.amount!==null&&Number.isFinite(Number(x.amount))&&compareAmount!==null&&Math.abs(compareAmount-Number(x.amount))>=1;
-     // Income-class references remain independent of the primary comparable.
-     const incomeRange=x.category==='food'&&incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null
-      ?{low:incomeFoodReference.monthlyMeanLowYen,high:incomeFoodReference.monthlyMeanHighYen}
-      :x.category==='energy'&&incomeEnergyReference
-       ?{low:incomeEnergyReference.monthlyLowYen,high:incomeEnergyReference.monthlyHighYen}
-       :x.category==='daily'&&incomeDailyReference
-        ?{low:incomeDailyReference.monthlyLowYen,high:incomeDailyReference.monthlyHighYen}
-        :null;
-     const burdenRow=incomeBurden?.categories?.find((a:any)=>a.category===x.category);
-     const ownScopeAmount=burdenRow?.monthlyAmount??null;
-     const sameScope=ownScopeAmount!==null&&Number.isFinite(Number(x?.amount))
-      &&x.known===true&&Math.abs(Number(ownScopeAmount)-Number(x.amount))<1
-      &&(!comparable||compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1);
-     const lens=twoReferenceLensV1({
-      currentAmountYen:x.known===true&&x.amount!==null&&Number.isFinite(Number(x.amount))?Number(x.amount):null,
-      primaryReferenceYen:comparable&&compareAmount!==null&&Math.abs(Number(compareAmount)-Number(x.amount))<1?referenceAmount:null,
-      incomeReferenceLowYen:incomeRange?.low??null,incomeReferenceHighYen:incomeRange?.high??null,
-      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null
-     });
-     const workerCategory=scopedWorkerCategory(x.category);
-     const sameAgeIncomePeer=peerReferenceFor(x.category);
-     const peerUserShare=sameScope?lens.ownPct:null;
-
-     const peerGap=chapter2PeerGapV1({
-      ownMonthlyExpenseYen:sameScope?Number(ownScopeAmount):null,
-      ownMonthlyTakeHomeYen:sameScope?incomeBurden?.monthlyTakeHome??null:null,
-      peerPctLow:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctLow:null,
-      peerPctHigh:sameAgeIncomePeer?.available?sameAgeIncomePeer.ratePctHigh:null,
-      sameExpenseScopeConfirmed:sameScope,
-      sourceVerified:sameAgeIncomePeer?.available===true,
-     });
-     const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
-     const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
-     const deltaDescription=(delta:number|null,what:string)=>delta===null?''
-      :delta>0?`${what}より月 ${money(delta)} 多め`
-      :delta<0?`${what}より月 ${money(-delta)} 少なめ`
-      :`${what}と同程度`;
-     return <div key={x.category} className="c2v22-comparison-row" data-comparison-category={x.category} data-comparison-available={comparable?'true':'false'}>
-      <div className="c2v22-comparison-head">
-       {enemy?.normal?<img className="c2v23-comparison-enemy" src={enemy.normal} alt={enemy.name+'の敵キャラ'} loading="lazy"/>:<span className="c2v23-comparison-enemy-fallback" aria-hidden="true">⚔️</span>}
-       <div className="c2v23-comparison-identity"><strong>{x.label||x.category}</strong>{enemy?.name&&<small>{enemy.name}</small>}</div>
-       <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
-      </div>
-      {peerGap.available
-       ?<Chapter2PeerComparisonCard category={x.category}
-         label={x.label||x.category} gap={peerGap}
-         ownMonthlyExpenseYen={Number(ownScopeAmount)}
-         householdLabel={multiCohort?'二人以上':'単身'}/>
-       :<>
-      <div className="c2v22-comparison-values c2v32-merged-values">
-       <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
-        {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
-       </span>
-       <span className={!comparable?'c2v23-basis-mode':''}><small>{sameAgeIncomePeer?.available?'同年代×世帯区分×同年収帯の参考負担率':comparable?'属性別の支出目安（同条件の平均ではない）':'判定の手がかり'}</small>
-        <b>{sameAgeIncomePeer?.available
-          ?sameAgeIncomePeer.ratePctLow?.toFixed(1)+(sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1))+'%'
-          :comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
-        {sameAgeIncomePeer?.available&&<small className="c2v32-inline-percent">全国・勤労者{multiCohort?'二人以上':'単身'}世帯／2024年・同一交差集計</small>}
-       </span>
-      </div>
-       </>}
-      {sameAgeIncomePeer?.available&&!peerGap.available&&<p className="c2v32-peer-scope-unmatched"
-       data-peer-3way-unavailable={x.category}>
-       同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
-      </p>}
-      {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
-       <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
-        <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
-       <small>年収帯だけの支出参考であり、同年代の平均負担率ではありません。</small>
-      </div>}
-      {sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-peer-evidence" data-age-income-worker-peer-category={x.category}>
-       <summary>この参考率の条件・出典を見る（2024年・全国）</summary>
-       <div className="c2v32-peer-evidence-body">
-        <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。世帯主年齢 {ageBandForObserved2024V1(Number(rawProfileAge))?.split('（')[0]}、世帯年収 {householdAnnualBandLabel}の<strong>同時集計</strong>。原表{sameAgeIncomePeer.usedCells}区分の値で、複数階級の参考幅は個々の世帯の分布幅ではありません。</p>
-        <p>出典：総務省「2024年全国家計構造調査」第1-29-1表（e-Stat 0004039867）。同じセルの平均費目支出 ÷ 平均可処分所得。概数標本数50世帯以上のセルのみ採用。世帯主の就労形態は本人申告によるもの。</p>
-        <p data-section={'PEER_SCOPE_CAVEAT_'+x.category}>対象費目の注意：{chapter2OfficialPeerCoverageV1(x.category).userNotice}</p>
-       </div>
-      </details>}
-      {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
-       <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
-       <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
-       <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
-       <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
-      </details>}
-      {!sameAgeIncomePeer?.available&&(lens.primaryDeltaYen!==null||incomeRange&&lens.incomeDeltaYen!==null)&&
-       <details className="c2v32-auxiliary-comparisons" data-section={'OTHER_REFERENCE_'+x.category}>
-        <summary>ほかの比較目安を見る（同条件の平均ではありません）</summary>
-      {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
-      {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
-       <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
-      </p>}
-       </details>}
-      {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
-       <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
-       <button type="button" className="c2v32-evidence-toggle"
-        aria-expanded={comparisonEvidence===x.category}
-        aria-controls={'c2v32-evidence-'+x.category}
-        onClick={()=>{setComparisonEvidence(comparisonEvidence===x.category?null:x.category);
-         onEvent?.('chapter2_v32_comparison_evidence_toggled',{category:x.category});}}>
-        {comparisonEvidence===x.category?'出典を閉じる ↑':'出典と比較の注意点を見る ↓'}
-       </button>
-       <div id={'c2v32-evidence-'+x.category} hidden={comparisonEvidence!==x.category} className="c2v32-comparison-evidence">
-        {differs&&<p>別の基準による参考支出：{referenceAmount===null?'―':money(referenceAmount)}/月（{x.comparisonAmountLabel||'比較対象額'}）。同年代×世帯区分×年収帯の平均ではありません。</p>}
-        <p><b>参照元：</b>{comparisonReference(x)}／{comparisonReferenceType(x)}</p>
-        <p>比較の目安との差は、そのままムダ額・節約額ではありません。</p>
-        {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
-       </div>
-      </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
-
-      {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
-       <span>⚔ <b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b></span>
-       <small>まず確認：{x.nextAction||candidateReason(x)}</small>
-       <details className="c2v32-action-evidence"><summary>候補となった理由を見る</summary><p>{candidateReason(x)}</p></details>
-      </div>}
-     </div>;
-    })}
-   </div>:<p className="c2v2-note">まだ比較できる家計データがないよ。</p>}
-   <p className="c2v22-ledger-footnote">※「あなたの割合」は月手取りへの割合。「同年代×世帯区分×同所得帯」は総務省「2024年全国家計構造調査」の勤労者世帯の同一交差セルが存在する場合の参考率です。年齢だけ・年収だけの平均金額をあなたの手取りで割って同条件の平均と呼びません。平均との差をムダ額・改善額・月額バッファには加えません。</p>
-   <button type="button" className="c2v32-after-ledger-action" onClick={()=>jumpToSection('CONSULTATION_CTA_TOP')}>次の一歩：無料相談の案内を見る ↑</button>
-   <details className="c2v32-optional-detail" data-optional="enemy-atlas">
-    <summary>敵キャラと詳しい説明を見る（任意）</summary>
-    <p>上の比較一覧が結果の基本だよ。ここからは12体のキャラと回答の理由を、好きなものだけ詳しく見られるぞ。</p>
-    {shown.length?<div className="c2v32-enemy-grid" data-section="ENEMY_FULL_GALLERY">{shown.map(categoryDetail)}</div>:<p className="c2v2-note">鑑定結果がまだありません。</p>}
-    <p className="c2v2-note">比較ができない項目に架空の平均は作っていません。</p>
-   </details>
-  </section>
+  {/* The first step appears already in the treasure report and the consultation.
+       Remove a second redundant standalone card. */}
 
   <section className="c2v2-card c2v31-goals" data-section="GOAL_QUEST">
    <span className="c2v2-kicker">YOUR DESTINATION ／ 目指す未来</span>

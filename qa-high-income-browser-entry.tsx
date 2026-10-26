@@ -13,17 +13,34 @@ const rows=[
  {category:'daily',label:'日用品費',known:true,amount:9000,diagnosisAmount:9000,
   comparisonAmount:9000,comparable:7000,comparisonQuality:'exact',
   v5Status:'inspect',applicability:'applicable',aAmount:0,cUpper:0},
+ // The result screen normally receives all 12 category rows, even when the
+ // visitor did not answer their spending amounts. Public related references
+ // must never require a fabricated personal expense for those rows.
+ ...([
+  ['mobile','通信費'],['car','車関連費'],['fun','娯楽・交際費'],
+  ['beautyFashion','美容・服飾'],['rent','住居費'],['insurance','保険'],
+  ['childEducation','子どもの教育費'],['sub','サブスク'],
+  ['selfDevelopment','自己投資'],
+ ] as const).map(([category,label])=>({
+  category,label,known:false,amount:null,diagnosisAmount:null,comparisonAmount:null,
+  comparable:null,comparisonQuality:'none',v5Status:'na',applicability:'not_applicable',
+  aAmount:0,cUpper:0,
+ })),
 ];
 // Strictly synthetic profile. The only real data loaded is the public
 // age×gross-income source. This harness is NOT included in the Vite dist build.
 function App(){
  const [age,setAge]=useState(45);
+ const [qaHousehold,setQaHousehold]=useState<'multi'|'single'>('multi');
+ const [qaGross,setQaGross]=useState('1000plus');
  const vm={
   version:'MUDAGIRI_RESULT_VM_V5_0',
   diagnosisId:'qa-high-income-synthetic-only',
-  profile:{diagnosisScope:'household',householdSize:4,age,annualIncomeBand:'1000plus',
+  profile:{diagnosisScope:'household',householdSize:qaHousehold==='single'?1:4,age,
+    annualIncomeBand:qaHousehold==='single'?'unknown':qaGross,
+    singlePeerGrossBand2024:qaHousehold==='single'?(qaGross==='500_599'?'500_599':'400_499'):null,
     monthlyTakeHome:1000000,prefecture:'東京都'},
-  potential:{confirmedA:0,cUpper:0},v5Counts:{cut:0,optimize:0,protect:0,inspect:3,ok:0,na:0},
+  potential:{confirmedA:0,cUpper:0},v5Counts:{cut:0,optimize:0,protect:0,inspect:3,ok:0,na:9},
   rows,firstQuest:null,consultRoute:null,
  };
  return <>
@@ -33,10 +50,29 @@ function App(){
    <select id="qa-head-age" value={age} onChange={e=>setAge(Number(e.target.value))}>
     {[25,35,45,55,65,75].map(a=><option key={a} value={a}>{a}歳</option>)}
    </select>
-   <small>合成入力：4人世帯・額面1,000万円以上・月手取り100万円。
+   <label htmlFor="qa-household-type">合成世帯区分</label>
+   <select id="qa-household-type" value={qaHousehold} onChange={e=>{
+    const next=e.target.value as 'multi'|'single';setQaHousehold(next);setQaGross(next==='single'?'400_499':'1000plus');
+   }}>
+    <option value="multi">二人以上</option><option value="single">単身</option>
+   </select>
+   <label htmlFor="qa-gross-band">合成額面年収帯</label>
+   <select id="qa-gross-band" value={qaGross} onChange={e=>setQaGross(e.target.value)}>
+    {qaHousehold==='multi'?<>
+      <option value="1000plus">1,000万円以上（詳細は本体で選択）</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+     </>:<>
+      <option value="400_499">400～499万円</option>
+      <option value="500_599">500～599万円</option>
+     </>}
+   </select>
+   <small>合成入力：{qaHousehold==='single'?'単身':'4人世帯'}・月手取り100万円。
     第1章、診断本体、GAS、LINEには接続しません。</small>
   </section>
-  <ResultScreenChapter2V32 vm={vm} pilotNoExternalActions={true} coverageDryRun={true} />
+  <ResultScreenChapter2V32 key={qaHousehold+'-'+qaGross} vm={vm} pilotNoExternalActions={true} coverageDryRun={true} />
  </>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);
