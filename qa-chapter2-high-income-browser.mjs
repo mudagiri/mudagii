@@ -117,22 +117,29 @@ try{
  const relatedCards=page.locator('[data-peer-related-rate-category]');
  assert.equal(await relatedCards.count(),7);
  for(const key of ['mobile','car','insurance']){
-  await page.locator('[data-comparison-category="'+key+'"] > summary').click();
-  const detail=page.locator('[data-peer-related-rate-category="'+key+'"]');
+  const row=page.locator('[data-comparison-category="'+key+'"]');
+  if(!(await row.evaluate(el=>el.open)))await row.locator(':scope > summary').click();
+  const detail=row.locator('[data-peer-related-rate-category="'+key+'"]');
   assert.equal(await detail.evaluate(el=>el.open),false,
-   'High-income related public-fee references start collapsed to avoid seven long card blocks');
+   'Related public fees start collapsed inside the selected category');
   assert.ok((await detail.locator('summary').innerText()).includes('診断項目の平均ではない'),
-   'Source-derived related value must never be presented as official category mean');
+   'A related public fee must not be confused with the official diagnosis-category average');
   await detail.locator('summary').click();
   assert.equal(await detail.evaluate(el=>el.open),true);
+  const evidence=await detail.innerText();
+  if(key==='mobile'){
+   assert.ok(evidence.includes('通信')&&evidence.includes('1.65%')&&evidence.includes('15,948'),
+    'Original 2024 official communication source is distinct from mobile diagnosis benchmark');
+  }else if(key==='car'){
+   assert.ok(evidence.includes('内数'),'Maintenance belongs within the published car total');
+  }else{
+   assert.ok(evidence.includes('保障だけでなく'),'Insurance includes savings, not only protection premiums');
+  }
  }
- const mobileRelated=await page.locator('[data-peer-related-rate-category="mobile"]').innerText();
- assert.ok(mobileRelated.includes('通信')&&mobileRelated.includes('1.65%')&&mobileRelated.includes('15,948'),
-  'Original 2024 official communication source rate is distinct from smartphone diagnosis benchmark');
- assert.ok((await page.locator('[data-peer-related-rate-category="car"]').innerText()).includes('内数'),
-  'Car maintenance must never be added to the published total');
- assert.ok((await page.locator('[data-peer-related-rate-category="insurance"]').innerText()).includes('保障だけでなく'),
-  'Official insurance contributions are not a coverage premium benchmark');
+ // One category open at a time is the intended mobile-friendly interaction.
+ // Re-open food before checking the matched reference in the expanded row.
+ const foodRow=page.locator('[data-comparison-category="food"]');
+ if(!(await foodRow.evaluate(el=>el.open)))await foodRow.locator(':scope > summary').click();
 
  const foodThreeWay=page.locator('[data-peer-three-way-category="food"]');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),3,
