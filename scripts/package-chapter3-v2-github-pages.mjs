@@ -19,6 +19,26 @@ for(const [key,expected] of Object.entries({
 await rm(target,{force:true,recursive:true});
 await mkdir(target,{recursive:true});
 await cp(dist,target,{recursive:true});
+// The first chapter's frozen UI includes three legacy RPG scene backgrounds as
+// CSS url('./assets/...') strings. Those inline styles resolve relative to
+// /pilot/chapter2-v32/pilot/money-type/ even with <base href="/">.
+// Normalize only the GENERATED standalone Pages bundle to root assets;
+// do not modify frozen Chapter 1 sources or the production Pages bundle.
+let backgroundPathFixes=0;
+const oldBackgroundPrefix='./assets/mudagiri/backgrounds/money-personality/v1/';
+const rootBackgroundPrefix='/assets/mudagiri/backgrounds/money-personality/v1/';
+for(const filename of await readdir(join(target,'assets'))){
+ if(!/\\.(?:js|css)$/.test(filename))continue;
+ const filenamePath=join(target,'assets',filename);
+ const compiled=await readFile(filenamePath,'utf8');
+ const found=compiled.split(oldBackgroundPrefix).length-1;
+ if(found>0){
+  await writeFile(filenamePath,compiled.split(oldBackgroundPrefix).join(rootBackgroundPrefix),'utf8');
+  backgroundPathFixes+=found;
+ }
+}
+assert.ok(backgroundPathFixes>=3,'Expected 3 official RPG backgrounds in the preview build; route fix not applied');
+console.log('CHAPTER3_V2_BACKGROUND_ROOT_PATH_FIX_PASS',backgroundPathFixes);
 // GitHub Pages user-site is served from the origin root. A single shared
 // /assets directory is enough when deep HTML routes specify <base href="/">.
 const deepHtml=source.replace(/<head([^>]*)>/i,'<head$1><base href="/">');
