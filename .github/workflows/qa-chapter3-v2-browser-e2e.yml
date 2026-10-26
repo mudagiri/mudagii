@@ -45,9 +45,14 @@ jobs:
           test -f preview/chapter3-v2-preview.html
           test -f preview/pilot/chapter2-v32/index.html
           test -f preview/pilot/chapter2-v32/pilot/money-type/index.html
-          test ! -d preview/pilot/chapter2-v32/assets
-          test ! -d preview/pilot/chapter2-v32/pilot/money-type/assets
           test -d preview/assets
+          test ! -f preview/pilot/chapter2-v32/assets/index.js
+          test ! -f preview/pilot/chapter2-v32/pilot/money-type/assets/index.js
+          for ROUTE in pilot/chapter2-v32 pilot/chapter2-v32/pilot/money-type; do
+            for IMAGE in MP_BG_01_GUILD_HALL.webp MP_BG_02_JOB_UNLOCK.webp MP_BG_03_NEXT_QUEST.webp; do
+              test -f "preview/$ROUTE/assets/mudagiri/backgrounds/money-personality/v1/$IMAGE"
+            done
+          done
       - name: Check evidence-grounded Chapter3 copy logic
         run: node scripts/qa-chapter3-v2-result-narrative.mjs
       - name: Install browser automation runner
