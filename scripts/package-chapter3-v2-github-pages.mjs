@@ -39,6 +39,27 @@ for(const filename of await readdir(join(target,'assets'))){
 }
 assert.ok(backgroundPathFixes>=3,'Expected 3 official RPG backgrounds in the preview build; route fix not applied');
 console.log('CHAPTER3_V2_BACKGROUND_ROOT_PATH_FIX_PASS',backgroundPathFixes);
+// The CSS-in-JS used by the official Chapter 1 story still resolves three
+// backgrounds relative to a nested deep-link document in some browsers.
+// Provide only those three immutable image aliases at the two HTML depths.
+// Do NOT duplicate app JS, other images, diagnosis assets or actual C1 code.
+const chapter1BackgroundFiles=[
+ 'MP_BG_01_GUILD_HALL.webp',
+ 'MP_BG_02_JOB_UNLOCK.webp',
+ 'MP_BG_03_NEXT_QUEST.webp',
+];
+const officialBackgroundRoot=join(target,'assets/mudagiri/backgrounds/money-personality/v1');
+let deepBackgroundAliases=0;
+for(const route of ['pilot/chapter2-v32','pilot/chapter2-v32/pilot/money-type']){
+ const deepBackgroundRoot=join(target,route,'assets/mudagiri/backgrounds/money-personality/v1');
+ await mkdir(deepBackgroundRoot,{recursive:true});
+ for(const file of chapter1BackgroundFiles){
+  await cp(join(officialBackgroundRoot,file),join(deepBackgroundRoot,file));
+  deepBackgroundAliases++;
+ }
+}
+assert.equal(deepBackgroundAliases,6,'Three canonical backgrounds must resolve from both nested HTML entry points');
+console.log('CHAPTER3_V2_DEEP_BACKGROUND_ALIAS_PASS',deepBackgroundAliases);
 // GitHub Pages user-site is served from the origin root. A single shared
 // /assets directory is enough when deep HTML routes specify <base href="/">.
 const deepHtml=source.replace(/<head([^>]*)>/i,'<head$1><base href="/">');
@@ -63,7 +84,7 @@ await writeFile(join(target,'CHAPTER3_V2_PREVIEW_NOTES.txt'),[
  'GitHub-only isolated preview bundle. THIS DOES NOT DEPLOY.',
  'Created from PR #77. Do not overwrite the existing mudagii Pages site.',
  'Designed for a separate GitHub Pages user-site root repository, with URL path /.',
- 'All deep HTML routes use root-relative /assets with <base href="/">; no 3x asset duplication.',
+ 'Compiled JS stays shared at root /assets; only the three immutable Chapter1 scene backgrounds have deep-route aliases.',
  'A project Pages site under /repo-name/ requires explicit source routing fixes.',
  'Open /chapter3-v2-preview.html or /?chapter3solo=1 for a direct Chapter3 result.',
  'A GitHub artifact ZIP by itself is NOT a live URL.',
