@@ -403,6 +403,7 @@ await clickButton(/診断結果を見る/);
  await ch3.getByRole('button',{name:/第2章の戦果へ戻る/}).click();
  await chapter3Entry.waitFor({state:'visible'});
  console.log('CHAPTER3_V2_MISSING_PREVIEW_ASSETS',engine,JSON.stringify([...missingPreviewAssets]));
+ assert.deepEqual([...missingPreviewAssets],[],'All RPG backgrounds/assets must be readable from Pages deep routes');
  assert.equal(outgoing.length,0,'No GAS/analytics/LINE network requests in isolated Chapter3 preview');
  const ch3Report={engine,job:before.handoff.jobCode,goalHome:planText.trim(),
    incomePath1:firstStep.trim(),incomePath2:secondStep.trim(),
