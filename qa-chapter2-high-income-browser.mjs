@@ -107,11 +107,20 @@ try{
   'Public-cell match must guide the user to the missing consent gates');
  assert.equal(await matchStatus.getAttribute('aria-live'),'polite');
  assert.equal(await peers().count(),0,'Selecting published bracket alone does not prove population');
+ assert.equal(await page.locator('[data-section="PEER_REVIEW_SIGNALS"]').count(),0,
+  'Do not duplicate verification categories in a second list above the atlas');
+ assert.equal(await page.locator('[data-peer-review-signal]').count(),0,
+  'A pending worker or household-head check must not create a review signal');
  assert.equal(await page.locator('[data-peer-related-rate-category]').count(),0,'Seven related public items also require both cohort checks');
  await worker.check();
  assert.equal(await peers().count(),0,'Household-head age confirmation is independently required');
  await head.check();
  await assertRate('13.7%'); // 40–49, 1500+ source mean 132463 / 965121
+ const signal=page.locator('[data-peer-review-signal="food"]');
+ assert.equal(await signal.count(),1,
+  'A verified +2.3pt peer gap is annotated on food within its one atlas row');
+ assert.ok((await signal.innerText()).includes('参考率より高め'),
+  'A non-saving verification cue remains visible without a second list');
  assert.equal(await page.locator('[data-peer-related-rate-category]').count(),7,
   'Exactly seven additional related official public fee groups render only after cohort verification');
  const relatedCards=page.locator('[data-peer-related-rate-category]');
@@ -193,6 +202,8 @@ try{
  await assertRate('14.9%'); // age 50s, 1500+, 130143 / 870777
  await worker.uncheck();
  assert.equal(await peers().count(),0,'Withdrawing worker declaration immediately hides peer rates');
+ assert.equal(await page.locator('[data-peer-review-signal]').count(),0,
+  'Withdrawing the worker declaration must revoke every official review cue');
  assert.equal(await page.locator('[data-peer-related-rate-category]').count(),0,
   'Removing worker consent hides all seven public related expense rates');
  assert.equal(await page.locator('[data-peer-three-way-category]').count(),0,'Matched cards also vanish after worker revocation');

@@ -864,18 +864,8 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
      </label>
      <p>自営業・無職・不明ならチェック不要。回答は比較画面内だけに使うよ。</p>
     </div>}
-   {peerReviewSignals.length>0&&<section className="c2v32-reference-signals" data-section="PEER_REVIEW_SIGNALS">
-    <strong>🔎 比較から見つかった追加の確認ポイント</strong>
-    <p>統計と比べて負担割合が高い項目が{peerReviewSignals.length}件。<b>差がある＝減らせる、ではない</b>けど、内訳を見直す手がかりになるよ。</p>
-    <div>{peerReviewSignals.map(x=><details key={x.category} data-peer-review-signal={x.category}>
-     <summary><b>{x.label}</b><span>あなた {x.ownPct.toFixed(1)}% ／ 全国参考 {x.peerPctLow.toFixed(1)}{x.peerPctLow===x.peerPctHigh?'':'～'+x.peerPctHigh.toFixed(1)}%</span></summary>
-     <p>参考との差：＋{x.gapPointsLow.toFixed(1)}{x.gapPointsLow===x.gapPointsHigh?'':'～'+x.gapPointsHigh.toFixed(1)}pt</p>
-     <p>本人の月手取りに置き換えた参考差：{money(x.gapYenLow)}{x.gapYenLow===x.gapYenHigh?'':'～'+money(x.gapYenHigh)}／月。</p>
-     <small>参考差であり、節約の見込額・別枠の改善上限ではありません。
-      {x.overlapsCurrentCandidate?' 既存の見直し候補と重なるため、合算しないよ。':' 未確定の見直し候補に自動加算しません。'}
-      全国の2024年同一交差集計を利用。地域・世帯人数や用途の完全一致は未確認です。</small>
-    </details>)}</div>
-   </section>}
+   {/* Official same-cohort review signals now live on their matching atlas
+        row, never as a second list of the same categories before it. */}
    {incomeFoodReference?.available&&incomeFoodReference.monthlyMeanLowYen!==null&&incomeFoodReference.monthlyMeanHighYen!==null&&
     <details className="c2v32-income-food-context c2v32-income-food-context--merged c2v32-income-method-detail" data-section="INCOME_CLASS_FOOD_CONTEXT" aria-label="年収階級別の独立した支出参考の前提">
      <summary>{anyJointRateAvailable?'比較の仕組み・統計の対象を見る（任意）':'年収帯だけの参考について（年齢・地域は未反映）'}</summary>
@@ -952,6 +942,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       sameExpenseScopeConfirmed:sameScope,
       sourceVerified:sameAgeIncomePeer?.available===true,
      });
+     // No new estimate: reuse the validated peerReviewSignals cohort,
+     // expense-scope, source and sample gates; do not add to any saving.
+     const needsPeerReview=peerReviewSignals.some((v:any)=>v.category===x.category);
      const shareOfTakeHome=burdenRow?.shareOfTakeHomePct??null;
      const incomeMark=x.category==='food'?'INCOME_CLASS_FOOD_ROW':x.category==='energy'?'INCOME_CLASS_ENERGY_ROW':'INCOME_CLASS_DAILY_ROW';
      const deltaDescription=(delta:number|null,what:string)=>delta===null?''
@@ -971,6 +964,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <span className="c2v32-category-quick-own">{x.known&&Number.isFinite(Number(x.amount))?money(Number(x.amount))+'/月':'未入力'}</span>
         {shareOfTakeHome!==null&&<span>手取りの {Number(shareOfTakeHome).toFixed(1)}%</span>}
         {peerGap.available?<span className="c2v32-category-quick-peer">同年代の参考 {peerGap.peerPctLow.toFixed(1)}{peerGap.peerPctLow===peerGap.peerPctHigh?'':'～'+peerGap.peerPctHigh.toFixed(1)}%</span>:null}
+        {needsPeerReview&&<span className="c2v32-category-quick-review"
+         data-peer-review-signal={x.category}
+         aria-label="公式の同属性参考率より本人の支出割合が高め。差は削減可能額ではありません。">
+         🔎 参考率より高め · 内訳を確認
+        </span>}
         {nonnegative(x.cUpper)>0&&<b className="c2v32-category-quick-candidate">見直し候補 最大{money(nonnegative(x.cUpper))}（未確定）</b>}
        </div>
        <span className="c2v23-comparison-status">{status.mark} {status.name}</span>
