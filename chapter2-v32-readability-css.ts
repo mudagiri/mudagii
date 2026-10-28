@@ -888,25 +888,16 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v32-category-accordion[open]>.c2v32-category-summary .c2v32-category-arrow{
  transform:rotate(180deg);
 }
-.c2v32-rpg .c2v32-reference-signals{
- background:#153b40;border:1.5px solid #bba46e;border-radius:12px;
- padding:12px;margin:8px 0;color:#f4f1e2;
+/* One official verification signal per corresponding atlas row. The
+   source comparison is a review clue, never a savings badge or extra amount. */
+.c2v32-rpg .c2v32-category-quick-metrics>.c2v32-category-quick-review{
+ flex:1 1 100%;display:block;max-width:100%;
+ width:fit-content;padding:4px 7px;border-radius:7px;
+ border:1px solid #b78a49;background:#fff3db;
+ color:#573908!important;font-size:12px!important;
+ font-weight:850!important;line-height:1.5!important;
+ overflow-wrap:anywhere;
 }
-.c2v32-rpg .c2v32-reference-signals>strong{display:block;color:#ffdfa2;font-size:15px;font-weight:900}
-.c2v32-rpg .c2v32-reference-signals>p{color:#e8f1ec;font-size:13px!important;line-height:1.65!important;margin:7px 0!important}
-.c2v32-rpg .c2v32-reference-signals details{
- border-top:1px solid #637f78;padding:3px 0;margin:5px 0;
-}
-.c2v32-rpg .c2v32-reference-signals summary{
- display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:4px;
- min-height:44px;cursor:pointer;font-size:13px!important;line-height:1.55!important;color:#fef0c2!important;
-}
-.c2v32-rpg .c2v32-reference-signals summary:focus-visible{outline:3px solid #c6eadf;outline-offset:2px}
-.c2v32-rpg .c2v32-reference-signals p,
-.c2v32-rpg .c2v32-reference-signals small{
- color:#e6f0ee!important;font-size:13px!important;line-height:1.65!important;
-}
-.c2v32-rpg .c2v32-reference-signals small{display:block;font-size:12px!important}
 @media(max-width:350px){
  .c2v32-rpg .c2v32-category-accordion{padding:0 5px 6px}
  .c2v32-rpg .c2v32-category-quick-metrics{margin-left:48px;gap:3px 7px}
