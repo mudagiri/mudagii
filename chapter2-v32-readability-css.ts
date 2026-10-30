@@ -906,4 +906,27 @@ export const V32READABILITYCSS = `
 @media(prefers-reduced-motion:reduce){
  .c2v32-rpg .c2v32-category-arrow{transition:none}
 }
+
+/* One actionable comparison per category. These are provenance and fallback
+   references, not competing results: never display extra yen/percentage
+   until a user explicitly asks to inspect additional source assumptions. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-income-reference-secondary{
+ margin:6px 0;border-top:1px solid #d1d8ca;border-bottom:1px solid #d1d8ca;
+ background:#edf2ea;padding:0 9px;border-radius:8px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-income-reference-secondary>summary{
+ min-height:44px;display:flex;align-items:center;cursor:pointer;
+ font-size:13px!important;line-height:1.55!important;color:#27574b!important;
+ font-weight:850!important;touch-action:manipulation;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-income-reference-secondary>summary:focus-visible{
+ outline:3px solid #176e5c;outline-offset:2px;border-radius:5px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-income-reference-secondary>.c2v32-income-inline{
+ padding:4px 0 9px;max-width:100%;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-related-public-detail>summary,
+.c2v32-rpg .c2v22-comparison-ledger [data-peer-related-range-category]>summary{
+ color:#29564a!important;font-size:13px!important;
+}
 `;
