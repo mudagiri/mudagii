@@ -1055,7 +1055,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
       </p>}
        </details>}
-      {comparable?<div className="c2v22-comparison-source c2v32-comparison-context">
+      {comparable&&<div className="c2v22-comparison-source c2v32-comparison-context">
        <p className="c2v32-context-brief"><b>比較条件：</b>{comparisonBasis(x)}</p>
        <button type="button" className="c2v32-evidence-toggle"
         aria-expanded={comparisonEvidence===x.category}
