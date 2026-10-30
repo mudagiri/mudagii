@@ -906,4 +906,27 @@ export const V32READABILITYCSS = `
 @media(prefers-reduced-motion:reduce){
  .c2v32-rpg .c2v32-category-arrow{transition:none}
 }
+
+/* A single primary comparison is visible. Historical, marginal and related
+   statistical material is accessible, but never presented as a rival benchmark. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context{
+ margin:6px 8px 10px;padding:0 8px;
+ border-top:1px solid #b3c4b9;
+ background:#f0f5f0;border-radius:7px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>summary{
+ display:flex;align-items:center;min-height:48px;cursor:pointer;
+ color:#1d5144!important;font-size:13px!important;line-height:1.5!important;
+ font-weight:900!important;touch-action:manipulation;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>summary:focus-visible{
+ outline:3px solid #176b58;outline-offset:2px;border-radius:6px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>.c2v32-secondary-source-note{
+ margin:5px 0 8px;color:#365749!important;
+ font-size:12px!important;line-height:1.7!important;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context[open]{
+ padding-bottom:8px;
+}
 `;
