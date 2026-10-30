@@ -742,11 +742,11 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <p className="c2v22-ledger-intro">あなたの支出と比べ方を12カテゴリで確認。気になる敵だけ詳しく見よう。</p>
    <div className="c2v32-peer-guide c2v32-peer-guide--compact" data-section="JOINT_PEER_COMPARISON_GUIDE">
     <strong>同年代 × 世帯区分 × 額面年収帯で比べる</strong>
-    <p>参考データは3種類。<b>同じ公表区分の3費目</b>／<b>関連公表費目のみ7カテゴリ</b>／<b>単独の公表費目なし2カテゴリ</b>。差は削減額ではないよ。</p>
+    <p>まずは<strong>あなたの支出・判定・見直す理由</strong>を見よう。比べられる項目には参考の目安を<strong>1つ</strong>表示するよ。</p>
     <details className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND">
-     <summary>どの統計と比較しているかを見る</summary>
-     <p>食費・光熱水道・日用品：年齢・単身／二人以上・額面年収帯が同時に公表された原表セルから、公式の関連費目支出率を表示。診断の支出範囲との完全一致は保証できません。</p>
-     <p>ほかの7カテゴリ：公表費目は似ているものの対象範囲が異なるため、「関連参考」に限ります。サブスク・自己投資は直接対応する単独の公表費目がありません。</p>
+     <summary>比較のルール・出典を見る（任意）</summary>
+     <p>食費・光熱水道・日用品は、年齢・世帯区分・額面年収帯が同時に公表された2024年の原表セルを優先。診断の支出範囲との完全一致は保証できません。</p>
+     <p>ほかの7カテゴリは公表費目の対象範囲が異なるため、公式の関連値を主たる比較基準に使いません。サブスク・自己投資には直接対応する単独の公表費目がありません。</p>
      <p>世帯主年齢・勤労状況・標本数が一致した場合のみ同年代の参考率を表示。二人以上の人数や地域は完全一致ではありません。</p>
      <small>出典：総務省「2024年全国家計構造調査」第1-29-1表。本人割合は支出÷月手取り、全国参考率は同じ公表セルの平均費目支出÷平均可処分所得。差額＝ムダ・削減額ではありません。</small>
     </details>
@@ -996,11 +996,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        data-peer-3way-unavailable={x.category}>
        同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
       </p>}
-      {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
+      {incomeRange&&!sameAgeIncomePeer?.available&&<details className="c2v32-income-reference-secondary" data-section={'INCOME_REFERENCE_SECONDARY_'+x.category}>
+       <summary>{comparable?'別条件の支出参考を見る（任意）':'年収帯の参考額を見る（同年代の平均ではない）'}</summary>
+       <div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
-       <small>年収帯だけの支出参考であり、同年代の平均負担率ではありません。</small>
-      </div>}
+       <small>年収帯だけの別条件の支出参考。本人と同じ年代の平均ではなく、判定にも使用しません。</small>
+       </div>
+      </details>}
       {sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-peer-evidence" data-age-income-worker-peer-category={x.category}>
        <summary>この参考率の条件・出典を見る（2024年・全国）</summary>
        <div className="c2v32-peer-evidence-body">
@@ -1011,11 +1014,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       </details>}
       {relatedPublicItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income c2v32-related-public-detail"
        data-section={'OFFICIAL_RELATED_PEER_'+x.category} data-peer-related-rate-category={x.category}>
-       <summary>関連公表費目の参考（診断項目の平均ではない）：
-        <b>{relatedPublicItems[0].label} {relatedPublicItems[0].officialRelatedRatePct.toFixed(2)}%</b>
-        {relatedPublicItems.length>1&&<small>ほか{relatedPublicItems.length-1}費目</small>}
-        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
-       </summary>
+       <summary>公表統計の補足を見る（診断項目の平均ではない）<span aria-hidden="true" className="c2v32-related-open-hint">▾</span></summary>
        <div className="c2v32-worker-rate-head"><span>全国・二人以上の勤労者世帯／2024年</span><strong>公表費目（診断の平均とは別）</strong></div>
        <ul>{relatedPublicItems.map(item=><li key={item.code}>
         <span>{item.label}：<b>{item.officialRelatedRatePct.toFixed(2)}%</b> （月 {money(item.averageMonthlyExpenseYen)}）</span>
@@ -1026,11 +1025,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       {related50manItems.length>0&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--age-income"
        data-section={'OFFICIAL_RELATED_MIDDLE_SINGLE_'+x.category}
        data-peer-related-range-category={x.category}>
-       <summary>関連公表費目の参考（診断項目の平均ではない）：
-        <b>{related50manItems[0].label} {related50manItems[0].ratePctLow.toFixed(2)}{related50manItems[0].ratePctLow===related50manItems[0].ratePctHigh?'':' ～ '+related50manItems[0].ratePctHigh.toFixed(2)}%</b>
-        {related50manItems.length>1&&<small>ほか{related50manItems.length-1}費目</small>}
-        <span aria-hidden="true" className="c2v32-related-open-hint">詳細を見る ▾</span>
-       </summary>
+       <summary>公表統計の補足を見る（診断項目の平均ではない）<span aria-hidden="true" className="c2v32-related-open-hint">▾</span></summary>
        <p>全国の勤労者{multiCohort?'二人以上':'単身'}世帯。診断カテゴリそのものの平均ではありません。</p>
        <ul>{related50manItems.map(item=><li key={item.code}>
         <span>{item.label}：<b>{item.ratePctLow.toFixed(2)}{item.ratePctLow===item.ratePctHigh?'':' ～ '+item.ratePctHigh.toFixed(2)}%</b>
@@ -1040,14 +1035,14 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <small>同一交差表の50万円階級{relatedOriginal50man2024?.available?relatedOriginal50man2024.sourceRows:0}区分を個別確認（最小概数標本{relatedOriginal50man2024?.available?relatedOriginal50man2024.minCellSample:'—'}世帯）。各原表セルの参考率の最小～最大であり、個人の分布幅でも複数階級を合算した公式平均でもありません。本人との差額・削減額には反映しません。</small>
       </details>}
       {workerCategory&&!sameAgeIncomePeer?.available&&<details className="c2v32-worker-rate-card c2v32-worker-rate-card--income-only" data-worker-rate-category={x.category}>
-       <summary>年収帯のみの負担率参考（同年代とは限りません）</summary>
+       <summary>別条件の統計資料を見る（同年代ではない）</summary>
        <div className="c2v32-worker-rate-head"><span><strong>2025年・年収帯だけの勤労者世帯参考</strong></span><strong>{workerCategory.ratePctLow.toFixed(1)}{workerCategory.ratePctLow===workerCategory.ratePctHigh?'':' ～ '+workerCategory.ratePctHigh.toFixed(1)}%</strong></div>
        <p>年齢を照合した参考負担率ではないため、あなたとの差や月額の見直し余地は算出しません。</p>
        <small>出典：総務省「家計調査」（2025年）・{workerBurdenReference.source?.table}／{workerBurdenReference.source?.population}。同じ所得階級の平均支出 ÷ 平均可処分所得。年齢は未反映。</small>
       </details>}
       {!sameAgeIncomePeer?.available&&(lens.primaryDeltaYen!==null||incomeRange&&lens.incomeDeltaYen!==null)&&
        <details className="c2v32-auxiliary-comparisons" data-section={'OTHER_REFERENCE_'+x.category}>
-        <summary>ほかの比較目安を見る（同条件の平均ではありません）</summary>
+        <summary>採用していない別条件の目安を見る（任意）</summary>
       {lens.primaryDeltaYen!==null&&<p className="c2v32-comparison-story" data-comparison-story={x.category}><b>今回の比較：</b>あなたの「{x.label||x.category}」は、{comparisonBasis(x)}の{deltaDescription(lens.primaryDeltaYen,'参考目安')}です。</p>}
       {incomeRange&&lens.incomeDeltaYen!==null&&<p className="c2v32-comparison-story c2v32-income-story" data-income-story={x.category}>
        <b>年収帯の比較：</b>{lens.incomeDeltaYen===0?'あなたの支出は全国の年収帯別参考の範囲内です。':`あなたの「${x.label||x.category}」は全国の同年収帯の参考より月 ${money(Math.abs(lens.incomeDeltaYen))} ${lens.incomeDeltaYen>0?'多め':'少なめ'}です。`}
