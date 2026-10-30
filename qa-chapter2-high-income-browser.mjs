@@ -128,6 +128,9 @@ try{
  for(const key of ['mobile','car','insurance']){
   const row=page.locator('[data-comparison-category="'+key+'"]');
   if(!(await row.evaluate(el=>el.open)))await row.locator(':scope > summary').click();
+  const source=row.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_'+key+'"]');
+  assert.equal(await source.evaluate(el=>el.open),false,'One source drawer, closed by default');
+  await source.locator(':scope > summary').click();
   const detail=row.locator('[data-peer-related-rate-category="'+key+'"]');
   assert.equal(await detail.evaluate(el=>el.open),false,
    'Related public fees start collapsed inside the selected category');
@@ -244,6 +247,8 @@ try{
   '30s multi 500–599 official original supports all seven related public fee groups');
  if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
   await page.locator('[data-comparison-category="mobile"] > summary').click();
+ const midSource=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_mobile"]');
+ if(!(await midSource.evaluate(el=>el.open)))await midSource.locator(':scope > summary').click();
  const midComm=page.locator('[data-peer-related-range-category="mobile"]');
  await midComm.locator('summary').click();
  assert.ok((await midComm.innerText()).includes('2.92 ～ 2.94%'),
@@ -266,6 +271,8 @@ try{
   'Do not invent single-household children education expenses');
  if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
   await page.locator('[data-comparison-category="mobile"] > summary').click();
+ const singleSource=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_mobile"]');
+ if(!(await singleSource.evaluate(el=>el.open)))await singleSource.locator(':scope > summary').click();
  const singleComm=page.locator('[data-peer-related-range-category="mobile"]');
  await singleComm.locator('summary').click();
  assert.ok((await singleComm.innerText()).includes('2.74 ～ 3.07%'),
