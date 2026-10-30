@@ -53,13 +53,16 @@ try{
  assert.equal(await page.locator('[data-section="MULTI_HIGH_INCOME_CLASS_OPTIN"]').count(),1);
  const legend=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
  assert.equal(await legend.count(),1,'One readable source-scope guide must precede all twelve enemy cards');
+ const guideText=await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText();
+ assert.ok(guideText.includes('ひとつの目安')&&!guideText.includes('参考データは3種類'),
+  'Do not burden result readers with taxonomy of three statistics sources');
  assert.equal(await legend.evaluate(el=>el.open),false,
   'Complete official source-scope explanation is hidden by default');
  assert.equal(await page.locator('[data-section="PEER_2024_CATEGORY_COVERAGE_AUDIT"]').count(),0,
   'Do not duplicate category-by-category methodology before the actual results');
  await legend.locator('summary').click();
  const sourceLegend=await legend.innerText();
- for(const marker of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
+ for(const marker of ['食費・光熱水道・日用品','その他のカテゴリ','標本数']){
   assert.ok(sourceLegend.includes(marker),'Missing optional official source-scope evidence: '+marker);
  }
  await legend.locator('summary').click();
@@ -128,6 +131,10 @@ try{
  for(const key of ['mobile','car','insurance']){
   const row=page.locator('[data-comparison-category="'+key+'"]');
   if(!(await row.evaluate(el=>el.open)))await row.locator(':scope > summary').click();
+  const sourcePanel=row.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_'+key+'"]');
+  assert.equal(await sourcePanel.evaluate(el=>el.open),false,
+   'Secondary public rates must not compete with the primary benchmark');
+  await sourcePanel.locator(':scope > summary').click();
   const detail=row.locator('[data-peer-related-rate-category="'+key+'"]');
   assert.equal(await detail.evaluate(el=>el.open),false,
    'Related public fees start collapsed inside the selected category');
@@ -244,6 +251,8 @@ try{
   '30s multi 500–599 official original supports all seven related public fee groups');
  if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
   await page.locator('[data-comparison-category="mobile"] > summary').click();
+ const midSource=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_mobile"]');
+ if(!(await midSource.evaluate(el=>el.open)))await midSource.locator(':scope > summary').click();
  const midComm=page.locator('[data-peer-related-range-category="mobile"]');
  await midComm.locator('summary').click();
  assert.ok((await midComm.innerText()).includes('2.92 ～ 2.94%'),
@@ -266,6 +275,8 @@ try{
   'Do not invent single-household children education expenses');
  if(!(await page.locator('[data-comparison-category="mobile"]').evaluate(el=>el.open)))
   await page.locator('[data-comparison-category="mobile"] > summary').click();
+ const singleSource=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_mobile"]');
+ if(!(await singleSource.evaluate(el=>el.open)))await singleSource.locator(':scope > summary').click();
  const singleComm=page.locator('[data-peer-related-range-category="mobile"]');
  await singleComm.locator('summary').click();
  assert.ok((await singleComm.innerText()).includes('2.74 ～ 3.07%'),
