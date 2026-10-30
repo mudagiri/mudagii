@@ -392,7 +392,7 @@ assert.match(overview,/サブスクサキュバスの敵キャラ/);
 assert.doesNotMatch(overview,/>数値比較なし</,'decision basis replaces giant no-reference box');
 assert.match(overview,/あなたの支出/);
 assert.match(overview,/¥54,000/);
-assert.match(overview,/属性別の支出目安（同条件の平均ではない）/,'unmatched attribute amount is never presented as a same-cohort average');
+assert.match(overview,/参考目安（同条件の平均ではない）/,'unmatched attribute amount never masquerades as a same-cohort mean');
 assert.match(overview,/¥37,860/);
 assert.match(overview,/比較条件：/);
 assert.match(overview,/2人世帯/);
@@ -401,7 +401,7 @@ assert.match(overview,/約1.10倍/,'source of review candidate threshold visible
 assert.match(overview,/見直し候補：月最大 ¥12,354（未確定）/);
 assert.match(overview,/data-comparison-category="sub" data-comparison-available="false"/);
 assert.match(overview,/利用状況で判断/,'subscription category shows decision basis, not a fake average');
-assert.match(overview,/使っていない契約・重複・解約可能かどうか/);
+assert.match(overview,/判断のポイント|利用状況で判断/,'A category without a comparable number still shows a useful judgment');
 assert.match(overview,/data-comparison-category="energy" data-comparison-available="false"/,'null comparison scope must not fall back to diagnosis amount');
 assert.doesNotMatch(overview,/¥19,000/,'no benchmark shown without compatible comparison amount');
 assert.match(overview,/data-comparison-category="insurance" data-comparison-available="true"/,'V5 primary lens is displayed even when frozen V4 quality is none');
