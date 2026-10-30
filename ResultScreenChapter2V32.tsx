@@ -42,6 +42,12 @@ type Props={
  onEvent?:(name:string,data?:Record<string,unknown>)=>void;
  onRestart?:()=>void;
  onBeforeExternal?:()=>void;
+ /** Isolated Chapter 3 V2 entry — only supplied by an explicit preview parent. */
+ onChapter3?:(goal:string|null)=>void;
+ initialChapter3Goal?:string|null;
+ consultFromChapter3?:boolean;
+ chapter3ConsultTopic?:string|null;
+ chapter3Error?:string;
 };
 
 const ART={
@@ -258,7 +264,7 @@ async function createQuestShareCard(jobCode?:string):Promise<File|null>{
  return blob?new File([blob],'mudagiri-household-quest.png',{type:'image/png'}):null;
 }
 
-export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal}:Props){
+export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=false,answerCheckAnonymousUserId=null,answerCheckDemo=false,pilotNoExternalActions=false,coverageDryRun=false,onLine,onEvent,onRestart,onBeforeExternal,onChapter3,initialChapter3Goal=null,consultFromChapter3=false,chapter3ConsultTopic=null,chapter3Error=''}:Props){
  const [opened,setOpened]=useState<string|null>(null);
  const [comparisonEvidence,setComparisonEvidence]=useState<string|null>(null);
  const [expandedCategory,setExpandedCategory]=useState<string|null>(null);
@@ -273,8 +279,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  const [multiHighGrossBand,setMultiHighGrossBand]=useState<HighGrossBand2024V1|null>(null);
  const [multiGrossOverride,setMultiGrossOverride]=useState<string|null>(null);
  const [headWorkerConfirmed,setHeadWorkerConfirmed]=useState(false);
- const [goal,setGoal]=useState<string|null>(null);
- const [showLine,setShowLine]=useState(false);
+ const [goal,setGoal]=useState<string|null>(initialChapter3Goal);
+ const [showLine,setShowLine]=useState(consultFromChapter3);
+ const [consultEntryFromChapter3,setConsultEntryFromChapter3]=useState(consultFromChapter3);
  const [showCoverageLine,setShowCoverageLine]=useState(false);
  const [coverageCopyError,setCoverageCopyError]=useState('');
  const [shareStatus,setShareStatus]=useState('');
@@ -463,6 +470,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   }
  }
  function consultation(placement:'after_rewards'|'goal_quest'='after_rewards'){
+  setConsultEntryFromChapter3(false);
   onEvent?.('chapter2_v2_consultation_cta_clicked',{placement,goal:goal??null,confirmedSavingAvailable:confirmed>0});
   onEvent?.('chapter2_v31_consultation_modal_opened',{placement,goal:goal??null});
   setShowLine(true);
@@ -1189,6 +1197,18 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   </section>
 
 
+  {onChapter3&&<section className="c2v2-card c2v31-goals" data-section="CHAPTER3_V2_ENTRY" aria-label="未来への冒険">
+   <span className="c2v2-kicker">CHAPTER III ／ 未来の航路【隔離プレビュー】</span>
+   <h2>次は、未来へ進む番だよ。</h2>
+   <p>第1章で知った自分の戦い方と、今回の家計の手がかりを連れていこう。もう答えた目的地は、聞き直さないよ。</p>
+   <p className="c2v2-note">第3章で使うのはJOB・STYLEと12カテゴリの確認状況、見直し機会・未確定候補。金額を実際に貯めたお金とは扱いません。第2章から直接相談することもできます。</p>
+   {chapter3Error&&<p role="alert" className="c2v2-note">{chapter3Error}</p>}
+   <button type="button" className="c2v2-primary" onClick={()=>{
+    onEvent?.('chapter3_v2_entry_requested',{from:'chapter2_v32',goalSelected:!!goal});
+    onChapter3(goal);
+   }}>⚑ 未来の地図をひらく →</button>
+  </section>}
+
   <section className="c2v2-card c2v2-sharing c2v31-sharing" data-section="HOUSEHOLD_SHARE">
    <span className="c2v2-kicker">SHARE YOUR QUEST ／ 共有する</span><h2>この冒険、友達にも教える？</h2>
    <p>{jobAsset?'第1章で獲得した冒険者JOBとクリア記念のカードを共有できるよ。':'家計クエスト完全クリアの記念カードを共有できるよ。'}金額・家計情報は載せないよ。</p>
@@ -1224,8 +1244,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
  </div>}
  {showLine&&<div className="c2v2-overlay" role="presentation" onClick={()=>setShowLine(false)}>
   <section className="c2v2-modal" role="dialog" aria-modal="true" aria-labelledby="c2v2-modal-title" onClick={e=>e.stopPropagation()}>
-   <span className="c2v2-kicker">NEXT QUEST / LIFE PLAN</span>
-   <h2 id="c2v2-modal-title">ライフプラン相談の案内へ</h2>
+   <span className="c2v2-kicker">{consultEntryFromChapter3?'NEXT QUEST / YOUR STRATEGY':'NEXT QUEST / LIFE PLAN'}</span>
+   <h2 id="c2v2-modal-title">{consultEntryFromChapter3?'この作戦を相談する':'ライフプラン相談の案内へ'}</h2>
+   {consultEntryFromChapter3&&chapter3ConsultTopic&&<p className="c2v2-talk">今回の相談テーマ：{chapter3ConsultTopic}</p>}
    <p>{pilotNoExternalActions?'これは調査用の案内画面です。公式LINEへの移動や相談予約は行われません。':'公式LINEで案内を確認して、相談したい内容や日程を調整しよう。友だち追加だけでは予約は確定しません。'}</p>
    <p className="c2v2-code">引き継ぎコード：{handoffCode(vm.diagnosisId)}</p>
    <button className="c2v2-primary" onClick={confirmConsultation}>公式LINEで無料相談の案内を受け取る →</button>
