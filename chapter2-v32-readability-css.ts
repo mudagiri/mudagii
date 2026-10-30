@@ -929,4 +929,25 @@ export const V32READABILITYCSS = `
 .c2v32-rpg .c2v22-comparison-ledger [data-peer-related-range-category]>summary{
  color:#29564a!important;font-size:13px!important;
 }
+
+/* A single primary benchmark; one optional 44pt+ evidence drawer. */
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context{
+ margin:8px 8px 10px;padding:0 9px;border:1px solid #b7c9b7;
+ background:#f0f5ef;border-radius:9px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>summary{
+ display:flex;align-items:center;min-height:48px;cursor:pointer;
+ color:#19493e!important;font-size:13px!important;font-weight:900!important;
+ line-height:1.55!important;touch-action:manipulation;overflow-wrap:anywhere;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>summary:focus-visible{
+ outline:3px solid #176b58;outline-offset:2px;border-radius:6px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context>.c2v32-secondary-source-note{
+ font-size:12px!important;line-height:1.65!important;
+ color:#36574a!important;margin:5px 0 9px;
+}
+.c2v32-rpg .c2v22-comparison-ledger .c2v32-category-source-context[open]{
+ padding-bottom:8px;
+}
 `;
