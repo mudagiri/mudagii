@@ -996,6 +996,10 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        data-peer-3way-unavailable={x.category}>
        同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
       </p>}
+      {(incomeRange||sameAgeIncomePeer?.available||relatedPublicItems.length>0||related50manItems.length>0||workerCategory||comparable)&&
+      <details className="c2v32-category-source-context" data-section={'CATEGORY_REFERENCE_EVIDENCE_'+x.category}>
+       <summary>出典・統計の補足を見る（任意）</summary>
+       <p className="c2v32-secondary-source-note">ここからは根拠の確認用。別の参考値を足したり、節約額として扱ったりしないよ。</p>
       {incomeRange&&!sameAgeIncomePeer?.available&&<details className="c2v32-income-reference-secondary" data-section={'INCOME_REFERENCE_SECONDARY_'+x.category}>
        <summary>{comparable?'別条件の支出参考を見る（任意）':'年収帯の参考額を見る（同年代の平均ではない）'}</summary>
        <div className="c2v32-income-inline" data-section={incomeMark}>
@@ -1065,6 +1069,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </div>
       </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
 
+      </details>}
       {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
        <span>⚔ <b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b></span>
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
