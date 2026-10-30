@@ -618,7 +618,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
       <p>基準との差：{chapter2V2SignedComparisonYen(comparisonTargetAmount(x)!-comparisonReferenceAmount(x)!)}/月
        <small>※この差はムダ額・改善額ではありません</small>
       </p>}
-    </>:<p>判定の手がかり：{noBenchmarkReason(x)}</p>}
+    </>:<p>判断のポイント：{noBenchmarkReason(x)}</p>}
     {x.aAmount>0&&<p>回答から確認できた改善額：<b>{money(Number(x.aAmount))}/月</b></p>}
     {x.cUpper>0&&<p>追加の確認余地：最大 {money(Number(x.cUpper))}/月 <small>※削減できると確定した金額ではありません</small></p>}
     <p className="c2v2-next-check"><b>次の確認：</b>{x.nextAction||x.nextCheck||'支出の内容を確認'}</p>
@@ -739,15 +739,15 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
   <section className="c2v2-card c2v31-encyclopedia" data-section="CATEGORY_ENCYCLOPEDIA">
    <span className="c2v2-kicker">ENEMY ATLAS ／ 敵図鑑</span>
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
-   <p className="c2v22-ledger-intro">あなたの支出と比べ方を12カテゴリで確認。気になる敵だけ詳しく見よう。</p>
+   <p className="c2v22-ledger-intro">支出と目安をひとつずつ確認。気になる項目だけ詳しく見よう。</p>
    <div className="c2v32-peer-guide c2v32-peer-guide--compact" data-section="JOINT_PEER_COMPARISON_GUIDE">
-    <strong>同年代 × 世帯区分 × 額面年収帯で比べる</strong>
-    <p>参考データは3種類。<b>同じ公表区分の3費目</b>／<b>関連公表費目のみ7カテゴリ</b>／<b>単独の公表費目なし2カテゴリ</b>。差は削減額ではないよ。</p>
+    <strong>あなたの支出と、判断の目安を見よう</strong>
+    <p>各カテゴリは<b>ひとつの目安</b>を中心に表示。比べられない項目は、支出の使い方から判断するよ。</p>
     <details className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND">
-     <summary>どの統計と比較しているかを見る</summary>
-     <p>食費・光熱水道・日用品：年齢・単身／二人以上・額面年収帯が同時に公表された原表セルから、公式の関連費目支出率を表示。診断の支出範囲との完全一致は保証できません。</p>
-     <p>ほかの7カテゴリ：公表費目は似ているものの対象範囲が異なるため、「関連参考」に限ります。サブスク・自己投資は直接対応する単独の公表費目がありません。</p>
-     <p>世帯主年齢・勤労状況・標本数が一致した場合のみ同年代の参考率を表示。二人以上の人数や地域は完全一致ではありません。</p>
+     <summary>比較条件・統計の使い方を見る（任意）</summary>
+     <p>食費・光熱水道・日用品は、年代・世帯区分・額面年収帯・勤労状況が一致する2024年の公表費目を優先して参考表示するよ。統計費目と診断項目の範囲が完全一致するとは限らないよ。</p>
+     <p>その他のカテゴリは別条件の参考目安や使い方の判断ポイントを表示。似た公表費目があっても診断カテゴリの平均として比べたり、削減額へ加えたりはしないよ。</p>
+     <p>世帯主年齢・勤労状況・標本数の条件を確認し、人数や地域まで一致しているとは主張しないよ。</p>
      <small>出典：総務省「2024年全国家計構造調査」第1-29-1表。本人割合は支出÷月手取り、全国参考率は同じ公表セルの平均費目支出÷平均可処分所得。差額＝ムダ・削減額ではありません。</small>
     </details>
    </div>
@@ -984,7 +984,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        <span><small>あなたの支出</small><b>{numericOrDash(x)}{x.known&&Number.isFinite(Number(x.amount))&&x.amount!==null?'/月':''}</b>
         {shareOfTakeHome!==null&&<small className="c2v32-inline-percent">あなたの手取りの <b>{Number(shareOfTakeHome).toFixed(1)}%</b></small>}
        </span>
-       <span className={!comparable?'c2v23-basis-mode':''}><small>{sameAgeIncomePeer?.available?'同年代×世帯区分×同年収帯の参考負担率':comparable?'属性別の支出目安（同条件の平均ではない）':'判定の手がかり'}</small>
+       <span className={!comparable?'c2v23-basis-mode':''}><small>{sameAgeIncomePeer?.available?'同年代×世帯区分×同年収帯の参考負担率':comparable?'参考目安（同条件の平均ではない）':'判定の手がかり'}</small>
         <b>{sameAgeIncomePeer?.available
           ?sameAgeIncomePeer.ratePctLow?.toFixed(1)+(sameAgeIncomePeer.ratePctLow===sameAgeIncomePeer.ratePctHigh?'':' ～ '+sameAgeIncomePeer.ratePctHigh?.toFixed(1))+'%'
           :comparable&&referenceAmount!==null?money(referenceAmount)+'/月':noNumber.title}</b>
@@ -996,6 +996,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        data-peer-3way-unavailable={x.category}>
        同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
       </p>}
+      <details className="c2v32-category-source-context" data-section={'CATEGORY_REFERENCE_EVIDENCE_'+x.category}>
+       <summary>目安の出典・参考資料を見る（任意）</summary>
+       <p className="c2v32-secondary-source-note">ここからは補足資料。別の統計を足したり、そのまま削減額にしたりはしないよ。</p>
       {incomeRange&&!sameAgeIncomePeer?.available&&<div className="c2v32-income-inline" data-section={incomeMark}>
        <div><small>年収 {incomeFoodReference?.profileBandLabel??'選択した区分'}の全国参考</small>
         <b>{incomeRange.low===incomeRange.high?money(incomeRange.low):money(incomeRange.low)+' ～ '+money(incomeRange.high)}/月</b></div>
@@ -1070,6 +1073,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        </div>
       </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
 
+      </details>
       {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
        <span>⚔ <b>見直し候補：月最大 {money(nonnegative(x.cUpper))}（未確定）</b></span>
        <small>まず確認：{x.nextAction||candidateReason(x)}</small>
