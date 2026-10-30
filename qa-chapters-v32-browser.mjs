@@ -335,6 +335,10 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'Do not duplicate 2025 income-only rate when matched 2024 age×income rate exists');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No invented age×income monthly buffer');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('2024年全国家計構造調査'),'Official joint 2024 source is identified');
+ const foodSource=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_food"]');
+ assert.equal(await foodSource.evaluate(el=>el.open),false,
+  'Only a single official reference result is visible, while alternatives remain in one source drawer');
+ await foodSource.locator(':scope > summary').click();
  const sameAge40=page.locator('[data-age-income-worker-peer-category="food"]');
  assert.equal(await sameAge40.count(),1,'30–39 age and 400–499 gross class must match OFFICIAL same-cell source');
  assert.equal(await sameAge40.evaluate(el=>el.open),false,'Reference evidence stays folded on first view');
@@ -367,6 +371,7 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
  await page.locator('[data-comparison-category="daily"] > summary').click();
+ await page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_daily"] > summary').click();
  await page.locator('[data-age-income-worker-peer-category="daily"] summary').click();
  assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
   'Official housewares+consumables comparison is narrower than all daily goods');
