@@ -33,6 +33,11 @@ const matchStatus=page.locator('[data-section="MULTI_HIGH_INCOME_MATCH_STATUS"]'
 async function changeAge(n){await age.selectOption(String(n));}
 async function selectGross(band){await annual.selectOption(band);}
 async function assertRate(pct){
+ const row=page.locator('[data-comparison-category="food"]');
+ if(!(await row.evaluate(el=>el.open)))await row.locator(':scope > summary').click();
+ const source=row.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_food"]');
+ await source.waitFor({state:'attached'});
+ if(!(await source.evaluate(el=>el.open)))await source.locator(':scope > summary').click();
  await food().waitFor({state:'visible',timeout:12000});
  const primary=page.locator('[data-comparison-category="food"] .c2v32-peer-gap-card--three-way');
  await primary.waitFor({state:'visible'});
