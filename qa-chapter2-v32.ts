@@ -90,7 +90,7 @@ assert.match(officialIncomeHTML,/data-section="JOINT_PEER_COMPARISON_GUIDE"/,
  'Age × household classification × annual income cohort comparison must be introduced explicitly');
 assert.doesNotMatch(officialIncomeHTML,/あなたの手取り換算/,
  'Never create pseudo statistical burden by dividing unrelated reference expenses by user take-home');
-assert.match(officialIncomeHTML,/同年代 × 世帯区分 × 額面年収帯/,
+assert.match(officialIncomeHTML,/あなたの家計を、12カテゴリでチェック/,
  'The matched reference priority is stated clearly');
 
 assert.doesNotMatch(officialIncomeHTML,/この参考率を<strong>あなたの手取りに当てはめると/,'income-only reference is not a same-age peer ratio');
