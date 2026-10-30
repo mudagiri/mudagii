@@ -288,11 +288,17 @@ await clickButton(/診断結果を見る/);
  assert.equal(await singleIncomeOpt.count(),1,'Single households can opt into a standalone 2025 income reference');
  assert.equal(await page.locator('[data-section="INCOME_CLASS_FOOD_CONTEXT"]').count(),1,
   'Chosen profile income should activate statistical reference on initial result render');
+ const altReference=page.locator('[data-section="INCOME_REFERENCE_SECONDARY_food"]');
+ assert.equal(await altReference.count(),1,'One independent income-only source remains available');
+ assert.equal(await altReference.evaluate(el=>el.open),false,
+  'A second income-only number must not appear as a competing default comparison');
  assert.equal(await singleIncomeOpt.evaluate(el=>el.open),false,
   'A previously answered income bracket needs no duplicate expanded question');
  assert.match(await singleIncomeOpt.locator(':scope > summary').innerText(),/比較条件を変更する/,
   'User sees an optional edit, not a second requested gross-income answer');
- assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
+ assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('あなたの家計を、12カテゴリでチェック'));
+ assert.ok(!(await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('参考データは3種類'),
+  'The initial result does not force statistics taxonomy on the user');
  const sourceGuide=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
  assert.equal(await sourceGuide.count(),1,'One global source-scope explanation replaces nine duplicated category paragraphs');
  assert.equal(await sourceGuide.evaluate(el=>el.open),false,'Methodological detail begins collapsed');
