@@ -46,5 +46,7 @@ assert.ok(ui.includes("chapter2OfficialPeerCoverageV1(x.category).userNotice"));
 assert.ok(ui.includes('PEER_SCOPE_CAVEAT_'));
 assert.ok(!ui.includes('peerReferenceFor(x.category)?.eligibleForReviewBuffer===true'),
  'Published peer expense must never become a saving');
-assert.match(ui,/同年代 × 世帯区分 × 額面年収帯/);
+assert.match(ui,/あなたの支出と、判断の目安を見よう/);
+assert.ok(!ui.includes('参考データは3種類'), 'The reader should not have to choose between three statistical lenses');
+assert.ok(ui.includes("CATEGORY_REFERENCE_EVIDENCE_"),'Secondary statistical sources must be available on demand');
 console.log('CHAPTER2_2024_PEER_CATEGORY_SCOPE_AUDIT_PASS');
