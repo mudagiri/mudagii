@@ -292,7 +292,9 @@ await clickButton(/診断結果を見る/);
   'A previously answered income bracket needs no duplicate expanded question');
  assert.match(await singleIncomeOpt.locator(':scope > summary').innerText(),/比較条件を変更する/,
   'User sees an optional edit, not a second requested gross-income answer');
- assert.ok((await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText()).includes('同年代 × 世帯区分 × 額面年収帯'));
+ const overviewHint=await page.locator('[data-section="JOINT_PEER_COMPARISON_GUIDE"]').innerText();
+ assert.ok(overviewHint.includes('ひとつの目安')&&!overviewHint.includes('参考データは3種類'),
+  'Results show ONE usable comparison at a time, not a taxonomy of incompatible averages');
  const sourceGuide=page.locator('[data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND"]');
  assert.equal(await sourceGuide.count(),1,'One global source-scope explanation replaces nine duplicated category paragraphs');
  assert.equal(await sourceGuide.evaluate(el=>el.open),false,'Methodological detail begins collapsed');
@@ -300,7 +302,7 @@ await clickButton(/診断結果を見る/);
   'Nine repeated long scope paragraphs do not compete with twelve category results');
  await sourceGuide.locator('summary').click();
  const sourceText=await sourceGuide.innerText();
- for(const word of ['食費・光熱水道・日用品','ほかの7カテゴリ','サブスク・自己投資','標本数']){
+ for(const word of ['食費・光熱水道・日用品','その他のカテゴリ','標本数']){
   assert.ok(sourceText.includes(word),'Missing optional statistical scope: '+word);
  }
  await sourceGuide.locator('summary').click();
@@ -329,6 +331,10 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-worker-rate-category="food"]').count(),0,'Do not duplicate 2025 income-only rate when matched 2024 age×income rate exists');
  assert.equal(await page.locator('[data-section="REFERENCE_RECHECK_BUFFER"]').count(),0,'No invented age×income monthly buffer');
  assert.ok((await page.locator('[data-section="AGE_INCOME_PEER_RATE_SOURCE_NOTICE"]').innerText()).includes('2024年全国家計構造調査'),'Official joint 2024 source is identified');
+ const foodSourcePanel=page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_food"]');
+ assert.equal(await foodSourcePanel.evaluate(el=>el.open),false,
+  'Matched 2024 source rationale is secondary, not a second headline comparison');
+ await foodSourcePanel.locator(':scope > summary').click();
  const sameAge40=page.locator('[data-age-income-worker-peer-category="food"]');
  assert.equal(await sameAge40.count(),1,'30–39 age and 400–499 gross class must match OFFICIAL same-cell source');
  assert.equal(await sameAge40.evaluate(el=>el.open),false,'Reference evidence stays folded on first view');
@@ -361,6 +367,7 @@ await clickButton(/診断結果を見る/);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="energy"]').count(),1);
  assert.equal(await page.locator('[data-age-income-worker-peer-category="daily"]').count(),1);
  await page.locator('[data-comparison-category="daily"] > summary').click();
+ await page.locator('[data-section="CATEGORY_REFERENCE_EVIDENCE_daily"] > summary').click();
  await page.locator('[data-age-income-worker-peer-category="daily"] summary').click();
  assert.ok((await page.locator('[data-section="PEER_SCOPE_CAVEAT_daily"]').innerText()).includes('シャンプー'),
   'Official housewares+consumables comparison is narrower than all daily goods');
