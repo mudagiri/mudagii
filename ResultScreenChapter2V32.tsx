@@ -996,6 +996,9 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
        data-peer-3way-unavailable={x.category}>
        同じ年代・世帯区分・所得帯の全国参考率は確認できましたが、このカテゴリでは本人の支出と比較範囲・月手取りの対応を確認できないため、割合の差は計算しません。
       </p>}
+      {!comparable&&<p className="c2v22-comparison-source is-unavailable">
+       <b>{noNumber.title}：</b>{noNumber.detail}
+      </p>}
       {(incomeRange||sameAgeIncomePeer?.available||relatedPublicItems.length>0||related50manItems.length>0||workerCategory||comparable)&&
       <details className="c2v32-category-source-context" data-section={'CATEGORY_REFERENCE_EVIDENCE_'+x.category}>
        <summary>出典・統計の補足を見る（任意）</summary>
@@ -1067,7 +1070,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
         <p>比較の目安との差は、そのままムダ額・節約額ではありません。</p>
         {comparisonPrimaryV5(x)?.note&&<p>{comparisonPrimaryV5(x)!.note}</p>}
        </div>
-      </div>:<p className="c2v22-comparison-source is-unavailable"><b>{noNumber.title}：</b>{noNumber.detail}</p>}
+      </div>}
 
       </details>}
       {nonnegative(x.cUpper)>0&&<div className="c2v32-single-next-action" data-section={'CATEGORY_NEXT_ACTION_'+x.category}>
