@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {moneyPersonalityGasHealth,validateMoneyPersonalityGasUrl,DEDICATED_GAS_VERSION} from './check-money-personality-gas-health.mjs';
+const url='https://script.google.com/macros/s/AKfycb_SAMPLE_DO_NOT_CALL/exec';
+assert.equal(validateMoneyPersonalityGasUrl(''),'MISSING_ENDPOINT');
+assert.equal(validateMoneyPersonalityGasUrl('https://example.org/exec'),'INVALID_ENDPOINT_SHAPE');
+assert.equal(validateMoneyPersonalityGasUrl('https://script.google.com/macros/s/x/exec?secret=x'),'INVALID_ENDPOINT_SHAPE');
+assert.equal(validateMoneyPersonalityGasUrl(url),null);
+let observedCalls=0;
+const fakeOk=async(requestUrl,opts)=>{
+ observedCalls++;
+ assert.equal(requestUrl,url);
+ assert.equal(opts.method,'GET','health never performs data writes');
+ return {ok:true,json:async()=>({backend:'money_personality',gas_version:DEDICATED_GAS_VERSION,household_backend_separated:true})};
+};
+assert.deepEqual(await moneyPersonalityGasHealth(url,fakeOk),{ok:true,code:'DEDICATED_GAS_HEALTH_OK'});
+assert.equal(observedCalls,1);
+const fakeWrong=async()=>({ok:true,json:async()=>({backend:'household',gas_version:DEDICATED_GAS_VERSION,household_backend_separated:true})});
+assert.deepEqual(await moneyPersonalityGasHealth(url,fakeWrong),{ok:false,code:'WRONG_BACKEND_OR_VERSION'});
+const fakeHttp=async()=>({ok:false});
+assert.deepEqual(await moneyPersonalityGasHealth(url,fakeHttp),{ok:false,code:'HTTP_NOT_OK'});
+const fakeFail=async()=>{throw new Error('do not leak URL')};
+assert.deepEqual(await moneyPersonalityGasHealth(url,fakeFail),{ok:false,code:'HEALTH_UNREACHABLE_OR_INVALID_JSON'});
+console.log('DEDICATED_GAS_HEALTH_STATIC_QA_PASS');

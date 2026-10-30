@@ -1,0 +1,424 @@
+/* Result V14 — household-result quality bar.
+   Bring Money Personality Result back into the same premium RPG world:
+   full-scene hero, varied section silhouettes, Japanese title hierarchy, less generic app chrome. */
+
+:root{
+  --mpp-result-gold:#f4d76b;
+  --mpp-result-gold-2:#ffe99a;
+  --mpp-result-violet:#bda8ff;
+  --mpp-result-cyan:#65bfd4;
+  --mpp-result-teal:#6cc7b6;
+  --mpp-result-world:#08131d;
+  --mpp-result-world-2:#0b1a26;
+  --mpp-result-serif:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif;
+}
+
+/* World shell: no generic grid, no floating fintech card. */
+html body #root .mpp-page.mpp-page--result{
+  padding:0 0 calc(64px + env(safe-area-inset-bottom))!important;
+  background:
+    radial-gradient(circle at 70% 8%,rgba(138,104,215,.12),transparent 24%),
+    linear-gradient(180deg,#09141f 0%,#07131c 48%,#08121a 100%)!important;
+  background-image:
+    radial-gradient(circle at 70% 8%,rgba(138,104,215,.12),transparent 24%),
+    linear-gradient(180deg,#09141f 0%,#07131c 48%,#08121a 100%)!important;
+}
+html body #root .mpp-page.mpp-page--result::before,
+html body #root .mpp-page.mpp-page--result::after{display:none!important}
+html body #root .mpp-page--result .mpp-result{
+  width:min(100%,520px)!important;
+  margin:0 auto!important;
+  padding:0 12px 40px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* ACT 1 — the result is a scene, like household QUEST COMPLETE / TYPE UNLOCK. */
+html body #root .mpp-page--result .mpp-result-ssr-card{
+  width:calc(100% + 24px)!important;
+  min-height:650px!important;
+  margin:0 -12px 18px!important;
+  padding:calc(18px + env(safe-area-inset-top)) 18px 24px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  border:0!important;
+  border-bottom:1px solid rgba(244,215,107,.42)!important;
+  border-radius:0!important;
+  background:
+    linear-gradient(180deg,rgba(4,10,18,.18) 0%,rgba(5,12,22,.10) 30%,rgba(7,15,26,.58) 69%,rgba(8,18,29,.96) 100%),
+    url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_02_JOB_UNLOCK.webp') center 42%/cover no-repeat!important;
+  box-shadow:none!important;
+  isolation:isolate!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-card::before{
+  display:block!important;
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:-1!important;
+  opacity:1!important;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(185,148,255,.24),transparent 29%),
+    radial-gradient(circle at 50% 66%,rgba(255,221,115,.10),transparent 30%)!important;
+  transform:none!important;
+  animation:none!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-card::after{
+  display:block!important;
+  content:""!important;
+  position:absolute!important;
+  inset:auto 0 0!important;
+  width:auto!important;
+  height:44%!important;
+  transform:none!important;
+  border-radius:0!important;
+  background:linear-gradient(180deg,transparent,rgba(8,18,29,.94) 75%,#08121d)!important;
+  filter:none!important;
+  z-index:-1!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-badge{
+  margin:0 auto 7px!important;
+  padding:6px 12px!important;
+  border:1px solid rgba(244,215,107,.52)!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(81,64,28,.82),rgba(45,36,21,.76))!important;
+  box-shadow:0 0 26px rgba(244,215,107,.10)!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-badge b{
+  color:#ffe786!important;
+  font-size:13px!important;
+  letter-spacing:.12em!important;
+}
+html body #root .mpp-page--result .mpp-result-ssr-badge span{
+  color:#f0e7c2!important;
+  font-size:9.5px!important;
+}
+html body #root .mpp-page--result .mpp-kicker{
+  color:#e8d7a0!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.78);
+}
+html body #root .mpp-page--result .mpp-result-type-code{
+  margin:7px auto 0!important;
+}
+html body #root .mpp-page--result .mpp-result-type-code strong{
+  color:#fff2b8!important;
+  font-size:20px!important;
+  text-shadow:0 0 18px rgba(244,215,107,.16),0 2px 8px rgba(0,0,0,.7);
+}
+html body #root .mpp-page--result .mpp-result-type-code span{
+  border-color:rgba(255,255,255,.18)!important;
+  background:rgba(5,13,23,.44)!important;
+  color:#e5edf1!important;
+}
+html body #root .mpp-page--result .mpp-result-job-hero{
+  flex:1 1 auto!important;
+  min-height:250px!important;
+  margin:8px auto -6px!important;
+  align-content:end!important;
+}
+html body #root .mpp-page--result .mpp-result-job-hero::before{
+  width:min(74vw,290px)!important;
+  background:
+    radial-gradient(circle,rgba(195,158,255,.22),rgba(244,215,107,.08) 43%,transparent 72%)!important;
+}
+html body #root .mpp-page--result .mpp-result-job-character{
+  width:min(70vw,278px)!important;
+}
+html body #root .mpp-page--result .mpp-result-job-character img{
+  filter:drop-shadow(0 16px 14px rgba(0,0,0,.50)) drop-shadow(0 0 14px rgba(244,215,107,.09))!important;
+}
+html body #root .mpp-page--result .mpp-result-label{
+  margin-top:4px!important;
+  color:#dbe3e8!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:11px!important;
+  text-shadow:0 2px 8px #000;
+}
+html body #root .mpp-page--result .mpp-result-v4-hero h1{
+  max-width:410px!important;
+  margin:4px auto 9px!important;
+  color:#fff!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:clamp(34px,9.2vw,42px)!important;
+  font-weight:900!important;
+  line-height:1.14!important;
+  letter-spacing:.01em!important;
+  text-shadow:0 3px 11px rgba(0,0,0,.75),0 0 18px rgba(244,215,107,.08)!important;
+  word-break:keep-all!important;
+}
+html body #root .mpp-page--result .mpp-result-hero-line{
+  max-width:370px!important;
+  margin:0 auto 11px!important;
+  color:#fff5d1!important;
+  font-size:17px!important;
+  font-weight:760!important;
+  line-height:1.66!important;
+  text-shadow:0 2px 9px rgba(0,0,0,.82)!important;
+}
+html body #root .mpp-page--result .mpp-result-v4-scrollcue{
+  color:#e8eef1!important;
+  font-size:11.5px!important;
+  text-shadow:0 2px 8px #000;
+}
+
+/* Shared section headings — same Japanese RPG hierarchy as household Result. */
+html body #root .mpp-result-v9 .mpp-v9-kicker{
+  margin-bottom:7px!important;
+  color:var(--mpp-result-gold)!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:11.5px!important;
+  font-weight:900!important;
+  letter-spacing:.07em!important;
+}
+html body #root .mpp-v9-real h2,
+html body #root .mpp-v9-weapon h2,
+html body #root .mpp-v9-compare h2,
+html body #root .mpp-analysis-details .mpp-axis-block>h2{
+  font-family:var(--mpp-result-serif)!important;
+  word-break:keep-all!important;
+}
+
+/* ACT 2 — REAL LIFE / steel-blue field, not a generic dark card. */
+html body #root .mpp-v9-real{
+  padding:20px 16px 16px!important;
+  border:1px solid #446b7d!important;
+  border-radius:18px!important;
+  background:
+    radial-gradient(circle at 92% 7%,rgba(101,191,212,.12),transparent 25%),
+    linear-gradient(160deg,#123347,#0d2636 58%,#0b202e)!important;
+  box-shadow:0 16px 36px rgba(0,0,0,.24)!important;
+  backdrop-filter:none!important;
+}
+html body #root .mpp-v9-real h2{
+  color:#fff!important;
+  font-size:28px!important;
+  line-height:1.22!important;
+}
+html body #root .mpp-v9-scenes{
+  border-top-color:rgba(255,255,255,.10)!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene{
+  border-bottom-color:rgba(255,255,255,.10)!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene>small{
+  color:#b9d4df!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene>b{
+  font-size:15.5px!important;
+}
+html body #root .mpp-v9-scenes .mpp-v9-scene blockquote{
+  border-left-color:#e8c960!important;
+  background:rgba(5,19,29,.42)!important;
+  color:#fff0ad!important;
+}
+
+/* ACT 3 — the reveal gets an ornate violet/gold treatment. */
+html body #root .mpp-v9-truth{
+  position:relative!important;
+  overflow:hidden!important;
+  padding:22px 18px!important;
+  border:2px solid rgba(190,168,255,.60)!important;
+  border-radius:18px!important;
+  background:
+    radial-gradient(circle at 84% 14%,rgba(255,232,129,.12),transparent 27%),
+    linear-gradient(150deg,#302655,#1c2949 55%,#13233d)!important;
+  box-shadow:0 0 0 2px rgba(84,65,132,.22),0 18px 40px rgba(0,0,0,.25)!important;
+}
+html body #root .mpp-v9-truth::before,
+html body #root .mpp-v9-truth::after{
+  content:"";
+  position:absolute;
+  width:36px;
+  height:36px;
+  border-color:var(--mpp-result-gold);
+  opacity:.62;
+}
+html body #root .mpp-v9-truth::before{left:8px;top:8px;border-left:1px solid;border-top:1px solid}
+html body #root .mpp-v9-truth::after{right:8px;bottom:8px;border-right:1px solid;border-bottom:1px solid}
+html body #root .mpp-v9-truth small{
+  color:#f3d96f!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:12px!important;
+}
+html body #root .mpp-v9-truth b{
+  color:#fff!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:19px!important;
+  font-weight:800!important;
+  line-height:1.72!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+
+/* ACT 4 — GAP / cyan mirror panel. */
+html body #root .mpp-v9-gap{
+  padding:19px 15px!important;
+  border:1px solid #43849a!important;
+  border-radius:17px!important;
+  background:linear-gradient(160deg,#14384c,#102b3d 62%,#0d2232)!important;
+  box-shadow:0 15px 34px rgba(0,0,0,.20)!important;
+  backdrop-filter:none!important;
+}
+html body #root .mpp-v9-gap-grid article{
+  border:1px solid rgba(103,191,212,.22)!important;
+  background:rgba(5,23,34,.45)!important;
+}
+html body #root .mpp-v9-gap-grid article:last-child{
+  border-color:rgba(244,215,107,.28)!important;
+}
+html body #root .mpp-v9-gap-grid small{color:#9fc7d4!important}
+html body #root .mpp-v9-gap-grid article:last-child small{color:#ffe17b!important}
+
+/* ACT 5 — strength / green-gold battle-result panel. */
+html body #root .mpp-v9-weapon{
+  padding:20px 15px!important;
+  border:1px solid #5a947f!important;
+  border-radius:17px!important;
+  background:
+    radial-gradient(circle at 88% 10%,rgba(244,215,107,.10),transparent 25%),
+    linear-gradient(160deg,#173d3d,#102d33 56%,#0d222b)!important;
+  box-shadow:0 15px 34px rgba(0,0,0,.20)!important;
+  backdrop-filter:none!important;
+}
+html body #root .mpp-v9-weapon h2{
+  color:#fff2bd!important;
+  font-size:28px!important;
+}
+html body #root .mpp-v9-weapon-line article{
+  border-color:rgba(101,203,184,.20)!important;
+  background:rgba(5,22,25,.44)!important;
+}
+html body #root .mpp-v9-control{
+  border:1px solid rgba(244,215,107,.30)!important;
+  background:rgba(244,215,107,.085)!important;
+}
+
+/* ACT 6 — comparison / indigo, social curiosity peak. */
+html body #root .mpp-v9-compare{
+  padding:20px 15px 18px!important;
+  border:1px solid #6b65a5!important;
+  border-radius:17px!important;
+  background:
+    radial-gradient(circle at 88% 10%,rgba(190,168,255,.15),transparent 26%),
+    linear-gradient(160deg,#242d55,#192746 58%,#121e35)!important;
+  box-shadow:0 15px 34px rgba(0,0,0,.20)!important;
+  backdrop-filter:none!important;
+}
+html body #root .mpp-v9-compare h2{
+  color:#fff!important;
+  font-size:24px!important;
+}
+html body #root .mpp-v9-compare-grid article{
+  border:1px solid rgba(190,168,255,.18)!important;
+  background:rgba(8,17,34,.44)!important;
+}
+html body #root .mpp-v9-compare-grid article:first-child{
+  border-color:rgba(244,215,107,.42)!important;
+  background:rgba(244,215,107,.07)!important;
+}
+html body #root .mpp-v9-compare-share{
+  border-top-color:rgba(255,255,255,.12)!important;
+}
+
+/* Quiet detail layer. */
+html body #root .mpp-analysis-details>summary{
+  border:1px solid #385266!important;
+  background:linear-gradient(180deg,#102433,#0c1d29)!important;
+  color:#e9f0f4!important;
+}
+html body #root .mpp-analysis-details .mpp-axis-block{
+  padding:15px!important;
+  border:1px solid #304b5f!important;
+  border-top:0!important;
+  border-radius:0 0 14px 14px!important;
+  background:#0c1c29!important;
+}
+
+/* ACT 7 — next move is a reward scroll, not another dark tile. */
+html body #root .mpp-one-action{
+  padding:18px 16px!important;
+  border:1px solid #d1aa35!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 92% 7%,rgba(255,255,255,.42),transparent 23%),
+    linear-gradient(155deg,#f8e7a3,#eac65e)!important;
+  color:#423515!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.18)!important;
+}
+html body #root .mpp-one-action span{
+  color:#705700!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-weight:900!important;
+}
+html body #root .mpp-one-action b{
+  color:#3f3213!important;
+  font-size:16px!important;
+  font-weight:900!important;
+}
+
+/* ACT 8 — next quest uses the actual next-quest world art. */
+html body #root .mpp-result-v4-chapter-label{
+  margin-top:24px!important;
+  color:#f4d76b!important;
+  font-family:var(--mpp-result-serif)!important;
+}
+html body #root .mpp-next-quest{
+  min-height:225px!important;
+  padding:20px 18px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-end!important;
+  border:1px solid #567b91!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(180deg,rgba(5,16,24,.12),rgba(7,18,27,.38) 42%,rgba(8,20,31,.92) 100%),
+    url('/assets/mudagiri/backgrounds/money-personality/v1/MP_BG_03_NEXT_QUEST.webp') center/cover no-repeat!important;
+  box-shadow:0 18px 40px rgba(0,0,0,.23)!important;
+}
+html body #root .mpp-next-quest span{
+  color:#f4d76b!important;
+  font-family:var(--mpp-result-serif)!important;
+}
+html body #root .mpp-next-quest>b{
+  color:#fff!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:21px!important;
+  text-shadow:0 2px 9px rgba(0,0,0,.82);
+}
+html body #root .mpp-next-quest p{
+  max-width:330px;
+  color:#eef5f8!important;
+  font-size:13.5px!important;
+  font-weight:650!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.82);
+}
+html body #root .mpp-page--result button.mpp-primary{
+  min-height:57px!important;
+  border:1px solid #ffec9a!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,#f6d66e,#e9b742)!important;
+  color:#221b0d!important;
+  font-family:var(--mpp-result-serif)!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  box-shadow:0 7px 0 rgba(88,60,13,.54),0 12px 25px rgba(0,0,0,.24)!important;
+}
+html body #root .mpp-page--result button.mpp-primary:active{
+  transform:translateY(2px)!important;
+  box-shadow:0 5px 0 rgba(88,60,13,.54),0 9px 18px rgba(0,0,0,.22)!important;
+}
+html body #root .mpp-page--result button.mpp-ghost{
+  color:#9eb0bc!important;
+}
+
+@media(max-width:390px){
+  html body #root .mpp-page--result .mpp-result-ssr-card{min-height:620px!important}
+  html body #root .mpp-page--result .mpp-result-job-character{width:min(72vw,266px)!important}
+  html body #root .mpp-v9-real h2,
+  html body #root .mpp-v9-weapon h2{font-size:26px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html body #root .mpp-page--result *{scroll-behavior:auto!important}
+}
