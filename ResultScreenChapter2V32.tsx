@@ -741,7 +741,7 @@ export default function ResultScreenChapter2V32({vm,chapter1,answerCheckEnabled=
    <h2 className="c2v22-ledger-title">12カテゴリの比較一覧</h2>
    <p className="c2v22-ledger-intro">あなたの支出と比べ方を12カテゴリで確認。気になる敵だけ詳しく見よう。</p>
    <div className="c2v32-peer-guide c2v32-peer-guide--compact" data-section="JOINT_PEER_COMPARISON_GUIDE">
-    <strong>同年代 × 世帯区分 × 額面年収帯で比べる</strong>
+    <strong>あなたの家計を、12カテゴリでチェック</strong>
     <p>まずは<strong>あなたの支出・判定・見直す理由</strong>を見よう。比べられる項目には参考の目安を<strong>1つ</strong>表示するよ。</p>
     <details className="c2v32-coverage-legend" data-section="OFFICIAL_12_CATEGORY_REFERENCE_LEGEND">
      <summary>比較のルール・出典を見る（任意）</summary>
