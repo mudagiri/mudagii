@@ -8,8 +8,9 @@ import { ENEMY_ASSETS, type EnemyAssetCategory } from './enemy-assets-v1';
 import { TYPE_QUESTIONS_V31, scoreTypeAnswersV31, type RawAnswerV31, type TypeAnswersV31 } from './type-questionnaire-v3.1';
 import { runDiagnosisV2, type Category, type Satisfaction } from './mudagiri-diagnosis-v2';
 import { resolveComparableV1, type EducationStage } from './comparable-resolver-v1';
-import type { EducationStageV2 } from './comparable-resolver-v2';
+import { RESOLVER_V2_VERSION, type EducationStageV2 } from './comparable-resolver-v2';
 import {writeJourneyDraftV1,type JourneyDraftV1} from './resume-state-v1';
+import {chapter2V2ResumeScene} from './chapter2-v2-contract';
 import ProfileV4Scene from './ProfileV4Scene';
 import HouseholdTotalV4Scene from './HouseholdTotalV4Scene';
 import {emptyExpenseRecordsV4,type ExpenseRecordsV4} from './expense-record-v4';
@@ -28,6 +29,7 @@ type Props = {
   onFamilySelect: (profile: FamilyProfile) => void;
   onCompleteV3?: (v: {profile:{prefecture:string;age:number;household:FamilyProfile;householdSize:number;workStyle:string;housingType:string;monthlyTakeHome:number;diagnosisScope?:'personal'|'household';adultCount?:number;childCount?:number};annualIncomeBand:AnnualIncomeBand;annualIncomeResolverInput:number|null;rawExpenses:RawExpenses;typeAnswers:TypeAnswersV31;appraisal:AppraisalMap;finalJudgements:FinalCategoryV3[];methodologyVersion:string;resolverVersion:string;scopeV4?:{profile:ProfileV4;expenseRecords:ExpenseRecordsV4;comparisons:ComparisonFactsV4;finalJudgements:FinalCategoryV4[];confirmedMonthly:number;diagnosisMethodology:string|null}}) => void;
   onEvent?: (name:string,data?:Record<string,unknown>)=>void;
+  chapter2V2?:boolean;
   resumeDraft?: JourneyDraftV1|null;
   diagnosisId?: string;
   anonymousUserId?: string;
@@ -109,18 +111,18 @@ type ScanCategoryConfig = {
 };
 
 const SCAN_CATEGORIES: ScanCategoryConfig[] = [
-  { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ ＋ 自宅インターネット' },
-  { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・水道' },
-  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・アプリなど' },
-  { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊をあわせた目安' },
-  { category: 'daily', question: '普段の月の日用品費はいくら？', helper: '消耗品・雑貨。家具・家電など一時的な購入は除く' },
-  { category: 'fun', question: '普段の月の娯楽・交際費はいくら？', helper: '旅行・宿泊など一時的な大きな出費は除く' },
-  { category: 'beautyFashion', question: '普段の月の美容・服飾費はいくら？', helper: '美容院・服・コスメ。特別な一時購入は除く' },
-  { category: 'car', question: '毎月の車関連費はいくら？', helper: 'ローン・ガソリン・保険・駐車場など' },
-  { category: 'rent', question: '毎月の家賃・住宅ローンはいくら？', helper: '住居費の月額' },
-  { category: 'insurance', question: '毎月の保険料はいくら？', helper: '生命保険・医療保険など' },
-  { category: 'childEducation', question: '毎月の子どもの教育費はいくら？', helper: '子どもあり世帯のみ出現' },
-  { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '学び・資格・トレーニング等' },
+  { category: 'mobile', question: '毎月の通信費はいくら？', helper: 'スマホ・自宅ネット・端末分割。動画・音楽などの月額サービスはサブスクへ' },
+  { category: 'energy', question: '毎月の光熱費はいくら？', helper: '電気・ガス・灯油などの燃料・水道' },
+  { category: 'sub', question: '毎月のサブスク費はいくら？', helper: '動画・音楽・ゲーム月額パス・ジム月会費・配達会員費。美容院の月額会員は美容へ' },
+  { category: 'food', question: '毎月の食費はいくら？', helper: '外食・自炊・デリバリーの食品代。配達会員費はサブスクへ' },
+  { category: 'daily', question: '普段の月の日用品費はいくら？', helper: '雑貨・洗剤・シャンプーなど。化粧品や家具・家電は含めない' },
+  { category: 'fun', question: '普段の月の娯楽・交際費はいくら？', helper: '趣味・買切ゲーム・都度利用料。月額契約はサブスク、旅行・宿泊の一時支出は別確認' },
+  { category: 'beautyFashion', question: '普段の月の美容・服飾費はいくら？', helper: '美容院・服・コスメ・美容院の月額会員。シャンプー等の日常衛生は日用品へ' },
+  { category: 'car', question: '毎月の車関連費はいくら？', helper: 'ローン・燃料・自動車保険・駐車場。生命・医療保険や家賃とは分ける' },
+  { category: 'rent', question: '毎月の家賃・住宅ローンはいくら？', helper: '家賃・住宅ローンの月額。駐車場代は車関連費へ' },
+  { category: 'insurance', question: '毎月の保険料はいくら？', helper: '生命・医療などの保険料。自動車保険は車関連費へ' },
+  { category: 'childEducation', question: '毎月の子どもの教育費はいくら？', helper: '子どもの学費・塾・習い事。大人本人の講座は自己投資へ' },
+  { category: 'selfDevelopment', question: '毎月の自己投資費はいくら？', helper: '成人本人の資格・講座・教材。ジム月会費はサブスク、子の塾は教育費へ' },
 ];
 
 
@@ -253,11 +255,12 @@ export default function RpgBlock1({
   onFamilySelect,
   onCompleteV3,
   onEvent,
+  chapter2V2=false,
   resumeDraft,
   diagnosisId,
   anonymousUserId,
 }: Props) {
-  const [scene, setScene] = useState<Scene>(() => (resumeDraft?.scene as Scene) || (step === 'profile' ? 'profile' : 'opening'));
+  const [scene, setScene] = useState<Scene>(() => chapter2V2ResumeScene((resumeDraft?.scene as Scene) || (step === 'profile' ? 'profile' : 'opening'),chapter2V2) as Scene);
   const [selectedToneMode,setSelectedToneMode]=useState<ToneMode>((resumeDraft?.toneMode as ToneMode)||toneMode);
   const [questionIndex, setQuestionIndex] = useState(resumeDraft?.questionIndex??0);
   const [flow, setFlow] = useState<ProfileFlow>(()=>resumeDraft?.flow??INITIAL_FLOW);
@@ -271,7 +274,7 @@ export default function RpgBlock1({
   const [scanTouched, setScanTouched] = useState<Partial<Record<EnemyAssetCategory, boolean>>>(resumeDraft?.scanTouched??{});
   const [annualIncomeBand,setAnnualIncomeBand]=useState<AnnualIncomeBand>(resumeDraft?.annualIncomeBand??'unknown');
   const [typeIndex, setTypeIndex] = useState(resumeDraft?.typeIndex??0);
-  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(resumeDraft?.typeAnswers??{});
+  const [typeAnswers, setTypeAnswers] = useState<TypeAnswersV31>(chapter2V2?{}:(resumeDraft?.typeAnswers??{}));
   const [appraisalAnswers, setAppraisalAnswers] = useState<AppraisalMap>(resumeDraft?.appraisalAnswers??{});
   const [appraisalIndex, setAppraisalIndex] = useState(resumeDraft?.appraisalIndex??0);
   const [appraisalHistory,setAppraisalHistory]=useState<{index:number;answers:AppraisalMap}[]>([]);
@@ -292,9 +295,9 @@ export default function RpgBlock1({
     if(profileV4?.householdContributionMode!=='bundled')return currentScan;
     const direct:Partial<Record<EnemyAssetCategory,{question:string;helper:string}>>={
       rent:{question:'家へのまとめ払いとは別に、住居費を直接払ってる？',helper:'別で払っている家賃・住宅費だけ。なければ0円'},
-      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'自分で直接払っている電気・ガス・水道だけ。なければ0円'},
+      energy:{question:'まとめ払いとは別に、光熱費を直接払ってる？',helper:'別払いの電気・ガス・灯油等の燃料・水道だけ。なければ0円'},
       food:{question:'まとめ払いとは別に、食費を月いくら払ってる？',helper:'自分で直接払う外食・自炊など。家に入れる生活費は含めない'},
-      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'自分で直接買う日用品だけ。家に入れる生活費は含めない'},
+      daily:{question:'まとめ払いとは別に、日用品を月いくら払ってる？',helper:'別購入の日用品・洗剤・シャンプーだけ。化粧品・家へのまとめ払いは含めない'},
     };
     const copy=direct[currentScan.category];
     return copy?{...currentScan,...copy}:currentScan;
@@ -474,7 +477,7 @@ export default function RpgBlock1({
   useEffect(()=>{
     if(typeof window==='undefined'||!diagnosisId||!anonymousUserId)return;
     if(scene==='opening'||scene==='battle'||scene==='battleComplete')return;
-    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers});
+    writeJourneyDraftV1({schemaVersion:'MUDAGIRI_JOURNEY_DRAFT_V1',diagnosisId,anonymousUserId,updatedAt:new Date().toISOString(),toneMode:selectedToneMode,scene,questionIndex,householdSizePending:false,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers:chapter2V2?{}:typeAnswers,chapter2V2});
   },[scene,selectedToneMode,questionIndex,flow,profileV4Draft,profileV4,annualIncomeBand,scanIndex,rawExpenses,expenseRecordsV4,scanScopeCategory,scanTouched,appraisalIndex,appraisalAnswers,typeIndex,typeAnswers,diagnosisId,anonymousUserId]);
 
   useEffect(() => {
@@ -587,7 +590,11 @@ export default function RpgBlock1({
     const completed=finalizeProfileV4(activeDraft);
     setProfileV4(completed);
     syncLegacyProfileFromV4(completed);
-    if(shouldOfferAnnualIncomeCalibrationV4(completed)){
+    // Chapter 2 uses the FINAL 12-category contract: annual income does not
+    // adjust household-size benchmarks. Asking for it would add friction
+    // while falsely promising greater statistical precision.
+    // Preserve the frozen legacy V1 flow independently of Chapter 2.
+    if(!chapter2V2&&shouldOfferAnnualIncomeCalibrationV4(completed)){
       setScene('incomeCalibration');
       return;
     }
@@ -625,8 +632,8 @@ export default function RpgBlock1({
     onEvent?.('battle_completed',{count:visibleBattleTargets.length,confirmedCount:visibleConfirmedCount});
     onCompleteV3({
       profile:{prefecture:flow.prefecture,age:Math.max(18,Number(flow.age)||30),household:flow.household,householdSize:flow.household==='single'?1:Math.max(2,Number(flow.householdSize)||2),workStyle:flow.workStyle,housingType:flow.housingType,monthlyTakeHome:incomeNumber,diagnosisScope:profileV4?.diagnosisScope,adultCount:profileV4?.adultCount,childCount:profileV4?.childCount},
-      annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers,appraisal:appraisalAnswers,finalJudgements,
-      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
+      annualIncomeBand,annualIncomeResolverInput:comparisonBundle.annualIncomeResolverInput,rawExpenses:normalizedRaw,typeAnswers:chapter2V2?{}:typeAnswers,appraisal:appraisalAnswers,finalJudgements,
+      methodologyVersion:diagnosisBundle?.diagnosis.methodologyVersion??'MUDAGIRI_DIAGNOSIS_V2',resolverVersion:chapter2V2?RESOLVER_V2_VERSION:'MUDAGIRI_COMPARABLE_RESOLVER_V2_0',
       scopeV4:profileV4&&comparisonsV4&&finalV4?{profile:profileV4,expenseRecords:resolvedExpenseRecordsV4,comparisons:comparisonsV4,finalJudgements:finalV4.categories,confirmedMonthly:finalV4.confirmedMonthly,diagnosisMethodology:diagnosisV4?.diagnosis?.methodologyVersion??null}:undefined
     });
   };
@@ -688,7 +695,7 @@ export default function RpgBlock1({
                 setExpenseRecordsV4(prev=>({...prev,car:{...prev.car,diagnosisAmount:null,personalBurden:null,householdTotal:null,known:false,applicability:'na'}}));
               }:undefined}
               onDone={()=>maybeAdvanceScanCategory(currentScan.category)}
-              onBack={()=>{if(scanIndex>0)setScanIndex(i=>Math.max(0,i-1));else setScene('incomeCalibration')}}
+              onBack={()=>{if(scanIndex>0)setScanIndex(i=>Math.max(0,i-1));else{if(chapter2V2){setQuestionIndex(Math.max(0,profileV4Steps.length-1));setScene('profile');}else setScene('incomeCalibration');}}}
             />
           ) : scene === 'scanComplete' ? (
             <ScanCompleteScene
@@ -746,12 +753,18 @@ export default function RpgBlock1({
             />
           ) : scene === 'appraisalComplete' ? (
             <AppraisalCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               judgements={finalV4?.categories??finalJudgements}
               onContinue={() => {
-                setTypeIndex(0);
-                setTypeAnswers({});
-                setScene('typeQuiz');
+                if(chapter2V2){
+                  onEvent?.('chapter2_v2_personality_skipped',{reason:'chapter1_personality_is_separate'});
+                  setScene('battleIntro');
+                }else{
+                  setTypeIndex(0);
+                  setTypeAnswers({});
+                  setScene('typeQuiz');
+                }
               }}
             />
           ) : scene === 'typeQuiz' && currentTypeQuestion ? (
@@ -795,6 +808,7 @@ export default function RpgBlock1({
             />
           ) : (
             <BattleCompleteScene
+              chapter2V2={chapter2V2}
               toneMode={selectedToneMode}
               battleCount={visibleBattleTargets.length}
               reviewCount={visibleReviewCount}
@@ -1715,9 +1729,9 @@ function AdditionalAppraisalScene({
 }
 
 function AppraisalCompleteScene({
-  toneMode,judgements,onContinue,
+  toneMode,judgements,onContinue,chapter2V2=false,
 }:{
-  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;
+  toneMode:ToneMode; judgements:{status:string}[]; onContinue:()=>void;chapter2V2?:boolean;
 }) {
   const counts = {
     battle:judgements.filter(x=>x.status==='battle'||x.status==='cut').length,
@@ -1734,7 +1748,7 @@ function AppraisalCompleteScene({
       <section className="appraisal-card">
         <div className="appraisal-kicker">APPRAISAL COMPLETE</div>
         <h2>{toneLine(toneMode,'仕分けできたよ。','鑑定完了。','仕分け終了。逃げ道は消えた。')}</h2>
-        <p className="appraisal-reason">{toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
+        <p className="appraisal-reason">{chapter2V2?toneLine(toneMode,'大切な支出は守ったまま、家計の戦果を確認しよう。','高いだけで斬らない。守る支出と見直す候補を分けた。次は戦果の確認だ。','必要な支出は守った。残る敵との決着をつけよう。'):toneLine(toneMode,'大切な支出は守ったまま、少し見直せそうなところだけ残したよ。次はお金の使い方のクセを見てみよう。','高いだけの支出は斬らない。守る支出と見直す候補を分けた。次はお金のクセを解析する。','必要な支出は無罪放免。言い訳できない見直し候補だけ残した。次はお前の金遣いのクセを暴く。')}</p>
         <div className="judgement-grid">
           <div><b>{counts.battle}</b><span>見直しクエスト</span></div>
           <div><b>{counts.protect}</b><span>守る支出</span></div>
@@ -1743,7 +1757,7 @@ function AppraisalCompleteScene({
           <div><b>{counts.na}</b><span>対象外</span></div>
         </div>
         <button type="button" className="pre-primary appraisal-next" onClick={onContinue}>
-          お金タイプを解析する ▶
+          {chapter2V2?'最後のクエストへ ▶':'お金タイプを解析する ▶'}
         </button>
       </section>
     </div>
@@ -1858,7 +1872,7 @@ function ComboBattleScene({ toneMode,targets,onDone }:{ toneMode:ToneMode; targe
   );
 }
 
-function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void}) {
+function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult,chapter2V2=false}:{toneMode:ToneMode;battleCount:number;reviewCount:number;onResult:()=>void;chapter2V2?:boolean}) {
   return (
     <div className="scan-scene battle-intro-scene">
       <img className="battle-bg" src={`${BATTLE_ASSET}/BG-003_SCAN_BATTLE.png`} alt="" aria-hidden="true" />
@@ -1871,7 +1885,7 @@ function BattleCompleteScene({toneMode,battleCount,reviewCount,onResult}:{toneMo
           {reviewCount ? `まだ ${reviewCount} 件は金額だけでは断定できない。` : '今回の判定はすべて出そろった。'}
           <br /><strong>{toneLine(toneMode,'おつかれさま！ 守る支出も含めて、あなたの家計を整理できたよ。','判定完了。比較差と、本当に確認できた改善余地は分けて見るぞ。','判決の時間だ。平均との差と、本物の改善余地を混同するなよ。')}</strong>
         </p>
-        <div className="result-next-lock">NEXT：RESULT / 称号・改善余地・守る支出</div>
+        <div className="result-next-lock">{chapter2V2?'NEXT：RESULT / 戦果・改善候補・守る支出':'NEXT：RESULT / 称号・改善余地・守る支出'}</div>
         <button type="button" className="pre-primary appraisal-next" onClick={onResult}>診断結果を見る ▶</button>
       </section>
     </div>

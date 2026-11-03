@@ -37,6 +37,7 @@ const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;s
  prefecture:{dialogue:'比較相手をもう少し絞るぞ。',question:'今住んでる都道府県は？',helper:'地域差が出る支出だけ、比較に使います。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  age:{dialogue:'あと少し。',question:'年齢は？',helper:'年齢で差が出る支出を、近い基準で比べます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
  housing:{dialogue:'住まいの条件を合わせよう。',question:'今の住まいは？',helper:'民営賃貸と持ち家・実家などを混ぜて比べません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q5.png`},
+ annualIncome:{dialogue:'比較する相手を選ぼう！',question:'額面の年収はどのくらい？',helper:'税金が引かれる前の年収。金額は大体でOK。わからなくても進めるよ。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
  income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金などが引かれた後。だいたいでOK。分からなくても診断できます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
 };
 
@@ -54,9 +55,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  const patch=(x:Partial<ProfileDraftV4>)=>setDraft(v=>({...v,...x}));
  const setHouseholdSize=(n:number)=>setDraft(v=>{
   const householdSize=Math.max(1,Math.min(10,n));
-  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,compositionConfirmed:false};
+  if(householdSize===1)return {...v,householdSize,relationships:[],childCount:null,expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,compositionConfirmed:false,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false};
   const childCount=v.childCount===null?null:Math.min(v.childCount,householdSize-1);
-  return {...v,householdSize,childCount};
+  return {...v,householdSize,childCount,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false};
  });
  const auto=(x:Partial<ProfileDraftV4>)=>{
   setDraft(v=>{
@@ -77,6 +78,89 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
  };
 
  return <div className={`pre-profile pre-profile-v4 pre-step-${step}`}>
+  <style>{`
+   /* The canonical game HUD uses a 390px !important fixed flex panel.
+      Reclaim slack INSIDE the frame; moving the panel does not solve clipping. */
+   .pre-profile-v4.pre-step-annualIncome .pre-panel{
+    overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-dialogue{
+    flex:0 0 36px!important;min-height:36px!important;max-height:36px!important;
+    margin:0 0 5px auto!important;padding:5px 9px!important;font-size:12px!important;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-panel h2{
+    min-height:29px!important;margin:3px 0 0!important;font-size:22px!important;
+   }
+   .pre-profile-v4.pre-step-annualIncome .pre-helper{
+    flex:0 0 auto!important;margin:3px 0 0!important;font-size:12px!important;line-height:1.5!important;
+   }
+   .pre-profile-v4 .pre-gross-primary{
+    padding:9px 10px;margin:8px 0 3px;border:1px solid #d8b877;
+    border-radius:12px;background:#153c46;color:#f5f7ee;
+   }
+   .pre-profile-v4 .pre-gross-primary label{
+    display:block;font-size:15px;font-weight:900;color:#ffdda0;margin-bottom:5px;
+   }
+   .pre-profile-v4 .pre-gross-primary select{
+    display:block;width:100%;min-height:48px;padding:5px 7px;font-size:16px;
+    border-radius:10px;background:#fff;color:#172c2c;border:2px solid #a8d5ca;
+   }
+   .pre-profile-v4 .pre-gross-primary select:focus-visible{
+    outline:3px solid #ffe19b;outline-offset:3px;
+   }
+   .pre-profile-v4 .pre-gross-primary small{
+    display:block;color:#e8f2ef;font-size:12px;line-height:1.5;margin-top:6px;
+   }
+   .pre-profile-v4.pre-step-income .pre-dialogue{
+    flex:0 0 36px!important;min-height:36px!important;max-height:36px!important;
+    margin:0 0 5px auto!important;padding:5px 9px!important;font-size:12px!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-panel h2{
+    min-height:29px!important;margin:3px 0 0!important;font-size:23px!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-helper{
+    flex:0 0 26px!important;min-height:26px!important;max-height:26px!important;
+    margin:2px 0 0!important;font-size:11px!important;line-height:1.35!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-input-wrap{
+    flex:0 0 48px!important;height:48px!important;margin:4px 0 0!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-money-input{min-height:48px!important}
+   .pre-profile-v4.pre-step-income .pre-annual-peer-optin{
+    margin:3px 0 0!important;padding:2px 8px!important;min-height:35px;
+   }
+   .pre-profile-v4.pre-step-income .pre-annual-peer-optin summary{
+    min-height:31px!important;font-size:13px!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-panel:has(.pre-annual-peer-optin[open]){
+    overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin{
+    padding:6px 10px;margin:8px 0 3px;border:1px solid #d8b877;
+    border-radius:12px;background:#153c46;color:#f5f7ee;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin summary{
+    min-height:38px;display:flex;align-items:center;cursor:pointer;
+    font-size:14px;line-height:1.4;font-weight:900;color:#ffdda0;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin summary:focus-visible{
+    outline:3px solid #ffdda0;outline-offset:2px;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin label strong{
+    display:block;font-size:16px;font-weight:900;color:#ffdda0;line-height:1.55;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin p,
+   .pre-profile-v4 .pre-annual-peer-optin small{
+    display:block;font-size:13px;line-height:1.65;color:#e8f2ef;margin:8px 0;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin select{
+    width:100%;min-height:48px;font-size:16px;border-radius:10px;
+    background:#fff;color:#172c2c;border:2px solid #a8d5ca;
+   }
+   .pre-profile-v4 .pre-annual-peer-optin select:focus-visible{
+    outline:3px solid #ffe19b;outline-offset:3px;
+   }
+  `}</style>
   <img className="pre-bg pre-bg-profile" src={`${ASSET}/BG-002_PROFILE_FIXED.png`} alt="" aria-hidden="true"/>
   <div className="pre-profile-overlay" aria-hidden="true"/>
   <header className="pre-profile-hud">
@@ -87,7 +171,9 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
   <section className="pre-panel">
    <div className="pre-dialogue">{meta.dialogue}</div>
    <div className="pre-question-no">QUEST SETTING</div>
-   <h2>{step==='income'
+   <h2>{step==='annualIncome'
+     ?(draft.householdSize===1?'あなたの額面年収は？':'世帯全体の額面年収は？')
+     :step==='income'
      ?(draft.diagnosisScope==='household'?'家全体の毎月の手取りは？':'あなた自身の毎月の手取りは？')
      :step==='composition'&&draft.diagnosisScope==='household'
        ?'子どもと暮らしてる？'
@@ -95,8 +181,8 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    <p className="pre-helper">{meta.helper}</p>
 
    {step==='scope'&&<div className="mode-options">
-    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal',expenseSharing:null})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
-    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
+    <Choice active={draft.diagnosisScope==='personal'} onClick={()=>auto({diagnosisScope:'personal',expenseSharing:null,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false})}><strong>👤 自分が払っている分</strong><span>自分の財布だけをチェック</span></Choice>
+    <Choice active={draft.diagnosisScope==='household'} onClick={()=>auto({diagnosisScope:'household',expenseSharing:null,householdContributionMode:null,bundledContributionAmount:null,annualIncomeBand:'unknown',singlePeerGrossBand2024:null,annualIncomeAnswered:false})}><strong>🏠 家全体で払っている分</strong><span>夫婦・家族など生活単位の合計</span></Choice>
    </div>}
 
    {step==='householdSize'&&<div className="profile-v4-stepper" style={{display:'grid',gridTemplateColumns:'56px minmax(0,1fr) 56px',gap:10,alignItems:'center',marginTop:10}}>
@@ -147,6 +233,46 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
     </> : <div className="mode-options housing-main-options">
       {([['rental','🏢 賃貸'],['owned','🏠 持ち家'],['family_home','👪 実家・親族宅'],['company_housing','🏢 社宅・寮'],['other','その他']] as [HousingTenureV4,string][]).map(([v,l])=><Choice key={v} active={draft.housingTenure===v} onClick={()=>{if(v==='rental'||v==='owned')patch({housingTenure:v,housingSubtype:null});else auto({housingTenure:v,housingSubtype:null})}}><strong>{l}</strong></Choice>)}
     </div>}
+   </div>}
+
+   {step==='annualIncome'&&<div className="pre-gross-primary" data-section="PROFILE_GROSS_ANNUAL_PRIMARY">
+    <label htmlFor="profile-annual-peer-band">
+     {draft.householdSize===1?'あなた本人の額面年収':'家族全体の額面世帯年収'}
+    </label>
+    {draft.householdSize===1?
+     <select id="profile-annual-peer-band" aria-label="あなた本人の額面年収"
+      value={draft.annualIncomeAnswered?(draft.singlePeerGrossBand2024??'unknown'):''}
+      onChange={e=>{
+       const v=e.target.value;
+       patch({singlePeerGrossBand2024:v==='under400'||v==='400_499'||v==='500_599'||v==='600_699'||v==='700_799'||v==='800_999'||v==='1000plus'||v==='600plus'?v:null,
+        annualIncomeBand:'unknown',annualIncomeAnswered:true});
+      }}>
+      <option value="" disabled>年収帯を選んでね</option>
+      <option value="under400">400万円未満</option>
+      <option value="400_499">400～499万円</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      {draft.singlePeerGrossBand2024==='600plus'&&<option value="600plus">600万円以上（旧回答・再選択推奨）</option>}
+      <option value="unknown">わからない・答えたくない</option>
+     </select>
+     :<select id="profile-annual-peer-band" aria-label="家族全体の額面世帯年収"
+       value={draft.annualIncomeAnswered?draft.annualIncomeBand:''}
+       onChange={e=>patch({annualIncomeBand:e.target.value as ProfileDraftV4['annualIncomeBand'],
+        singlePeerGrossBand2024:null,annualIncomeAnswered:true})}>
+      <option value="" disabled>年収帯を選んでね</option>
+      <option value="under500">500万円未満</option>
+      <option value="500_599">500～599万円</option>
+      <option value="600_699">600～699万円</option>
+      <option value="700_799">700～799万円</option>
+      <option value="800_999">800～999万円</option>
+      <option value="1000plus">1,000万円以上</option>
+      <option value="unknown">わからない・答えたくない</option>
+     </select>}
+    <small>公式統計と比べる条件を探すための質問だよ。月手取りから額面年収は推測しないし、ここでの回答はムダ額・削減額の計算には使わない。</small>
+    <small>{draft.householdSize===1?'単身世帯の公表セルと照合。対象外の年収帯では同条件の平均を出さないよ。':'世帯主年齢・勤労者区分と標本数も一致するときだけ、公式の参考率を表示するよ。'}</small>
    </div>}
 
    {step==='income'&&<div>

@@ -143,7 +143,8 @@ console.log('SCOPE_V4_QA PASS');
  d.housingSubtype='private_rental';
  d.monthlyTakeHome=350000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','prefecture','age','housing','income']);
+  d.annualIncomeAnswered=true; // deliberate unknown is valid
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','prefecture','age','housing','annualIncome','income']);
  const p=finalizeProfileV4(d);
  A.equal(p.householdSize,1);
  A.equal(p.adultCount,1);
@@ -177,7 +178,8 @@ console.log('SCOPE_V4_QA PASS');
  d.housingSubtype='mortgage';
  d.monthlyTakeHome=600000;
  d.monthlyTakeHomeAnswered=true;
- A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','childCount','prefecture','age','housing','income']);
+  d.annualIncomeAnswered=true; // deliberate unknown is valid
+ A.deepEqual(profileStepsV4(d),['scope','householdSize','composition','childCount','prefecture','age','housing','annualIncome','income']);
  const p=finalizeProfileV4(d);
  A.equal(p.adultCount,2);
  A.equal(p.childCount,2);
@@ -304,6 +306,7 @@ console.log('SCOPE_V4_QA PASS');
  d.housingSubtype='private_rental';
  d.monthlyTakeHome=null;
  d.monthlyTakeHomeAnswered=true;
+  d.annualIncomeAnswered=true; // deliberate unknown is valid
  const profile=finalizeProfileV4(d);
  A.equal(profile.monthlyTakeHome,null);
 }
@@ -336,7 +339,7 @@ console.log('SCOPE_V4_QA PASS');
 {
  const single=emptyProfileDraftV4();
  single.diagnosisScope='personal'; single.householdSize=1;
- A.equal(profileStepsV4(single).length,6);
+ A.equal(profileStepsV4(single).length,7);
 
  const couple=emptyProfileDraftV4();
  couple.diagnosisScope='personal'; couple.householdSize=2; couple.compositionConfirmed=true;
@@ -345,5 +348,5 @@ console.log('SCOPE_V4_QA PASS');
 
  const householdNoChildren=emptyProfileDraftV4();
  householdNoChildren.diagnosisScope='household'; householdNoChildren.householdSize=2; householdNoChildren.compositionConfirmed=true;
- A.equal(profileStepsV4(householdNoChildren).length,7);
+ A.equal(profileStepsV4(householdNoChildren).length,8);
 }

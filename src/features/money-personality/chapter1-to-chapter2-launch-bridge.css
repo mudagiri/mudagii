@@ -1,0 +1,54 @@
+/* Rollout RC: only the last Chapter 1 CTA becomes the gate into Chapter 2.
+ * Preserve the bright personality report, share card, and companion bubbles.
+ * Gold/teal/navy cues mirror Chapter 2's guild and reward screens. */
+.mpp17-page .mpp17-next{
+  position:relative;
+  border:2px solid #d8b46b!important;
+  background:radial-gradient(ellipse at 80% 0%,rgba(231,186,90,.22),transparent 48%),
+             linear-gradient(158deg,#12414a 0%,#0a2a39 57%,#071f31 100%)!important;
+  color:#fff2d2!important;
+  box-shadow:inset 0 0 0 2px rgba(248,225,157,.13),0 14px 30px rgba(0,0,0,.2)!important;
+}
+.mpp17-page .mpp17-next>small{
+  display:block;color:#ffdb89!important;font-size:14px!important;font-weight:900!important;letter-spacing:.035em;
+}
+.mpp17-page .mpp17-next>h2{
+  color:#fff4d8!important;text-shadow:0 1px 4px rgba(0,0,0,.46);font-size:clamp(21px,6vw,27px)!important;
+}
+.mpp17-page .mpp17-next .mpp17-next-quest{
+  background:rgba(3,24,33,.75)!important;color:#f9efd3!important;
+  border:1px solid rgba(238,204,129,.65)!important;border-radius:13px;
+}
+.mpp17-page .mpp17-next .mpp17-next-quest b{
+  color:#ffe2a4!important;font-size:16px!important;line-height:1.5;
+}
+.mpp17-page .mpp17-next .mpp17-next-quest p{
+  color:#e3eae3!important;font-size:14px!important;line-height:1.65;
+}
+.mpp17-page .mpp17-next .mpp17-button--accent{
+  color:#172d31!important;background:#f2d47e!important;
+  min-height:56px;border:1px solid #ffe2a2;border-radius:13px;
+  box-shadow:inset 0 -3px 0 rgba(110,75,19,.16),0 7px 16px rgba(0,0,0,.22)!important;
+  font-size:16px!important;font-weight:900!important;touch-action:manipulation;
+}
+.mpp17-page .mpp17-next .mpp17-button--accent:focus-visible{
+  outline:3px solid #9ce8ff;outline-offset:3px;
+}
+.mpp17-page .mpp17-next .mpp17-line-bonus-entry{
+  background:#fffaf0!important;border:1px solid #e2c894!important;color:#3e382e!important;
+}
+.mpp17-page .mpp17-next .mpp17-line-bonus-entry h3,
+.mpp17-page .mpp17-next .mpp17-line-bonus-entry p,
+.mpp17-page .mpp17-next .mpp17-line-bonus-entry small{
+  color:#453d30!important;
+}
+.mpp17-page .mpp17-next .mpp17-restart{
+  color:#d8e1d9!important;font-size:13px!important;
+  text-underline-offset:3px;
+}
+@media(max-width:350px){
+  .mpp17-page .mpp17-next{padding-inline:13px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp17-page .mpp17-next *{animation:none!important;transition:none!important}
+}

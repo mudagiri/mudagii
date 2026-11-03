@@ -1,0 +1,127 @@
+import assert from 'node:assert/strict';
+import {
+ AGE_INCOME_JOINT_MIN_SAMPLE,AGE_INCOME_JOINT_SOURCE_V1,
+ VERIFIED_2024_JOINT_BURDEN_CELLS_V1,resolveJointBurdenV1,
+ type JointAgeIncomeRowV1,
+ resolve2024SingleWorkerPeerBurdenV1,resolve2024MultiWorkerPeerBurdenV1,
+ resolve2024DeclaredWorkerPeerV1,resolve2024HighMultiWorkerPeerBurdenV1,
+ VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1,
+} from './age-income-joint-burden-gate-v1';
+const fixture:JointAgeIncomeRowV1={
+ household:'single',workStatus:'worker',ageBand:'30～34（５歳階級）',
+ grossAnnualIncomeBand:'500～550万円',approximateSample:60,
+ averageMonthlyDisposableYen:300000,
+ expenseYen:{food:62000,energy:12000,daily:4800},
+ sourceStatsDataId:AGE_INCOME_JOINT_SOURCE_V1.statsDataId,
+ verifiedOfficialCell:true,
+};
+// IMPORTANT: all numbers above are SYNTHETIC QA ONLY and do not appear
+// in the production reference matrix or any real visitor result.
+const input={
+ household:'single' as const,workStatus:'worker' as const,
+ ageBand:fixture.ageBand,publishedGrossIncomeBands:['500～550万円'],
+ expense:'food' as const,respondentAgeIsHouseholdHead:true
+};
+assert.equal(AGE_INCOME_JOINT_MIN_SAMPLE,50);
+assert.equal(AGE_INCOME_JOINT_SOURCE_V1.statsDataId,'0004039867');
+assert.equal(AGE_INCOME_JOINT_SOURCE_V1.table,'1-29-1');
+assert.equal(VERIFIED_2024_JOINT_BURDEN_CELLS_V1.length,79,
+ 'Only previously audited original eStat 2024 age×income single-worker cells permitted');
+assert.equal(resolveJointBurdenV1(input,VERIFIED_2024_JOINT_BURDEN_CELLS_V1).available,false,
+ 'Synthetic fixture age/income never silently aliases official 2024 rows');
+const sourceMulti40=VERIFIED_2024_JOINT_BURDEN_CELLS_V1.find(x=>x.household==='multi'&&x.ageBand.startsWith('30～39')&&x.grossAnnualIncomeBand==='400～450万円');
+assert.equal(sourceMulti40?.expenseYen.food,67858,'ORIGINAL official 2024 400–450 source value, never shifted to another income class');
+assert.equal(sourceMulti40?.approximateSample,100);
+const sourceSingle40=VERIFIED_2024_JOINT_BURDEN_CELLS_V1.find(x=>x.household==='single'&&x.ageBand.startsWith('30～39')&&x.grossAnnualIncomeBand==='400～450万円');
+assert.equal(sourceSingle40?.expenseYen.food,40265);
+assert.equal(sourceSingle40?.approximateSample,100);
+const published=resolve2024SingleWorkerPeerBurdenV1(35,'500_599','food');
+assert.equal(published.available,true);
+assert.equal(published.usedCells,2);
+assert.equal(published.ratePctLow,12.2);
+assert.equal(published.ratePctHigh,15.9);
+assert.equal(published.sourceStatsDataId,'0004039867');
+const otherAge=resolve2024SingleWorkerPeerBurdenV1(25,'500_599','food');
+assert.equal(otherAge.available,false,'2024 original single under30 550-600万円 class does not reach n>=50');
+assert.equal(otherAge.reason,'JOINT_SOURCE_CELL_MISSING');
+const small=resolve2024SingleWorkerPeerBurdenV1(63,'500_599','food');
+assert.equal(small.available,false,'n=30 approximate in one of two original subcells is below conservative 50');
+assert.equal(small.reason,'JOINT_SOURCE_CELL_MISSING','single age60s 500〜599 lacks two valid original 50万円 published income cells');
+assert.equal(resolve2024SingleWorkerPeerBurdenV1(35,'600plus','food').available,false);
+assert.equal(resolve2024SingleWorkerPeerBurdenV1(75,'400_499','food').available,false);
+assert.equal(resolveJointBurdenV1(input,[{...fixture,verifiedOfficialCell:false}]).reason,'RAW_CELLS_NOT_VERIFIED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:29}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:49}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:'X'}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,approximateSample:'-'}]).reason,'JOINT_CELL_SMALL_OR_SUPPRESSED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,averageMonthlyDisposableYen:null}]).reason,'DISPOSABLE_OR_EXPENSE_UNVERIFIED');
+assert.equal(resolveJointBurdenV1(input,[{...fixture,expenseYen:{...fixture.expenseYen,food:null}}]).reason,'DISPOSABLE_OR_EXPENSE_UNVERIFIED');
+assert.equal(resolveJointBurdenV1({...input,respondentAgeIsHouseholdHead:false},[fixture]).reason,'HOUSEHOLD_HEAD_AGE_NOT_VERIFIED');
+assert.equal(resolveJointBurdenV1({...input,workStatus:'non_worker'},[fixture]).reason,'JOINT_SOURCE_CELL_MISSING');
+assert.equal(resolveJointBurdenV1({...input,household:'multi'},[fixture]).reason,'JOINT_SOURCE_CELL_MISSING');
+assert.equal(resolveJointBurdenV1({...input,ageBand:'35～39（５歳階級）'},[fixture]).reason,'JOINT_SOURCE_CELL_MISSING');
+assert.equal(resolveJointBurdenV1({...input,publishedGrossIncomeBands:['500～550万円','550～600万円']},[fixture]).reason,'JOINT_SOURCE_CELL_MISSING');
+assert.equal(resolveJointBurdenV1({...input,publishedGrossIncomeBands:[]},[fixture]).reason,'INCOME_CLASSES_NOT_PROVEN');
+assert.equal(resolveJointBurdenV1({...input,publishedGrossIncomeBands:['500～550万円','500～550万円']},[fixture]).reason,'INCOME_CLASSES_NOT_PROVEN');
+const allowed=resolveJointBurdenV1(input,[fixture]);
+assert.equal(allowed.available,true);
+assert.equal(allowed.ratePctLow,20.7);
+assert.equal(allowed.ratePctHigh,20.7);
+assert.equal(allowed.sourceStatsDataId,'0004039867');
+const multi30=resolve2024MultiWorkerPeerBurdenV1(34,'500_599','food',true);
+assert.equal(multi30.available,true);
+assert.equal(multi30.usedCells,2);
+assert.equal(multi30.ratePctLow,18.0);
+assert.equal(multi30.ratePctHigh,19.5);
+assert.equal(multi30.eligibleForReviewBuffer,false);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','food',false).reason,'HOUSEHOLD_HEAD_AGE_NOT_VERIFIED');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(45,'800_999','food',true).ratePctLow,18.4);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(45,'800_999','food',true).ratePctHigh,19.6);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(29,'500_599','food',true).available,false,'under30 fails when one original 50万円 income class n<50');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(72,'900_999','food',true).available,false,'unknown 900_999 income subgroup is not a profile band');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(72,'800_999','food',true).available,false,'both 900+ original classes n<50 for older households');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(55,'1000plus','food',true).available,false,'broad open-ended annual income is not an exact official bin');
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'unknown','food',true).available,false);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','daily',true).available,true);
+assert.equal(resolve2024MultiWorkerPeerBurdenV1(34,'500_599','energy',true).available,true);
+for(const household of ['single','multi'] as const){
+ const args={household,age:35,grossBand:'500_599',expense:'food' as const,headAgeConfirmed:true};
+ assert.equal(resolve2024DeclaredWorkerPeerV1({...args,headWorkerConfirmed:false}).reason,
+  'HOUSEHOLD_HEAD_WORK_STATUS_NOT_VERIFIED',
+  'Never claim same-age worker rate unless household head explicitly confirms wage/salary work');
+ assert.equal(resolve2024DeclaredWorkerPeerV1({...args,headWorkerConfirmed:true}).available,true);
+}
+assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand:'500_599',
+ expense:'food',headAgeConfirmed:false,headWorkerConfirmed:true}).available,false,
+ 'Worker status does not override unverified household head age');
+assert.equal(resolve2024DeclaredWorkerPeerV1({household:'multi',age:35,grossBand:'1000plus',
+ expense:'food',headAgeConfirmed:true,headWorkerConfirmed:true}).available,false,
+ 'No high-income cross-cell guessing until complete independently verified official source');
+// 2024 original a010292.xlsx grouped columns BB/BC/BD: never extrapolate low-n.
+assert.equal(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.length,12);
+assert.ok(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.every(x=>x.household==='multi'&&
+ x.workStatus==='worker'&&x.verifiedOfficialCell&&typeof x.approximateSample==='number'&&
+ x.approximateSample>=50&&x.averageMonthlyDisposableYen!>0));
+const hi=(age:number,gross:'1000_1249'|'1250_1499'|'1500plus',expense:'food'|'energy'|'daily'='food')=>
+ resolve2024HighMultiWorkerPeerBurdenV1(age,gross,expense,true,true);
+assert.equal(hi(35,'1000_1249').ratePctLow,14.9);
+assert.equal(hi(35,'1250_1499').ratePctLow,13.0);
+assert.equal(hi(45,'1500plus').ratePctLow,13.7);
+assert.equal(hi(45,'1500plus').usedCells,1);
+assert.equal(hi(55,'1500plus','energy').available,true);
+assert.equal(hi(55,'1000_1249','daily').available,true);
+assert.equal(hi(75,'1000_1249').available,true,'exactly n=50 is included');
+assert.equal(hi(75,'1250_1499').available,false,'low-n n=20 excluded');
+assert.equal(hi(75,'1500plus').available,false,'low-n n=20 excluded');
+assert.equal(hi(29,'1000_1249').available,false,'under30 n=40 excluded');
+assert.equal(hi(35,'1500plus').available,false,'30s n=40 excluded');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,'1000_1249','food',true,false).available,false,
+ 'head worker confirmation is mandatory');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,'1000_1249','food',false,true).available,false,
+ 'head age confirmation is mandatory');
+assert.equal(resolve2024HighMultiWorkerPeerBurdenV1(35,null,'food',true,true).available,false,
+ 'broad 1000plus cannot map to a single grouped public income bracket');
+assert.ok(VERIFIED_2024_HIGH_MULTI_WORKER_CELLS_V1.every(x=>x.expenseYen.daily!>=0),
+ 'daily necessities are the verified sum of household goods and consumables');
+assert.equal(hi(45,'1500plus').eligibleForReviewBuffer,false);
+console.log('CHAPTER2_AGE_INCOME_JOINT_FAIL_CLOSED_QA_PASS');

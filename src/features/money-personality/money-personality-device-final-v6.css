@@ -1,0 +1,388 @@
+/* Device Final V6 — authoritative real-device overrides.
+   Companion is inside the question window. Result uses normal document scrolling.
+   No scoring/classifier changes. */
+
+/* QUESTION WINDOW: character + talk at the top, question content below. */
+body #root .mpp-question-card{
+  position:relative!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0 14px 16px!important;
+  border:2px solid rgba(226,185,71,.86)!important;
+  border-radius:28px!important;
+  background:linear-gradient(180deg,rgba(3,55,61,.97),rgba(2,43,50,.985))!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.30),inset 0 0 0 1px rgba(255,255,255,.03)!important;
+  overflow:hidden!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion,
+body #root .mpp-question-card > .mpp-measurement-companion.has-talk{
+  position:relative!important;
+  inset:auto!important;
+  width:calc(100% + 28px)!important;
+  height:86px!important;
+  min-height:86px!important;
+  max-height:86px!important;
+  margin:0 -14px 12px!important;
+  padding:7px 14px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  overflow:hidden!important;
+  transform:none!important;
+  z-index:6!important;
+  pointer-events:none!important;
+  background:linear-gradient(180deg,rgba(2,46,53,.98),rgba(2,38,45,.98))!important;
+  border:0!important;
+  border-bottom:1px solid rgba(226,185,71,.48)!important;
+  border-radius:26px 26px 0 0!important;
+  box-shadow:none!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion:not(.has-talk){
+  justify-content:flex-start!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question{
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 72px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  height:72px!important;
+  min-height:72px!important;
+  max-height:72px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  transform:none!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
+  display:block!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  height:72px!important;
+  min-height:72px!important;
+  max-height:72px!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
+  position:relative!important;
+  inset:auto!important;
+  flex:1 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:9px 11px!important;
+  align-self:center!important;
+  white-space:normal!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  line-break:strict!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  line-height:1.48!important;
+  text-align:left!important;
+  background:rgba(4,34,40,.92)!important;
+  border:1px solid rgba(226,185,71,.48)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  transform:none!important;
+  z-index:7!important;
+}
+body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk::before{
+  content:""!important;
+  position:absolute!important;
+  left:-7px!important;
+  right:auto!important;
+  top:50%!important;
+  bottom:auto!important;
+  width:12px!important;
+  height:12px!important;
+  background:rgba(4,34,40,.92)!important;
+  border-left:1px solid rgba(226,185,71,.48)!important;
+  border-bottom:1px solid rgba(226,185,71,.48)!important;
+  transform:translateY(-50%) rotate(45deg)!important;
+}
+
+/* Result: explicit class + inline-important JS fallback; no viewport-height trap. */
+html.mpp-result-active,
+body.mpp-result-active{
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#root.mpp-result-active{
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+}
+body #root .mpp-page.mpp-page--result{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding-top:14px!important;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom))!important;
+  background-attachment:scroll!important;
+}
+body #root .mpp-page.mpp-page--result .mpp-result{
+  position:relative!important;
+  display:block!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+  touch-action:pan-y!important;
+  margin-bottom:48px!important;
+}
+
+@media(max-width:430px){
+  body #root .mpp-question-card{
+    padding:0 12px 14px!important;
+  }
+  body #root .mpp-question-card > .mpp-measurement-companion,
+  body #root .mpp-question-card > .mpp-measurement-companion.has-talk{
+    width:calc(100% + 24px)!important;
+    height:82px!important;
+    min-height:82px!important;
+    max-height:82px!important;
+    margin:0 -12px 11px!important;
+    padding:5px 10px!important;
+    gap:8px!important;
+  }
+  body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question,
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+  body #root .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
+    flex-basis:70px!important;
+    width:70px!important;
+    min-width:70px!important;
+    max-width:70px!important;
+    height:70px!important;
+    min-height:70px!important;
+    max-height:70px!important;
+  }
+  body #root .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
+    font-size:10.5px!important;
+    line-height:1.45!important;
+    padding:8px 9px!important;
+  }
+}
+
+/* Device Final V6.1 — beat legacy RPG-world positioning without weakening the world shell.
+   The command window stays anchored at the bottom; the companion becomes its first in-card row. */
+html body #root .mpp-page.mpp-page--guild .mpp-question-card{
+  height:clamp(490px,62dvh,560px)!important;
+  padding:0 14px 14px!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion,
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion.has-talk{
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  flex:0 0 80px!important;
+  width:calc(100% + 28px)!important;
+  height:80px!important;
+  min-height:80px!important;
+  max-height:80px!important;
+  margin:0 -14px 8px!important;
+  padding:5px 12px!important;
+  display:grid!important;
+  grid-template-columns:70px minmax(0,1fr)!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  gap:8px!important;
+  place-items:initial!important;
+  overflow:hidden!important;
+  transform:none!important;
+  z-index:6!important;
+  background:linear-gradient(180deg,rgba(2,48,55,.985),rgba(2,39,46,.985))!important;
+  border:0!important;
+  border-bottom:1px solid rgba(226,185,71,.46)!important;
+  border-radius:26px 26px 0 0!important;
+  box-shadow:none!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question{
+  position:relative!important;
+  inset:auto!important;
+  grid-column:1!important;
+  flex:none!important;
+  width:70px!important;
+  min-width:70px!important;
+  max-width:70px!important;
+  height:70px!important;
+  min-height:70px!important;
+  max-height:70px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  transform:none!important;
+  filter:drop-shadow(0 6px 5px rgba(0,0,0,.42))!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
+  width:70px!important;
+  min-width:70px!important;
+  max-width:70px!important;
+  height:70px!important;
+  min-height:70px!important;
+  max-height:70px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  transform:none;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
+  position:relative!important;
+  inset:auto!important;
+  grid-column:2!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  align-self:center!important;
+  white-space:normal!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  word-break:normal!important;
+  overflow-wrap:anywhere!important;
+  font-size:10.5px!important;
+  font-weight:850!important;
+  line-height:1.4!important;
+  text-align:left!important;
+  background:rgba(4,34,40,.94)!important;
+  border:1px solid rgba(226,185,71,.48)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion:not(.has-talk) .mpp-mudagiri{
+  grid-column:1!important;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion:not(.has-talk)::after{
+  content:"";
+  grid-column:2;
+}
+html body #root .mpp-page.mpp-page--guild .mpp-question-card .mpp-family-label{
+  padding-left:0!important;
+  min-height:18px!important;
+  margin:0 0 3px!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+
+/* RESULT V6.1: explicitly override the 100dvh/overflow:hidden world lock. */
+html.mpp-result-active,
+html.mpp-result-active body.mpp-result-active{
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+html.mpp-result-active body.mpp-result-active #root.mpp-result-active{
+  position:static!important;
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+html.mpp-result-active body.mpp-result-active #root.mpp-result-active .mpp-page.mpp-page--guild.mpp-page--result{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  align-items:initial!important;
+  padding:14px 12px calc(72px + env(safe-area-inset-bottom))!important;
+  background-attachment:scroll!important;
+  touch-action:pan-y!important;
+}
+html.mpp-result-active body.mpp-result-active #root.mpp-result-active .mpp-page.mpp-page--guild.mpp-page--result .mpp-result{
+  position:relative!important;
+  inset:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  overflow-y:visible!important;
+  margin:0 auto 48px!important;
+  touch-action:pan-y!important;
+}
+
+@media(max-width:430px){
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card{
+    height:clamp(480px,62dvh,548px)!important;
+    padding:0 12px 12px!important;
+  }
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion.has-talk{
+    flex-basis:78px!important;
+    width:calc(100% + 24px)!important;
+    height:78px!important;
+    min-height:78px!important;
+    max-height:78px!important;
+    margin:0 -12px 8px!important;
+    padding:4px 10px!important;
+    grid-template-columns:68px minmax(0,1fr)!important;
+    gap:7px!important;
+  }
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-mudagiri--question img,
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion > .mpp-mudagiri img{
+    width:68px!important;
+    min-width:68px!important;
+    max-width:68px!important;
+    height:68px!important;
+    min-height:68px!important;
+    max-height:68px!important;
+  }
+  html body #root .mpp-page.mpp-page--guild .mpp-question-card > .mpp-measurement-companion .mpp-progress-talk{
+    font-size:10px!important;
+    line-height:1.38!important;
+    padding:7px 8px!important;
+  }
+}

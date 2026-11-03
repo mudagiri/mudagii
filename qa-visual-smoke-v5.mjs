@@ -23,12 +23,16 @@ await page.addInitScript(()=>{
 page.on('pageerror',err=>console.error('PAGE_ERROR',err.stack||err.message));
 page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER_CONSOLE_ERROR',msg.text())});
 const base=process.env.VISUAL_BASE_URL||'http://127.0.0.1:4173/';
+const legacyResultUrl=new URL(base);legacyResultUrl.searchParams.set('mode','household');
 
 const report=[];
 async function metrics(name,{allowVertical=false}={}){
   await page.waitForTimeout(60);
   const m=await page.evaluate(({allowVertical})=>{
     const visible=(el)=>{
+      // A closed native <details> does not expose descendant controls to users.
+      // CSS geometry alone can still report an off-screen select as 'visible'.
+      if(el.closest('details:not([open])'))return false;
       const s=getComputedStyle(el);
       const r=el.getBoundingClientRect();
       return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0&&r.width>0&&r.height>0;
@@ -74,7 +78,7 @@ async function waitHeading(name){
   await h.waitFor({state:'visible'});
 }
 async function startPersonal(){
-  await page.goto(base,{waitUntil:'networkidle'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'networkidle'});
   await shot('01-opening');
   await clickButton(/無料で冒険をはじめる/);
   await waitHeading('今回チェックするのは？');
@@ -87,7 +91,7 @@ async function startPersonal(){
 }
 
 async function clearJourney(){
-  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.goto(legacyResultUrl.toString(),{waitUntil:'domcontentloaded'});
   await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();});
   await page.reload({waitUntil:'networkidle'});
 }
@@ -111,6 +115,16 @@ await waitHeading('今の住まいは？');
 await shot('06-single-housing');
 await clickButton(/賃貸/);
 await clickButton(/民間賃貸/);
+
+// Current Chapter2 V3.2 profile intentionally asks gross annual income before
+// monthly take-home for singles. 'Unknown' is a valid explicit answer; it must
+// never be inferred from the amount entered on the next screen.
+await waitHeading('あなたの額面年収は？');
+const annualIncome=page.locator('#profile-annual-peer-band');
+await annualIncome.selectOption('unknown');
+if(await annualIncome.inputValue()!=='unknown')throw new Error('GROSS_INCOME_UNKNOWN_SELECTION_NOT_RETAINED');
+await shot('06a-single-annual-income',{allowVertical:true});
+await clickButton(/次へ/);
 
 await waitHeading('あなた自身の毎月の手取りは？');
 await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');

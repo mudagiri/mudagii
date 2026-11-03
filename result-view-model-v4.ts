@@ -72,7 +72,7 @@ const appraisalSummary=(x:FinalCategoryV4):string|null=>{
  return null;
 };
 
-const criteria=(profile:ProfileV4,x:FinalCategoryV4,annualIncomeBand?:string)=>{
+const criteria=(profile:ProfileV4,x:FinalCategoryV4,_annualIncomeBand?:string)=>{
  const out:string[]=[];
  const cat=x.category;
  const single=profile.householdSize===1;
@@ -81,7 +81,7 @@ const criteria=(profile:ProfileV4,x:FinalCategoryV4,annualIncomeBand?:string)=>{
  if(cat==='energy'&&!single){out.push(profile.prefecture);const m=x.comparison.benchmarkMeta?.meta?.month;if(typeof m==='number')out.push(`${m}月`);}
  if(cat==='rent'&&x.comparison.benchmark!==null)out.push(`${profile.prefecture}・民営賃貸`);
  if(cat==='childEducation'&&x.record.metadata.educationChildren?.length)out.push(`子ども${x.record.metadata.educationChildren.length}人・学校段階別`);
- if(!single&&annualIncomeBand&&annualIncomeBand!=='unknown'&&annualIncomeBand!=='under500'&&['energy','food','daily','fun'].includes(cat))out.push('世帯年収帯補正');
+ // Final contract G03: do not claim income-band adjustment in the household-size primary reference.
  return out;
 };
 
@@ -115,6 +115,9 @@ export function buildResultViewModelV4(a:{
    comparisonAmount:x.comparison.amount,comparisonAmountLabel:scopeLabel(x.comparison.amountScope),
    comparable:x.comparison.benchmark,comparisonDifference:x.comparison.difference,
    comparisonQuality:x.comparison.quality,comparisonSourceVersion:x.comparison.sourceVersion,
+   // The RPG result must not mislabel model-derived references as observed averages.
+   comparisonModelEstimate:x.comparison.benchmarkMeta?.confidence==='MODEL'||x.comparison.benchmarkMeta?.meta?.model_estimate===true,
+   comparisonConfidence:x.comparison.benchmarkMeta?.confidence??'AUDIT',
    comparator:{kind:x.comparison.quality==='none'?'none':'scope_matched',label:compLabel},
    comparisonContext:{criteria:criteria(a.profile,x,a.annualIncomeBand),amountScope:x.comparison.amountScope,quality:x.comparison.quality,sourceVersion:x.comparison.sourceVersion},
    evidenceLabel:compLabel,referenceDetail:null,

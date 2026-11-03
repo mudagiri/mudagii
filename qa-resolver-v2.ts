@@ -48,11 +48,10 @@ eq(r.selfDevelopment?.value,null,'self-development audit only');
 eq(Object.keys(__resolverV2Audit.H).length,47,'housing must contain 47 prefectures');
 ok(__resolverV2Audit.MONTH.length===12,'utility must contain 12 month indices');
 
-// Income correction: only multi-person ¥5m+; single remains unchanged.
+// Final-contract G03: income-class results are independent marginal tables; never change household-size reference by multiplying income factors.
 const baseMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
 const incMulti=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
-ok(incMulti.food?.value!==baseMulti.food?.value,'multi 8m income must affect food comparable');
-ok(incMulti.daily?.value!==baseMulti.daily?.value,'multi 8m income must affect daily comparable');
+for(const cat of ['energy','food','daily','fun'] as const)eq(incMulti[cat]?.value,baseMulti[cat]?.value,'G03 no income factor on household-size comparable '+cat);
 const baseSingle=resolveComparableV2({household:'single',age:30,annualIncome:0,prefecture:'東京都',month:2,housingType:'賃貸'});
 const incSingle=resolveComparableV2({household:'single',age:30,annualIncome:8_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
 eq(incSingle.food?.value,baseSingle.food?.value,'single income correction must stay disabled');
@@ -67,10 +66,11 @@ ok(age35.food?.value!==age34.food?.value,'age 35 must enter 35-59 bucket');
 eq(age59.food?.value,age35.food?.value,'age 59 must stay 35-59 bucket');
 ok(age60.food?.value!==age59.food?.value,'age 60 must enter 60+ bucket');
 
-// Income boundary: under ¥5m must remain neutral; ¥5m+ may apply only to intended multi categories.
+// Income boundary: no discontinuity across ¥5m. Income-class reference must be a separate source-matched lens.
 const inc499=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:4_999_999,prefecture:'東京都',month:2,housingType:'賃貸'});
 const inc500=resolveComparableV2({household:'multi',householdSize:4,age:40,annualIncome:5_000_000,prefecture:'東京都',month:2,housingType:'賃貸'});
 for(const c of ['energy','food','daily','fun'] as const)eq(inc499[c]?.value,baseMulti[c]?.value,'under 5m must stay neutral: '+c);
+for(const c of ['energy','food','daily','fun'] as const)eq(inc500[c]?.value,baseMulti[c]?.value,'500m boundary cannot trigger invented income factor: '+c);
 for(const c of ['rent','mobile','insurance','sub','car','selfDevelopment','beautyFashion'] as const)eq(inc500[c]?.value,baseMulti[c]?.value,'income must not affect '+c);
 
 // Region/month isolation: only utility should move among core household-size comparables.

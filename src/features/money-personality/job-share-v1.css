@@ -1,0 +1,278 @@
+.mpp-job-share{--job-accent:#f4c95d;width:min(100%,520px);margin:24px auto;color:#fff;text-align:center}.mpp-job-share-card{position:relative;padding:18px 18px 16px;overflow:hidden;border:1px solid color-mix(in srgb,var(--job-accent) 42%,rgba(255,255,255,.12));border-radius:26px;background:radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--job-accent) 14%,transparent),transparent 39%),linear-gradient(180deg,#111d35 0%,#080e1d 100%);box-shadow:0 22px 55px rgba(0,0,0,.32);isolation:isolate}.mpp-job-share-card:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(120deg,transparent 20%,rgba(255,255,255,.045) 48%,transparent 70%);transform:translateX(-100%);animation:mppShareShine 5.5s ease-in-out infinite}.mpp-job-share-header{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:8px;font-weight:900;letter-spacing:.16em;color:var(--job-accent)}.mpp-job-share-header b{padding:4px 7px;border:1px solid color-mix(in srgb,var(--job-accent) 35%,transparent);border-radius:999px;font-size:7px}.mpp-job-share-code{margin:12px 0 0;font-size:clamp(38px,12vw,58px);font-weight:1000;letter-spacing:.06em;line-height:.95;text-shadow:0 0 28px color-mix(in srgb,var(--job-accent) 26%,transparent)}.mpp-job-share-style{width:max-content;margin:7px auto 0;padding:5px 9px;border:1px solid rgba(255,255,255,.13);border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.15em}.mpp-job-share .mpp-job-character--hero{width:min(72vw,300px);margin-top:-2px;margin-bottom:-23px}.mpp-job-share-copy small{font-size:10px;opacity:.62}.mpp-job-share-copy h2{margin:3px 0 5px;font-size:clamp(30px,9vw,44px);line-height:1.05;letter-spacing:-.035em;text-shadow:0 0 24px color-mix(in srgb,var(--job-accent) 22%,transparent)}.mpp-job-share-copy p{margin:0 auto;max-width:30em;font-size:12px;line-height:1.6;opacity:.82}.mpp-job-share-identity{display:flex;align-items:center;justify-content:center;gap:7px;margin:12px 0 0;font-size:8px;font-weight:900;letter-spacing:.1em;opacity:.58}.mpp-job-share-identity i{width:3px;height:3px;border-radius:50%;background:currentColor}.mpp-job-share-hook{margin:15px auto 0;padding:11px 8px;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}.mpp-job-share-hook small{display:block;font-size:9px;opacity:.58}.mpp-job-share-hook strong{display:block;margin-top:2px;font-size:16px;letter-spacing:.01em}.mpp-job-share footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;text-align:left}.mpp-job-share footer b{font-size:12px}.mpp-job-share footer span{font-size:8px;opacity:.46;text-align:right}.mpp-job-share-button{width:100%;margin-top:13px}.mpp-job-share[data-job="INM"] .mpp-job-share-card{box-shadow:0 22px 60px rgba(80,35,160,.24)}@keyframes mppShareShine{0%,65%{transform:translateX(-110%)}85%,100%{transform:translateX(110%)}}@media(max-width:390px){.mpp-job-share-card{padding-inline:14px}.mpp-job-share footer{align-items:flex-start;flex-direction:column}.mpp-job-share footer span{text-align:left}}@media(prefers-reduced-motion:reduce){.mpp-job-share-card:before{animation:none}}
+
+/* ---------- SHARE CARD V2 / JOB MOTIF + DIAMOND HOLO ---------- */
+.mpp-job-share-card{
+  isolation:isolate!important;
+  border:2px solid color-mix(in srgb,var(--job-accent) 62%,#ead9ae)!important;
+  background:
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--job-accent) 30%,transparent),transparent 39%),
+    linear-gradient(180deg,color-mix(in srgb,var(--job-accent) 18%,#282722),color-mix(in srgb,var(--job-accent) 8%,#080a0f) 68%,#07080b)!important;
+  box-shadow:0 24px 58px rgba(0,0,0,.36),0 0 22px color-mix(in srgb,var(--job-accent) 20%,transparent),inset 0 0 0 1px rgba(255,255,255,.09)!important
+}
+.mpp-job-share-card::before{display:none!important}
+.mpp-job-share-card>*:not(.mpp-job-share-jobbg):not(.mpp-job-share-diamond):not(.mpp-job-share-edge){position:relative;z-index:4}
+.mpp-job-share-jobbg,.mpp-job-share-diamond,.mpp-job-share-edge{position:absolute;inset:0;pointer-events:none;border-radius:24px}
+.mpp-job-share-jobbg{z-index:1;opacity:.86;mix-blend-mode:screen}
+.mpp-job-share-diamond{
+  z-index:2;opacity:.42;mix-blend-mode:screen;
+  background:linear-gradient(118deg,#2ee4ff 0%,#6978ff 18%,#d75aff 35%,#ff8a42 53%,#ffe45e 68%,#5df0a8 84%,#42d8ff 100%);
+  background-size:170% 170%;
+  -webkit-mask-image:conic-gradient(from 45deg at 50% 50%,#000 0 12.5%,rgba(0,0,0,.18) 12.5% 25%,#000 25% 37.5%,rgba(0,0,0,.10) 37.5% 50%,#000 50% 62.5%,rgba(0,0,0,.18) 62.5% 75%,#000 75% 87.5%,rgba(0,0,0,.08) 87.5% 100%);
+  -webkit-mask-size:34px 34px;
+  mask-image:conic-gradient(from 45deg at 50% 50%,#000 0 12.5%,rgba(0,0,0,.18) 12.5% 25%,#000 25% 37.5%,rgba(0,0,0,.10) 37.5% 50%,#000 50% 62.5%,rgba(0,0,0,.18) 62.5% 75%,#000 75% 87.5%,rgba(0,0,0,.08) 87.5% 100%);
+  mask-size:34px 34px
+}
+.mpp-job-share-edge{z-index:5;inset:6px;border:1px solid color-mix(in srgb,var(--job-accent) 58%,#f6e7bd);box-shadow:inset 0 0 18px rgba(255,255,255,.04)}
+.mpp-job-share-code{font-size:clamp(26px,8vw,38px)!important;text-align:left;margin:13px 0 0!important}
+.mpp-job-share-style{width:max-content!important;margin:6px 0 0!important;border-color:color-mix(in srgb,var(--job-accent) 44%,rgba(255,255,255,.18))!important;background:rgba(8,8,10,.34)}
+.mpp-job-share-portrait{position:relative;display:grid;place-items:center;margin:-2px auto -16px;min-height:270px}
+.mpp-job-share-portrait .mpp-job-character--hero{position:relative;z-index:3;width:min(72vw,300px);margin:0!important}
+.mpp-job-share-reticle{position:absolute;z-index:1;width:min(72vw,292px);aspect-ratio:1;border-radius:50%;border:1px solid color-mix(in srgb,var(--job-accent) 52%,transparent);box-shadow:0 0 0 28px color-mix(in srgb,var(--job-accent) 6%,transparent),0 0 0 56px color-mix(in srgb,var(--job-accent) 4%,transparent)}
+.mpp-job-share-reticle::before{content:"";position:absolute;inset:-1px;border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--job-accent) 62%,#f1ddb0) 0 1deg,transparent 1deg 15deg);-webkit-mask:radial-gradient(circle,transparent 0 52%,#000 53% 55%,transparent 56% 100%);mask:radial-gradient(circle,transparent 0 52%,#000 53% 55%,transparent 56% 100%)}
+.mpp-job-share-copy{text-align:left;padding:0 10px}
+.mpp-job-share-copy small{font-size:9px!important}
+.mpp-job-share-copy h2{font-size:clamp(29px,8.8vw,42px)!important;text-align:left;margin:4px 0 8px!important}
+.mpp-job-share-copy p{font-size:13px!important;font-weight:800;line-height:1.58!important;text-align:left;opacity:.94!important;max-width:none!important}
+.mpp-job-share-tags{display:flex;flex-wrap:wrap;gap:7px;padding:0 10px;margin:13px 0 16px;text-align:left}
+.mpp-job-share-tags span{padding:5px 9px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.055);font-size:9px;font-weight:850;color:#f6f4ef}
+.mpp-job-share footer{border-top:1px solid rgba(255,255,255,.09);padding:12px 10px 0;margin-top:0!important}
+.mpp-job-share footer b{font-size:9px!important;opacity:.72}
+.mpp-job-share footer span{font-size:9px!important;opacity:.62}
+
+/* JOB motifs */
+.mpp-job-share[data-job="FDM"] .mpp-job-share-jobbg{background:repeating-conic-gradient(from -12deg at 50% 35%,rgba(255,225,108,.15) 0 2deg,transparent 2deg 18deg)}
+.mpp-job-share[data-job="FDP"] .mpp-job-share-jobbg{background:linear-gradient(rgba(130,224,116,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(130,224,116,.09) 1px,transparent 1px);background-size:30px 30px}
+.mpp-job-share[data-job="FNM"] .mpp-job-share-jobbg{background:radial-gradient(circle at 18% 22%,#d9f0ff 0 1px,transparent 2px),radial-gradient(circle at 36% 38%,#d9f0ff 0 1.5px,transparent 2.5px),radial-gradient(circle at 61% 19%,#d9f0ff 0 1px,transparent 2px),radial-gradient(circle at 81% 40%,#d9f0ff 0 1.5px,transparent 2.5px)}
+.mpp-job-share[data-job="FNP"] .mpp-job-share-jobbg{background:repeating-radial-gradient(ellipse at 50% -8%,transparent 0 35px,rgba(91,236,222,.15) 36px 38px,transparent 39px 60px)}
+.mpp-job-share[data-job="IDM"] .mpp-job-share-jobbg{background:repeating-radial-gradient(circle at 50% 36%,transparent 0 31px,rgba(255,157,129,.13) 32px 34px,transparent 35px 58px)}
+.mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{background:repeating-radial-gradient(circle at 50% 36%,transparent 0 31px,rgba(230,199,121,.17) 32px 33.5px,transparent 34.5px 57px),repeating-conic-gradient(from 0deg at 50% 36%,rgba(236,205,128,.18) 0 .8deg,transparent .8deg 22.5deg)}
+.mpp-job-share[data-job="INM"] .mpp-job-share-jobbg{background:repeating-conic-gradient(from 9deg at 50% 36%,rgba(191,130,255,.15) 0 1deg,transparent 1deg 15deg),repeating-radial-gradient(circle at 50% 36%,transparent 0 36px,rgba(190,129,255,.14) 37px 39px,transparent 40px 63px)}
+.mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{background:repeating-linear-gradient(154deg,transparent 0 27px,rgba(143,220,255,.14) 28px 30px,transparent 31px 60px)}
+
+@keyframes mppShareDiamondShift{0%{background-position:0 0}100%{background-position:100% 100%}}
+@media(prefers-reduced-motion:no-preference){.mpp-job-share-diamond{animation:mppShareDiamondShift 7s ease-in-out infinite alternate}}
+@media(prefers-reduced-motion:reduce){.mpp-job-share-diamond{animation:none}}
+
+
+/* ---------- SHARE CARD V2.1 MATERIAL HOLO ---------- */
+.mpp-job-share-card{
+  background:
+    radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--job-accent) 29%,transparent),transparent 40%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--job-accent) 23%,#2a2722) 0%,
+      color-mix(in srgb,var(--job-accent) 15%,#191a1e) 43%,
+      #090a0d 100%)!important;
+}
+.mpp-job-share-diamond{
+  z-index:2!important;
+  opacity:.64!important;
+  mix-blend-mode:screen!important;
+  background-image:url('/assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  -webkit-mask-image:linear-gradient(180deg,#000 0 58%,rgba(0,0,0,.72) 78%,rgba(0,0,0,.42) 100%)!important;
+  mask-image:linear-gradient(180deg,#000 0 58%,rgba(0,0,0,.72) 78%,rgba(0,0,0,.42) 100%)!important;
+}
+.mpp-job-share-reticle::before{
+  opacity:.45!important;
+}
+
+
+/* ---------- SHARE CARD V2.2 BRONZE REFERENCE ---------- */
+.mpp-job-share-card{
+  border-color:color-mix(in srgb,var(--job-accent) 56%,#d4a95b)!important;
+  background:
+    radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--job-accent) 31%,rgba(186,126,55,.10)),transparent 40%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--job-accent) 28%,#342313) 0%,
+      color-mix(in srgb,var(--job-accent) 16%,#201814) 38%,
+      #0b0b0d 100%)!important;
+  box-shadow:
+    0 22px 52px rgba(26,17,8,.30),
+    0 0 15px color-mix(in srgb,var(--job-accent) 18%,transparent),
+    inset 0 0 0 1px rgba(255,236,194,.075)!important
+}
+.mpp-job-share-diamond{
+  opacity:.80!important;
+  background-image:url('/assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  filter:saturate(1.2) contrast(1.04) brightness(1.03)!important;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 42%,rgba(0,0,0,.30) 0 30%,rgba(0,0,0,.64) 52%,#000 76% 100%)!important;
+  mask-image:radial-gradient(ellipse at 50% 42%,rgba(0,0,0,.30) 0 30%,rgba(0,0,0,.64) 52%,#000 76% 100%)!important;
+  animation:none!important;
+}
+.mpp-job-share-edge{
+  inset:6px!important;
+  border:1.5px solid color-mix(in srgb,var(--job-accent) 46%,#f0c66f)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,244,215,.08),inset 0 0 18px rgba(207,137,52,.06),0 0 8px rgba(226,161,74,.09)!important
+}
+.mpp-job-share-jobbg{opacity:1!important}
+.mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{
+  background:
+    repeating-radial-gradient(circle at 50% 36%,transparent 0 31px,rgba(238,190,101,.22) 32px 33.5px,transparent 34.5px 57px),
+    repeating-conic-gradient(from 0deg at 50% 36%,rgba(240,194,105,.20) 0 .8deg,transparent .8deg 22.5deg),
+    radial-gradient(circle at 50% 36%,rgba(216,142,52,.15),transparent 46%)!important
+}
+.mpp-job-share-portrait{min-height:290px!important;margin:-2px auto -12px!important}
+.mpp-job-share-portrait .mpp-job-character--hero{
+  width:min(76vw,320px)!important;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px color-mix(in srgb,var(--job-accent) 20%,transparent))!important
+}
+.mpp-job-share-reticle{
+  width:min(75vw,312px)!important;
+  border-color:color-mix(in srgb,var(--job-accent) 58%,#e9cc91)!important;
+  box-shadow:0 0 0 28px color-mix(in srgb,var(--job-accent) 7%,transparent),0 0 0 56px color-mix(in srgb,var(--job-accent) 4%,transparent)!important
+}
+
+
+/* ---------- SHARE CARD V2.3 EDGE FOIL ---------- */
+.mpp-job-share-card{
+  border:3px solid color-mix(in srgb,var(--job-accent) 56%,#d8ad58)!important;
+  background:
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--job-accent) 34%,rgba(190,121,42,.10)),transparent 43%),
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--job-accent) 32%,#3e2716) 0%,
+      color-mix(in srgb,var(--job-accent) 18%,#281b14) 36%,
+      #0b0b0d 100%)!important;
+}
+.mpp-job-share-diamond{
+  opacity:.94!important;
+  background-image:url('/assets/foils/v4/MUDAGIRI_EDGE_DIAMOND_HOLO_V4.svg')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.28) contrast(1.08) brightness(1.05)!important;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  animation:none!important;
+}
+.mpp-job-share-edge{
+  inset:6px!important;
+  border:2px solid rgba(229,183,90,.86)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,245,213,.15),inset 0 0 15px rgba(229,154,58,.07),0 0 7px rgba(238,184,81,.16)!important;
+}
+.mpp-job-share-jobbg{opacity:1!important}
+.mpp-job-share-portrait{min-height:304px!important}
+.mpp-job-share-portrait .mpp-job-character--hero{
+  width:min(78vw,330px)!important;
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.34)) drop-shadow(0 0 12px color-mix(in srgb,var(--job-accent) 18%,transparent))!important;
+}
+.mpp-job-share-reticle{
+  width:min(77vw,322px)!important;
+  opacity:.72!important;
+}
+
+
+/* ---------- SHARE CARD V2.4 EIGHT JOB SYSTEM ---------- */
+.mpp-job-share{
+  --share-stock-top:#2f2418;
+  --share-stock-mid:#1c1815;
+  --share-stock-low:#0d0e10;
+  --share-metal:#d2aa5d;
+  --share-motif:#e1bd72;
+}
+.mpp-job-share[data-job="FDM"]{--share-stock-top:#3a2d12;--share-stock-mid:#1d2230;--share-stock-low:#0b0f18;--share-metal:#e2bd59;--share-motif:#f5cf68}
+.mpp-job-share[data-job="FDP"]{--share-stock-top:#25371d;--share-stock-mid:#16251b;--share-stock-low:#0b110d;--share-metal:#a8b969;--share-motif:#9fd580}
+.mpp-job-share[data-job="FNM"]{--share-stock-top:#172b46;--share-stock-mid:#111d31;--share-stock-low:#080c15;--share-metal:#9fbcd3;--share-motif:#91cfff}
+.mpp-job-share[data-job="FNP"]{--share-stock-top:#123c3a;--share-stock-mid:#102827;--share-stock-low:#081212;--share-metal:#9fb589;--share-motif:#64ddd1}
+.mpp-job-share[data-job="IDM"]{--share-stock-top:#48291f;--share-stock-mid:#2b1c18;--share-stock-low:#120d0c;--share-metal:#c78968;--share-motif:#efa37e}
+.mpp-job-share[data-job="IDP"]{--share-stock-top:#3b2a18;--share-stock-mid:#241a13;--share-stock-low:#0f0d0b;--share-metal:#d0a354;--share-motif:#d9b06a}
+.mpp-job-share[data-job="INM"]{--share-stock-top:#302044;--share-stock-mid:#1d152c;--share-stock-low:#0c0911;--share-metal:#a994c2;--share-motif:#bd8cff}
+.mpp-job-share[data-job="INP"]{--share-stock-top:#20364a;--share-stock-mid:#162330;--share-stock-low:#0a0f15;--share-metal:#9eb9cc;--share-motif:#9bd5f4}
+
+.mpp-job-share-card{
+  border-color:color-mix(in srgb,var(--share-metal) 80%,#c7a55e)!important;
+  background:
+    radial-gradient(circle at 50% 31%,color-mix(in srgb,var(--share-motif) 17%,transparent),transparent 44%),
+    linear-gradient(180deg,var(--share-stock-top) 0%,var(--share-stock-mid) 40%,var(--share-stock-low) 100%)!important;
+}
+.mpp-job-share-edge{
+  border-color:color-mix(in srgb,var(--share-metal) 86%,#f0d89e)!important;
+}
+.mpp-job-share[data-job="FDM"] .mpp-job-share-jobbg{
+  background:repeating-conic-gradient(from -10deg at 50% 35%,color-mix(in srgb,var(--share-motif) 25%,transparent) 0 1.1deg,transparent 1.1deg 18deg),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 11%,transparent),transparent 47%)!important
+}
+.mpp-job-share[data-job="FDP"] .mpp-job-share-jobbg{
+  background:
+    radial-gradient(circle at 23% 28%,color-mix(in srgb,var(--share-motif) 72%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 41% 43%,color-mix(in srgb,var(--share-motif) 64%,white) 0 1.5px,transparent 2.5px),
+    radial-gradient(circle at 63% 27%,color-mix(in srgb,var(--share-motif) 70%,white) 0 1.5px,transparent 2.5px),
+    linear-gradient(color-mix(in srgb,var(--share-motif) 11%,transparent) 1px,transparent 1px),
+    linear-gradient(90deg,color-mix(in srgb,var(--share-motif) 11%,transparent) 1px,transparent 1px)!important;
+  background-size:auto,auto,auto,32px 32px,32px 32px!important
+}
+.mpp-job-share[data-job="FNM"] .mpp-job-share-jobbg{
+  background:radial-gradient(circle at 16% 22%,rgba(225,244,255,.85) 0 1px,transparent 2px),radial-gradient(circle at 30% 39%,rgba(225,244,255,.68) 0 1.5px,transparent 2.5px),radial-gradient(circle at 44% 18%,rgba(225,244,255,.78) 0 1px,transparent 2px),radial-gradient(circle at 62% 36%,rgba(225,244,255,.84) 0 1.5px,transparent 2.5px),radial-gradient(circle at 77% 21%,rgba(225,244,255,.62) 0 1px,transparent 2px),radial-gradient(circle at 87% 43%,rgba(225,244,255,.76) 0 1.5px,transparent 2.5px)!important
+}
+.mpp-job-share[data-job="FNP"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(ellipse at 50% -6%,transparent 0 38px,color-mix(in srgb,var(--share-motif) 18%,transparent) 39px 41px,transparent 42px 65px),radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--share-motif) 13%,transparent),transparent 45%)!important
+}
+.mpp-job-share[data-job="IDM"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(circle at 50% 35%,transparent 0 34px,color-mix(in srgb,var(--share-motif) 17%,transparent) 35px 37px,transparent 38px 62px),repeating-conic-gradient(from 8deg at 50% 35%,transparent 0 17deg,color-mix(in srgb,var(--share-motif) 10%,transparent) 17.5deg 18.5deg)!important
+}
+.mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{
+  background:repeating-radial-gradient(circle at 50% 35%,transparent 0 30px,color-mix(in srgb,var(--share-motif) 30%,transparent) 31px 32.5px,transparent 33.5px 56px),repeating-conic-gradient(from 0deg at 50% 35%,color-mix(in srgb,var(--share-motif) 27%,transparent) 0 .75deg,transparent .75deg 22.5deg),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 15%,transparent) 0 18%,transparent 48%)!important
+}
+.mpp-job-share[data-job="INM"] .mpp-job-share-jobbg{
+  background:repeating-conic-gradient(from 9deg at 50% 35%,color-mix(in srgb,var(--share-motif) 18%,transparent) 0 1deg,transparent 1deg 15deg),repeating-radial-gradient(circle at 50% 35%,transparent 0 39px,color-mix(in srgb,var(--share-motif) 17%,transparent) 40px 42px,transparent 43px 68px),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--share-motif) 14%,transparent),transparent 46%)!important
+}
+.mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{
+  background:linear-gradient(163deg,transparent 0 22%,color-mix(in srgb,var(--share-motif) 16%,transparent) 22.5% 23.4%,transparent 23.9% 100%),linear-gradient(158deg,transparent 0 45%,color-mix(in srgb,var(--share-motif) 14%,transparent) 45.4% 46.2%,transparent 46.7% 100%),linear-gradient(168deg,transparent 0 66%,color-mix(in srgb,var(--share-motif) 12%,transparent) 66.4% 67.2%,transparent 67.7% 100%)!important
+}
+
+
+/* ---------- SHARE CARD V2.5 JOB LIGHT MOTION ---------- */
+.mpp-job-share-diamond{display:none!important}
+.mpp-job-share-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  border-radius:24px;
+  opacity:.22;
+  mix-blend-mode:screen;
+  background:linear-gradient(108deg,transparent 0 42%,rgba(255,255,255,.11) 48%,transparent 55% 100%);
+  background-size:190% 100%;
+}
+.mpp-job-share-jobbg{
+  transform-origin:50% 36%;
+  will-change:transform,opacity,filter,background-position;
+}
+@keyframes mppShareFdm{0%,100%{opacity:.64;transform:scale(.985)}48%{opacity:1;transform:scale(1.025)}}
+@keyframes mppShareFdp{0%,100%{opacity:.64;filter:brightness(.94)}48%{opacity:.96;filter:brightness(1.2)}}
+@keyframes mppShareFnm{0%,100%{opacity:.66;filter:brightness(.92)}35%{opacity:.98;filter:brightness(1.28)}72%{opacity:.76;filter:brightness(1.04)}}
+@keyframes mppShareFnp{0%{background-position:0 0;opacity:.62}50%{background-position:0 16px;opacity:.94}100%{background-position:0 0;opacity:.62}}
+@keyframes mppShareIdm{0%,100%{transform:scale(.97);opacity:.64}50%{transform:scale(1.035);opacity:.94}}
+@keyframes mppShareIdp{0%,100%{transform:scale(1.025);opacity:.64;filter:brightness(.94)}42%{transform:scale(.985);opacity:1;filter:brightness(1.24)}}
+@keyframes mppShareInm{0%{transform:rotate(0deg) scale(.99);opacity:.66}50%{opacity:.96}100%{transform:rotate(360deg) scale(1.01);opacity:.66}}
+@keyframes mppShareInp{0%{background-position:-26px 0;opacity:.58}52%{background-position:18px 0;opacity:.95}100%{background-position:48px 0;opacity:.62}}
+@keyframes mppShareGlint{from{background-position:-90% 0}to{background-position:120% 0}}
+@media(prefers-reduced-motion:no-preference){
+  .mpp-job-share-card::after{animation:mppShareGlint 5.6s ease-in-out infinite alternate}
+  .mpp-job-share[data-job="FDM"] .mpp-job-share-jobbg{animation:mppShareFdm 3.4s ease-in-out infinite}
+  .mpp-job-share[data-job="FDP"] .mpp-job-share-jobbg{animation:mppShareFdp 3.1s ease-in-out infinite}
+  .mpp-job-share[data-job="FNM"] .mpp-job-share-jobbg{animation:mppShareFnm 4.2s ease-in-out infinite}
+  .mpp-job-share[data-job="FNP"] .mpp-job-share-jobbg{animation:mppShareFnp 3.8s ease-in-out infinite}
+  .mpp-job-share[data-job="IDM"] .mpp-job-share-jobbg{animation:mppShareIdm 3.6s ease-in-out infinite}
+  .mpp-job-share[data-job="IDP"] .mpp-job-share-jobbg{animation:mppShareIdp 2.9s ease-in-out infinite}
+  .mpp-job-share[data-job="INM"] .mpp-job-share-jobbg{animation:mppShareInm 12s linear infinite}
+  .mpp-job-share[data-job="INP"] .mpp-job-share-jobbg{animation:mppShareInp 3.2s ease-in-out infinite}
+}
+@media(prefers-reduced-motion:reduce){
+  .mpp-job-share-card::after,.mpp-job-share-jobbg{animation:none!important}
+}
+
+/* Keep the RPG job title large and the meaning of the English STYLE readable. */
+.mpp-job-share-style-caption{
+  margin:2px 0 10px;
+  color:rgba(255,255,255,.84);
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:0;
+  line-height:1.5;
+}

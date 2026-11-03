@@ -27,6 +27,8 @@
     "qa:result-visual": "node qa-result-visual-polish-v4.mjs",
     "qa:result-v5": "npx --yes tsx@4.20.6 qa-result-v5.ts",
     "qa:income-burden": "npx --yes tsx@4.20.6 qa-income-burden-v1.ts",
+    "qa:public-chapter12-entry": "npx --yes tsx@4.20.6 qa-public-chapter12-entry-v1.ts",
+    "qa:chapter2-v2": "npx --yes tsx@4.20.6 qa-chapter2-v2.ts",
     "qa:result-v5-calibration": "npx --yes tsx@4.20.6 qa-result-v5-calibration-10000.ts",
     "qa:data-pipeline": "node qa-data-pipeline-v1.mjs"
   },
