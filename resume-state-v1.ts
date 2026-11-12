@@ -25,6 +25,7 @@ export type JourneyDraftV1={
  appraisalAnswers:any;
  typeIndex:number;
  typeAnswers:any;
+ chapter2V2?:boolean;
 };
 export type ActiveResultV1={
  schemaVersion:typeof ACTIVE_RESULT_SCHEMA;
