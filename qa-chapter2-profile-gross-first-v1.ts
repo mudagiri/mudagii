@@ -46,6 +46,11 @@ assert.equal(personalResult.annualIncomeBand,'unknown','Stale household gross ba
 
 const scene=readFileSync('ProfileV4Scene.tsx','utf8');
 assert.ok(scene.includes('PROFILE_GROSS_ANNUAL_PRIMARY'));
+assert.ok(scene.includes('aria-describedby="pre-income-yen-hint"'),'Monthly net input must expose the yen unit help');
+assert.ok(scene.includes('draft.monthlyTakeHome<10000'),'Unusually low yen entries must show a confirmation without recasting values');
+assert.ok(scene.includes('この金額で正しければそのまま進めるよ'),'Low-income warning must allow genuinely low monthly incomes');
+assert.equal(finalizeProfileV4({...singleKnown,monthlyTakeHome:30}).monthlyTakeHome,30,
+ 'Unit confirmation does not silently multiply a visitor input by 10000');
 assert.ok(scene.includes('わからない・答えたくない'));
 assert.ok(scene.includes('あなたの額面年収は？')&&scene.includes('世帯全体の額面年収は？'));
 assert.ok(scene.includes('annualIncomeAnswered:true'));
