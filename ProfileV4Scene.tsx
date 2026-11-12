@@ -38,7 +38,7 @@ const META:Record<ProfileStepV4,{dialogue:string;question:string;helper:string;s
  age:{dialogue:'あと少し。',question:'年齢は？',helper:'年齢で差が出る支出を、近い基準で比べます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q2.png`},
  housing:{dialogue:'住まいの条件を合わせよう。',question:'今の住まいは？',helper:'民営賃貸と持ち家・実家などを混ぜて比べません。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q5.png`},
  annualIncome:{dialogue:'比較する相手を選ぼう！',question:'額面の年収はどのくらい？',helper:'税金が引かれる前の年収。金額は大体でOK。わからなくても進めるよ。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
- income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金などが引かれた後。だいたいでOK。分からなくても診断できます。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
+ income:{dialogue:'最後だ。家計のものさしを合わせるぞ！',question:'毎月の手取りは？',helper:'税金が引かれた後の月手取りを「円」で入力。30万円なら300000と入力してね。',sprite:`${ASSET}/MUDAGIRI_PROFILE_Q1.png`},
 };
 
 function Choice({active,children,onClick}:{active:boolean;children:React.ReactNode;onClick:()=>void}){
@@ -118,9 +118,20 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    .pre-profile-v4.pre-step-income .pre-panel h2{
     min-height:29px!important;margin:3px 0 0!important;font-size:23px!important;
    }
+   .pre-profile-v4.pre-step-income .pre-panel{
+    overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;
+   }
    .pre-profile-v4.pre-step-income .pre-helper{
-    flex:0 0 26px!important;min-height:26px!important;max-height:26px!important;
-    margin:2px 0 0!important;font-size:11px!important;line-height:1.35!important;
+    flex:0 0 auto!important;min-height:0!important;max-height:none!important;
+    margin:2px 0 0!important;font-size:13px!important;line-height:1.5!important;
+   }
+   .pre-profile-v4.pre-step-income .pre-income-yen-hint{
+    margin:5px 2px 2px;color:#e8f2ef;font-size:13px;line-height:1.5;font-weight:750;
+   }
+   .pre-profile-v4.pre-step-income .pre-income-yen-warning{
+    margin:5px 0 2px;padding:7px 9px;border:1px solid #d8b877;
+    border-radius:8px;background:#153c46;color:#fff4d4;
+    font-size:13px;line-height:1.5;font-weight:750;
    }
    .pre-profile-v4.pre-step-income .pre-input-wrap{
     flex:0 0 48px!important;height:48px!important;margin:4px 0 0!important;
@@ -276,7 +287,10 @@ export default function ProfileV4Scene({draft,index,setDraft,onNext,onBack}:Prop
    </div>}
 
    {step==='income'&&<div>
-    <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り"/><span>/ 月</span></div></label>
+    <label className="pre-input-wrap"><span className="pre-sr-only">毎月の手取り</span><div className="pre-money-input"><span>¥</span><input inputMode="numeric" pattern="[0-9]*" maxLength={9} value={draft.monthlyTakeHome===null?'':draft.monthlyTakeHome.toLocaleString('ja-JP')} onChange={e=>{const x=e.target.value.replace(/\D/g,'').slice(0,8);patch({monthlyTakeHome:x===''?null:Number(x),monthlyTakeHomeAnswered:x!==''})}} placeholder="350,000" aria-label="毎月の手取り" aria-describedby="pre-income-yen-hint"/><span>/ 月</span></div></label>
+    <p id="pre-income-yen-hint" className="pre-income-yen-hint">円単位で入力（例：30万円なら「300000」）</p>
+    {draft.monthlyTakeHome!==null&&draft.monthlyTakeHome>0&&draft.monthlyTakeHome<10000&&
+     <p className="pre-income-yen-warning" role="status">入力された手取りは月 {draft.monthlyTakeHome.toLocaleString('ja-JP')} 円だよ。30万円のつもりなら「300000」と入力してね。この金額で正しければそのまま進めるよ。</p>}
     <button type="button" className="pre-back" onClick={()=>patch({monthlyTakeHome:null,monthlyTakeHomeAnswered:true})}>わからない</button>
    </div>}
 
