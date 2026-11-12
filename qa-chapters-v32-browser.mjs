@@ -172,7 +172,19 @@ assert.equal(await page.locator('.pre-step-annualIncome .profile-primary-cta').i
 await screenshot('07a-single-annual-gross');
 await clickButton(/次へ/);
 await waitHeading('あなた自身の毎月の手取りは？');
-await page.getByRole('textbox',{name:'毎月の手取り'}).fill('350000');
+const netInput=page.getByRole('textbox',{name:'毎月の手取り'});
+const unitHint=page.locator('#pre-income-yen-hint');
+assert.match(await unitHint.innerText(),/円単位.*30万円/,'Net take-home unit and example are visible');
+assert.equal(await netInput.getAttribute('aria-describedby'),'pre-income-yen-hint');
+await netInput.fill('30');
+const smallIncomeWarning=page.locator('.pre-income-yen-warning');
+await smallIncomeWarning.waitFor({state:'visible'});
+assert.match(await smallIncomeWarning.innerText(),/月 30 円/,'Suspicious 30-yen input is clearly labeled');
+assert.equal(await page.locator('.pre-step-income .profile-primary-cta').isEnabled(),true,
+ 'Do not prohibit genuinely very-low-income visitors');
+await screenshot('07b-single-income-yen-warning');
+await netInput.fill('350000');
+await smallIncomeWarning.waitFor({state:'detached'});
 await screenshot('07-single-income');
 await clickButton(/次へ/);
 
